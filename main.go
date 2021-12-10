@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	cmd.Execute()
+	r := cmd.RootCmd()
+	_ = r.Execute()
 }

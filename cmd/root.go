@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/conf"
+	"murphysec-cli-simple/plugins"
 	"murphysec-cli-simple/util/must"
 	"murphysec-cli-simple/util/output"
 	"murphysec-cli-simple/version"
@@ -13,8 +15,8 @@ var (
 	showVersion bool
 )
 
-func Execute() {
-	_ = rootCmd().Execute()
+func RootCmd() *cobra.Command {
+	return rootCmd()
 }
 
 func rootCmd() *cobra.Command {
@@ -26,20 +28,27 @@ func rootCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use:   selfName,
 		Short: "murphysec-cli : An open source component security detection tool.",
-		Run:   rootHandler,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			for _, it := range plugins.Plugins {
+				output.Debug(fmt.Sprintf("plugin: %v", it.Info().Name))
+			}
 			if showVersion {
 				version.PrintVersionInfo()
 				os.Exit(0)
 			}
 		},
+		TraverseChildren: true,
+		Run: func(cmd *cobra.Command, args []string) {
+			_ = cmd.Help()
+		},
 	}
+
 	c.PersistentFlags().BoolVarP(&showVersion, "version", "", false, "output version information and exit")
 	c.PersistentFlags().BoolVarP(&output.Colorful, "color", "", true, "colorize the output")
 	c.PersistentFlags().BoolVarP(&output.Verbose, "verbose", "v", false, "show verbose log")
 	c.PersistentFlags().StringVarP(&conf.APITokenCliOverride, "token", "", "", "specify the API token")
-
 	c.AddCommand(authCmd())
+	c.AddCommand(scanCmd())
 	return c
 }
 
