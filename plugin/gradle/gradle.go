@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/scanner"
+	"murphysec-cli-simple/plugin/plugin_base"
 	"murphysec-cli-simple/util/output"
 )
 
@@ -13,8 +13,8 @@ var Instance Plugin
 type Plugin struct {
 }
 
-func (_ *Plugin) Info() scanner.PluginInfo {
-	return scanner.PluginInfo{Name: "gradle", ShortDescription: "for gradle project"}
+func (_ *Plugin) Info() plugin_base.PluginInfo {
+	return plugin_base.PluginInfo{Name: "gradle", ShortDescription: "for gradle project"}
 }
 
 func (p *Plugin) MatchPath(ctx context.Context, dir string) bool {

@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/plugins"
+	"murphysec-cli-simple/plugin"
 )
 
 var scanDir string
@@ -15,7 +15,7 @@ func scanCmd() *cobra.Command {
 		TraverseChildren: true,
 	}
 	c.PersistentFlags().StringVarP(&scanDir, "dir", "d", ".", "project root dir")
-	for _, it := range plugins.Plugins {
+	for _, it := range plugin.Plugins {
 		pc := &cobra.Command{
 			Use:              it.Info().Name,
 			Short:            it.Info().ShortDescription,

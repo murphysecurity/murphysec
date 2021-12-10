@@ -1,4 +1,4 @@
-package scanner
+package plugin_base
 
 import (
 	"context"

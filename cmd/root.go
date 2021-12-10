@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/conf"
-	"murphysec-cli-simple/plugins"
+	"murphysec-cli-simple/plugin"
 	"murphysec-cli-simple/util/must"
 	"murphysec-cli-simple/util/output"
 	"murphysec-cli-simple/version"
@@ -29,7 +29,7 @@ func rootCmd() *cobra.Command {
 		Use:   selfName,
 		Short: "murphysec-cli : An open source component security detection tool.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			for _, it := range plugins.Plugins {
+			for _, it := range plugin.Plugins {
 				output.Debug(fmt.Sprintf("plugin: %v", it.Info().Name))
 			}
 			if showVersion {
