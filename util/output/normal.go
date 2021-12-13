@@ -41,3 +41,11 @@ func Info(text string) {
 		fmt.Printf("[INFO] %s\n", text)
 	}
 }
+
+func Warn(text string) {
+	if Colorful {
+		must.Int(color.New(color.Bold, color.FgRed).Printf("[WARN] %s\n", text))
+	} else {
+		fmt.Printf("[WARN] %s\n", text)
+	}
+}
