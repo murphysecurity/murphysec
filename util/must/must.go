@@ -81,3 +81,8 @@ func Write(n int, err error) {
 func Close(c io.Closer) {
 	Must(c.Close())
 }
+
+func ReadClose(rc io.ReadCloser, err error) io.ReadCloser {
+	Must(err)
+	return rc
+}

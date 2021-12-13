@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/plugin"
+	"time"
 )
 
 var scanDir string
@@ -21,7 +22,11 @@ func scanCmd() *cobra.Command {
 			Short:            it.Info().ShortDescription,
 			TraverseChildren: true,
 			Run: func(cmd *cobra.Command, args []string) {
-				it.MatchPath(context.Background(), scanDir)
+				if it.MatchPath(context.Background(), scanDir) {
+					c, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*10))
+					it.DoScan(c, scanDir)
+					cancel()
+				}
 			},
 		}
 		it.SetupScanCmd(pc)

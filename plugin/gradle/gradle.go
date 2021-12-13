@@ -6,6 +6,9 @@ import (
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/plugin/plugin_base"
 	"murphysec-cli-simple/util/output"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var Instance plugin_base.Plugin = &Plugin{}
@@ -30,7 +33,27 @@ func (p *Plugin) MatchPath(ctx context.Context, dir string) bool {
 
 func (p *Plugin) DoScan(ctx context.Context, dir string) interface{} {
 	// todo: scan
-	panic("todo")
+	sigTerm := make(chan os.Signal, 1)
+	finishCh := make(chan struct{})
+	defer close(finishCh)
+	cancel := make(chan struct{})
+	signal.Notify(sigTerm, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
+	go func() {
+		select {
+		case <-finishCh:
+			signal.Stop(sigTerm)
+		case <-sigTerm:
+			close(cancel)
+		}
+	}()
+
+	// do scan
+	scanResult, err := scanDir(cancel, dir)
+	if err != nil {
+		output.Error(fmt.Sprintf("Scan failed, %s", err.Error()))
+		return nil
+	}
+	fmt.Println(scanResult)
 	return nil
 }
 
