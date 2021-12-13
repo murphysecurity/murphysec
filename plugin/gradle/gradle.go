@@ -1,7 +1,6 @@
 package gradle
 
 import (
-	"context"
 	"fmt"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/plugin/plugin_base"
@@ -20,7 +19,7 @@ func (_ *Plugin) Info() plugin_base.PluginInfo {
 	return plugin_base.PluginInfo{Name: "gradle", ShortDescription: "for gradle project"}
 }
 
-func (p *Plugin) MatchPath(ctx context.Context, dir string) bool {
+func (p *Plugin) MatchPath(dir string) bool {
 	output.Debug(fmt.Sprintf("gradle - MatchPath: %s", dir))
 	f := detectGradleFile(dir)
 	if f == "" {
@@ -31,8 +30,7 @@ func (p *Plugin) MatchPath(ctx context.Context, dir string) bool {
 	return true
 }
 
-func (p *Plugin) DoScan(ctx context.Context, dir string) interface{} {
-	// todo: scan
+func (p *Plugin) DoScan(dir string) interface{} {
 	sigTerm := make(chan os.Signal, 1)
 	finishCh := make(chan struct{})
 	defer close(finishCh)

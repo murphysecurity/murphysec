@@ -1,7 +1,6 @@
 package plugin_base
 
 import (
-	"context"
 	"github.com/spf13/cobra"
 )
 
@@ -10,9 +9,9 @@ type Plugin interface {
 	Info() PluginInfo
 
 	// MatchPath returns a boolean indicating if the path is acceptable by the plugin
-	MatchPath(ctx context.Context, dir string) bool
+	MatchPath(dir string) bool
 
-	DoScan(ctx context.Context, dir string) interface{}
+	DoScan(dir string) interface{}
 
 	SetupScanCmd(c *cobra.Command)
 }
