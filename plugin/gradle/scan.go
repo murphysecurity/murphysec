@@ -1,11 +1,13 @@
 package gradle
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"murphysec-cli-simple/util"
 	"murphysec-cli-simple/util/output"
+	"murphysec-cli-simple/util/simplejson"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,8 +62,16 @@ func scanDir(abortSignal chan struct{}, dir string) (string, error) {
 
 func parseGradleScanCmdResult(cmdResult string) (interface{}, error) {
 	depsInfo := strings.Trim(cmdResult, "GetDepsJson:")
-	fmt.Println(depsInfo)
-	return nil, nil
+	var j = simplejson.New()
+	if e := json.Unmarshal([]byte(depsInfo), &j); e != nil {
+		output.Error("parse scan result failed")
+		output.Error(e.Error())
+		return nil, e
+	} else {
+		output.Debug("scan result parsed")
+		output.Debug(j.MarshalString())
+		return j, nil
+	}
 }
 
 func tempScanScript() (string, func(), error) {

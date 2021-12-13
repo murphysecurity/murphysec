@@ -21,9 +21,9 @@ func (p *Plugin) MatchPath(dir string) bool {
 	return false
 }
 
-func (p *Plugin) DoScan(dir string) interface{} {
+func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
 	fmt.Println("hello world DoScan", p.arg)
-	return nil
+	return nil, nil
 }
 
 func (p *Plugin) SetupScanCmd(c *cobra.Command) {

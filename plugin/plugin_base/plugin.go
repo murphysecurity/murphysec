@@ -2,6 +2,7 @@ package plugin_base
 
 import (
 	"github.com/spf13/cobra"
+	"murphysec-cli-simple/util/simplejson"
 )
 
 type Plugin interface {
@@ -11,7 +12,7 @@ type Plugin interface {
 	// MatchPath returns a boolean indicating if the path is acceptable by the plugin
 	MatchPath(dir string) bool
 
-	DoScan(dir string) interface{}
+	DoScan(dir string) (*PackageInfo, error)
 
 	SetupScanCmd(c *cobra.Command)
 }
@@ -21,4 +22,14 @@ type PluginInfo struct {
 	Name string
 	// one-line description.
 	ShortDescription string
+}
+
+type PackageInfo struct {
+	PackageManager  string           `json:"package_manager"`
+	PackageFile     string           `json:"package_file"`
+	PackageFilePath string           `json:"package_file_path"`
+	Language        string           `json:"language"`
+	Dependencies    *simplejson.JSON `json:"dependencies"`
+	Name            string           `json:"name"`
+	Version         string           `json:"version"`
 }

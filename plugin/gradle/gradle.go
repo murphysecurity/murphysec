@@ -30,7 +30,7 @@ func (p *Plugin) MatchPath(dir string) bool {
 	return true
 }
 
-func (p *Plugin) DoScan(dir string) interface{} {
+func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
 	sigTerm := make(chan os.Signal, 1)
 	finishCh := make(chan struct{})
 	defer close(finishCh)
@@ -49,10 +49,10 @@ func (p *Plugin) DoScan(dir string) interface{} {
 	scanResult, err := scanDir(cancel, dir)
 	if err != nil {
 		output.Error(fmt.Sprintf("Scan failed, %s", err.Error()))
-		return nil
+		return nil, nil
 	}
 	fmt.Println(scanResult)
-	return nil
+	return nil, nil
 }
 
 func (p *Plugin) SetupScanCmd(c *cobra.Command) {}
