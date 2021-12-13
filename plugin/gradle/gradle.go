@@ -8,7 +8,7 @@ import (
 	"murphysec-cli-simple/util/output"
 )
 
-var Instance Plugin
+var Instance plugin_base.Plugin = &Plugin{}
 
 type Plugin struct {
 }

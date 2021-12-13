@@ -11,7 +11,7 @@ type Plugin struct {
 	arg string
 }
 
-var Instance = Plugin{}
+var Instance plugin_base.Plugin = &Plugin{}
 
 func (_ *Plugin) Info() plugin_base.PluginInfo {
 	return plugin_base.PluginInfo{Name: "hello", ShortDescription: "just a hello world"}

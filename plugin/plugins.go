@@ -7,6 +7,6 @@ import (
 )
 
 var Plugins = []plugin_base.Plugin{
-	&hello.Instance,
-	&gradle.Instance,
+	hello.Instance,
+	gradle.Instance,
 }
