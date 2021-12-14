@@ -79,19 +79,20 @@ func tempScanScript() (string, func(), error) {
 	if err != nil {
 		return "", nil, errors.Wrap(err, "Create temp dir failed")
 	}
+	output.Debug(fmt.Sprintf("Make temp dir succeed, %s", tempDir))
 	p := filepath.Join(tempDir, "murphysec-scan.gradle")
 	err = ioutil.WriteFile(p, []byte(initScriptContent), 644)
 	if err != nil {
 		return "", nil, errors.Wrap(err, "Write temp file failed")
 	}
+	output.Debug("Write temp file succeed")
 	cleanup := func() {
 		output.Debug(fmt.Sprintf("cleanup temp scan script: %s", tempDir))
 		e := os.RemoveAll(tempDir)
 		if e != nil {
-			output.Warn(fmt.Sprintf("deleteTempScanScript failed, %v", e))
+			output.Warn(fmt.Sprintf("Failed, %v", e))
 		}
-		output.Debug("deleteTempScanScript succeed")
-
+		output.Debug("Succeed")
 	}
 	return p, cleanup, nil
 }
