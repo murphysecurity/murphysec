@@ -33,4 +33,5 @@ type PackageInfo struct {
 	Language        string           `json:"language"`
 	Dependencies    *simplejson.JSON `json:"dependencies"`
 	Name            string           `json:"name"`
+	RuntimeInfo     *simplejson.JSON `json:"runtime_info"`
 }

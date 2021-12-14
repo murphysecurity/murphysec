@@ -95,6 +95,7 @@ func scanByPlugin(p plugin_base.Plugin, dir string) error {
 				"plugin": map[string]interface{}{
 					"name":    p.Info().Name,
 					"version": p.Info().Version,
+					"runtime": packageInfo.RuntimeInfo,
 				},
 			},
 		})
