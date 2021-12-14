@@ -30,16 +30,20 @@ func scanCmd() *cobra.Command {
 		TraverseChildren: true,
 	}
 	c.PersistentFlags().StringVarP(&scanDir, "dir", "d", ".", "project root dir")
-	for _, it := range plugin.Plugins {
+	for i := range plugin.Plugins {
+		p := plugin.Plugins[i]
 		pc := &cobra.Command{
-			Use:              it.Info().Name,
-			Short:            it.Info().ShortDescription,
+			Use:              p.Info().Name,
+			Short:            p.Info().ShortDescription,
 			TraverseChildren: true,
 			Run: func(cmd *cobra.Command, args []string) {
-				scanByPlugin(it, scanDir)
+				if e := scanByPlugin(p, scanDir); e != nil {
+					output.Error(e.Error())
+					os.Exit(-1)
+				}
 			},
 		}
-		it.SetupScanCmd(pc)
+		p.SetupScanCmd(pc)
 		c.AddCommand(pc)
 	}
 	return c
@@ -54,7 +58,7 @@ func scanByPlugin(p plugin_base.Plugin, dir string) error {
 	dir = must.String(filepath.Abs(dir))
 	output.Info(fmt.Sprintf("Scan dir: %s", dir))
 	if !p.MatchPath(dir) {
-		return errors.New("The project can't be processed.")
+		return errors.New(fmt.Sprintf("The project can't be processed by plugin %s.", p.Info().Name))
 	}
 	packageInfo, err := p.DoScan(dir)
 	if err != nil {

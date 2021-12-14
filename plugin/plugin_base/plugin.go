@@ -7,7 +7,7 @@ import (
 
 type Plugin interface {
 	// Info returns PluginInfo of the plugin
-	Info() PluginInfo
+	Info() *PluginInfo
 
 	// MatchPath returns a boolean indicating if the path is acceptable by the plugin
 	MatchPath(dir string) bool

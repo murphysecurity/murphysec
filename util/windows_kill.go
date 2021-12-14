@@ -11,6 +11,9 @@ import (
 )
 
 func KillAllChild(ppid int) {
+	if ppid < 0 {
+		return
+	}
 	c := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(ppid))
 	output.Debug(fmt.Sprintf("execute: %s", c.String()))
 	_, _ = c.Output()

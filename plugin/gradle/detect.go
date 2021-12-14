@@ -14,6 +14,15 @@ import (
 func detectGradleVersion(path string) (*gradleVersion, error) {
 	c := exec.Command(path, "-v")
 	output.Debug(fmt.Sprintf("Run: %s", c.String()))
+	killSig, cancelled := util.WatchKill()
+	defer cancelled()
+	go func() {
+		if <-killSig {
+			if p := c.Process; p != nil {
+				_ = p.Kill()
+			}
+		}
+	}()
 	rs, e := c.Output()
 	if e != nil {
 		output.Info(fmt.Sprintf("detectGradleVersion failed, %v", e))

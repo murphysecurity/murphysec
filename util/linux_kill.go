@@ -11,6 +11,9 @@ import (
 )
 
 func KillAllChild(ppid int) {
+	if ppid < 0 {
+		return
+	}
 	c := exec.Command("pkill", "-15", "-p", strconv.Itoa(ppid))
 	output.Debug(fmt.Sprintf("execute: %s", c.String()))
 	_, _ = c.Output()

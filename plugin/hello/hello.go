@@ -12,8 +12,8 @@ type Plugin struct {
 
 var Instance plugin_base.Plugin = &Plugin{}
 
-func (_ *Plugin) Info() plugin_base.PluginInfo {
-	return plugin_base.PluginInfo{Name: "hello", ShortDescription: "just a hello world"}
+func (_ *Plugin) Info() *plugin_base.PluginInfo {
+	return &plugin_base.PluginInfo{Name: "hello", ShortDescription: "just a hello world"}
 }
 
 func (p *Plugin) MatchPath(dir string) bool {

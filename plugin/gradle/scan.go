@@ -21,11 +21,9 @@ type scanResult struct {
 	defaultProject string
 }
 
-func scanDir(abortSignal chan struct{}, dir string) (*scanResult, error) {
+func scanDir(dir string) (*scanResult, error) {
 	util.StartSpinner("", "Scanning...")
 	defer util.StopSpinner()
-	doneSignal := make(chan struct{})
-	defer close(doneSignal)
 	// collect information
 	gradleCmd := getGradleCmd(dir)
 	gradleFile := detectGradleFile(dir)
@@ -45,13 +43,14 @@ func scanDir(abortSignal chan struct{}, dir string) (*scanResult, error) {
 	// execute scan script
 	output.Debug(fmt.Sprintf("Use gradle path: %s, version: %s", gradleCmd, version.Version))
 	cmd := util.ExecuteCmd(gradleCmd, "getDepsJson", "-q", "--build-file="+gradleFile, "--no-daemon", "-Dorg.gradle.parallel=", "-Dorg.gradle.console=plain", "-I", scanScriptPath)
+	// watch kill signal
+	killSig, canceller := util.WatchKill()
+	defer canceller()
 	go func() {
-		select {
-		case <-abortSignal:
+		if <-killSig {
+			output.Error("Scanning terminate.")
 			util.KillAllChild(cmd.Pid())
 			cmd.Abort()
-			output.Warn("Scan abort.")
-		case <-doneSignal:
 		}
 	}()
 	if err := cmd.Execute(); err != nil {

@@ -67,19 +67,22 @@ func (t *PreparedCmd) Execute() error {
 	if e != nil {
 		return e
 	}
-	if e := t.cmd.Start(); e != nil {
-		return e
-	}
-	t.pid = t.cmd.Process.Pid
+
 	go func() {
 		all, err := ioutil.ReadAll(stdo)
 		t.stdout.ch <- streamR{t: string(all), e: err}
+		close(t.stdout.ch)
 	}()
 
 	go func() {
 		all, err := ioutil.ReadAll(stde)
 		t.stderr.ch <- streamR{t: string(all), e: err}
+		close(t.stderr.ch)
 	}()
+	if e := t.cmd.Start(); e != nil {
+		return e
+	}
+	t.pid = t.cmd.Process.Pid
 
 	go func() {
 		select {
