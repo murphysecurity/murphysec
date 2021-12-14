@@ -22,6 +22,8 @@ type PluginInfo struct {
 	Name string
 	// one-line description.
 	ShortDescription string
+	// plugin version
+	Version string
 }
 
 type PackageInfo struct {
@@ -31,5 +33,4 @@ type PackageInfo struct {
 	Language        string           `json:"language"`
 	Dependencies    *simplejson.JSON `json:"dependencies"`
 	Name            string           `json:"name"`
-	Version         string           `json:"version"`
 }

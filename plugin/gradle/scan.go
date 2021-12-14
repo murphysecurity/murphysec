@@ -13,24 +13,33 @@ import (
 	"strings"
 )
 
-func scanDir(abortSignal chan struct{}, dir string) (string, error) {
+type scanResult struct {
+	deps           *simplejson.JSON
+	gradleCmd      string
+	gradleFilePath string
+	gradleVer      *gradleVersion
+	defaultProject string
+}
+
+func scanDir(abortSignal chan struct{}, dir string) (*scanResult, error) {
+	util.StartSpinner("", "Scanning...")
+	defer util.StopSpinner()
 	doneSignal := make(chan struct{})
 	defer close(doneSignal)
 	// collect information
 	gradleCmd := getGradleCmd(dir)
 	gradleFile := detectGradleFile(dir)
 	if gradleFile == "" {
-		return "", errors.New("No gradle build file found, supported: build.gradle, build.gradle.kts")
+		return nil, errors.New("No gradle build file found, supported: build.gradle, build.gradle.kts")
 	}
 	version, err := detectGradleVersion(gradleCmd)
 	if err != nil {
-		return "", errors.Wrap(err, "Detect gradle version failed")
+		return nil, errors.Wrap(err, "Detect gradle version failed")
 	}
 	// prepare scan script
 	scanScriptPath, cleanTemp, err := tempScanScript()
 	if err != nil {
-		output.Error(err.Error())
-		return "", err
+		return nil, errors.Wrap(err, "Create temp scan script failed")
 	}
 	defer cleanTemp()
 	// execute scan script
@@ -49,18 +58,37 @@ func scanDir(abortSignal chan struct{}, dir string) (string, error) {
 		output.Error(fmt.Sprintf("Execute scan script failed, %v", err))
 		es, _ := cmd.GetStderr()
 		output.Error(es)
-		return "", err
-	} else {
-		es, e := cmd.GetStdout()
-		if e != nil {
-			output.Error(fmt.Sprintf("Read gradle output failed, %s", e.Error()))
-			return "", e
-		}
-		return es, nil
+		return nil, errors.Wrap(err, "Scan script execution failed")
 	}
+	es, e := cmd.GetStdout()
+	if e != nil {
+		output.Error(fmt.Sprintf("Read gradle output failed, %s", e.Error()))
+		return nil, e
+	}
+	result, err := parseGradleScanCmdResult(es)
+	if err != nil {
+		return nil, errors.Wrap(err, "Parse gradle output failed")
+	}
+
+	// result process
+	defaultProject := result.Get("defaultProject").String()
+	if defaultProject == "" {
+		return nil, errors.New("Get default project failed")
+	}
+	deps := simplejson.New()
+	deps.Set("dependencies", result.Get("projects", defaultProject, "depDict"))
+	deps.Set("name", defaultProject)
+	deps.Set("version", "")
+	return &scanResult{
+		deps:           deps,
+		defaultProject: defaultProject,
+		gradleCmd:      gradleCmd,
+		gradleFilePath: gradleFile,
+		gradleVer:      version,
+	}, nil
 }
 
-func parseGradleScanCmdResult(cmdResult string) (interface{}, error) {
+func parseGradleScanCmdResult(cmdResult string) (*simplejson.JSON, error) {
 	depsInfo := strings.Trim(cmdResult, "GetDepsJson:")
 	var j = simplejson.New()
 	if e := json.Unmarshal([]byte(depsInfo), &j); e != nil {
@@ -87,7 +115,7 @@ func tempScanScript() (string, func(), error) {
 	}
 	output.Debug("Write temp file succeed")
 	cleanup := func() {
-		output.Debug(fmt.Sprintf("cleanup temp scan script: %s", tempDir))
+		output.Debug(fmt.Sprintf("Cleanup temp scan script: %s", tempDir))
 		e := os.RemoveAll(tempDir)
 		if e != nil {
 			output.Warn(fmt.Sprintf("Failed, %v", e))

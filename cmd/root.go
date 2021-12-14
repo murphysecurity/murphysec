@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
 	"murphysec-cli-simple/plugin"
-	"murphysec-cli-simple/util/must"
 	"murphysec-cli-simple/util/output"
 	"murphysec-cli-simple/version"
 	"os"
@@ -36,6 +36,12 @@ func rootCmd() *cobra.Command {
 				version.PrintVersionInfo()
 				os.Exit(0)
 			}
+			if conf.APIToken() != "" {
+				api.SetDefaultToken(conf.APIToken())
+				output.Debug("Default API token set.")
+			} else {
+				output.Debug("API token not set.")
+			}
 		},
 		TraverseChildren: true,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -50,8 +56,4 @@ func rootCmd() *cobra.Command {
 	c.AddCommand(authCmd())
 	c.AddCommand(scanCmd())
 	return c
-}
-
-func rootHandler(cmd *cobra.Command, args []string) {
-	must.Must(cmd.Help())
 }

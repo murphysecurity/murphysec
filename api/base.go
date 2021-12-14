@@ -13,3 +13,9 @@ func serverAddress() string {
 	}
 	return envServer
 }
+
+var defaultToken string
+
+func SetDefaultToken(token string) {
+	defaultToken = token
+}

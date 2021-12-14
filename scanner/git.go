@@ -5,45 +5,14 @@ import (
 	"io/ioutil"
 	"murphysec-cli-simple/util"
 	"net/url"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-type ProjectInfo struct {
-	Name         string
-	GitRemoteUrl string
-	GitBranch    string
-	ProjectType  string
-}
+// file: todo: rewrite
 
-func GetProjectInfo(targetAbsPath string) *ProjectInfo {
-	gitConfigPath := filepath.Join(targetAbsPath, ".git", "config")
-	if isGitProject(gitConfigPath) {
-		var projectName, gitRemoteUrl, err = getProjectNameFromGit(gitConfigPath)
-		if err == nil {
-			return &ProjectInfo{
-				Name:         projectName,
-				GitRemoteUrl: gitRemoteUrl,
-				GitBranch:    getGitBranch(targetAbsPath),
-				ProjectType:  "git-remote",
-			}
-		}
-	}
-	return &ProjectInfo{
-		Name:        getProjectNameFromPath(targetAbsPath),
-		ProjectType: "local",
-	}
-}
-
-func getProjectNameFromPath(Path string) string {
-	parts := strings.Split(Path, string(os.PathSeparator))
-	dirname := parts[len(parts)-1]
-	return dirname
-}
-
-func getProjectNameFromGit(gitConfigPath string) (projectName string, gitRemoteUrl string, err error) {
+func getProjectNameFromGitConfigFile(gitConfigPath string) (projectName string, gitRemoteUrl string, err error) {
 	file, err := ioutil.ReadFile(gitConfigPath)
 	if err != nil {
 		return "", "", err
@@ -96,9 +65,7 @@ func getGitBranch(targetAbsPath string) string {
 	}
 	return ""
 }
-func isGitProject(gitConfigPath string) bool {
-	if gitConfigFileExist := util.IsPathExist(gitConfigPath); gitConfigFileExist == true {
-		return true
-	}
-	return false
+func isGitProject(projectDir string) bool {
+	p := filepath.Join(projectDir, ".git", "config")
+	return util.IsPathExist(p) && !util.IsDir(p)
 }

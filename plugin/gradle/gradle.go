@@ -2,6 +2,7 @@ package gradle
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/plugin/plugin_base"
 	"murphysec-cli-simple/util/output"
@@ -9,6 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 )
+
+const pluginVersion = "0.0.1"
 
 var Instance plugin_base.Plugin = &Plugin{}
 
@@ -48,11 +51,16 @@ func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
 	// do scan
 	scanResult, err := scanDir(cancel, dir)
 	if err != nil {
-		output.Error(fmt.Sprintf("Scan failed, %s", err.Error()))
-		return nil, nil
+		return nil, errors.New(fmt.Sprintf("Scan failed, %s", err.Error()))
 	}
-	fmt.Println(scanResult)
-	return nil, nil
+	return &plugin_base.PackageInfo{
+		PackageManager:  "Gradle",
+		PackageFile:     scanResult.gradleFilePath,
+		PackageFilePath: scanResult.gradleFilePath,
+		Language:        "java",
+		Dependencies:    scanResult.deps,
+		Name:            scanResult.defaultProject,
+	}, nil
 }
 
 func (p *Plugin) SetupScanCmd(c *cobra.Command) {}

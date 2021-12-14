@@ -2,8 +2,8 @@ package gradle
 
 import (
 	"fmt"
+	"murphysec-cli-simple/util"
 	"murphysec-cli-simple/util/output"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -67,9 +67,8 @@ type gradleVersion struct {
 func detectGradleFile(dir string) string {
 	for s := range gradleFiles {
 		p := filepath.Join(dir, s)
-		output.Debug(fmt.Sprintf("try to detect gradle file: %s", p))
-		if stat, err := os.Stat(filepath.Join(dir, s)); err == nil && !stat.IsDir() {
-			output.Debug("found")
+		if util.IsPathExist(p) && !util.IsDir(p) {
+			output.Debug(fmt.Sprintf("found: %s", p))
 			return p
 		}
 	}
@@ -86,7 +85,7 @@ func detectGradleWrapper(dir string) string {
 		f = "gradlew"
 	}
 	p := filepath.Join(dir, f)
-	if s, e := os.Stat(p); e == nil && !s.IsDir() {
+	if util.IsPathExist(p) && !util.IsDir(p) {
 		return p
 	} else {
 		return ""
