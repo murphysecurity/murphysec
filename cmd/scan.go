@@ -60,10 +60,6 @@ func scanCmd() *cobra.Command {
 	return c
 }
 
-func scanHandler(cmd *cobra.Command, args []string) {
-	panic("todo: auto scan") // todo
-}
-
 func scanByPlugin(p plugin_base.Plugin, dir string) error {
 	startTime := time.Now()
 	dir = must.String(filepath.Abs(dir))
