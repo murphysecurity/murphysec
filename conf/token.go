@@ -12,7 +12,7 @@ import (
 	"sync"
 )
 
-const tokenPath = "~/.config/murphysec/token"
+const tokenPath = "~/.murphysec/token"
 
 // APITokenCliOverride 用于覆盖API TOKEN，为空串时无效
 var APITokenCliOverride string
