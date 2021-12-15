@@ -48,6 +48,8 @@ func doScan(dir string) (*plugin_base.PackageInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	util.StartSpinner("", "Scanning...")
+	defer util.StopSpinner()
 	pom := filepath.Join(dir, "pom.xml")
 	if !util.IsPathExist(pom) || util.IsDir(pom) {
 		return nil, fmt.Errorf("Can't find POM file: %s\n", dir)
