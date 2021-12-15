@@ -1,4 +1,4 @@
-package util
+package spin_util
 
 import (
 	"github.com/briandowns/spinner"

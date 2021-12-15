@@ -8,6 +8,7 @@ import (
 	"murphysec-cli-simple/util"
 	"murphysec-cli-simple/util/output"
 	"murphysec-cli-simple/util/simplejson"
+	"murphysec-cli-simple/util/spin_util"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,8 +23,8 @@ type scanResult struct {
 }
 
 func scanDir(dir string) (*scanResult, error) {
-	util.StartSpinner("", "Scanning...")
-	defer util.StopSpinner()
+	spin_util.StartSpinner("", "Scanning...")
+	defer spin_util.StopSpinner()
 	// collect information
 	gradleCmd := getGradleCmd(dir)
 	gradleFile := detectGradleFile(dir)
@@ -96,7 +97,6 @@ func parseGradleScanCmdResult(cmdResult string) (*simplejson.JSON, error) {
 		return nil, e
 	} else {
 		output.Debug("scan result parsed")
-		output.Debug(j.MarshalString())
 		return j, nil
 	}
 }

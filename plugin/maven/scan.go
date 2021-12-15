@@ -7,6 +7,7 @@ import (
 	"murphysec-cli-simple/util"
 	"murphysec-cli-simple/util/output"
 	"murphysec-cli-simple/util/simplejson"
+	"murphysec-cli-simple/util/spin_util"
 	"path/filepath"
 )
 
@@ -48,8 +49,8 @@ func doScan(dir string) (*plugin_base.PackageInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	util.StartSpinner("", "Scanning...")
-	defer util.StopSpinner()
+	spin_util.StartSpinner("", "Scanning...")
+	defer spin_util.StopSpinner()
 	pom := filepath.Join(dir, "pom.xml")
 	if !util.IsPathExist(pom) || util.IsDir(pom) {
 		return nil, fmt.Errorf("Can't find POM file: %s\n", dir)

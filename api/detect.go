@@ -97,13 +97,15 @@ type ScanResultIssueLevelCount struct {
 }
 
 func Report(body *ScanRequestBody) (*ScanResult, error) {
+	if defaultToken == "" {
+		return nil, errors.New("API token not set")
+	}
 	url := serverAddress() + "/v1/cli/report"
 	client := http.Client{Timeout: 10 * time.Second}
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(must.Byte(json.Marshal(body))))
-	output.Debug(string(must.Byte(json.Marshal(body))))
 	must.Must(err)
 	request.Header.Add("Authorization", fmt.Sprintf("token %s", defaultToken))
-	output.Debug("Request server API...")
+	output.Debug(fmt.Sprintf("Request: %s", request.RequestURI))
 	do, err := client.Do(request)
 	output.Debug(fmt.Sprintf("Response: [%d]%s", do.StatusCode, do.Status))
 	if err != nil {
@@ -115,12 +117,11 @@ func Report(body *ScanRequestBody) (*ScanResult, error) {
 		return nil, err
 	}
 	j, err := simplejson.NewFromReader(do.Body)
-	output.Debug(j.MarshalString())
 	if do.StatusCode != 200 {
 		return nil, fmt.Errorf("API request failed, statusCode: %d", do.StatusCode)
 	}
 	if ec := j.Get("code").Int(); ec != 0 {
-		return nil, fmt.Errorf("API request failed, error code: %d", ec)
+		return nil, fmt.Errorf("API request failed: %d - %s", ec, j.Get("info").String())
 	}
 	var r ScanResult
 	if e := json.Unmarshal(must.Byte(json.Marshal(j.Get("data"))), &r); e != nil {

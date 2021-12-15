@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -10,9 +9,9 @@ import (
 	"murphysec-cli-simple/plugin"
 	"murphysec-cli-simple/plugin/plugin_base"
 	"murphysec-cli-simple/scanner"
-	"murphysec-cli-simple/util"
 	"murphysec-cli-simple/util/must"
 	"murphysec-cli-simple/util/output"
+	"murphysec-cli-simple/util/spin_util"
 	"murphysec-cli-simple/version"
 	"os"
 	"path/filepath"
@@ -78,8 +77,8 @@ func scanByPlugin(p plugin_base.Plugin, dir string) error {
 	scanEndTime := time.Now()
 	// do report
 	report, err := func() (*api.ScanResult, error) {
-		util.StartSpinner("", "Waiting server response...")
-		defer util.StopSpinner()
+		spin_util.StartSpinner("", "Waiting server response...")
+		defer spin_util.StopSpinner()
 		return api.Report(&api.ScanRequestBody{
 			CliVersion:         version.Version(),
 			TaskStatus:         1,
@@ -111,7 +110,6 @@ func scanByPlugin(p plugin_base.Plugin, dir string) error {
 			},
 		})
 	}()
-	output.Debug(string(must.Byte(json.Marshal(report))))
 	if err != nil {
 		return err
 	}

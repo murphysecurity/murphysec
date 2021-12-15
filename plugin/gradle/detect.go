@@ -29,7 +29,6 @@ func detectGradleVersion(path string) (*gradleVersion, error) {
 		return nil, e
 	}
 	output.Debug("gradle version output:")
-	output.Debug(string(rs))
 	v := parseGradleVersionOutput(string(rs))
 	return &v, nil
 }
