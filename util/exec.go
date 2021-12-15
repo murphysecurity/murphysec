@@ -1,7 +1,9 @@
 package util
 
 import (
+	"fmt"
 	"io/ioutil"
+	"murphysec-cli-simple/util/output"
 	"os/exec"
 	"sync"
 )
@@ -54,6 +56,12 @@ type streamR struct {
 }
 
 func (t *PreparedCmd) Abort() {
+	p := t.cmd.Process
+	if p != nil {
+		output.Debug(fmt.Sprintf("Abort command[pid=%d]: %s", p.Pid, t.cmd.String()))
+	} else {
+		output.Debug(fmt.Sprintf("Abort command: %s", t.cmd.String()))
+	}
 	close(t.abortChan)
 }
 
@@ -72,29 +80,42 @@ func (t *PreparedCmd) Execute() error {
 		all, err := ioutil.ReadAll(stdo)
 		t.stdout.ch <- streamR{t: string(all), e: err}
 		close(t.stdout.ch)
+		output.Debug(fmt.Sprintf("Process %d stdout read", t.pid))
 	}()
 
 	go func() {
 		all, err := ioutil.ReadAll(stde)
 		t.stderr.ch <- streamR{t: string(all), e: err}
 		close(t.stderr.ch)
+		output.Debug(fmt.Sprintf("Process %d stderr read", t.pid))
 	}()
 	if e := t.cmd.Start(); e != nil {
 		return e
 	}
 	t.pid = t.cmd.Process.Pid
-
+	output.Debug(fmt.Sprintf("Cmd %s started, pid: %d", t.cmd.String(), t.pid))
 	go func() {
 		select {
 		case <-t.abortChan:
 			p := t.cmd.Process
 			if p != nil {
-				_ = p.Kill()
+				output.Debug(fmt.Sprintf("Kill process: %d", p.Pid))
+				if e := p.Kill(); e == nil {
+					output.Debug("Kill succeed")
+				} else {
+					output.Warn(fmt.Sprintf("Kill process failed: %s", e.Error()))
+				}
 			}
 		case <-finishChan:
+			output.Debug(fmt.Sprintf("Process %d finished", t.pid))
 		}
 	}()
 	err := t.cmd.Wait()
+	if err == nil {
+		output.Debug(fmt.Sprintf("Process %d wait finished with no err", t.pid))
+	} else {
+		output.Debug(fmt.Sprintf("Process %d wait finished with err: %s", t.pid, err.Error()))
+	}
 	if err != nil {
 		return err
 	}
