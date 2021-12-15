@@ -25,8 +25,19 @@ var scanDir string
 
 func scanCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use:              "scan",
-		Run:              scanHandler,
+		Use: "scan",
+		Run: func(cmd *cobra.Command, args []string) {
+			for _, it := range plugin.Plugins {
+				output.Info(fmt.Sprintf("Try match project by: %s", it.Info().Name))
+				if it.MatchPath(scanDir) {
+					output.Info(fmt.Sprintf("Match project succeed: %s", it.Info().Name))
+					if e := scanByPlugin(it, scanDir); e != nil {
+						output.Error(e.Error())
+						os.Exit(-1)
+					}
+				}
+			}
+		},
 		TraverseChildren: true,
 	}
 	c.PersistentFlags().StringVarP(&scanDir, "dir", "d", ".", "project root dir")
