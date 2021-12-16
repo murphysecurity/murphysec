@@ -101,7 +101,7 @@ func Report(body *ScanRequestBody) (*ScanResult, error) {
 		return nil, errors.New("API token not set")
 	}
 	url := serverAddress() + "/v1/cli/report"
-	client := http.Client{Timeout: 10 * time.Second}
+	client := http.Client{Timeout: 30 * time.Second}
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(must.Byte(json.Marshal(body))))
 	must.Must(err)
 	request.Header.Add("Authorization", fmt.Sprintf("token %s", defaultToken))
