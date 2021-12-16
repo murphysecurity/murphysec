@@ -7,7 +7,6 @@ import (
 	"murphysec-cli-simple/util/must"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -75,7 +74,6 @@ func wrapStr(input string) string {
 
 const logFileName string = "20060102-150405"
 
-var logFileOnce = sync.Once{}
 var logFile = func() func() *os.File {
 	must.Must(os.MkdirAll(must.String(homedir.Expand("~/.murphysec/logs")), 755))
 	path := must.String(homedir.Expand(fmt.Sprintf("~/.murphysec/logs/%s.log", time.Now().Format(logFileName))))
