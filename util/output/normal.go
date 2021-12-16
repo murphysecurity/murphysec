@@ -45,6 +45,9 @@ func Debug(text string) {
 func Info(text string) {
 	text = wrapStr(text)
 	writeToFile(fmt.Sprintf("[INFO] %s\n", text))
+	if !Verbose {
+		return
+	}
 	if Colorful {
 		must.Int(color.New(color.Bold, color.FgCyan).Printf("[INFO] %s\n", text))
 	} else {
