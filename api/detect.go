@@ -107,10 +107,11 @@ func Report(body *ScanRequestBody) (*ScanResult, error) {
 	request.Header.Add("Authorization", fmt.Sprintf("token %s", defaultToken))
 	output.Debug(fmt.Sprintf("Request: %s", request.RequestURI))
 	do, err := client.Do(request)
-	output.Debug(fmt.Sprintf("Response: [%d]%s", do.StatusCode, do.Status))
 	if err != nil {
-		output.Debug(fmt.Sprintf("err: %v", err.Error()))
+		output.Error(fmt.Sprintf("err: %v", err.Error()))
+		return nil, err
 	}
+	output.Debug(fmt.Sprintf("Response: [%d]%s", do.StatusCode, do.Status))
 	//goland:noinspection GoUnhandledErrorResult
 	defer do.Body.Close()
 	if err != nil {
