@@ -9,7 +9,6 @@ import (
 
 func resolve(root *PomFile) (*ResolvedDependency, error) {
 	resolveInheritance(root)
-	fmt.Println("========")
 	if e := detectInheritanceCircular(root, map[*PomFile]bool{}); e != nil {
 		return nil, e
 	}
