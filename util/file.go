@@ -21,3 +21,8 @@ func IsDir(path string) bool {
 	}
 	return s.IsDir()
 }
+
+func IsFile(path string) bool {
+	s, err := os.Stat(path)
+	return err == nil && !s.IsDir()
+}
