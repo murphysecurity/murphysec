@@ -77,6 +77,7 @@ func scanPom(dir string, scannedDirs map[string]bool) (*PomFile, error) {
 		return nil, errors.New("Circular module reference detected")
 	}
 	scannedDirs[dir] = true
+	defer delete(scannedDirs, dir)
 	pomPath := filepath.Join(dir, "pom.xml")
 	pom, err := parsePom(pomPath)
 	if err != nil {
