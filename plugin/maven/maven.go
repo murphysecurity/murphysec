@@ -28,7 +28,7 @@ func (p *Plugin) MatchPath(dir string) bool {
 func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
 	rs, e := doScan(dir)
 	if e == nil {
-		return nil, e
+		return rs, nil
 	}
 	output.Warn("Maven execution failed, use another analyzer")
 	analyze, err := pom_scanner.Analyze(dir)
