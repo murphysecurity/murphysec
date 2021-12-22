@@ -1,3 +1,5 @@
+//go:build !embedding
+
 package spin_util
 
 import (
