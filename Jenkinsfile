@@ -19,6 +19,7 @@ pipeline {
     }
     stage('Go build') {
       steps {
+        sh 'go env -w GOPROXY=https://goproxy.cn,direct'
         sh 'GOOS=windows GOARCH=amd64 go build .'
         sh 'ls'
       }
