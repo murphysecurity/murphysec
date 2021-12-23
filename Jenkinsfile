@@ -7,6 +7,12 @@ pipeline {
 
   }
   stages {
+    stage("Environment"){
+      steps{
+        sh 'pwd'
+        sh 'set'
+      }
+    }
     stage('Checkout') {
       steps {
         checkout([$class: 'GitSCM',
