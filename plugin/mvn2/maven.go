@@ -1,11 +1,13 @@
 package mvn2
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/plugin/mvn2/pom_analyzer"
 	"murphysec-cli-simple/plugin/plugin_base"
 	"murphysec-cli-simple/util"
 	"murphysec-cli-simple/util/must"
+	"murphysec-cli-simple/util/output"
 	"murphysec-cli-simple/util/simplejson"
 	"path/filepath"
 )
@@ -113,7 +115,9 @@ func _dependencyInfo(deps []*pom_analyzer.Dependency, blackList map[string]bool)
 
 func (p *Plugin) MatchPath(dir string) bool {
 	f := filepath.Join(must.String(filepath.Abs(dir)), "pom.xml")
-	return util.IsPathExist(f) && !util.IsDir(f)
+	output.Debug(f)
+	output.Debug(fmt.Sprintf("access: %v", util.IsFile(f)))
+	return util.IsFile(f)
 }
 func (_ *Plugin) Info() *plugin_base.PluginInfo {
 	return &plugin_base.PluginInfo{Name: "mvn2", ShortDescription: "for maven package"}
