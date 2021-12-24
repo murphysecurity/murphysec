@@ -38,17 +38,19 @@ func doScan(dir string) (map[string]*pom_analyzer.PomFile, error) {
 
 type PomInfo struct {
 	RelativePath string           `json:"relative_path"`
-	GroupId      string           `json:"group_id"`
-	ArtifactId   string           `json:"artifact_id"`
+	GroupId      string           `json:"-"`
+	ArtifactId   string           `json:"-"`
 	Version      string           `json:"version"`
 	Dependencies []DependencyInfo `json:"dependencies"`
+	Name         string           `json:"name"`
 }
 
 type DependencyInfo struct {
-	GroupId      string           `json:"group_id"`
-	ArtifactId   string           `json:"artifact_id"`
+	GroupId      string           `json:"-"`
+	ArtifactId   string           `json:"-"`
 	Version      string           `json:"version"`
 	Dependencies []DependencyInfo `json:"dependencies"`
+	Name         string           `json:"name"`
 }
 
 func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
@@ -72,6 +74,7 @@ func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
 			GroupId:      pom.GroupId,
 			ArtifactId:   pom.ArtifactId,
 			Version:      pom.Version,
+			Name:         pom.GroupId + ":" + pom.ArtifactId,
 			Dependencies: _dependencyInfo(pom.Dependencies, idBlackList),
 		}
 		rs = append(rs, p)
@@ -98,6 +101,7 @@ func _dependencyInfo(deps []*pom_analyzer.Dependency, blackList map[string]bool)
 			ArtifactId:   it.ArtifactId,
 			Version:      it.Version,
 			Dependencies: []DependencyInfo{},
+			Name:         it.GroupId + ":" + it.ArtifactId,
 		}
 		if !blackList[it.Id()] {
 			d.Dependencies = _dependencyInfo(it.Dependencies, blackList)
