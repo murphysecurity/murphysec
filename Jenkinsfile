@@ -34,7 +34,8 @@ pipeline {
 
     stage("Github release"){
       when {
-        expression { env.TAG_NAME ==~ /v.+/ }
+//         expression { env.TAG_NAME ==~ /v.+/ }
+        tag "v*"
       }
       environment{
         GIT_COMMITTER_NAME='CI.working'
