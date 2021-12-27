@@ -22,6 +22,7 @@ func scanCmd() *cobra.Command {
 						output.Error(e.Error())
 						os.Exit(-1)
 					}
+					return
 				}
 			}
 		},
