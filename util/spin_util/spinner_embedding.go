@@ -1,4 +1,4 @@
-//go:build embedding
+//go:build noprint
 
 package spin_util
 
