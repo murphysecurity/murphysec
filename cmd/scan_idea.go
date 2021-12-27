@@ -1,8 +1,9 @@
-//go:build !embedding && !idea
+//go:build idea
 
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
@@ -71,9 +72,17 @@ func scanByPlugin(p plugin_base.Plugin, dir string) error {
 			},
 		})
 	}()
+	// idea plugin output
 	if err != nil {
-		return err
+		fmt.Println(string(must.Byte(json.Marshal(pluginOutput{ErrCode: 1, ErrMsg: err.Error()}))))
+	} else {
+		fmt.Println(string(must.Byte(json.Marshal(pluginOutput{ErrCode: 0, ErrMsg: "", ScanResult: report}))))
 	}
-	scanner.PrintDetectReport(report)
 	return nil
+}
+
+type pluginOutput struct {
+	*api.ScanResult
+	ErrCode int    `json:"err_code"`
+	ErrMsg  string `json:"err_msg"`
 }
