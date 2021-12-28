@@ -25,16 +25,15 @@ jobs:
       run: go test -v ./...
 
     - name: Build for windows
-      run: |
-        GOARCH=amd64 GOOS=windows go build -o murphysec-windows-amd64.exe -v .
+      run: GOARCH=amd64 GOOS=windows go build -o murphysec-windows-amd64.exe -v .
       
     - name: Build for linux
-      run: |
-        GOARCH=amd64 GOOS=linux go build -o murphysec-linux-amd64 -v .
+      run: GOARCH=amd64 GOOS=linux go build -o murphysec-linux-amd64 -v .
 
-    - name: Build for macos
-      run: |
-        GOARCH=amd64 GOOS=darwin go build -o murphysec-darwin-amd64 -v .
-        GOARCH=arm64 GOOS=darwin go build -o murphysec-darwin-arm64 -v .
+    - name: Build for macos amd64
+      run: GOARCH=amd64 GOOS=darwin go build -o murphysec-darwin-amd64 -v .
+        
+    - name: Build for macos arm64
+      run: GOARCH=arm64 GOOS=darwin go build -o murphysec-darwin-arm64 -v .
 
 
