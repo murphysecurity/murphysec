@@ -41,7 +41,7 @@ scoop install murphysec
 
 执行`murphysec auth login`完成身份验证
 
-`小范围内测中，点此获取访问令牌`[申请](https://murphysec.com/dasdsa)
+`小范围内测中，点此获取访问令牌`[申请](https://murphysec.com/register)
 
 ## 用法
 
