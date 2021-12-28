@@ -23,7 +23,7 @@ func rootCmd() *cobra.Command {
 
 	c := &cobra.Command{
 		Use:   "murphysec",
-		Short: "murphysec: An open source component security detection tool.",
+		Short: "murphysec: A software supply chain security inspection tool.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			for _, it := range plugin.Plugins {
 				output.Debug(fmt.Sprintf("plugin: %v", it.Info().Name))

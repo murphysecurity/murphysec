@@ -45,6 +45,29 @@ scoop install murphysec
 
 ## 用法
 
+```
+murphysec: An open source component security detection tool.
+
+Usage:
+  murphysec [flags]
+  murphysec [command]
+
+Available Commands:
+  auth        manage the API token
+  completion  generate the autocompletion script for the specified shell
+  help        Help about any command
+  scan
+
+Flags:
+      --color          colorize the output (default true)
+  -h, --help           help for murphysec
+      --token string   specify the API token
+  -v, --verbose        show verbose log
+      --version        output version information and exit
+
+Use "murphysec [command] --help" for more information about a command.
+```
+
 ## 开源协议
 
 [Apache 2.0](LICENSE)
