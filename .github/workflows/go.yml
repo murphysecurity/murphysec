@@ -47,5 +47,28 @@ jobs:
         name: murphysec-${{ matrix.goos }}-${{ matrix.goarch }}.zip
         path: out/*
         
-    
+  release:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v2
+      - name: Display structure
+        run: |
+          echo Current Path
+          pwd
+          echo Show Files
+          find
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          files: |
+            ./murphysec-darwin-amd64.zip/murphysec-darwin-amd64
+            ./murphysec-linux-amd64.zip/murphysec-linux-amd64
+            ./murphysec-windows-amd64.zip/murphysec-windows-amd64.exe
+            ./murphysec-darwin-arm64.zip/murphysec-darwin-arm64
+
+      
+ 
       
