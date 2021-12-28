@@ -44,7 +44,7 @@ func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
 		PackageFilePath: filepath.Join(dir, "pom.xml"),
 		Language:        "java",
 		Dependencies:    simplejson.NewFrom(analyze),
-		Name:            analyze.Name,
+		Name:            analyze["name"].(string),
 		RuntimeInfo:     simplejson.New(),
 	}
 	return rs, nil
