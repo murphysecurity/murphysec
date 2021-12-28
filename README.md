@@ -18,6 +18,7 @@
 使用Homebrew安装
 
 ```shell
+// TODO
 ```
 
 ### Windows
@@ -27,12 +28,13 @@
 ```
 scoop bucket add murphysec https://github.com/murphysec/scoop-bucket
 scoop update
-scoop install murphysec-cli
+scoop install murphysec
 ```
 
 ### Linux
 
 ```shell
+// TODO
 ```
 
 ## 配置
