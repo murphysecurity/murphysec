@@ -5,7 +5,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 )
 
-const version = "1.1.6"
+const version = "1.1.7"
 
 // Version returns version string
 func Version() string {
