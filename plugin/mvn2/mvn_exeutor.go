@@ -54,7 +54,6 @@ func mavenVersion() (*RuntimeMavenVersion, error) {
 		}
 	}()
 	if e := c.Execute(); e != nil {
-		fmt.Println(e.Error())
 		if s, e := c.GetStderr(); e != nil {
 			output.Warn(fmt.Sprintf("Get error out failed: %s", e.Error()))
 		} else {
