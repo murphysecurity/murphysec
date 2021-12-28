@@ -6,3 +6,6 @@
 .DS_Store?
 *.exe
 murphysec-cli-simple
+murphysec-linux
+murphysec-macos
+murphysec-windows.exe
