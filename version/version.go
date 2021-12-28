@@ -5,7 +5,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 )
 
-const version = "1.1.7"
+const version = "1.1.8"
 
 // Version returns version string
 func Version() string {
@@ -15,6 +15,6 @@ func Version() string {
 // PrintVersionInfo print version info to stdout
 func PrintVersionInfo() {
 	fmt.Printf(heredoc.Doc(`
-	murphysec-cli %s
+	murphysec %s
 	`), version)
 }

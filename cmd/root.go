@@ -22,8 +22,8 @@ func RootCmd() *cobra.Command {
 func rootCmd() *cobra.Command {
 
 	c := &cobra.Command{
-		Use:   "murphysec-cli",
-		Short: "murphysec-cli : An open source component security detection tool.",
+		Use:   "murphysec",
+		Short: "murphysec: An open source component security detection tool.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			for _, it := range plugin.Plugins {
 				output.Debug(fmt.Sprintf("plugin: %v", it.Info().Name))
