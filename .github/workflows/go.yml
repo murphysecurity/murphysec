@@ -10,6 +10,16 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [windows, linux, darwin]
+        goarch: [amd64]
+        include:
+          - goos: darwin
+            goarch: arm64
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
     steps:
     - uses: actions/checkout@v2
 
@@ -24,16 +34,18 @@ jobs:
     - name: Test
       run: go test -v ./...
 
-    - name: Build for windows
-      run: GOARCH=amd64 GOOS=windows go build -o murphysec-windows-amd64.exe -v .
-      
-    - name: Build for linux
-      run: GOARCH=amd64 GOOS=linux go build -o murphysec-linux-amd64 -v .
+    - name: Build
+      run: go build -v -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
 
-    - name: Build for macos amd64
-      run: GOARCH=amd64 GOOS=darwin go build -o murphysec-darwin-amd64 -v .
+    - name: Rename for Windows
+      if: matrix.goos == 'windows'
+      run: mv out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}.exe
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: murphysec-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+        path: out/*
         
-    - name: Build for macos arm64
-      run: GOARCH=arm64 GOOS=darwin go build -o murphysec-darwin-arm64 -v .
-
-
+    
+      
