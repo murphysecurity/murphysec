@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// serverAddress returns API base URL
+// serverAddress returns API logger URL
 func serverAddress() string {
 	envServer := strings.Trim(strings.TrimSpace(os.Getenv("MPS_CLI_SERVER")), "/")
 	if len(envServer) == 0 {

@@ -2,7 +2,9 @@ package version
 
 import (
 	"fmt"
-	"github.com/MakeNowJust/heredoc/v2"
+	"murphysec-cli-simple/util/must"
+	"os"
+	"path/filepath"
 )
 
 const version = "1.1.3"
@@ -14,7 +16,5 @@ func Version() string {
 
 // PrintVersionInfo print version info to stdout
 func PrintVersionInfo() {
-	fmt.Printf(heredoc.Doc(`
-	murphysec-cli %s
-	`), version)
+	fmt.Printf("%s %s\n", filepath.Base(must.String(filepath.EvalSymlinks(must.String(os.Executable())))), version)
 }

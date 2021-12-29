@@ -2,9 +2,10 @@ package main
 
 import (
 	"murphysec-cli-simple/cmd"
+	"murphysec-cli-simple/logger"
 )
 
 func main() {
-	r := cmd.RootCmd()
-	_ = r.Execute()
+	cmd.Execute()
+	logger.CloseAndWait()
 }

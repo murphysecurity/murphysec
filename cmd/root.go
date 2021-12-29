@@ -3,53 +3,65 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/api"
-	"murphysec-cli-simple/conf"
-	"murphysec-cli-simple/plugin"
-	"murphysec-cli-simple/util/output"
+	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/util/must"
 	"murphysec-cli-simple/version"
 	"os"
 )
 
-var (
-	showVersion bool
-)
-
-func RootCmd() *cobra.Command {
-	return rootCmd()
-}
+var versionFlag bool
+var managedMode bool
+var logRedirectPath string
+var noLogFile bool
+var taskInfo string
 
 func rootCmd() *cobra.Command {
-
+	argsMap := map[string]bool{}
+	for _, it := range os.Args {
+		argsMap[it] = true
+	}
 	c := &cobra.Command{
-		Use:   "murphysec-cli",
-		Short: "murphysec-cli : An open source component security detection tool.",
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			for _, it := range plugin.Plugins {
-				output.Debug(fmt.Sprintf("plugin: %v", it.Info().Name))
-			}
-			if showVersion {
-				version.PrintVersionInfo()
-				os.Exit(0)
-			}
-			if conf.APIToken() != "" {
-				api.SetDefaultToken(conf.APIToken())
-				output.Debug("Default API token set.")
-			} else {
-				output.Debug("API token not set.")
-			}
-		},
-		TraverseChildren: true,
-		Run: func(cmd *cobra.Command, args []string) {
-			_ = cmd.Help()
+		Use:               "murphysec",
+		PersistentPreRunE: preRun,
+		TraverseChildren:  true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return nil
 		},
 	}
-
-	c.PersistentFlags().BoolVarP(&showVersion, "version", "", false, "output version information and exit")
-	c.PersistentFlags().BoolVarP(&output.Colorful, "color", "", true, "colorize the output")
-	c.PersistentFlags().BoolVarP(&output.Verbose, "verbose", "v", false, "show verbose log")
-	c.PersistentFlags().StringVarP(&conf.APITokenCliOverride, "token", "", "", "specify the API token")
+	c.PersistentFlags().BoolVar(&versionFlag, "version", false, "show version and exit")
+	c.PersistentFlags().BoolVar(&noLogFile, "no-log-file", false, "do not write log file")
+	c.PersistentFlags().StringVar(&logRedirectPath, "write-log-to", "", "specify log file path")
+	// workaround avoid err
+	if argsMap["--managed-mode"] {
+		c.PersistentFlags().BoolVar(&managedMode, "managed-mode", false, "")
+	}
+	if argsMap["--task-info"] {
+		c.PersistentFlags().StringVar(&taskInfo, "task-info", "", "")
+	}
+	c.AddCommand(&cobra.Command{
+		Use: "test",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Hello world!")
+		},
+	})
 	c.AddCommand(authCmd())
-	c.AddCommand(scanCmd())
 	return c
+}
+
+func preRun(cmd *cobra.Command, args []string) error {
+	if versionFlag {
+		version.PrintVersionInfo()
+		return nil
+	}
+	if managedMode {
+		logger.InitManagedMode()
+	}
+	if !noLogFile {
+		must.Must(logger.InitFileLog(logRedirectPath))
+	}
+	return nil
+}
+
+func Execute() {
+	must.Must(rootCmd().Execute())
 }

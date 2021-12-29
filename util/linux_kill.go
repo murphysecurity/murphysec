@@ -4,8 +4,7 @@
 package util
 
 import (
-	"fmt"
-	"murphysec-cli-simple/util/output"
+	"murphysec-cli-simple/logger"
 	"os/exec"
 	"strconv"
 )
@@ -15,7 +14,7 @@ func KillAllChild(ppid int) {
 		return
 	}
 	c := exec.Command("pkill", "-15", "-p", strconv.Itoa(ppid))
-	output.Debug(fmt.Sprintf("execute: %s", c.String()))
+	logger.Debug.Printf("execute: %s", c.String())
 	_, _ = c.Output()
-	output.Debug("Done")
+	logger.Debug.Printf("Done")
 }

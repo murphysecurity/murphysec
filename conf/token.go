@@ -1,11 +1,10 @@
 package conf
 
 import (
-	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"murphysec-cli-simple/util/output"
+	"murphysec-cli-simple/logger"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,13 +27,13 @@ var tokenReader = func() func() string {
 		o.Do(func() {
 			dir, e := homedir.Expand(tokenPath)
 			if e != nil {
-				output.Debug("cannot get home path, ignore")
+				logger.Debug.Printf("Cannot get home path, ignore")
 				return
 			}
-			output.Debug(fmt.Sprintf("read token from: %s", dir))
+			logger.Debug.Printf("Read token from: %s", dir)
 			data, e := ioutil.ReadFile(dir)
 			if e != nil {
-				output.Debug("read fail, ignore")
+				logger.Debug.Printf("Read fail, ignore")
 				return
 			}
 			t = strings.TrimSpace(string(data))
@@ -46,14 +45,14 @@ var tokenReader = func() func() string {
 // APIToken returns API token
 func APIToken() string {
 	if len(strings.TrimSpace(APITokenCliOverride)) != 0 {
-		output.Debug("use API token from cli argument")
+		logger.Debug.Printf("Use API token from cli argument")
 		return APITokenCliOverride
 	}
 	if len(strings.TrimSpace(_APITokenEnvOverride)) != 0 {
-		output.Debug("use API token from env")
+		logger.Debug.Printf("Use API token from env")
 		return _APITokenEnvOverride
 	}
-	output.Debug("use API token from config file")
+	logger.Debug.Printf("Use API token from config file")
 	return tokenReader()
 }
 

@@ -2,70 +2,80 @@ package scanner
 
 import (
 	"fmt"
-	"io/ioutil"
-	"murphysec-cli-simple/util"
-	"net/url"
-	"path/filepath"
-	"regexp"
-	"strings"
+	"github.com/go-git/go-git/v5"
+	"github.com/pkg/errors"
+	giturls "github.com/whilp/git-urls"
+	"murphysec-cli-simple/logger"
 )
 
-// file: todo: rewrite
+type GitInfo struct {
+	RemoteName     string
+	RemoteURL      string
+	HeadCommitHash string
+	HeadRefName    string
+}
 
-func getProjectNameFromGitConfigFile(gitConfigPath string) (projectName string, gitRemoteUrl string, err error) {
-	file, err := ioutil.ReadFile(gitConfigPath)
-	if err != nil {
-		return "", "", err
+func getGitInfo(dir string) (*GitInfo, error) {
+	logger.Debug.Println("Try open git:", dir)
+	repo, e := git.PlainOpen(dir)
+	if e == git.ErrRepositoryNotExists {
+		return nil, nil
 	}
-	configFileContent := string(file)
-	gitRemoteRegex := regexp.MustCompile(`(?m)url = ([\S]*)`)
-	gitRemoteInfo := gitRemoteRegex.FindString(configFileContent)
-	gitRemoteUrl = strings.Split(gitRemoteInfo, " ")[2]
-	gitRemoteUrl = removeUserFromGitRemoteUrl(gitRemoteUrl)
-	if strings.HasSuffix(gitRemoteUrl, ".git") {
-		parts := strings.Split(gitRemoteUrl, "/")
-		projectInfo := parts[len(parts)-1]
-		projectName = strings.Replace(projectInfo, ".git", "", -1)
-		return
+	if e == git.ErrRepositoryIncomplete {
+		return nil, errors.New("Git repo incomplete, skip")
+	}
+	if e != nil {
+		return nil, errors.Wrap(e, "Unknown git err")
+	}
+	// get remote
+	remotes, e := repo.Remotes()
+	if e != nil {
+		return nil, errors.Wrap(e, "Enumeration git remotes failed")
+	}
+	var selectedRemote *git.Remote
+	logger.Debug.Println(fmt.Sprintf("Found %d remotes", len(remotes)))
+	if len(remotes) == 0 {
+		return nil, errors.New("No git remote found")
+	}
+	for _, it := range remotes {
+		if it.Config().Name == "origin" {
+			selectedRemote = it
+			logger.Debug.Println(fmt.Sprintf("Remote: origin found"))
+			break
+		}
+	}
+	if selectedRemote == nil {
+		selectedRemote = remotes[0]
+		logger.Debug.Println("No origin remote, use first one")
+	}
+	remoteUrls := selectedRemote.Config().URLs
+	logger.Debug.Println(fmt.Sprintf("Selected remote: %s", selectedRemote.String()))
+	logger.Debug.Println(fmt.Sprintf("Total %d urls", len(remoteUrls)))
+	gitInfo := &GitInfo{
+		RemoteName:     selectedRemote.Config().Name,
+		RemoteURL:      "",
+		HeadCommitHash: "",
+		HeadRefName:    "",
+	}
+	for _, it := range remoteUrls {
+		u, e := giturls.Parse(it)
+		if e != nil {
+			logger.Debug.Println(fmt.Sprintf("Parse git url failed: %s, url: %s", e.Error(), it))
+			continue
+		}
+		u.User = nil
+		gitInfo.RemoteURL = u.String()
+	}
+	head, e := repo.Head()
+	if e != nil {
+		logger.Warn.Println("Get HEAD failed.", e.Error())
 	} else {
-		err = fmt.Errorf("Failed to get git remote url ")
-		return "", "", err
-	}
-
-}
-
-// 针对http开头的git地址，去掉里面的用户名和密码[脱敏]
-func removeUserFromGitRemoteUrl(gitRemoteUrl string) string {
-	parseUrl, err := url.Parse(gitRemoteUrl)
-	if err != nil {
-		return gitRemoteUrl
-	}
-	if strings.HasPrefix("http", parseUrl.Scheme) {
-		parseUrl.User = nil
-		return parseUrl.String()
-	}
-	return gitRemoteUrl
-}
-
-// 通过git HEAD文件获取当前git分支信息
-func getGitBranch(targetAbsPath string) string {
-	gitHEADPath := filepath.Join(targetAbsPath, ".git", "HEAD")
-	if gitHEADFileExist := util.IsPathExist(gitHEADPath); gitHEADFileExist == true {
-		file, err := ioutil.ReadFile(gitHEADPath)
-		if err != nil {
-			return ""
-		}
-		gitHEADFileContent := string(file)
-		if strings.HasPrefix(gitHEADFileContent, "ref:") {
-			parts := strings.Split(gitHEADFileContent, "/")
-			branch := parts[len(parts)-1]
-			branch = strings.Replace(branch, "\n", "", -1)
-			return branch
+		if head != nil {
+			gitInfo.HeadCommitHash = head.Hash().String()
+			gitInfo.HeadRefName = head.Name().String()
+		} else {
+			logger.Warn.Println("HEAD is null")
 		}
 	}
-	return ""
-}
-func isGitProject(projectDir string) bool {
-	p := filepath.Join(projectDir, ".git", "config")
-	return util.IsPathExist(p) && !util.IsDir(p)
+	return gitInfo, nil
 }
