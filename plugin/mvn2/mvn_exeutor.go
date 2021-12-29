@@ -132,6 +132,8 @@ func parseMvnDepOutput(input string) []*pom_analyzer.Dependency {
 			}
 			// associate them
 			depsMap[leftId].Dependencies = append(depsMap[leftId].Dependencies, depsMap[rightId])
+		} else {
+			output.Debug(fmt.Sprintf("unrecongized line: %s", line))
 		}
 	}
 	return modules

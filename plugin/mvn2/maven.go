@@ -25,14 +25,16 @@ func doScan(dir string) (map[string]*pom_analyzer.PomFile, error) {
 		return nil, e
 	}
 	mvnOutput, e := executeScanCmd(filepath.Join(dir, "pom.xml"))
-	if e != nil {
+	output.Info(fmt.Sprintf("err: %e", e))
+	if e == nil {
+		output.Info("execute succeed")
 		deps := parseMvnDepOutput(mvnOutput)
-	// overwrite pom analyze dependencies by mvn cmd output
-	for _, it := range deps {
-		if p := pomMap[it.Id()]; p != nil {
-			p.Dependencies = it.Dependencies
+		// overwrite pom analyze dependencies by mvn cmd output
+		for _, it := range deps {
+			if p := pomMap[it.Id()]; p != nil {
+				p.Dependencies = it.Dependencies
+			}
 		}
-	}
 	}
 	return pomMap, nil
 }
