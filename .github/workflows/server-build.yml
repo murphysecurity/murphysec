@@ -1,4 +1,4 @@
-name: Server Build
+name: Server embedded
 
 on:
   push:
