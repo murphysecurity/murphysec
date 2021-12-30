@@ -27,5 +27,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: murphysec-cli-embedding.zip
+          name: murphysec-cli-embedding
           path: murphysec-cli-embedding

@@ -44,6 +44,6 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: murphysec-plugin-embedded-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          name: murphysec-plugin-embedded-${{ matrix.goos }}-${{ matrix.goarch }}
           path: out/*
 
