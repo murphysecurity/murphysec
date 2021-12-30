@@ -25,6 +25,8 @@ func scanCmd() *cobra.Command {
 					return
 				}
 			}
+			output.Error("Unable to inspect current directory, you can specify a directory by --dir <dir>")
+			os.Exit(-1)
 		},
 		TraverseChildren: true,
 	}

@@ -83,7 +83,7 @@ func setupToken(cmd *cobra.Command, args []string) {
 		}
 	}
 	fmt.Println(heredoc.Doc(`
-		Tip:  you can generate a Personal Access Token here https://www.murphysec.com/control/token/setting
+		Tip:  you can generate a Personal Access Token here https://www.murphysec.com/control/set
 	`))
 	rs := ""
 	err := survey.AskOne(&survey.Input{Message: "Paste an authentication token"}, &rs, survey.WithValidator(survey.Required))
