@@ -41,7 +41,7 @@ func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
 	rs = &plugin_base.PackageInfo{
 		PackageManager:  "maven",
 		PackageFile:     dir,
-		PackageFilePath: "pom.xml",
+		PackageFilePath: filepath.Join(dir, "pom.xml"),
 		Language:        "java",
 		Dependencies:    simplejson.NewFrom(analyze),
 		Name:            analyze["name"].(string),
