@@ -12,7 +12,8 @@ var scanDir string
 
 func scanCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use: "scan",
+		Short: "Scan open source vulnerabilities in project",
+		Use:   "scan",
 		Run: func(cmd *cobra.Command, args []string) {
 			for _, it := range plugin.Plugins {
 				output.Info(fmt.Sprintf("Try match project by: %s", it.Info().Name))
