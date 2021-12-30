@@ -35,7 +35,7 @@ jobs:
         run: go test -v ./...
 
       - name: Build
-        run: go build -v -o out/murphysec-plugin-embedded-${{ matrix.goos }}-${{ matrix.goarch }}
+        run: go build -tags idea,noprint -v -o out/murphysec-plugin-embedded-${{ matrix.goos }}-${{ matrix.goarch }}
 
       - name: Rename for Windows
         if: matrix.goos == 'windows'
