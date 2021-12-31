@@ -22,10 +22,10 @@ jobs:
         run: go install -v ./...
 
       - name: Build server version
-        run: GOOS=linux GOARCH=amd64 go build -o murphysec-cli-embedding -tags noprint,embedding .
+        run: GOOS=linux GOARCH=amd64 go build -o murphysec-cli-simple -tags noprint,embedding .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: murphysec-cli-embedding
-          path: murphysec-cli-embedding
+          path: murphysec-cli-simple
