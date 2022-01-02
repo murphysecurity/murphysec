@@ -26,7 +26,7 @@ func doScan(dir string) (map[string]*pom_analyzer.PomFile, error) {
 	}
 	mvnOutput, e := executeScanCmd(filepath.Join(dir, "pom.xml"))
 	if e != nil {
-		output.Info(fmt.Sprintf("mvn scan cmd failed, err: %e", e))
+		output.Error(fmt.Sprintf("mvn scan cmd failed, err: %s", e.Error()))
 	}
 	if e == nil {
 		output.Info("mvn execute succeed")
