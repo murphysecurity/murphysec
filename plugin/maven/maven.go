@@ -30,9 +30,6 @@ func (p *Plugin) DoScan(dir string) (*plugin_base.PackageInfo, error) {
 	if e == nil {
 		return rs, nil
 	}
-	if e == _CancelScan {
-		return nil, e
-	}
 	output.Warn("Maven execution failed, use another analyzer")
 	analyze, err := pom_scanner.Analyze(dir)
 	if err != nil {

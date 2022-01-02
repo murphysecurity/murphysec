@@ -10,14 +10,6 @@ import (
 
 func mavenVersion() (*RuntimeMavenVersion, error) {
 	c := util.ExecuteCmd("mvn", "--version")
-	killSig, canceller := util.WatchKill()
-	defer canceller()
-	go func() {
-		if <-killSig {
-			util.KillAllChild(c.Pid())
-			c.Abort()
-		}
-	}()
 	if e := c.Execute(); e != nil {
 		if s, e := c.GetStderr(); e != nil {
 			output.Warn(fmt.Sprintf("Get error out failed: %s", e.Error()))

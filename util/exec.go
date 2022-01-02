@@ -2,8 +2,11 @@ package util
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
+	"github.com/ztrue/shutdown"
 	"io/ioutil"
 	"murphysec-cli-simple/util/output"
+	"os"
 	"os/exec"
 	"sync"
 )
@@ -12,124 +15,107 @@ func ExecuteCmd(cmd string, arg ...string) *PreparedCmd {
 	return &PreparedCmd{
 		cmd:       exec.Command(cmd, arg...),
 		abortChan: make(chan struct{}),
-		stderr:    newStream(),
-		stdout:    newStream(),
 	}
 }
 
 type PreparedCmd struct {
-	abortChan chan struct{}
-	cmd       *exec.Cmd
-	stdout    *stream
-	stderr    *stream
-	pid       int
+	abortChan  chan struct{}
+	cmd        *exec.Cmd
+	pid        int
+	stdoutData []byte
+	stderrData []byte
+	stdoutErr  error
+	stderrErr  error
 }
 
-type stream struct {
-	text string
-	err  error
-	once sync.Once
-	ch   chan streamR
-}
-
-func newStream() *stream {
-	return &stream{
-		text: "",
-		err:  nil,
-		once: sync.Once{},
-		ch:   make(chan streamR),
-	}
-}
-
-func (s *stream) read() (string, error) {
-	s.once.Do(func() {
-		c := <-s.ch
-		s.text = c.t
-		s.err = c.e
-	})
-	return s.text, s.err
-}
-
-type streamR struct {
-	t string
-	e error
-}
-
-func (t *PreparedCmd) Abort() {
-	p := t.cmd.Process
+func (this *PreparedCmd) Abort() {
+	p := this.cmd.Process
 	if p != nil {
-		output.Debug(fmt.Sprintf("Abort command[pid=%d]: %s", p.Pid, t.cmd.String()))
+		output.Debug(fmt.Sprintf("Abort command[pid=%d]: %s", p.Pid, this.cmd.String()))
 	} else {
-		output.Debug(fmt.Sprintf("Abort command: %s", t.cmd.String()))
+		output.Debug(fmt.Sprintf("Abort command: %s", this.cmd.String()))
 	}
-	close(t.abortChan)
+	close(this.abortChan)
 }
 
-func (t *PreparedCmd) Execute() error {
-	finishChan := make(chan struct{})
-	stdo, e := t.cmd.StdoutPipe()
+func (this *PreparedCmd) Execute() error {
+	output.Debug(fmt.Sprintf("Execute cmd: %s", this.cmd.String()))
+	//get stdout & stderr
+	stdout, e := this.cmd.StdoutPipe()
 	if e != nil {
-		return e
+		return errors.Wrap(e, "Get stdout failed")
 	}
-	stde, e := t.cmd.StderrPipe()
+	stderr, e := this.cmd.StderrPipe()
 	if e != nil {
-		return e
+		return errors.Wrap(e, "Get stderr failed")
 	}
-
-	go func() {
-		all, err := ioutil.ReadAll(stdo)
-		t.stdout.ch <- streamR{t: string(all), e: err}
-		close(t.stdout.ch)
-		output.Debug(fmt.Sprintf("Process %d stdout read", t.pid))
-	}()
-
-	go func() {
-		all, err := ioutil.ReadAll(stde)
-		t.stderr.ch <- streamR{t: string(all), e: err}
-		close(t.stderr.ch)
-		output.Debug(fmt.Sprintf("Process %d stderr read", t.pid))
-	}()
-	if e := t.cmd.Start(); e != nil {
-		return e
+	// executing
+	if e := this.cmd.Start(); e != nil {
+		return errors.Wrap(e, "Execute command failed")
 	}
-	t.pid = t.cmd.Process.Pid
-	output.Debug(fmt.Sprintf("Cmd %s started, pid: %d", t.cmd.String(), t.pid))
-	go func() {
-		select {
-		case <-t.abortChan:
-			p := t.cmd.Process
-			if p != nil {
-				output.Debug(fmt.Sprintf("Kill process: %d", p.Pid))
-				if e := p.Kill(); e == nil {
-					output.Debug("Kill succeed")
-				} else {
-					output.Warn(fmt.Sprintf("Kill process failed: %s", e.Error()))
-				}
-			}
-		case <-finishChan:
-			output.Debug(fmt.Sprintf("Process %d finished", t.pid))
+	shutdownKey := shutdown.Add(func() {
+		pid := this.pid
+		process := this.cmd.Process
+		if pid == 0 || process == nil {
+			return
 		}
+		output.Debug(fmt.Sprintf("Sending interrupt signal, pid: %d", pid))
+		if e := this.cmd.Process.Signal(os.Interrupt); e != nil {
+			output.Debug(fmt.Sprintf("Sending interrupt signal failed, use kill. %s", e.Error()))
+			if e := process.Kill(); e != nil {
+				output.Debug(fmt.Sprintf("Kill failed. %s", e.Error()))
+			}
+			KillAllChild(pid)
+		}
+	})
+	defer shutdown.Remove(shutdownKey)
+	this.pid = this.cmd.Process.Pid
+	output.Debug(fmt.Sprintf("Command started, pid: %d", this.Pid()))
+	// collect output
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		this.stdoutData, this.stdoutErr = ioutil.ReadAll(stdout)
+		if this.stdoutErr != nil {
+			output.Debug(fmt.Sprintf("Pid: %d -> Stdout read, err: %s", this.Pid(), this.stdoutErr.Error()))
+		} else {
+			output.Debug(fmt.Sprintf("Pid: %d -> Stdout read with no errors", this.Pid()))
+		}
+		wg.Done()
 	}()
-	err := t.cmd.Wait()
-	if err == nil {
-		output.Debug(fmt.Sprintf("Process %d wait finished with no err", t.pid))
+	go func() {
+		this.stderrData, this.stderrErr = ioutil.ReadAll(stderr)
+		if this.stderrErr != nil {
+			output.Debug(fmt.Sprintf("Pid: %d -> Stderr read, err: %s", this.Pid(), this.stderrErr.Error()))
+		} else {
+			output.Debug(fmt.Sprintf("Pid: %d -> Stderr read with no errors", this.Pid()))
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+	if e := this.cmd.Wait(); e == nil {
+		output.Debug(fmt.Sprintf("Pid: %d -> Execution terminated with no errors.", this.Pid()))
 	} else {
-		output.Debug(fmt.Sprintf("Process %d wait finished with err: %s", t.pid, err.Error()))
-	}
-	if err != nil {
-		return err
+		output.Error(fmt.Sprintf("Pid: %d -> Execution terminated with err: %s", this.Pid(), e.Error()))
+		return e
 	}
 	return nil
 }
 
-func (t *PreparedCmd) GetStdout() (string, error) {
-	return t.stdout.read()
+func (this *PreparedCmd) GetStdout() (string, error) {
+	if this.stdoutErr != nil {
+		return "", this.stdoutErr
+	}
+	return string(this.stdoutData), nil
 }
 
-func (t *PreparedCmd) GetStderr() (string, error) {
-	return t.stderr.read()
+func (this *PreparedCmd) GetStderr() (string, error) {
+	if this.stderrErr != nil {
+		return "", this.stderrErr
+	}
+	return string(this.stderrData), nil
 }
 
-func (t *PreparedCmd) Pid() int {
-	return t.pid
+func (this *PreparedCmd) Pid() int {
+	return this.pid
 }

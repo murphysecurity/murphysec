@@ -11,22 +11,8 @@ import (
 	"path/filepath"
 )
 
-var _CancelScan = errors.New("CancelScan")
-
 func executeScanCmd(pomFile string) (string, error) {
 	mvnCmd := util.ExecuteCmd("mvn", "dependency:tree", "-DoutputType=dot", fmt.Sprintf("--file=%s", pomFile))
-	// handling abort signal
-	killSignal, canceller := util.WatchKill()
-	defer canceller()
-	isUserCancel := make(chan struct{}, 1)
-	go func() {
-		if <-killSignal {
-			isUserCancel <- struct{}{}
-			util.KillAllChild(mvnCmd.Pid())
-			mvnCmd.Abort()
-			output.Warn("Scanning abort")
-		}
-	}()
 	// print err if execute failed
 	if e := mvnCmd.Execute(); e != nil {
 		output.Error(fmt.Sprintf("mvn command execute failed, err: %s", e.Error()))
@@ -39,12 +25,7 @@ func executeScanCmd(pomFile string) (string, error) {
 			output.Info("mvn command output:")
 			output.Info(es)
 		}
-		select {
-		case <-isUserCancel:
-			return "", _CancelScan
-		default:
-			return "", errors.Wrap(e, "Scan project failed")
-		}
+		return "", errors.Wrap(e, "Scan project failed")
 	}
 	if t, e := mvnCmd.GetStdout(); e != nil {
 		return "", errors.Wrap(e, "Read mvn command stdout failed")

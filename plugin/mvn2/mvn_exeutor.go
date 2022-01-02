@@ -12,16 +12,6 @@ import (
 
 func executeScanCmd(pomFile string) (string, error) {
 	mvnCmd := util.ExecuteCmd("mvn", "dependency:tree", "-DoutputType=dot", fmt.Sprintf("--file=%s", pomFile))
-	// handling abort signal
-	killSignal, canceller := util.WatchKill()
-	defer canceller()
-	go func() {
-		if <-killSignal {
-			util.KillAllChild(mvnCmd.Pid())
-			mvnCmd.Abort()
-			output.Warn("Scanning abort")
-		}
-	}()
 	// print err if execute failed
 	if e := mvnCmd.Execute(); e != nil {
 		output.Error(fmt.Sprintf("mvn command execute failed, err: %s", e.Error()))
@@ -45,14 +35,6 @@ func executeScanCmd(pomFile string) (string, error) {
 
 func mavenVersion() (*RuntimeMavenVersion, error) {
 	c := util.ExecuteCmd("mvn", "--version")
-	killSig, canceller := util.WatchKill()
-	defer canceller()
-	go func() {
-		if <-killSig {
-			util.KillAllChild(c.Pid())
-			c.Abort()
-		}
-	}()
 	if e := c.Execute(); e != nil {
 		if s, e := c.GetStderr(); e != nil {
 			output.Warn(fmt.Sprintf("Get error out failed: %s", e.Error()))
