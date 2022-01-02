@@ -25,11 +25,12 @@ func wrapStr(input string) string {
 	return strings.Join(lines, "\n")
 }
 
-const logFileName string = "20060102-150405"
+const logFileName string = "20060102-150405.000"
 
 var logFile = func() func() *os.File {
 	must.Must(os.MkdirAll(must.String(homedir.Expand("~/.murphysec/logs")), 0755))
-	path := must.String(homedir.Expand(fmt.Sprintf("~/.murphysec/logs/%s.log", time.Now().Format(logFileName))))
+	//path := must.String(homedir.Expand(fmt.Sprintf("~/.murphysec/logs/%s.log", time.Now().Format(logFileName))))
+	path := must.String(homedir.Expand(fmt.Sprintf("~/.murphysec/logs/%d.log", time.Now().UnixMicro())))
 	f, e := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	must.Must(e)
 	return func() *os.File {
