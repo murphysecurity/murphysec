@@ -101,9 +101,13 @@ func parseMvnDepOutput(input string) []*pom_analyzer.Dependency {
 	var modules []*pom_analyzer.Dependency
 	var currentModule *pom_analyzer.Dependency
 	var depsMap map[string]*pom_analyzer.Dependency
+	var totalModule int
+	var totalDeps int
+	var totalIgnore int
 	for _, line := range lines {
 		if m := p.FindStringSubmatch(line); m != nil {
 			// if module headline
+			totalModule++
 			currentModule = &pom_analyzer.Dependency{
 				GroupId:    m[1],
 				ArtifactId: m[2],
@@ -113,6 +117,7 @@ func parseMvnDepOutput(input string) []*pom_analyzer.Dependency {
 			depsMap = map[string]*pom_analyzer.Dependency{currentModule.Id(): currentModule}
 		} else if m := p2.FindStringSubmatch(line); m != nil && currentModule != nil {
 			// if currentModule != nil && is dependency line
+			totalDeps++
 			leftId := fmt.Sprintf("%s:%s:%s", m[1], m[2], m[3])
 			rightId := fmt.Sprintf("%s:%s:%s", m[4], m[5], m[6])
 			// create dependency object if not exists
@@ -133,8 +138,10 @@ func parseMvnDepOutput(input string) []*pom_analyzer.Dependency {
 			// associate them
 			depsMap[leftId].Dependencies = append(depsMap[leftId].Dependencies, depsMap[rightId])
 		} else {
+			totalIgnore++
 			output.Debug(fmt.Sprintf("unrecongized line: %s", line))
 		}
 	}
+	output.Debug(fmt.Sprintf("Maven output parsed, moduleLine: %d, dependencyLine: %d, ignoreLine: %d", totalModule, totalDeps, totalIgnore))
 	return modules
 }
