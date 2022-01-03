@@ -11,7 +11,7 @@ import (
 
 func main() {
 	go func() {
-		shutdown.Listen()
+		shutdown.Listen(os.Interrupt, os.Kill)
 		output.Error("User request interrupt.")
 		os.Exit(-2)
 	}()
