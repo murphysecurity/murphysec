@@ -61,14 +61,9 @@ func scanByPlugin(p plugin_base.Plugin, dir string) error {
 			PackageFile:        packageInfo.PackageFile,
 			PackageFilePath:    packageInfo.PackageFilePath,
 			Language:           packageInfo.Language,
-			TaskResult: map[string]interface{}{
-				"package": packageInfo.Dependencies,
-				"plugin": map[string]interface{}{
-					"name":    p.Info().Name,
-					"version": p.Info().Version,
-					"runtime": packageInfo.RuntimeInfo,
-				},
-			},
+			Dependencies:       packageInfo.Dependencies,
+			RuntimeInfo:        packageInfo.RuntimeInfo,
+			TaskResult:         struct{}{},
 		})
 	}()
 	if err != nil {

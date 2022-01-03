@@ -34,6 +34,8 @@ type ScanRequestBody struct {
 	PackageFilePath    string      `json:"package_file_path"`
 	Language           string      `json:"language"`
 	TaskResult         interface{} `json:"task_result"`
+	Dependencies       interface{} `json:"dependencies"`
+	RuntimeInfo        interface{} `json:"runtime_info"`
 }
 
 type ScanRequestResponse struct {
@@ -48,7 +50,7 @@ type ScanResult struct {
 	IssuesLevelCount     ScanResultIssueLevelCount `json:"issues_level_count"`
 	TaskId               string                    `json:"task_id"`
 	DetectResult         struct {
-		VulnInfo []ScanResultVulnInfo `json:"vuln_info"`
+		//VulnInfo []ScanResultVulnInfo `json:"vuln_info"`
 	} `json:"detect_result"`
 }
 
@@ -97,10 +99,11 @@ type ScanResultIssueLevelCount struct {
 }
 
 func Report(body *ScanRequestBody) (*ScanResult, error) {
+	//fmt.Println(string(must.Byte(json.Marshal(body))))
 	if defaultToken == "" {
 		return nil, errors.New("API token not set")
 	}
-	url := serverAddress() + "/v1/cli/report"
+	url := serverAddress() + "/v1/cli/report2"
 	client := http.Client{Timeout: 300 * time.Second}
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(must.Byte(json.Marshal(body))))
 	must.Must(err)
