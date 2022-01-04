@@ -50,27 +50,27 @@ type ScanResult struct {
 	IssuesLevelCount     ScanResultIssueLevelCount `json:"issues_level_count"`
 	TaskId               string                    `json:"task_id"`
 	DetectResult         struct {
-		//VulnInfo []ScanResultVulnInfo `json:"vuln_info"`
+		VulnInfo []ScanResultVulnInfo `json:"vuln_info"`
 	} `json:"detect_result"`
 }
 
 type ScanResultVulnInfo struct {
-	VulnNo      string                `json:"vuln_no"`
-	VulnTitle   string                `json:"vuln_title"`
-	Impact      string                `json:"impact"`
-	PublishTime string                `json:"publish_time"`
-	Influence   int                   `json:"influence"`
-	CveId       string                `json:"cve_id"`
-	Poc         string                `json:"poc"`
-	Cvss        float64               `json:"cvss"`
-	Description string                `json:"description"`
-	Solution    string                `json:"solution"`
-	Source      string                `json:"source"`
-	Effect      []ScanResultEffect    `json:"effect"`
-	Suggest     string                `json:"suggest"`
-	CompName    string                `json:"comp_name"`
-	VulnPath    []string              `json:"vuln_path"`
-	References  []ScanResultReference `json:"references"`
+	VulnNo      string  `json:"vuln_no"`
+	VulnTitle   string  `json:"vuln_title"`
+	Impact      string  `json:"impact"`
+	PublishTime string  `json:"publish_time"`
+	Influence   int     `json:"influence"`
+	CveId       string  `json:"cve_id"`
+	Poc         bool    `json:"poc"`
+	Cvss        float64 `json:"cvss"`
+	Description string  `json:"description"`
+	//Solution    string                `json:"solution"`
+	Source     string                `json:"source"`
+	Effect     []ScanResultEffect    `json:"effect"`
+	Suggest    string                `json:"suggest"`
+	CompName   string                `json:"comp_name"`
+	VulnPath   []string              `json:"vuln_path"`
+	References []ScanResultReference `json:"references"`
 }
 type ScanResultReference struct {
 	Name string `json:"name"`
