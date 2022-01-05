@@ -45,7 +45,7 @@ func scanByPlugin(p plugin_base.Plugin, dir string) error {
 			CliVersion:         version.Version(),
 			TaskStatus:         1,
 			TaskFailureReason:  "",
-			TaskType:           "JetBrain IDEA",
+			TaskType:           "Jetbrains-IDEA-Plugin",
 			OsType:             runtime.GOOS,
 			CmdLine:            strings.Join(os.Args, " "),
 			Plugin:             p.Info().Name,
