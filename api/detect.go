@@ -1,17 +1,5 @@
 package api
 
-import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"github.com/pkg/errors"
-	"murphysec-cli-simple/util/must"
-	"murphysec-cli-simple/util/output"
-	"murphysec-cli-simple/util/simplejson"
-	"net/http"
-	"time"
-)
-
 type ScanRequestBody struct {
 	CliVersion         string      `json:"cli_version"`
 	TaskStatus         int         `json:"task_status"`
@@ -55,22 +43,22 @@ type ScanResult struct {
 }
 
 type ScanResultVulnInfo struct {
-	VulnNo      string  `json:"vuln_no"`
-	VulnTitle   string  `json:"vuln_title"`
-	Impact      string  `json:"impact"`
-	PublishTime string  `json:"publish_time"`
-	Influence   int     `json:"influence"`
-	CveId       string  `json:"cve_id"`
-	Poc         bool    `json:"poc"`
-	Cvss        float64 `json:"cvss"`
-	Description string  `json:"description"`
-	//Solution    string                `json:"solution"`
-	Source     string                `json:"source"`
-	Effect     []ScanResultEffect    `json:"effect"`
-	Suggest    string                `json:"suggest"`
-	CompName   string                `json:"comp_name"`
-	VulnPath   []string              `json:"vuln_path"`
-	References []ScanResultReference `json:"references"`
+	VulnNo      string                `json:"vuln_no"`
+	VulnTitle   string                `json:"vuln_title"`
+	Impact      string                `json:"impact"`
+	PublishTime string                `json:"publish_time"`
+	Influence   int                   `json:"influence"`
+	CveId       string                `json:"cve_id"`
+	Poc         bool                  `json:"poc"`
+	Cvss        float64               `json:"cvss"`
+	Description string                `json:"description"`
+	Solution    interface{}           `json:"solution"`
+	Source      string                `json:"source"`
+	Effect      []ScanResultEffect    `json:"effect"`
+	Suggest     string                `json:"suggest"`
+	CompName    string                `json:"comp_name"`
+	VulnPath    []string              `json:"vuln_path"`
+	References  []ScanResultReference `json:"references"`
 }
 type ScanResultReference struct {
 	Name string `json:"name"`
@@ -96,39 +84,4 @@ type ScanResultIssueLevelCount struct {
 	High     int `json:"high"`
 	Medium   int `json:"medium"`
 	Low      int `json:"low"`
-}
-
-func Report(body *ScanRequestBody) (*ScanResult, error) {
-	if defaultToken == "" {
-		return nil, errors.New("API token not set")
-	}
-	url := serverAddress() + "/v1/cli/report2"
-	client := http.Client{Timeout: 300 * time.Second}
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(must.Byte(json.Marshal(body))))
-	must.Must(err)
-	request.Header.Add("Authorization", fmt.Sprintf("token %s", defaultToken))
-	output.Debug(fmt.Sprintf("Request: %s", request.RequestURI))
-	do, err := client.Do(request)
-	if err != nil {
-		output.Error(fmt.Sprintf("err: %v", err.Error()))
-		return nil, err
-	}
-	output.Debug(fmt.Sprintf("Response: [%d]%s", do.StatusCode, do.Status))
-	//goland:noinspection GoUnhandledErrorResult
-	defer do.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-	j, err := simplejson.NewFromReader(do.Body)
-	if do.StatusCode != 200 {
-		return nil, fmt.Errorf("API request failed, statusCode: %d", do.StatusCode)
-	}
-	if ec := j.Get("code").Int(); ec != 0 {
-		return nil, fmt.Errorf("API request failed: %d - %s", ec, j.Get("info").String())
-	}
-	var r ScanResult
-	if e := json.Unmarshal(must.Byte(json.Marshal(j.Get("data"))), &r); e != nil {
-		return nil, errors.Wrap(e, "API result unmarshal failed")
-	}
-	return &r, nil
 }
