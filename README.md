@@ -15,10 +15,8 @@
 
 ### macOS
 
-使用Homebrew安装
-
 ```shell
-// TODO
+wget https://github.com/murphysec/murphysec/releases/latest/download/murphysec-darwin-amd64
 ```
 
 ### Windows
@@ -34,7 +32,7 @@ scoop install murphysec
 ### Linux
 
 ```shell
-// TODO
+wget https://github.com/murphysec/murphysec/releases/latest/download/murphysec-linux-amd64
 ```
 
 ## 配置
