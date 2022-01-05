@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+	"murphysec-cli-simple/util/output"
 	"os"
 	"strings"
 )
@@ -12,6 +14,9 @@ func serverAddress() string {
 		return "https://www.murphysec.com/api"
 	}
 	return envServer
+}
+func init() {
+	output.Debug(fmt.Sprintf("Server addr: %s", serverAddress()))
 }
 
 var defaultToken string

@@ -99,7 +99,6 @@ type ScanResultIssueLevelCount struct {
 }
 
 func Report(body *ScanRequestBody) (*ScanResult, error) {
-	//fmt.Println(string(must.Byte(json.Marshal(body))))
 	if defaultToken == "" {
 		return nil, errors.New("API token not set")
 	}
