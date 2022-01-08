@@ -20,6 +20,7 @@ var dirBlackList = map[string]bool{
 	"gradle":       true,
 	".m2":          true,
 	".idea":        true,
+	".git":         true,
 }
 
 func _scan(dir string, visited map[string]bool) *ScanTreeNode {
