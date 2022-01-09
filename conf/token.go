@@ -42,6 +42,26 @@ var tokenReader = func() func() string {
 	}
 }()
 
+func ReadTokenFile() (t string, e error) {
+	defer func() {
+		if e != nil {
+			e = errors.Wrap(e, "Read token failed")
+		}
+	}()
+	dir, e := homedir.Expand(tokenPath)
+	if e != nil {
+		logger.Err.Println("Expand home dir failed,", e.Error())
+		return "", e
+	}
+	logger.Debug.Println("Read token file at:", dir)
+	data, e := ioutil.ReadFile(dir)
+	if e != nil {
+		logger.Debug.Println("Read fail failed", e.Error())
+		return "", e
+	}
+	return strings.TrimSpace(string(data)), nil
+}
+
 // APIToken returns API token
 func APIToken() string {
 	if len(strings.TrimSpace(APITokenCliOverride)) != 0 {

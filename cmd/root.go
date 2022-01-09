@@ -62,6 +62,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func Execute() {
-	must.Must(rootCmd().Execute())
+func Execute() error {
+	return rootCmd().Execute()
 }

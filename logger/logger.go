@@ -20,6 +20,7 @@ func InitFileLog(path string) error {
 	if path == "" {
 		path = filepath.Join(must.String(homedir.Dir()), ".murphysec", "logs", fmt.Sprintf("%d.log", time.Now().UnixMilli()))
 	}
+	must.Must(os.MkdirAll(filepath.Dir(path), 0755))
 	f, e := os.OpenFile(path, os.O_CREATE+os.O_APPEND, 0644)
 	if e != nil {
 		return e

@@ -3,6 +3,7 @@ module murphysec-cli-simple
 go 1.17
 
 require (
+	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/antchfx/xmlquery v1.3.9
 	github.com/briandowns/spinner v1.16.0
 	github.com/fatih/color v1.13.0
@@ -41,5 +42,7 @@ require (
 
 require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 )
