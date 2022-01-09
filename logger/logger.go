@@ -1,50 +1,29 @@
 package logger
 
 import (
-	"fmt"
-	"github.com/mitchellh/go-homedir"
-	"io"
 	"log"
-	"murphysec-cli-simple/util/must"
+	"murphysec-cli-simple/utils/must"
 	"os"
-	"path/filepath"
-	"time"
 )
 
-var Debug = log.New(os.Stderr, "[DEBUG]", log.LstdFlags)
-var Info = log.New(os.Stderr, "[INFO]", log.LstdFlags)
-var Warn = log.New(os.Stderr, "[WARN]", log.LstdFlags)
-var Err = log.New(os.Stderr, "[ERROR]", log.LstdFlags)
+type LogLevel int
 
-func InitFileLog(path string) error {
-	if path == "" {
-		path = filepath.Join(must.String(homedir.Dir()), ".murphysec", "logs", fmt.Sprintf("%d.log", time.Now().UnixMilli()))
-	}
-	must.Must(os.MkdirAll(filepath.Dir(path), 0755))
-	f, e := os.OpenFile(path, os.O_CREATE+os.O_APPEND, 0644)
-	if e != nil {
-		return e
-	}
-	Debug.SetOutput(NewCopyWriter(os.Stderr, f))
-	Info.SetOutput(NewCopyWriter(os.Stderr, f))
-	Warn.SetOutput(NewCopyWriter(os.Stderr, f))
-	Err.SetOutput(NewCopyWriter(os.Stderr, f))
-	return nil
-}
+const (
+	LogDebug LogLevel = iota + 1
+	LogInfo
+	LogWarn
+	LogErr
+)
 
-type CopyWriter struct {
-	writer []io.Writer
-}
+var debugP = NewLogWriter(LogDebug)
+var infoP = NewLogWriter(LogInfo)
+var warnP = NewLogWriter(LogWarn)
+var errP = NewLogWriter(LogErr)
+var Debug = log.New(debugP, "[DEBUG]", log.Lshortfile+log.LstdFlags)
+var Info = log.New(infoP, "[INFO]", log.Lshortfile+log.LstdFlags)
+var Warn = log.New(warnP, "[WARN]", log.Lshortfile+log.LstdFlags)
+var Err = log.New(errP, "[ERROR]", log.Lshortfile+log.LstdFlags)
 
-func (this CopyWriter) Write(p []byte) (n int, err error) {
-	for _, it := range this.writer {
-		_, e := it.Write(p)
-		if e != nil {
-			return 0, e
-		}
-	}
-	return len(p), nil
-}
-func NewCopyWriter(w ...io.Writer) *CopyWriter {
-	return &CopyWriter{w}
+func CloseAndWait() {
+	must.Must(os.Stdout.Close())
 }

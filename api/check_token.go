@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/util/must"
-	"murphysec-cli-simple/util/simplejson"
+	"murphysec-cli-simple/utils/must"
+	"murphysec-cli-simple/utils/simplejson"
+	"murphysec-cli-simple/version"
 	"net/http"
 	"time"
 )
@@ -22,7 +23,11 @@ func CheckAPIToken(token string) (bool, error) {
 		"token": token,
 	}
 	data := must.Byte(json.Marshal(body))
-	post, err := client.Post(url, "application/json", bytes.NewBuffer(data))
+	req, e := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+	must.Must(e)
+	req.Header.Set("user-agent", version.UserAgent())
+	req.Header.Set("content-type", "application/json")
+	post, err := client.Do(req)
 	if err != nil {
 		return false, err
 	}

@@ -2,18 +2,23 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/mitchellh/go-homedir"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/util/must"
+	"murphysec-cli-simple/utils/must"
 	"murphysec-cli-simple/version"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 var versionFlag bool
 var managedMode bool
 var logRedirectPath string
 var noLogFile bool
-var taskInfo string
+var logLevel string
 
 func rootCmd() *cobra.Command {
 	argsMap := map[string]bool{}
@@ -24,27 +29,29 @@ func rootCmd() *cobra.Command {
 		Use:               "murphysec",
 		PersistentPreRunE: preRun,
 		TraverseChildren:  true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
+		Run: func(cmd *cobra.Command, args []string) {
+			must.Must(cmd.Help())
 		},
 	}
 	c.PersistentFlags().BoolVar(&versionFlag, "version", false, "show version and exit")
 	c.PersistentFlags().BoolVar(&noLogFile, "no-log-file", false, "do not write log file")
 	c.PersistentFlags().StringVar(&logRedirectPath, "write-log-to", "", "specify log file path")
+	c.PersistentFlags().StringVar(&logLevel, "log-level", "", "specify log level")
+
 	// workaround avoid err
 	if argsMap["--managed-mode"] {
 		c.PersistentFlags().BoolVar(&managedMode, "managed-mode", false, "")
-	}
-	if argsMap["--task-info"] {
-		c.PersistentFlags().StringVar(&taskInfo, "task-info", "", "")
 	}
 	c.AddCommand(&cobra.Command{
 		Use: "test",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Hello world!")
+			logger.Debug.Println("log...")
 		},
 	})
 	c.AddCommand(authCmd())
+	c.AddCommand(scanCmd())
+	c.AddCommand(ideaScanCmd())
 	return c
 }
 
@@ -53,11 +60,25 @@ func preRun(cmd *cobra.Command, args []string) error {
 		version.PrintVersionInfo()
 		return nil
 	}
-	if managedMode {
-		logger.InitManagedMode()
-	}
 	if !noLogFile {
-		must.Must(logger.InitFileLog(logRedirectPath))
+		if logRedirectPath == "" {
+			logRedirectPath = must.String(homedir.Expand(filepath.Join("~", ".murphysec", "logs", fmt.Sprintf("%d.log", time.Now().UnixMilli()))))
+		}
+		logger.InitLogFile(logRedirectPath)
+	}
+	if logLevel != "" {
+		switch strings.ToLower(strings.TrimSpace(logLevel)) {
+		case "debug":
+			logger.SetConsoleLogLevel(logger.LogDebug)
+		case "info":
+			logger.SetConsoleLogLevel(logger.LogInfo)
+		case "warn":
+			logger.SetConsoleLogLevel(logger.LogWarn)
+		case "error":
+			logger.SetConsoleLogLevel(logger.LogErr)
+		default:
+			return errors.New("Bad log level, must be debug|info|warn|error")
+		}
 	}
 	return nil
 }

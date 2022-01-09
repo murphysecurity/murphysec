@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func OpenMavenProject(dir string) ([]*PomFile, error) {
+func ReadMavenProject(dir string) ([]*PomFile, error) {
 	// load all maven module
 	q := []string{filepath.Join(dir, "pom.xml")}
 	pomMap := map[string]*PomFile{}
@@ -36,15 +36,30 @@ func OpenMavenProject(dir string) ([]*PomFile, error) {
 	for _, it := range pomMap {
 		rs = append(rs, it)
 	}
+	resolvePomInheritance(rs)
 	return rs, nil
 }
 
 type PomFile struct {
 	// Path is the absolute path of the POM file
-	Path         string
-	dom          *gopom.Project
-	Coordination Coordination
-	Parent       *PomFile
+	Path   string
+	dom    *gopom.Project
+	Parent *PomFile
+}
+
+func (this *PomFile) Coordination() Coordination {
+	c := Coordination{
+		GroupId:    resolvePomPropertiesValue(this, this.dom.GroupID),
+		ArtifactId: resolvePomPropertiesValue(this, this.dom.ArtifactID),
+		Version:    resolvePomPropertiesValue(this, this.dom.Version),
+	}
+	if c.GroupId == "" {
+		c.GroupId = resolvePomPropertiesValue(this, this.dom.Parent.GroupID)
+	}
+	if c.Version == "" {
+		c.Version = resolvePomPropertiesValue(this, this.dom.Parent.Version)
+	}
+	return c
 }
 
 func (this *PomFile) _dependencies() map[Coordination]struct{} {
@@ -54,21 +69,18 @@ func (this *PomFile) _dependencies() map[Coordination]struct{} {
 			m[v] = struct{}{}
 		}
 	}
-	for _, it := range this.dom.DependencyManagement.Dependencies {
-		mc := Coordination{
-			GroupId:    resolvePomPropertiesValue(this, it.GroupID),
-			ArtifactId: resolvePomPropertiesValue(this, it.ArtifactID),
-			Version:    resolvePomPropertiesValue(this, it.Version),
-		}
-		m[mc] = struct{}{}
-	}
 	for _, it := range this.dom.Dependencies {
-		mc := Coordination{
-			GroupId:    resolvePomPropertiesValue(this, it.GroupID),
-			ArtifactId: resolvePomPropertiesValue(this, it.ArtifactID),
-			Version:    resolvePomPropertiesValue(this, it.Version),
+		if !(it.Scope == "" || it.Scope == "compile" || it.Scope == "runtime") {
+			mc := Coordination{
+				GroupId:    resolvePomPropertiesValue(this, it.GroupID),
+				ArtifactId: resolvePomPropertiesValue(this, it.ArtifactID),
+				Version:    resolvePomPropertiesValue(this, it.Version),
+			}
+			if mc.Version == "" {
+				mc.Version = resolvePomDependencyVersion(this, mc.GroupId, mc.ArtifactId)
+			}
+			m[mc] = struct{}{}
 		}
-		m[mc] = struct{}{}
 	}
 	return m
 }
@@ -98,11 +110,6 @@ func readPom(path string) (*PomFile, error) {
 		Path: path,
 		dom:  p,
 	}
-	o.Coordination = Coordination{
-		GroupId:    resolvePomPropertiesValue(o, p.GroupID),
-		ArtifactId: resolvePomPropertiesValue(o, p.ArtifactID),
-		Version:    resolvePomPropertiesValue(o, p.Version),
-	}
 	return o, nil
 }
 
@@ -121,7 +128,7 @@ func resolvePomDependencyVersion(pom *PomFile, groupId, artifactId string) strin
 func resolvePomInheritance(pomFiles []*PomFile) {
 	pm := map[string]*PomFile{}
 	for _, it := range pomFiles {
-		pm[it.Coordination.String()] = it
+		pm[it.Coordination().String()] = it
 	}
 	for _, it := range pm {
 		if it.dom.Parent.ArtifactID == "" {
@@ -142,7 +149,7 @@ type Coordination struct {
 	Version    string
 }
 
-func (this *Coordination) String() string {
+func (this Coordination) String() string {
 	s := this.GroupId + ":" + this.ArtifactId
 	if this.Version != "" {
 		s += ":" + this.Version
