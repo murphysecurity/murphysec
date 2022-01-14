@@ -18,17 +18,26 @@ import (
 	"time"
 )
 
-func IdeaScan(dir string, pmType base.PackageManagerType) (interface{}, error) {
+func IdeaScan(dir string) (interface{}, error) {
 	startTime := time.Now()
-	engine := getInspectorSupportPkgManagerType(pmType)
-	// 检查项目是否可以被指定的扫描器扫描
-	if !engine.CheckDir(dir) {
-		logger.Err.Println("Dir can't be scan.", dir)
-		ideaFail(3, "Dir can't be scan.")
-		return nil, errors.New("Can't be scan")
+	var engine base.Inspector
+	// 找个合适的扫描器
+	for _, it := range engines {
+		logger.Debug.Println("Try match project by inspector:", it.String(), "...")
+		if it.CheckDir(dir) {
+			engine = it
+			logger.Info.Println("Matched.")
+			break
+		}
+		logger.Debug.Println("Match failed")
+	}
+	if engine == nil {
+		logger.Err.Println("Can't inspect project. No inspector supported.")
+		ideaFail(2, "Can't inspect")
+		return nil, errors.New("Can't inspect")
 	}
 	// 开始扫描
-	logger.Info.Println("IdeaScan dir:", dir, "PackageManagerType:", pmType)
+	logger.Info.Println("IdeaScan dir:", dir, "Inspector:", engine.String())
 	logger.Info.Println("Task start at:", startTime.Format(time.RFC3339))
 	modules, e := engine.Inspect(dir)
 	if e != nil {
@@ -38,7 +47,7 @@ func IdeaScan(dir string, pmType base.PackageManagerType) (interface{}, error) {
 	req := getIdeaRequest()
 	// 拼凑项目信息
 	wrapProjectInfoToReqObj(req, dir)
-	logger.Debug.Println("Before scan. projectName:", req.ProjectName, "git:", req.GitInfo != nil, "packageManager:", pmType)
+	logger.Debug.Println("Before scan. projectName:", req.ProjectName, "git:", req.GitInfo != nil)
 	// 拼凑请求体 模块
 	moduleUUIDMap := map[uuid.UUID]base.Module{}
 	for _, it := range modules {

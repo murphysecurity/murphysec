@@ -5,6 +5,8 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"murphysec-cli-simple/api"
+	"murphysec-cli-simple/conf"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
 	"murphysec-cli-simple/version"
@@ -37,10 +39,14 @@ func rootCmd() *cobra.Command {
 	c.PersistentFlags().BoolVar(&noLogFile, "no-log-file", false, "do not write log file")
 	c.PersistentFlags().StringVar(&logRedirectPath, "write-log-to", "", "specify log file path")
 	c.PersistentFlags().StringVar(&logLevel, "log-level", "", "specify log level")
-
+	c.PersistentFlags().StringVar(&conf.APITokenCliOverride, "token", "", "specify API token")
+	c.PersistentFlags().StringVar(&api.CliServerAddressOverride, "server", "", "specify server address")
 	// workaround avoid err
 	if argsMap["--managed-mode"] {
 		c.PersistentFlags().BoolVar(&managedMode, "managed-mode", false, "")
+	}
+	if argsMap["--ide"] {
+		c.PersistentFlags().String("ide", "", "ignore")
 	}
 	c.AddCommand(&cobra.Command{
 		Use: "test",

@@ -8,9 +8,15 @@ import (
 	"time"
 )
 
+var CliServerAddressOverride string
+
 // serverAddress returns API logger URL
 func serverAddress() string {
-	envServer := strings.Trim(strings.TrimSpace(os.Getenv("MPS_CLI_SERVER")), "/")
+	var envServer string
+	envServer = CliServerAddressOverride
+	if envServer == "" {
+		envServer = strings.Trim(strings.TrimSpace(os.Getenv("MPS_CLI_SERVER")), "/")
+	}
 	if len(envServer) == 0 {
 		return "https://sca.murphysec.com"
 	}
