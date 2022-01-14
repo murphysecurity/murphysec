@@ -3,7 +3,9 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"io"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
@@ -112,8 +114,6 @@ type VoDetectResponse struct {
 }
 
 func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
-	client := new(http.Client)
-	client.Timeout = time.Second * 30
 	request, e := http.NewRequest(http.MethodPost, serverAddress()+"/api/v1/access/detect/user_cli", bytes.NewReader(must.Byte(json.Marshal(input))))
 	must.Must(e)
 	request.Header.Set("content-type", "application/json")
@@ -134,6 +134,10 @@ func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
 	logger.Debug.Println("body read succeed")
 	logger.Debug.Println("=== body ===")
 	logger.Debug.Println(string(b))
+	if r.StatusCode != http.StatusOK {
+		logger.Err.Println("API status:", r.StatusCode)
+		return nil, errors.New(fmt.Sprintf("API status: %d", r.StatusCode))
+	}
 	var v VoDetectResponse
 	if e := json.Unmarshal(b, &v); e != nil {
 		logger.Err.Println("API response body decode failed.", e.Error())

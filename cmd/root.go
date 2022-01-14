@@ -51,7 +51,9 @@ func rootCmd() *cobra.Command {
 	})
 	c.AddCommand(authCmd())
 	c.AddCommand(scanCmd())
-	c.AddCommand(ideaScanCmd())
+	if argsMap["ideascan"] {
+		c.AddCommand(ideaScanCmd())
+	}
 	return c
 }
 

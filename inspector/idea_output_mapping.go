@@ -51,22 +51,22 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 	}
 	// calc vulns
 	{
-		critical := map[id]struct{}{}
-		high := map[id]struct{}{}
-		medium := map[id]struct{}{}
-		low := map[id]struct{}{}
+		critical := map[string]struct{}{}
+		high := map[string]struct{}{}
+		medium := map[string]struct{}{}
+		low := map[string]struct{}{}
 		for _, it := range i.Modules {
 			for _, comp := range it.Comps {
 				for _, vul := range comp.Vuls {
 					switch vul.Level {
 					case api.VulnLevelCritical:
-						critical[id{comp.CompName, comp.CompVersion}] = struct{}{}
+						critical[vul.VulnNo] = struct{}{}
 					case api.VulnLevelHigh:
-						high[id{comp.CompName, comp.CompVersion}] = struct{}{}
+						high[vul.VulnNo] = struct{}{}
 					case api.VulnLevelMedium:
-						medium[id{comp.CompName, comp.CompVersion}] = struct{}{}
+						medium[vul.VulnNo] = struct{}{}
 					case api.VulnLevelLow:
-						low[id{comp.CompName, comp.CompVersion}] = struct{}{}
+						low[vul.VulnNo] = struct{}{}
 					}
 				}
 			}
@@ -84,22 +84,22 @@ func ideaFail(code int, message string) {
 
 type PluginOutput struct {
 	ErrCode                int          `json:"err_code"`
-	ErrMsg                 string       `json:"err_msg"`
-	IssuesCount            int          `json:"issues_count"`
-	DependenciesCount      int          `json:"dependencies_count"`
-	IssuesCompsCount       int          `json:"issues_comps_count"`
-	Language               string       `json:"language"`
-	PackageManager         string       `json:"package_manager"`
-	Comps                  []PluginComp `json:"comps"`
-	DetectorStartTimestamp time.Time    `json:"detector_start_timestamp"`
-	DetectStatus           string       `json:"detect_status"`
+	ErrMsg                 string       `json:"err_msg,omitempty"`
+	IssuesCount            int          `json:"issues_count,omitempty"`
+	DependenciesCount      int          `json:"dependencies_count,omitempty"`
+	IssuesCompsCount       int          `json:"issues_comps_count,omitempty"`
+	Language               string       `json:"language,omitempty"`
+	PackageManager         string       `json:"package_manager,omitempty"`
+	Comps                  []PluginComp `json:"comps,omitempty"`
+	DetectorStartTimestamp time.Time    `json:"detector_start_timestamp,omitempty"`
+	DetectStatus           string       `json:"detect_status,omitempty"`
 	IssuesLevelCount       struct {
 		Critical int `json:"critical"`
 		High     int `json:"high"`
 		Medium   int `json:"medium"`
 		Low      int `json:"low"`
-	} `json:"issues_level_count"`
-	TaskId string `json:"task_id"`
+	} `json:"issues_level_count,omitempty"`
+	TaskId string `json:"task_id,omitempty"`
 }
 
 type PluginComp struct {
