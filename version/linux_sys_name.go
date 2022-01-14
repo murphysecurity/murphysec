@@ -13,7 +13,7 @@ func getOSVersion() string {
 	if e != nil {
 		logger.Err.Println("get /etc/os-release failed.", e.Error())
 	} else {
-		if m := regexp.MustCompile("PRETTY_NAME\\s*=\\s*(?:\\\"([^\\\"\\n]+)\\\"|([^\\n]+))").FindStringSubmatch(data); m != nil {
+		if m := regexp.MustCompile("PRETTY_NAME\\s*=\\s*(?:\\\"([^\\\"\\n]+)\\\"|([^\\n]+))").FindStringSubmatch(string(data)); m != nil {
 			if m[1] == "" {
 				return m[2]
 			}
