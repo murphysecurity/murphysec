@@ -8,7 +8,7 @@ import (
 	"regexp"
 )
 
-func getOSVersion() {
+func getOSVersion() string {
 	data, e := ioutil.ReadFile("/etc/os-release")
 	if e != nil {
 		logger.Err.Println("get /etc/os-release failed.", e.Error())
@@ -20,4 +20,5 @@ func getOSVersion() {
 			return m[1]
 		}
 	}
+	return ""
 }
