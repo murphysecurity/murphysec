@@ -20,17 +20,7 @@ import (
 
 func IdeaScan(dir string) (interface{}, error) {
 	startTime := time.Now()
-	var engine base.Inspector
-	// 找个合适的扫描器
-	for _, it := range engines {
-		logger.Debug.Println("Try match project by inspector:", it.String(), "...")
-		if it.CheckDir(dir) {
-			engine = it
-			logger.Info.Println("Matched.")
-			break
-		}
-		logger.Debug.Println("Match failed")
-	}
+	engine := tryMatchInspector(dir)
 	if engine == nil {
 		logger.Err.Println("Can't inspect project. No inspector supported.")
 		ideaFail(2, "Can't inspect")
