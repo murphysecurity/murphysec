@@ -28,3 +28,36 @@ func MinInt(a, b int) int {
 	}
 	return b
 }
+
+func DistinctStringSlice(s []string) []string {
+	m := map[string]struct{}{}
+	var rs []string
+	for _, it := range s {
+		if _, ok := m[it]; !ok {
+			rs = append(rs, it)
+			m[it] = struct{}{}
+		}
+	}
+	return rs
+}
+
+type StringSet map[string]struct{}
+
+func NewStringSet() StringSet {
+	return map[string]struct{}{}
+}
+func (s StringSet) Put(t string) StringSet {
+	s[t] = struct{}{}
+	return s
+}
+func (s StringSet) Contains(t string) bool {
+	_, ok := s[t]
+	return ok
+}
+func (s StringSet) ToSlice() []string {
+	var r []string
+	for i := range s {
+		r = append(r, i)
+	}
+	return r
+}
