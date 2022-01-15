@@ -36,8 +36,11 @@ func JavaImportScan(dir string, rsCh chan JavaFileImportItem) {
 	for i := 0; i < 4; i++ {
 		wg.Add(1)
 		go func() {
-			filePath := <-fileListCh
-			for filePath != "" {
+			for {
+				filePath := <-fileListCh
+				if filePath == "" {
+					break
+				}
 				imports := parseJavaFileImport(filePath)
 				if len(imports) == 0 {
 					continue

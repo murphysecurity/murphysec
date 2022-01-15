@@ -86,8 +86,11 @@ func scanJavaImport(dir string, compNames []string) map[string][]string {
 	}()
 	// map: compName -> setOf filePath
 	rs := map[string]utils.StringSet{}
-	file := <-jf
-	for file.FilePath != "" {
+	for {
+		file := <-jf
+		if file.FilePath == "" {
+			break
+		}
 		// for each file
 		// todo: 匹配算法可能需要优化
 		for _, qualName := range file.Imports {
