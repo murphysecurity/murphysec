@@ -14,15 +14,6 @@ var engines = []base.Inspector{
 	npm.New(),
 }
 
-func getInspectorSupportPkgManagerType(pkgType base.PackageManagerType) base.Inspector {
-	for _, it := range engines {
-		if it.PackageManagerType() == pkgType {
-			return it
-		}
-	}
-	return nil
-}
-
 func tryMatchInspector(dir string) base.Inspector {
 	for _, it := range engines {
 		logger.Debug.Println("Try match project by inspector:", it.String(), "...")
