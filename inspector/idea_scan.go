@@ -23,7 +23,7 @@ func IdeaScan(dir string) (interface{}, error) {
 	engine := tryMatchInspector(dir)
 	if engine == nil {
 		logger.Err.Println("Can't inspect project. No inspector supported.")
-		ideaFail(2, "Can't inspect")
+		ideaFail(3, "Can't inspect")
 		return nil, errors.New("Can't inspect")
 	}
 	// 开始扫描
@@ -130,4 +130,3 @@ func mapVoModule(m base.Module) api.VoModule {
 	}
 	return r
 }
-
