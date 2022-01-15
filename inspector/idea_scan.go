@@ -27,8 +27,7 @@ func IdeaScan(dir string) (interface{}, error) {
 		return nil, errors.New("Can't inspect")
 	}
 	// 开始扫描
-	logger.Info.Println("IdeaScan dir:", dir, "Inspector:", engine.String())
-	logger.Info.Println("Task start at:", startTime.Format(time.RFC3339))
+	logger.Info.Println("IdeaScan dir:", dir, "Inspector:", engine.String(), "Time:", startTime.Format(time.RFC3339))
 	modules, e := engine.Inspect(dir)
 	if e != nil {
 		ideaFail(1, "Engine scan failed.")
