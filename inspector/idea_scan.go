@@ -53,6 +53,7 @@ func IdeaScan(dir string) (interface{}, error) {
 	}
 	// 输出 API 响应
 	fmt.Println(string(must.Byte(json.Marshal(mapForIdea(r)))))
+	javaImportClauseScan(r, dir)
 	return nil, nil
 }
 
@@ -129,3 +130,4 @@ func mapVoModule(m base.Module) api.VoModule {
 	}
 	return r
 }
+
