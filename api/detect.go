@@ -138,10 +138,14 @@ func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
 		logger.Err.Println("API status:", r.StatusCode)
 		return nil, errors.New(fmt.Sprintf("API status: %d", r.StatusCode))
 	}
-	var v VoDetectResponse
+	v := struct {
+		Data VoDetectResponse `json:"data"`
+	}{}
 	if e := json.Unmarshal(b, &v); e != nil {
 		logger.Err.Println("API response body decode failed.", e.Error())
 		return nil, e
 	}
-	return &v, nil
+	logger.Debug.Println("response")
+	logger.Debug.Println(string(b))
+	return &v.Data, nil
 }
