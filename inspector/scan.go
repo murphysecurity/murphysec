@@ -43,9 +43,9 @@ func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 	}
 	// 输出 API 响应
 	if jsonOutput {
-		fmt.Println(fmt.Sprintf("扫描完成，共计%d个组件，%d个漏洞", r.DependenciesCount, r.IssuesCompsCount))
-	} else {
 		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(r)))))
+	} else {
+		fmt.Println(fmt.Sprintf("扫描完成，共计%d个组件，%d个漏洞", r.DependenciesCount, r.IssuesCompsCount))
 	}
 	javaImportClauseScan(r, dir)
 	return nil, nil

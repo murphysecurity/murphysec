@@ -78,9 +78,6 @@ func parseOutput(reader io.Reader) map[Coordination][]Dependency {
 	return graphs
 }
 func _conv(root Coordination, m map[Coordination][]Coordination, visited []Coordination) Dependency {
-	if len(visited) > 5 {
-		return Dependency{}
-	}
 	for i := range visited {
 		if visited[i] == root {
 			var names []string
