@@ -11,7 +11,8 @@ import (
 func ideaScanCmd() *cobra.Command {
 	var dir string
 	c := &cobra.Command{
-		Use: "ideascan --dir ProjectDir",
+		Hidden: true,
+		Use:    "ideascan --dir ProjectDir",
 		Run: func(cmd *cobra.Command, args []string) {
 			_, e := inspector.IdeaScan(must.String(filepath.Abs(dir)))
 			if e != nil {
