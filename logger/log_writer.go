@@ -49,3 +49,12 @@ func (this *LogWriter) Write(b []byte) (int, error) {
 func NewLogWriter(lv LogLevel) *LogWriter {
 	return &LogWriter{lv: lv}
 }
+
+func CloseAndWait() {
+	fileMutex.Lock()
+	defer fileMutex.Unlock()
+	if fdv != nil {
+		must.Must(fdv.Close())
+	}
+	must.Must(os.Stdout.Close())
+}

@@ -92,8 +92,10 @@ func _conv(root Coordination, m map[Coordination][]Coordination, visited []Coord
 		}
 	}
 	rootDep := Dependency{Coordination: root}
-	for _, it := range m[root] {
-		rootDep.Children = append(rootDep.Children, _conv(it, m, append(visited, root)))
+	if len(visited) < 6 {
+		for _, it := range m[root] {
+			rootDep.Children = append(rootDep.Children, _conv(it, m, append(visited, root)))
+		}
 	}
 	return rootDep
 }

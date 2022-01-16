@@ -2,8 +2,6 @@ package logger
 
 import (
 	"log"
-	"murphysec-cli-simple/utils/must"
-	"os"
 )
 
 type LogLevel int
@@ -23,7 +21,3 @@ var Debug = log.New(debugP, "[DEBUG]", log.Lshortfile+log.LstdFlags)
 var Info = log.New(infoP, "[INFO]", log.Lshortfile+log.LstdFlags)
 var Warn = log.New(warnP, "[WARN]", log.Lshortfile+log.LstdFlags)
 var Err = log.New(errP, "[ERROR]", log.Lshortfile+log.LstdFlags)
-
-func CloseAndWait() {
-	must.Must(os.Stdout.Close())
-}
