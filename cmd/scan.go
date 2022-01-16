@@ -15,7 +15,6 @@ func scanCmd() *cobra.Command {
 		Run: scanRun,
 	}
 	c.Args = cobra.ExactArgs(1)
-	c.Args = cobra.NoArgs
 	return c
 }
 
