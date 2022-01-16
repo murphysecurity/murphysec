@@ -1,0 +1,53 @@
+name: Compose Build
+
+on:
+  push:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Install dependencies
+        run: go mod tidy -v
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Build for Windows
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: go build -v -o out/murphysec-windows.exe .
+
+      - name: Build for Linux
+        env:
+          GOOS: linux
+          GOARCH: amd64
+        run: go build -v -o out/murphysec-linux .
+
+      - name: Build for MacOS
+        env:
+          GOOS: darwin
+          GOARCH: amd64
+        run: go build -v -o out/murphysec-darwin .
+
+      - name: Calculate hash
+        run: |
+          cd out
+          ls
+          find -type f|xargs -I {} sh -c 'sha256sum {} > {}.sha256'
+          sha256sum --strict -c *.sha256 
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: murphysec-compose-build
+          path: out/*
