@@ -49,6 +49,9 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 			rs[id{comp.CompName, comp.CompVersion}] = p
 		}
 	}
+	for _, it := range rs {
+		p.Comps = append(p.Comps, it)
+	}
 	// calc vulns
 	{
 		critical := map[string]struct{}{}
