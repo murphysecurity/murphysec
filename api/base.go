@@ -27,7 +27,7 @@ var client *http.Client
 
 func init() {
 	c := new(http.Client)
-	c.Timeout = time.Second * 90
+	c.Timeout = time.Second * 300
 	i, e := strconv.Atoi(os.Getenv("API_TIMEOUT"))
 	if e == nil && i > 0 {
 		c.Timeout = time.Duration(int64(time.Second) * int64(i))
