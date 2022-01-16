@@ -13,7 +13,7 @@ var CliServerAddressOverride string
 // serverAddress returns API logger URL
 func serverAddress() string {
 	var envServer string
-	envServer = CliServerAddressOverride
+	envServer = strings.Trim(strings.TrimSpace(CliServerAddressOverride), "/")
 	if envServer == "" {
 		envServer = strings.Trim(strings.TrimSpace(os.Getenv("MPS_CLI_SERVER")), "/")
 	}

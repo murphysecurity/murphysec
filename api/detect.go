@@ -114,7 +114,7 @@ type VoDetectResponse struct {
 }
 
 func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
-	request, e := http.NewRequest(http.MethodPost, serverAddress()+"/api/v1/access/detect/user_cli", bytes.NewReader(must.Byte(json.Marshal(input))))
+	request, e := http.NewRequest(http.MethodPost, serverAddress()+"/message/v1/access/detect/user_cli", bytes.NewReader(must.Byte(json.Marshal(input))))
 	must.Must(e)
 	request.Header.Set("content-type", "application/json")
 	logger.Info.Println("Send req to:", request.RequestURI, ".")

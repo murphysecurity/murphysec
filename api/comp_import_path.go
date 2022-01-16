@@ -9,7 +9,7 @@ import (
 )
 
 func CompImportPath(data interface{}) {
-	uri := serverAddress() + "/api/v1/access/detect/import_path"
+	uri := serverAddress() + "/message/v1/access/detect/import_path"
 	logger.Info.Println("Call API:", uri)
 	logger.Debug.Println("API request body:")
 	body := must.Byte(json.Marshal(data))
