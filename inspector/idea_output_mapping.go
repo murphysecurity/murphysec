@@ -37,6 +37,7 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 				ShowLevel:       3,
 				MinFixedVersion: comp.MinFixedVersion,
 				Vulns:           comp.Vuls,
+				Version:         comp.CompVersion,
 			}
 			for _, it := range comp.Vuls {
 				switch it.SuggestLevel {
@@ -110,4 +111,5 @@ type PluginComp struct {
 	ShowLevel       int              `json:"show_level"`
 	MinFixedVersion string           `json:"min_fixed_version"`
 	Vulns           []api.VoVulnInfo `json:"vulns"`
+	Version         string           `json:"version"`
 }

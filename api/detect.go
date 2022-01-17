@@ -63,6 +63,7 @@ type VoVulnInfo struct {
 	Poc             bool          `json:"poc"`
 	PublishTime     int           `json:"publish_time"`
 	AffectedVersion string        `json:"affected_version"`
+	MinFixedVersion string        `json:"min_fixed_version"`
 	References      []struct {
 		Name string `json:"name"`
 		Url  string `json:"url"`
@@ -75,6 +76,7 @@ type VoVulnInfo struct {
 	SuggestLevel SuggestLevel `json:"suggest_level"`
 	VulnNo       string       `json:"vuln_no"`
 	VulnPath     []string     `json:"vuln_path"`
+	Title        string       `json:"title"`
 }
 
 type SuggestLevel string
