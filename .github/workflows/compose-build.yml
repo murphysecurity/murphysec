@@ -25,19 +25,19 @@ jobs:
         env:
           GOOS: windows
           GOARCH: amd64
-        run: go build -v -o out/murphysec-windows.exe .
+        run: go build -v -o out/murphysec-windows-amd64.exe .
 
       - name: Build for Linux
         env:
           GOOS: linux
           GOARCH: amd64
-        run: go build -v -o out/murphysec-linux .
+        run: go build -v -o out/murphysec-linux-amd64 .
 
       - name: Build for MacOS
         env:
           GOOS: darwin
           GOARCH: amd64
-        run: go build -v -o out/murphysec-darwin .
+        run: go build -v -o out/murphysec-darwin-amd64 .
 
       - name: Calculate hash
         run: |
