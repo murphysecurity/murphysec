@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+var ErrTokenInvalid = errors.New("Token invalid")
+
 type VoGitInfo struct {
 	Commit       string `json:"commit"`
 	GitRef       string `json:"git_ref"`
@@ -136,6 +138,11 @@ func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
 	logger.Debug.Println("body read succeed")
 	logger.Debug.Println("=== body ===")
 	logger.Debug.Println(string(b))
+	if r.StatusCode == http.StatusUnauthorized {
+		logger.Err.Println("API status:", r.StatusCode)
+		logger.Err.Println("Invalid token")
+		return nil, ErrTokenInvalid
+	}
 	if r.StatusCode != http.StatusOK {
 		logger.Err.Println("API status:", r.StatusCode)
 		return nil, errors.New(fmt.Sprintf("API status: %d", r.StatusCode))

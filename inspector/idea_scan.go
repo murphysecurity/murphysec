@@ -49,6 +49,10 @@ func IdeaScan(dir string) (interface{}, error) {
 	}
 	// API 请求
 	r, e := api.SendDetect(*req)
+	if e == api.ErrTokenInvalid {
+		ideaFail(4, "Token invalid")
+		return nil, e
+	}
 	if e != nil {
 		ideaFail(2, "Server request failed.")
 		return nil, e
