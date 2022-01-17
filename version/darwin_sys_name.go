@@ -21,22 +21,21 @@ func getOSVersion() string {
 		return ""
 	}
 	var id = 0
-	for i, s := range p.Plist.Dict.Key {
+	for i, s := range p.Dict.Key {
 		if s == "ProductVersion" {
 			id = i
 		}
 	}
-	if id < len(p.Plist.Dict.String) {
-		return fmt.Sprintf("macOS %s", p.Plist.Dict.String[id])
+	if id < len(p.Dict.String) {
+		return fmt.Sprintf("macOS %s", p.Dict.String[id])
 	}
 	return ""
 }
 
 type plist struct {
-	Plist struct {
-		Dict struct {
-			Key    []string `xml:"key"`
-			String []string `xml:"string"`
-		} `xml:"dict"`
-	} `xml:"plist"`
+	XMLName xml.Name `xml:"plist"`
+	Dict    struct {
+		Key    []string `xml:"key"`
+		String []string `xml:"string"`
+	} `xml:"dict"`
 }
