@@ -21,6 +21,7 @@ func ideaScanCmd() *cobra.Command {
 			}
 		},
 	}
+	c.Flags().StringVar(&inspector.TaskInfo, "task-info", "", "")
 	c.Flags().StringVar(&dir, "dir", "", "project base dir")
 	c.Args = cobra.NoArgs
 	must.Must(c.MarkFlagRequired("dir"))

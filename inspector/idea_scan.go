@@ -18,6 +18,8 @@ import (
 	"time"
 )
 
+var TaskInfo string
+
 func IdeaScan(dir string) (interface{}, error) {
 	startTime := time.Now()
 	engine := tryMatchInspector(dir)
@@ -91,7 +93,7 @@ func getIdeaRequest() *api.UserCliDetectInput {
 		TaskStartTimestamp: 0,
 		TaskType:           "Plugin",
 		UserAgent:          version.UserAgent(),
-		TaskInfo:           os.Getenv("TASK_INFO"),
+		TaskInfo:           TaskInfo,
 	}
 }
 
