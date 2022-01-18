@@ -9,6 +9,8 @@ import (
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"path/filepath"
+	"sort"
+	"strings"
 )
 
 type Inspector struct{}
@@ -18,7 +20,7 @@ func New() base.Inspector {
 }
 
 func (i *Inspector) String() string {
-	return "MavenInspector@" + i.Version()
+	return "NpmInspector@" + i.Version()
 }
 
 func (i *Inspector) Version() string {
@@ -27,7 +29,7 @@ func (i *Inspector) Version() string {
 
 func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "package.json")) &&
-		utils.IsFile(filepath.Join("package-lock.json"))
+		utils.IsFile(filepath.Join(dir, "package-lock.json"))
 }
 
 func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
@@ -54,7 +56,11 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 	if lockfile.LockfileVersion != 2 {
 		return nil, errors.New(fmt.Sprintf("unsupported lockfileVersion: %d", lockfile.LockfileVersion))
 	}
-
+	for s := range lockfile.Dependencies {
+		if strings.HasPrefix(s, "node_modules/"){
+			delete(lockfile.Dependencies, s)
+		}
+	}
 	var rootComp []string
 	{
 		// kahn
@@ -96,7 +102,16 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 
 func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *base.Dependency {
 	if _, ok := visited[root]; ok {
-		logger.Warn.Println("Circular dependency")
+		// circular dependency, print dependency path
+		var path []string
+		for s := range visited {
+			path = append(path, s)
+		}
+		sort.Slice(path, func(i, j int) bool {
+			return visited[path[i]] < visited[path[j]]
+		})
+		path = append(path, root)
+		logger.Warn.Println("Circular dependency:", strings.Join(path, " -> "))
 		return nil
 	}
 	visited[root] = deep
