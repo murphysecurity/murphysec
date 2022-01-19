@@ -35,7 +35,7 @@ func IdeaScan(dir string) (interface{}, error) {
 		ideaFail(1, "Engine scan failed.")
 		return nil, e
 	}
-	req := getIdeaRequest()
+	req := getAPIRequest("idea")
 	// 拼凑项目信息
 	wrapProjectInfoToReqObj(req, dir)
 	logger.Debug.Println("Before scan. projectName:", req.ProjectName, "git:", req.GitInfo != nil)
@@ -85,7 +85,7 @@ func wrapProjectInfoToReqObj(input *api.UserCliDetectInput, projectDir string) {
 	}
 }
 
-func getIdeaRequest() *api.UserCliDetectInput {
+func getAPIRequest(taskType string) *api.UserCliDetectInput {
 	return &api.UserCliDetectInput{
 		ApiToken:           conf.APIToken(),
 		CliVersion:         version.Version(),
@@ -95,7 +95,7 @@ func getIdeaRequest() *api.UserCliDetectInput {
 		Modules:            []api.VoModule{},
 		TargetAbsPath:      "",
 		TaskStartTimestamp: 0,
-		TaskType:           "Plugin",
+		TaskType:           taskType,
 		UserAgent:          version.UserAgent(),
 		TaskInfo:           TaskInfo,
 	}

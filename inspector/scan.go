@@ -25,7 +25,7 @@ func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 	if e != nil {
 		return nil, errors.Wrap(e, "Engine scan failed.")
 	}
-	req := getIdeaRequest()
+	req := getAPIRequest("client")
 	// 拼凑项目信息
 	wrapProjectInfoToReqObj(req, dir)
 	logger.Debug.Println("Before scan. projectName:", req.ProjectName, "git:", req.GitInfo != nil)
