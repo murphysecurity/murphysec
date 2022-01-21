@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	giturls "github.com/whilp/git-urls"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
@@ -22,23 +21,21 @@ var TaskInfo string
 
 func IdeaScan(dir string) (interface{}, error) {
 	startTime := time.Now()
-	engine := tryMatchInspector(dir)
-	if engine == nil {
-		logger.Err.Println("Can't inspect project. No inspector supported.")
-		ideaFail(3, "Can't inspect")
-		return nil, errors.New("Can't inspect")
-	}
-	// 开始扫描
-	logger.Info.Println("IdeaScan dir:", dir, "Inspector:", engine.String(), "Time:", startTime.Format(time.RFC3339))
-	modules, e := engine.Inspect(dir)
+	logger.Info.Println("Idea inspect start...", startTime)
+
+	// begin automatically inspect
+	modules, e := autoInspectDir(dir)
 	if e != nil {
-		ideaFail(1, "Engine scan failed.")
+		reportIdeaStatus(1, "Inspect failed.")
 		return nil, e
+	}
+	logger.Info.Println(fmt.Sprintf("Inspect succeed, total: %d modules.", len(modules)))
+	if len(modules) == 0 {
+		logger.Warn.Println("No module found")
 	}
 	req := getAPIRequest("idea")
 	// 拼凑项目信息
 	wrapProjectInfoToReqObj(req, dir)
-	logger.Debug.Println("Before scan. projectName:", req.ProjectName, "git:", req.GitInfo != nil)
 	// 拼凑请求体 模块
 	moduleUUIDMap := map[uuid.UUID]base.Module{}
 	for _, it := range modules {
@@ -50,11 +47,11 @@ func IdeaScan(dir string) (interface{}, error) {
 	// API 请求
 	r, e := api.SendDetect(*req)
 	if e == api.ErrTokenInvalid {
-		ideaFail(4, "Token invalid")
+		reportIdeaStatus(4, "Token invalid")
 		return nil, e
 	}
 	if e != nil {
-		ideaFail(2, "Server request failed.")
+		reportIdeaStatus(2, "Server request failed.")
 		return nil, e
 	}
 	// 输出 API 响应

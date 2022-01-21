@@ -9,6 +9,21 @@ import (
 	"time"
 )
 
+type IdeaErrCode int
+
+const (
+	IdeaSucceed          IdeaErrCode = 0
+	IdeaEngineScanFailed IdeaErrCode = 1
+	IdeaAPIFailed        IdeaErrCode = 2
+	IdeaNoEngineMatch    IdeaErrCode = 3
+	IdeaTokenInvalid     IdeaErrCode = 4
+	IdeaUnknownErr       IdeaErrCode = -1
+)
+
+func reportIdeaStatus(code IdeaErrCode, msg string) {
+	fmt.Println(string(must.Byte(json.Marshal(PluginOutput{ErrCode: code, ErrMsg: msg}))))
+}
+
 func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 	type id struct {
 		name    string
@@ -82,12 +97,9 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 	}
 	return p
 }
-func ideaFail(code int, message string) {
-	fmt.Println(string(must.Byte(json.Marshal(PluginOutput{ErrCode: code, ErrMsg: message}))))
-}
 
 type PluginOutput struct {
-	ErrCode                int          `json:"err_code"`
+	ErrCode                IdeaErrCode  `json:"err_code"`
 	ErrMsg                 string       `json:"err_msg,omitempty"`
 	IssuesCount            int          `json:"issues_count,omitempty"`
 	DependenciesCount      int          `json:"dependencies_count,omitempty"`
@@ -98,12 +110,20 @@ type PluginOutput struct {
 	DetectorStartTimestamp time.Time    `json:"detector_start_timestamp,omitempty"`
 	DetectStatus           string       `json:"detect_status,omitempty"`
 	IssuesLevelCount       struct {
-		Critical int `json:"critical"`
-		High     int `json:"high"`
-		Medium   int `json:"medium"`
-		Low      int `json:"low"`
+		Critical int `json:"critical,omitempty"`
+		High     int `json:"high,omitempty"`
+		Medium   int `json:"medium,omitempty"`
+		Low      int `json:"low,omitempty"`
 	} `json:"issues_level_count,omitempty"`
 	TaskId string `json:"task_id,omitempty"`
+}
+
+func (p PluginOutput) MarshalJSON() ([]byte, error) {
+	if p.ErrCode != 0 {
+		return must.Byte(json.Marshal(map[string]interface{}{"err_code": p.ErrCode, "err_msg": p.ErrMsg})), nil
+	}
+	type t PluginOutput
+	return must.Byte(json.Marshal(t(p))), nil
 }
 
 type PluginComp struct {
