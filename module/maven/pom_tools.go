@@ -47,8 +47,8 @@ type PomFile struct {
 	Parent *PomFile
 }
 
-func (this *PomFile) Coordination() Coordination {
-	c := Coordination{
+func (this *PomFile) Coordination() Coordinate {
+	c := Coordinate{
 		GroupId:    resolvePomPropertiesValue(this, this.dom.GroupID),
 		ArtifactId: resolvePomPropertiesValue(this, this.dom.ArtifactID),
 		Version:    resolvePomPropertiesValue(this, this.dom.Version),
@@ -62,8 +62,8 @@ func (this *PomFile) Coordination() Coordination {
 	return c
 }
 
-func (this *PomFile) _dependencies() map[Coordination]struct{} {
-	m := map[Coordination]struct{}{}
+func (this *PomFile) _dependencies() map[Coordinate]struct{} {
+	m := map[Coordinate]struct{}{}
 	if this.Parent != nil {
 		for v := range this.Parent._dependencies() {
 			m[v] = struct{}{}
@@ -71,7 +71,7 @@ func (this *PomFile) _dependencies() map[Coordination]struct{} {
 	}
 	for _, it := range this.dom.Dependencies {
 		if !(it.Scope == "" || it.Scope == "compile" || it.Scope == "runtime") {
-			mc := Coordination{
+			mc := Coordinate{
 				GroupId:    resolvePomPropertiesValue(this, it.GroupID),
 				ArtifactId: resolvePomPropertiesValue(this, it.ArtifactID),
 				Version:    resolvePomPropertiesValue(this, it.Version),
@@ -84,8 +84,8 @@ func (this *PomFile) _dependencies() map[Coordination]struct{} {
 	}
 	return m
 }
-func (this *PomFile) Dependencies() []Coordination {
-	var rs []Coordination
+func (this *PomFile) Dependencies() []Coordinate {
+	var rs []Coordinate
 	for it := range this._dependencies() {
 		rs = append(rs, it)
 	}
@@ -134,7 +134,7 @@ func resolvePomInheritance(pomFiles []*PomFile) {
 		if it.dom.Parent.ArtifactID == "" {
 			continue
 		}
-		parentCoordination := Coordination{
+		parentCoordination := Coordinate{
 			GroupId:    resolvePomPropertiesValue(it, it.dom.Parent.GroupID),
 			ArtifactId: resolvePomPropertiesValue(it, it.dom.Parent.ArtifactID),
 			Version:    resolvePomPropertiesValue(it, it.dom.Parent.Version),
@@ -143,13 +143,13 @@ func resolvePomInheritance(pomFiles []*PomFile) {
 	}
 }
 
-type Coordination struct {
+type Coordinate struct {
 	GroupId    string
 	ArtifactId string
 	Version    string
 }
 
-func (this Coordination) String() string {
+func (this Coordinate) String() string {
 	s := this.GroupId + ":" + this.ArtifactId
 	if this.Version != "" {
 		s += ":" + this.Version

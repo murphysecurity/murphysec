@@ -36,13 +36,13 @@ func (i *Inspector) PackageManagerType() base.PackageManagerType {
 }
 
 type Dependency struct {
-	Coordination
+	Coordinate
 	Children []Dependency
 }
 
 func ScanMavenProject(dir string) ([]base.Module, error) {
 	var modules []base.Module
-	var deps map[Coordination][]Dependency
+	var deps map[Coordinate][]Dependency
 	mvnVer, e := checkMvnVersion()
 	skipMvnScan := false
 	if e != nil {
@@ -62,11 +62,11 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 		return nil, errors.Wrap(e, "read maven project failed")
 	}
 	if deps == nil {
-		deps = map[Coordination][]Dependency{}
+		deps = map[Coordinate][]Dependency{}
 		for _, it := range poms {
 			for _, d := range it.Dependencies() {
 				deps[it.Coordination()] = append(deps[it.Coordination()], Dependency{
-					Coordination: d,
+					Coordinate: d,
 				})
 			}
 		}

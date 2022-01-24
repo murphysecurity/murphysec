@@ -20,20 +20,20 @@ var depPattern = regexp.MustCompile("\\\"([^:\\\"]+):([^:\\\"]+):(?:[^:\\\"]+):(
 
 const _MaxLineSize = 128 * 1024
 
-func parseOutput(reader io.Reader) map[Coordination][]Dependency {
-	collection := map[Coordination]map[Coordination][]Coordination{}
+func parseOutput(reader io.Reader) map[Coordinate][]Dependency {
+	collection := map[Coordinate]map[Coordinate][]Coordinate{}
 
 	input := bufio.NewScanner(reader)
 	input.Split(bufio.ScanLines)
 	input.Buffer(make([]byte, _MaxLineSize), _MaxLineSize)
 
-	var currentModule Coordination
+	var currentModule Coordinate
 
 	for input.Scan() {
 		line := input.Text()
 		if m := modulePattern.FindStringSubmatch(line); m != nil {
 			// module matched
-			currentModule = Coordination{
+			currentModule = Coordinate{
 				GroupId:    m[1],
 				ArtifactId: m[2],
 				Version:    m[3],
@@ -42,19 +42,19 @@ func parseOutput(reader io.Reader) map[Coordination][]Dependency {
 		}
 		if m := depPattern.FindStringSubmatch(line); m != nil {
 			if collection[currentModule] == nil {
-				collection[currentModule] = map[Coordination][]Coordination{}
+				collection[currentModule] = map[Coordinate][]Coordinate{}
 			}
 			if !utils.InStringSlice([]string{"compile", "runtime", ""}, m[4]) ||
 				!utils.InStringSlice([]string{"compile", "runtime", ""}, m[8]) {
 				logger.Debug.Println("Skip line", line)
 				continue
 			}
-			left := Coordination{
+			left := Coordinate{
 				GroupId:    m[1],
 				ArtifactId: m[2],
 				Version:    m[3],
 			}
-			collection[currentModule][left] = append(collection[currentModule][left], Coordination{
+			collection[currentModule][left] = append(collection[currentModule][left], Coordinate{
 				GroupId:    m[5],
 				ArtifactId: m[6],
 				Version:    m[7],
@@ -71,13 +71,13 @@ func parseOutput(reader io.Reader) map[Coordination][]Dependency {
 		}
 	}
 	logger.Debug.Println("Total items:", count)
-	graphs := map[Coordination][]Dependency{}
+	graphs := map[Coordinate][]Dependency{}
 	for module, it := range collection {
 		graphs[module] = _conv(module, it, nil).Children
 	}
 	return graphs
 }
-func _conv(root Coordination, m map[Coordination][]Coordination, visited []Coordination) Dependency {
+func _conv(root Coordinate, m map[Coordinate][]Coordinate, visited []Coordinate) Dependency {
 	for i := range visited {
 		if visited[i] == root {
 			var names []string
@@ -85,10 +85,10 @@ func _conv(root Coordination, m map[Coordination][]Coordination, visited []Coord
 				names = append(names, it.String())
 			}
 			logger.Warn.Println("Circular dependency:", strings.Join(names, " -> "))
-			return Dependency{Coordination: root}
+			return Dependency{Coordinate: root}
 		}
 	}
-	rootDep := Dependency{Coordination: root}
+	rootDep := Dependency{Coordinate: root}
 	if len(visited) < 6 {
 		for _, it := range m[root] {
 			rootDep.Children = append(rootDep.Children, _conv(it, m, append(visited, root)))
@@ -135,7 +135,7 @@ func checkMvnVersion() (*MvmCmdVersionInfo, error) {
 
 const _MaxMvnOutputLine = 128 * 1024
 
-func scanMvnDependency(projectDir string) (map[Coordination][]Dependency, error) {
+func scanMvnDependency(projectDir string) (map[Coordinate][]Dependency, error) {
 	cmd := exec.Command("mvn", "dependency:tree", "-DoutputType=dot", fmt.Sprintf("--file=%s/pom.xml", projectDir))
 	shutdownKey := shutdown.Add(func() {
 		logger.Warn.Println("Maven shutdown hook execute.")
@@ -157,7 +157,7 @@ func scanMvnDependency(projectDir string) (map[Coordination][]Dependency, error)
 	mvnStdoutR, mvnStdoutW := io.Pipe()
 	defer must.Close(mvnStdoutW)
 	cmd.Stdout = mvnStdoutW
-	var mvnResult map[Coordination][]Dependency
+	var mvnResult map[Coordinate][]Dependency
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
