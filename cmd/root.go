@@ -29,7 +29,7 @@ func rootCmd() *cobra.Command {
 			must.Must(cmd.Help())
 		},
 	}
-	c.PersistentFlags().BoolVar(&versionFlag, "version", false, "show version and exit")
+	c.PersistentFlags().BoolVarP(&versionFlag, "version", "v", false, "show version and exit")
 	c.PersistentFlags().BoolVar(&logger.DisableLogFile, "no-log-file", false, "do not write log file")
 	c.PersistentFlags().StringVar(&logger.CliLogFilePathOverride, "write-log-to", "", "specify log file path")
 	c.PersistentFlags().StringVar(&logger.ConsoleLogLevelOverride, "log-level", "", "specify log level, must be silent|error|warn|info|debug")
