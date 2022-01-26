@@ -62,7 +62,12 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 		cacheMap := &DepTreeCacheMap{}
 		for _, info := range repo.ListModuleInfo() {
 			logger.Debug.Println("Resolving module", info.Coordinate())
-			p := _resolve(nil, resolver, info.PomFile, cacheMap, nil, 3)
+			pomFile, e := resolver.ResolvePomFile(nil, info.Coordinate())
+			if e != nil {
+				logger.Err.Println("Resolve local module failed", info.Coordinate(), e.Error())
+				continue
+			}
+			p := _resolve(nil, resolver, pomFile, cacheMap, nil, 3)
 			if p == nil {
 				logger.Info.Println("Resolve pom dependency failed.", info.PomFile.Coordinate().String())
 			} else {
