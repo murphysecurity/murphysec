@@ -13,4 +13,10 @@ func TestSemErr(t *testing.T) {
 	assert.True(t, errors.Is(ErrT, e))
 	assert.True(t, errors.Is(e, e))
 	assert.False(t, errors.Is(errors.New("awsl"), errors.New("awsl")))
+	var ErrE = New("EE")
+	e = ErrE.Decorate(e)
+	assert.True(t, errors.Is(e, ErrE))
+	assert.True(t, errors.Is(e, ErrT))
+	var ErrQ = New("QE")
+	assert.False(t, errors.Is(e, ErrQ))
 }
