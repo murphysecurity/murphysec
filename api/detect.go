@@ -164,7 +164,5 @@ func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
 		logger.Err.Println("API response body decode failed.", e.Error())
 		return nil, e
 	}
-	logger.Debug.Println("response")
-	logger.Debug.Println(string(b))
 	return &v.Data, nil
 }
