@@ -4,97 +4,127 @@ import (
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
-	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/must"
 	"path/filepath"
+	"sync"
 )
-
-type Inspector struct{}
-
-func New() base.Inspector {
-	return &Inspector{}
-}
-
-func (i *Inspector) String() string {
-	return "MavenInspector@" + i.Version()
-}
-
-func (i *Inspector) Version() string {
-	return "v0.0.1"
-}
-
-func (i *Inspector) CheckDir(dir string) bool {
-	return utils.IsFile(filepath.Join(dir, "pom.xml"))
-}
-
-func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
-	return ScanMavenProject(dir)
-}
-
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMMaven
-}
 
 type Dependency struct {
 	Coordinate
-	Children []Dependency
+	Children []Dependency `json:"children"`
 }
 
 func ScanMavenProject(dir string) ([]base.Module, error) {
 	var modules []base.Module
 	var deps map[Coordinate][]Dependency
-	mvnVer, e := checkMvnVersion()
-	skipMvnScan := false
-	if e != nil {
-		logger.Err.Println("Check mvn version failed", e.Error())
-		logger.Err.Println("Skip maven scan")
-		skipMvnScan = true
-	}
-	if !skipMvnScan {
+	moduleFileMapping := map[Coordinate]string{}
+	var e error
+	// check maven version, skip maven scan if check fail
+	skipMvnScan, mvnVer := checkMvnEnv()
+	if skipMvnScan {
 		deps, e = scanMvnDependency(dir)
 		if e != nil {
-			logger.Err.Println("mvn scan failed.", e.Error())
+			logger.Err.Printf("mvn scan failed: %+v\n", e)
 		}
 	}
-	poms, e := ReadMavenProject(dir)
+	// analyze pom file
+	repo, e := NewProjectRepoFromDir(dir)
 	if e != nil {
-		logger.Err.Println("Read mvn project failed.", e.Error())
-		return nil, errors.Wrap(e, "read maven project failed")
+		logger.Err.Println("Scan pom file failed")
+		return nil, errors.Wrap(e, "scan project pom failed")
+	}
+	// fill moduleFileMapping
+	for _, info := range repo.ListModuleInfo() {
+		relPath := must.String(filepath.Rel(dir, info.FilePath))
+		moduleFileMapping[info.Coordinate()] = relPath
+		logger.Debug.Println("Module path mapping:", info.Coordinate().String(), relPath)
+	}
+	resolver := NewResolver(repo)
+	m2Settings := ReadM2SettingMirror()
+	if m2Settings == nil {
+		resolver.AddRepo(NewLocalRepo(""))
+	} else {
+		resolver.AddRepo(NewLocalRepo(m2Settings.RepoPath))
+	}
+	if m2Settings == nil || len(m2Settings.Mirrors) == 0 {
+		resolver.AddRepo(DefaultMavenRepo()...)
+	} else {
+		for _, it := range m2Settings.Mirrors {
+			resolver.AddRepo(MustNewHttpRepo(it))
+		}
 	}
 	if deps == nil {
+		logger.Warn.Println("Maven command execute failed, use another tools")
 		deps = map[Coordinate][]Dependency{}
-		for _, it := range poms {
-			for _, d := range it.Dependencies() {
-				deps[it.Coordination()] = append(deps[it.Coordination()], Dependency{
-					Coordinate: d,
-				})
+		cacheMap := &DepTreeCacheMap{}
+		for _, info := range repo.ListModuleInfo() {
+			logger.Debug.Println("Resolving module", info.Coordinate())
+			p := _resolve(nil, resolver, info.PomFile, cacheMap, nil, 3)
+			if p == nil {
+				logger.Info.Println("Resolve pom dependency failed.", info.PomFile.Coordinate().String())
+			} else {
+				deps[info.Coordinate()] = p.Children
 			}
 		}
 	}
-	for _, it := range poms {
-		coor := it.Coordination()
+	for coordinate, dependencies := range deps {
 		modules = append(modules, base.Module{
 			PackageManager: "Maven",
-			Language:       "Java",
+			Language:       "java",
 			PackageFile:    "pom.xml",
-			Name:           coor.GroupId + ":" + coor.ArtifactId,
-			Version:        coor.Version,
-			RelativePath:   must.String(filepath.Rel(dir, it.Path)),
-			Dependencies:   _convDepToModule(deps[coor]),
+			Name:           coordinate.Name(),
+			Version:        coordinate.Version,
+			RelativePath:   moduleFileMapping[coordinate],
+			Dependencies:   convDeps(dependencies),
 			RuntimeInfo:    mvnVer,
 		})
 	}
 	return modules, nil
 }
 
-func _convDepToModule(deps []Dependency) []base.Dependency {
+func convDeps(deps []Dependency) []base.Dependency {
 	var rs []base.Dependency
 	for _, it := range deps {
-		rs = append(rs, base.Dependency{
-			Name:         it.GroupId + ":" + it.ArtifactId,
-			Version:      it.Version,
-			Dependencies: _convDepToModule(it.Children),
-		})
+		d := _convDep(it)
+		if d == nil {
+			continue
+		}
+		rs = append(rs, *d)
 	}
 	return rs
+}
+
+func _convDep(dep Dependency) *base.Dependency {
+	if dep.GroupId == "" || dep.ArtifactId == "" || dep.Version == "" {
+		return nil
+	}
+	d := &base.Dependency{
+		Name:         dep.Name(),
+		Version:      dep.Version,
+		Dependencies: []base.Dependency{},
+	}
+	for _, it := range dep.Children {
+		dd := _convDep(it)
+		if dd == nil {
+			continue
+		}
+		d.Dependencies = append(d.Dependencies, *dd)
+	}
+	return d
+}
+
+type DepTreeCacheMap struct {
+	m sync.Map
+}
+
+func (d *DepTreeCacheMap) Get(coor Coordinate) *Dependency {
+	v, _ := d.m.Load(coor)
+	if vv, ok := v.(*Dependency); ok {
+		return vv
+	}
+	return nil
+}
+
+func (d *DepTreeCacheMap) Put(coor Coordinate, tree *Dependency) {
+	d.m.Store(coor, tree)
 }

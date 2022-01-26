@@ -181,3 +181,18 @@ func scanMvnDependency(projectDir string) (map[Coordinate][]Dependency, error) {
 	logger.Debug.Println("Mvn output parse OK.")
 	return mvnResult, nil
 }
+
+// checkMvnEnv 检查maven环境
+func checkMvnEnv() (bool, *MvmCmdVersionInfo) {
+	if os.Getenv("NO_MVN") != "" {
+		logger.Err.Println("NO_MVN environment found. Skip maven scan")
+		return false, nil
+	}
+	ver, e := checkMvnVersion()
+	if e != nil {
+		logger.Err.Println("Get mvn command version failed, skip maven scan.")
+		return false, nil
+	}
+	logger.Info.Println("Mvn command version:", ver.MavenVer)
+	return true, ver
+}
