@@ -10,6 +10,7 @@ import (
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/module/maven"
 	"murphysec-cli-simple/utils/must"
+	"os"
 	"time"
 )
 
@@ -25,7 +26,11 @@ func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 	if e != nil {
 		return nil, errors.Wrap(e, "Engine scan failed.")
 	}
-	req := getAPIRequest("client")
+	taskType := "client"
+	if os.Getenv("CI") != "" {
+		taskType = "ci"
+	}
+	req := getAPIRequest(taskType)
 	// 拼凑项目信息
 	wrapProjectInfoToReqObj(req, dir)
 	logger.Debug.Println("Before scan. projectName:", req.ProjectName, "git:", req.GitInfo != nil)
