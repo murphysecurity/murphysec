@@ -112,7 +112,7 @@ func (f *FileIterator) Next() bool {
 	for f.list.Len() < 1 && !f.terminated {
 		f.cond.Wait()
 	}
-	if f.terminated {
+	if f.terminated && f.list.Len() == 0 {
 		return false
 	}
 	f.curr = f.list.Front().Value

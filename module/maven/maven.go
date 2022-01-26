@@ -39,6 +39,9 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 		moduleFileMapping[info.Coordinate()] = relPath
 		logger.Debug.Println("Module path mapping:", info.Coordinate().String(), relPath)
 	}
+	if len(repo.ListModuleInfo()) == 0 {
+		logger.Debug.Println("No module found")
+	}
 	resolver := NewResolver(repo)
 	m2Settings := ReadM2SettingMirror()
 	if m2Settings == nil {
