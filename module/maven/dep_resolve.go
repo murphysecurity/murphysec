@@ -15,7 +15,6 @@ type depTree struct {
 func _resolve(ctx context.Context, resolver *Resolver, pom *PomFile, cache *DepTreeCacheMap, visited *CoordinateNode, depth int) *Dependency {
 	currentPomCoor := pom.Coordinate()
 	if depth < 0 || visited.Has(currentPomCoor) {
-		logger.Warn.Println("Circular dependency tree")
 		return nil
 	}
 	visited = visited.Append(currentPomCoor)
