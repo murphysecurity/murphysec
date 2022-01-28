@@ -25,17 +25,17 @@ image: golang:1.17
 compose-build:
   stage: build
   artifacts:
-    expire_in: 1 week
+    expire_in: 1 day
     paths:
       - out/*
   script:
     - export
-    - echo 10.0.1.5 git.murphysec.com >> /etc/hosts
     - GOOS=linux GOARCH=amd64 go build -o out/murphysec-linux-amd64 -v .
     - GOOS=windows GOARCH=amd64 go build -o out/murphysec-windows-amd64.exe -v .
     - GOOS=darwin GOARCH=amd64 go build -o out/murphysec-darwin-amd64 -v .
     - cd out
     - chmod 0755 *
     - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
+    - cat *.sha256
     - sha256sum -c *.sha256
   
