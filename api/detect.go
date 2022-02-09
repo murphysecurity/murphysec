@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-var ErrTokenInvalid = errors.New("Token invalid")
-
 type VoGitInfo struct {
 	Commit       string `json:"commit"`
 	GitRef       string `json:"git_ref"`
@@ -121,17 +119,11 @@ func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
 	uri := serverAddress() + "/message/v1/access/detect/user_cli"
 	logger.Info.Println("Call API:", uri)
 	requestData := must.Byte(json.Marshal(input))
-	logger.Debug.Println("Request body:")
-	logger.Debug.Println(string(requestData))
+	logger.Debug.Println("Request body:", string(requestData))
 	body := bytes.NewReader(requestData)
-	//body := new(bytes.Buffer)
-	//g := gzip.NewWriter(body)
-	//must.Int(g.Write(requestData))
-	//must.Close(g)
 	request, e := http.NewRequest(http.MethodPost, uri, body)
 	must.Must(e)
 	request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Content-Encoding", "gzip")
 	r, e := client.Do(request)
 	if e != nil {
 		logger.Err.Println("API request failed.", e.Error())

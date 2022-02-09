@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/pkg/errors"
 	"net/http"
 	"os"
 	"strconv"
@@ -37,3 +38,5 @@ func init() {
 func getClient() *http.Client {
 	return client
 }
+
+var ErrTokenInvalid = errors.New("Token invalid")
