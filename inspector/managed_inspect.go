@@ -38,6 +38,7 @@ func managedInspectAPIRequest(ctx *ManagedScanContext) (*api.VoDetectResponse, e
 		TaskStartTimestamp: ctx.StartTime.Unix(),
 		TaskSource:         ctx.TaskSource,
 		UserAgent:          version.UserAgent(),
+		ProjectName:        ctx.ProjectName,
 	}
 	// 拼请求体
 	uuidModuleMap := map[uuid.UUID]base.Module{}

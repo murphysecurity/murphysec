@@ -40,6 +40,10 @@ func (m *ManagedScanContext) WrapProjectInfo(projectDir string) {
 	if m.ProjectName == "" {
 		m.ProjectName = filepath.Base(projectDir)
 	}
+	logger.Info.Println("Project name:", m.ProjectName)
+	if m.ProjectName == "" {
+		logger.Warn.Println("Resolve project name failed.")
+	}
 }
 
 func mapVoGitInfoOrNil(g *GitInfo) *api.VoGitInfo {
