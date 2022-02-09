@@ -9,11 +9,12 @@ import (
 	"time"
 )
 
-func ManagedInspect(dir string) (*api.VoDetectResponse, error) {
+func ManagedInspect(dir string, taskSource api.InspectTaskSource) (*api.VoDetectResponse, error) {
 	logger.Info.Println("Start managed inspect...", dir)
 	// 包管理器的扫描
-	ctx := ManagedScanContext{
-		StartTime: time.Now(),
+	ctx := &ManagedScanContext{
+		StartTime:  time.Now(),
+		TaskSource: taskSource,
 	}
 	ctx.WrapProjectInfo(dir)
 	if e := managedInspectScan(ctx); e != nil {
@@ -28,7 +29,7 @@ func ManagedInspect(dir string) (*api.VoDetectResponse, error) {
 }
 
 func IdeaScan(dir string) (interface{}, error) {
-	response, e := ManagedInspect(dir)
+	response, e := ManagedInspect(dir, api.TaskSourceIdea)
 	// 扫描出错
 	if e != nil && e != ErrNoEngineMatched {
 		logger.Err.Printf("Managed scan failed: %+v\n", e)
@@ -47,7 +48,7 @@ func IdeaScan(dir string) (interface{}, error) {
 	return nil, nil
 }
 func CliScan(dir string, jsonOutput bool) (interface{}, error) {
-	response, e := ManagedInspect(dir)
+	response, e := ManagedInspect(dir, api.TaskSourceCli)
 	// 扫描出错
 	if e != nil && e != ErrNoEngineMatched {
 		logger.Err.Printf("Managed scan failed: %+v\n", e)

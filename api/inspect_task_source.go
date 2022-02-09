@@ -1,6 +1,8 @@
 package api
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type InspectTaskSource int
 
@@ -19,7 +21,7 @@ func (receiver InspectTaskSource) String() string {
 	case TaskSourceIdea:
 		return "IDEA"
 	}
-	panic(receiver)
+	panic(int(receiver))
 }
 
 func (receiver InspectTaskSource) MarshalJSON() ([]byte, error) {

@@ -1,6 +1,7 @@
 package inspector
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
@@ -23,7 +24,7 @@ var managedInspector = []base.Inspector{
 	npm.New(),
 }
 
-func managedInspectAPIRequest(ctx ManagedScanContext) (*api.VoDetectResponse, error) {
+func managedInspectAPIRequest(ctx *ManagedScanContext) (*api.VoDetectResponse, error) {
 	must.True(len(ctx.ManagedModules) > 0)
 	// api request object
 	req := api.UserCliDetectInput{
@@ -58,7 +59,7 @@ func managedInspectAPIRequest(ctx ManagedScanContext) (*api.VoDetectResponse, er
 }
 
 // 受管理扫描
-func managedInspectScan(ctx ManagedScanContext) error {
+func managedInspectScan(ctx *ManagedScanContext) error {
 	dir := ctx.ProjectDir
 	startTime := time.Now()
 	logger.Info.Println("Auto scan dir:", dir)
@@ -84,11 +85,15 @@ func managedInspectScan(ctx ManagedScanContext) error {
 			logger.Err.Printf("Engine: %v scan failed. Reason: %+v\n", it, e)
 			continue
 		}
+		fmt.Printf("Inspector terminated %v, total module: %v\n", it, len(rs))
 		for _, it := range rs {
 			ctx.ManagedModules = append(ctx.ManagedModules, it)
 		}
 	}
 	endTime := time.Now()
 	logger.Info.Println("Scan terminated. Cost time:", endTime.Sub(startTime))
+	if len(ctx.ManagedModules) < 1 {
+		return ErrNoModule
+	}
 	return nil
 }

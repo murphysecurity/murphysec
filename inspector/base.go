@@ -14,6 +14,7 @@ var TaskInfo string
 
 var ErrNoEngineMatched = errors.New("ErrNoEngineMatched")
 var ErrAPITokenInvalid = errors.New("ErrAPITokenInvalid")
+var ErrNoModule = errors.New("ErrNoModule")
 
 type ManagedScanContext struct {
 	GitInfo        *GitInfo
