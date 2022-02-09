@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
 	"murphysec-cli-simple/logger"
 	"strings"
@@ -14,16 +13,10 @@ func authCmd() *cobra.Command {
 	c := &cobra.Command{Use: "auth"}
 	c.AddCommand(authLoginCmd())
 	c.AddCommand(authLogoutCmd())
-	c.AddCommand(authCheckCmd())
 	return c
 }
 
 var forceTokenOverwrite bool
-
-func authCheckCmd() *cobra.Command {
-	c := &cobra.Command{Use: "check", Run: authCheckRun}
-	return c
-}
 
 func authLoginCmd() *cobra.Command {
 	c := &cobra.Command{Use: "login [token]", Run: authLoginRun}
@@ -35,29 +28,6 @@ func authLoginCmd() *cobra.Command {
 func authLogoutCmd() *cobra.Command {
 	c := &cobra.Command{Use: "logout", Run: authLogoutRun}
 	return c
-}
-
-func authCheckRun(cmd *cobra.Command, args []string) {
-	token := conf.APIToken()
-	if token == "" {
-		fmt.Println("Please use command `auth login` setup token first.")
-		SetGlobalExitCode(-1)
-		return
-	}
-	f, e := api.CheckAPIToken(token)
-	if e != nil {
-		logger.Err.Println("token check failed", e.Error())
-		fmt.Println("Sorry, token check failed. Check logs for more information.")
-		SetGlobalExitCode(-1)
-		return
-	}
-	if f {
-		fmt.Println("Congratulation, the token is valid!")
-	} else {
-		fmt.Println("Sorry, the token is invalid.")
-		SetGlobalExitCode(-1)
-	}
-	return
 }
 
 func authLoginRun(cmd *cobra.Command, args []string) {
