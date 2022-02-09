@@ -26,8 +26,8 @@ func scanRun(cmd *cobra.Command, args []string) {
 	if e != nil {
 		SetGlobalExitCode(1)
 		if !CliJsonOutput {
-			fmt.Println("Scan failed.")
+			fmt.Printf("命令行扫描失败，错误：%+v\n", e)
 		}
-		logger.Err.Println("cli scan failed.", e.Error())
+		logger.Err.Printf("Cli scan failed. %+v\n", e)
 	}
 }

@@ -3,58 +3,64 @@ package inspector
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/module/base"
-	"murphysec-cli-simple/module/maven"
 	"murphysec-cli-simple/utils/must"
-	"os"
 	"time"
 )
 
+func ManagedInspect(dir string) (*api.VoDetectResponse, error) {
+	logger.Info.Println("Start managed inspect...", dir)
+	// 包管理器的扫描
+	ctx := ManagedScanContext{
+		StartTime: time.Now(),
+	}
+	ctx.WrapProjectInfo(dir)
+	if e := managedInspectScan(ctx); e != nil {
+		logger.Info.Printf("Managed inspect failed, %+v\n", e)
+		return nil, e
+	}
+	response, e := managedInspectAPIRequest(ctx)
+	if e != nil {
+		return nil, e
+	}
+	return response, nil
+}
+
+func IdeaScan(dir string) (interface{}, error) {
+	response, e := ManagedInspect(dir)
+	// 扫描出错
+	if e != nil && e != ErrNoEngineMatched {
+		logger.Err.Printf("Managed scan failed: %+v\n", e)
+		if e == api.ErrTokenInvalid {
+			reportIdeaStatus(4, "Token invalid")
+			return nil, e
+		}
+		return nil, e
+	}
+	// 扫描成功
+	if e == nil {
+		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
+		return nil, nil
+	}
+	// todo: cpp
+	return nil, nil
+}
 func CliScan(dir string, jsonOutput bool) (interface{}, error) {
-	startTime := time.Now()
-	engine := tryMatchInspector(dir)
-	if engine == nil {
-		return nil, errors.New("Can't inspect project. No inspector supported.")
+	response, e := ManagedInspect(dir)
+	// 扫描出错
+	if e != nil && e != ErrNoEngineMatched {
+		logger.Err.Printf("Managed scan failed: %+v\n", e)
+		if e == api.ErrTokenInvalid {
+			fmt.Println("Token 无效")
+			return nil, e
+		}
+		return nil, e
 	}
-	// 开始扫描
-	logger.Info.Println("IdeaScan dir:", dir, "Inspector:", engine.String(), "Time:", startTime.Format(time.RFC3339))
-	modules, e := engine.Inspect(dir)
-	if e != nil {
-		return nil, errors.Wrap(e, "Engine scan failed.")
-	}
-	taskType := "client"
-	if os.Getenv("CI") != "" {
-		taskType = "ci"
-	}
-	req := getAPIRequest(taskType)
-	// 拼凑项目信息
-	wrapProjectInfoToReqObj(req, dir)
-	logger.Debug.Println("Before scan. projectName:", req.ProjectName, "git:", req.GitInfo != nil)
-	// 拼凑请求体 模块
-	moduleUUIDMap := map[uuid.UUID]base.Module{}
-	for _, it := range modules {
-		moduleVo := mapVoModule(it)
-		moduleVo.ModuleUUID = uuid.Must(uuid.NewRandom())
-		moduleUUIDMap[moduleVo.ModuleUUID] = it
-		req.Modules = append(req.Modules, moduleVo)
-	}
-	// API 请求
-	r, e := api.SendDetect(*req)
-	if e != nil {
-		return nil, errors.Wrap(e, "Server request failed.")
-	}
-	// 输出 API 响应
 	if jsonOutput {
-		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(r)))))
+		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
 	} else {
-		fmt.Println(fmt.Sprintf("扫描完成，共计%d个组件，%d个漏洞", r.DependenciesCount, r.IssuesCompsCount))
-	}
-	if _, ok := engine.(*maven.Inspector); ok {
-		javaImportClauseScan(r, dir)
+		fmt.Println(fmt.Sprintf("扫描完成，共计%d个组件，%d个漏洞", response.DependenciesCount, response.IssuesCompsCount))
 	}
 	return nil, nil
 }

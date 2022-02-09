@@ -5,6 +5,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/pkg/errors"
 	giturls "github.com/whilp/git-urls"
+	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/logger"
 )
 
@@ -13,6 +14,18 @@ type GitInfo struct {
 	RemoteURL      string `json:"remote_url"`
 	HeadCommitHash string `json:"head_commit_hash"`
 	HeadRefName    string `json:"head_ref_name"`
+	ProjectName    string `json:"project_name"`
+}
+
+func (g *GitInfo) AoiVo() *api.VoGitInfo {
+	if g == nil {
+		return nil
+	}
+	return &api.VoGitInfo{
+		Commit:       g.HeadCommitHash,
+		GitRef:       g.HeadRefName,
+		GitRemoteUrl: g.RemoteURL,
+	}
 }
 
 func getGitInfo(dir string) (*GitInfo, error) {
@@ -56,6 +69,7 @@ func getGitInfo(dir string) (*GitInfo, error) {
 		RemoteURL:      "",
 		HeadCommitHash: "",
 		HeadRefName:    "",
+		ProjectName:    "",
 	}
 	for _, it := range remoteUrls {
 		u, e := giturls.Parse(it)
@@ -65,6 +79,7 @@ func getGitInfo(dir string) (*GitInfo, error) {
 		}
 		u.User = nil
 		gitInfo.RemoteURL = u.String()
+		gitInfo.ProjectName = u.Path
 	}
 	head, e := repo.Head()
 	if e != nil {

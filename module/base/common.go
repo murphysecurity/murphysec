@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	"murphysec-cli-simple/api"
 	"strings"
 )
 
@@ -16,14 +17,37 @@ type Module struct {
 	RuntimeInfo    interface{}  `json:"runtime_info"`
 }
 
+func (m Module) ApiVo() *api.VoModule {
+	r := &api.VoModule{
+		Dependencies:   mapVoDependency(m.Dependencies),
+		Language:       m.Language,
+		Name:           m.Name,
+		PackageFile:    m.PackageFile,
+		PackageManager: m.PackageManager,
+		RelativePath:   m.RelativePath,
+		RuntimeInfo:    m.RuntimeInfo,
+		Version:        m.Version,
+	}
+	return r
+}
+
 type Dependency struct {
 	Name         string       `json:"name"`
 	Version      string       `json:"version"`
 	Dependencies []Dependency `json:"dependencies"`
 }
 
-type CommonScanFunc func(dir string) ([]Module, error)
-type CommonCheckFunc func(dir string) bool
+func mapVoDependency(d []Dependency) []api.VoDependency {
+	r := make([]api.VoDependency, 0)
+	for _, it := range d {
+		r = append(r, api.VoDependency{
+			Name:         it.Name,
+			Version:      it.Version,
+			Dependencies: mapVoDependency(it.Dependencies),
+		})
+	}
+	return r
+}
 
 type Inspector interface {
 	fmt.Stringer

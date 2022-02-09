@@ -38,19 +38,19 @@ type VoModule struct {
 }
 
 type UserCliDetectInput struct {
-	ApiToken           string     `json:"api_token"`
-	CliVersion         string     `json:"cli_version"`
-	CmdLine            string     `json:"cmd_line"`
-	Engine             string     `json:"engine"`
-	GitInfo            *VoGitInfo `json:"git_info"`
-	Modules            []VoModule `json:"modules"`
-	ProjectName        string     `json:"project_name"`
-	TargetAbsPath      string     `json:"target_abs_path"`
-	TaskConsumeTime    int        `json:"task_consume_time"`
-	TaskInfo           string     `json:"task_info"`
-	TaskStartTimestamp int        `json:"task_start_timestamp"`
-	TaskType           string     `json:"task_type"`
-	UserAgent          string     `json:"user_agent"`
+	ApiToken           string            `json:"api_token"`
+	CliVersion         string            `json:"cli_version"`
+	CmdLine            string            `json:"cmd_line"`
+	Engine             string            `json:"engine"`
+	GitInfo            *VoGitInfo        `json:"git_info"`
+	Modules            []VoModule        `json:"modules"`
+	ProjectName        string            `json:"project_name"`
+	TargetAbsPath      string            `json:"target_abs_path"`
+	TaskConsumeTime    int               `json:"task_consume_time"`
+	TaskInfo           string            `json:"task_info"`
+	TaskStartTimestamp int64             `json:"task_start_timestamp"`
+	TaskSource         InspectTaskSource `json:"task_type"`
+	UserAgent          string            `json:"user_agent"`
 }
 
 type VoVulnInfo struct {
