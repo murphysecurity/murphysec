@@ -3,9 +3,13 @@ package inspector
 import (
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
+	"murphysec-cli-simple/conf"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
+	"murphysec-cli-simple/version"
+	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -16,7 +20,7 @@ var ErrNoEngineMatched = errors.New("ErrNoEngineMatched")
 var ErrAPITokenInvalid = errors.New("ErrAPITokenInvalid")
 var ErrNoModule = errors.New("ErrNoModule")
 
-type ManagedScanContext struct {
+type ScanContext struct {
 	GitInfo        *GitInfo
 	ProjectName    string
 	TaskSource     api.InspectTaskSource
@@ -25,8 +29,8 @@ type ManagedScanContext struct {
 	StartTime      time.Time
 }
 
-func (m *ManagedScanContext) WrapProjectInfo(projectDir string) {
-	m.ProjectDir = projectDir
+func (ctx *ScanContext) WrapProjectInfo(projectDir string) {
+	ctx.ProjectDir = projectDir
 	gitInfo, e := getGitInfo(projectDir)
 	if e != nil {
 		logger.Err.Printf("Get git info failed: %+v\n", e)
@@ -34,14 +38,31 @@ func (m *ManagedScanContext) WrapProjectInfo(projectDir string) {
 	if gitInfo == nil {
 		logger.Info.Println("No valid git info found.")
 	} else {
-		m.GitInfo = gitInfo
-		m.ProjectName = gitInfo.ProjectName
+		ctx.GitInfo = gitInfo
+		ctx.ProjectName = gitInfo.ProjectName
 	}
-	if m.ProjectName == "" {
-		m.ProjectName = filepath.Base(projectDir)
+	if ctx.ProjectName == "" {
+		ctx.ProjectName = filepath.Base(projectDir)
 	}
-	logger.Info.Println("Project name:", m.ProjectName)
-	if m.ProjectName == "" {
+	logger.Info.Println("Project name:", ctx.ProjectName)
+	if ctx.ProjectName == "" {
 		logger.Warn.Println("Resolve project name failed.")
 	}
+}
+
+func (ctx *ScanContext) getApiRequestObj() *api.UserCliDetectInput {
+	// api request object
+	req := &api.UserCliDetectInput{
+		ApiToken:           conf.APIToken(),
+		CliVersion:         version.Version(),
+		CmdLine:            strings.Join(os.Args, " "),
+		TargetAbsPath:      ctx.ProjectDir,
+		TaskConsumeTime:    int(time.Now().Sub(ctx.StartTime).Seconds()),
+		TaskInfo:           TaskInfo,
+		TaskStartTimestamp: ctx.StartTime.Unix(),
+		TaskSource:         ctx.TaskSource,
+		UserAgent:          version.UserAgent(),
+		ProjectName:        ctx.ProjectName,
+	}
+	return req
 }
