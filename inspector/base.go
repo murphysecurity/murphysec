@@ -45,14 +45,3 @@ func (m *ManagedScanContext) WrapProjectInfo(projectDir string) {
 		logger.Warn.Println("Resolve project name failed.")
 	}
 }
-
-func mapVoGitInfoOrNil(g *GitInfo) *api.VoGitInfo {
-	if g == nil {
-		return nil
-	}
-	return &api.VoGitInfo{
-		Commit:       g.HeadCommitHash,
-		GitRef:       g.HeadRefName,
-		GitRemoteUrl: g.RemoteURL,
-	}
-}

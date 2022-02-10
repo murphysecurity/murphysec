@@ -3,6 +3,7 @@ package base
 import (
 	"fmt"
 	"murphysec-cli-simple/api"
+	"regexp"
 	"strings"
 )
 
@@ -37,12 +38,17 @@ type Dependency struct {
 	Dependencies []Dependency `json:"dependencies"`
 }
 
+var paddingPattern = regexp.MustCompile("^[\\r\\n\\t ]*|[\\r\\n\\t ]*$")
+
+func trimPadding(s string) string {
+	return paddingPattern.ReplaceAllString(s, "")
+}
 func mapVoDependency(d []Dependency) []api.VoDependency {
 	r := make([]api.VoDependency, 0)
 	for _, it := range d {
 		r = append(r, api.VoDependency{
-			Name:         it.Name,
-			Version:      it.Version,
+			Name:         trimPadding(it.Name),
+			Version:      trimPadding(it.Version),
 			Dependencies: mapVoDependency(it.Dependencies),
 		})
 	}
