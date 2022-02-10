@@ -6,7 +6,6 @@ import (
 	"github.com/ztrue/shutdown"
 	"io"
 	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/must"
 	"os"
 	"os/exec"
@@ -17,6 +16,7 @@ import (
 
 var modulePattern = regexp.MustCompile("digraph +\\\"(.+?):(.+?):.+?:(.+?)\\\" .*\\{")
 var depPattern = regexp.MustCompile("\\\"([^:\\\"]+):([^:\\\"]+):(?:[^:\\\"]+):([^:\\\"]+)(?::([^:\\\"]+))?\\\"\\s*->\\s*\\\"([^:\\\"]+):([^:\\\"]+):(?:[^:\\\"]+):([^:\\\"]+)(?::([^:\\\"]+))?\\\"")
+var depVersionPattern = regexp.MustCompile("^(?:compile|runtime)")
 
 const _MaxLineSize = 128 * 1024
 
@@ -44,8 +44,7 @@ func parseOutput(reader io.Reader) map[Coordinate][]Dependency {
 			if collection[currentModule] == nil {
 				collection[currentModule] = map[Coordinate][]Coordinate{}
 			}
-			if !utils.InStringSlice([]string{"compile", "runtime", ""}, m[4]) ||
-				!utils.InStringSlice([]string{"compile", "runtime", ""}, m[8]) {
+			if (m[4] != "" && !depVersionPattern.MatchString(m[4])) || (m[4] != "" && !depVersionPattern.MatchString(m[8])) {
 				logger.Debug.Println("Skip line", line)
 				continue
 			}
@@ -171,7 +170,6 @@ func scanMvnDependency(projectDir string) (map[Coordinate][]Dependency, error) {
 	}
 	if e := cmd.Wait(); e != nil {
 		logger.Err.Println("Mvn terminated with err.", e.Error())
-		return nil, e
 	} else {
 		logger.Info.Println("Mvn terminated with no err")
 	}
