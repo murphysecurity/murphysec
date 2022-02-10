@@ -1,20 +1,15 @@
 package inspector
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
-	"murphysec-cli-simple/conf"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/module/go_mod"
 	"murphysec-cli-simple/module/maven"
 	"murphysec-cli-simple/module/npm"
 	"murphysec-cli-simple/utils/must"
-	"murphysec-cli-simple/version"
-	"os"
-	"strings"
 	"time"
 )
 
@@ -24,22 +19,9 @@ var managedInspector = []base.Inspector{
 	npm.New(),
 }
 
-func managedInspectAPIRequest(ctx *ManagedScanContext) (*api.VoDetectResponse, error) {
+func managedInspectAPIRequest(ctx *ScanContext) (*api.VoDetectResponse, error) {
 	must.True(len(ctx.ManagedModules) > 0)
-	// api request object
-	req := api.UserCliDetectInput{
-		ApiToken:           conf.APIToken(),
-		CliVersion:         version.Version(),
-		CmdLine:            strings.Join(os.Args, " "),
-		Modules:            []api.VoModule{},
-		TargetAbsPath:      ctx.ProjectDir,
-		TaskConsumeTime:    int(time.Now().Sub(ctx.StartTime).Seconds()),
-		TaskInfo:           TaskInfo,
-		TaskStartTimestamp: ctx.StartTime.Unix(),
-		TaskSource:         ctx.TaskSource,
-		UserAgent:          version.UserAgent(),
-		ProjectName:        ctx.ProjectName,
-	}
+	req := ctx.getApiRequestObj()
 	// 拼请求体
 	uuidModuleMap := map[uuid.UUID]base.Module{}
 	for _, it := range ctx.ManagedModules {
@@ -60,7 +42,7 @@ func managedInspectAPIRequest(ctx *ManagedScanContext) (*api.VoDetectResponse, e
 }
 
 // 受管理扫描
-func managedInspectScan(ctx *ManagedScanContext) error {
+func managedInspectScan(ctx *ScanContext) error {
 	dir := ctx.ProjectDir
 	startTime := time.Now()
 	logger.Info.Println("Auto scan dir:", dir)
@@ -86,7 +68,7 @@ func managedInspectScan(ctx *ManagedScanContext) error {
 			logger.Err.Printf("Engine: %v scan failed. Reason: %+v\n", it, e)
 			continue
 		}
-		fmt.Printf("Inspector terminated %v, total module: %v\n", it, len(rs))
+		logger.Info.Printf("Inspector terminated %v, total module: %v\n", it, len(rs))
 		for _, it := range rs {
 			ctx.ManagedModules = append(ctx.ManagedModules, it)
 		}

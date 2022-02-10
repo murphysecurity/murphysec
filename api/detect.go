@@ -43,7 +43,8 @@ type UserCliDetectInput struct {
 	CmdLine            string            `json:"cmd_line"`
 	Engine             string            `json:"engine"`
 	GitInfo            *VoGitInfo        `json:"git_info"`
-	Modules            []VoModule        `json:"modules"`
+	Modules            []VoModule        `json:"modules,omitempty"`
+	FileHashList       []FileHash        `json:"file_hash_list,omitempty"`
 	ProjectName        string            `json:"project_name"`
 	TargetAbsPath      string            `json:"target_abs_path"`
 	TaskConsumeTime    int               `json:"task_consume_time"`
@@ -51,6 +52,10 @@ type UserCliDetectInput struct {
 	TaskStartTimestamp int64             `json:"task_start_timestamp"`
 	TaskSource         InspectTaskSource `json:"task_type"`
 	UserAgent          string            `json:"user_agent"`
+}
+
+type FileHash struct {
+	Hash string `json:"hash"`
 }
 
 type VoVulnInfo struct {
@@ -115,15 +120,14 @@ type VoDetectResponse struct {
 	TaskId               string    `json:"task_id"`
 }
 
-func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
+func SendDetect(input *UserCliDetectInput) (*VoDetectResponse, error) {
 	uri := serverAddress() + "/message/v1/access/detect/user_cli"
 	logger.Info.Println("Call API:", uri)
 	requestData := must.Byte(json.Marshal(input))
-	logger.Debug.Println("Request body:", string(requestData))
 	body := bytes.NewReader(requestData)
-	request, e := http.NewRequest(http.MethodPost, uri, body)
-	must.Must(e)
+	request := must.Req(http.NewRequest(http.MethodPost, uri, body))
 	request.Header.Set("Content-Type", "application/json")
+	// 发送请求
 	r, e := client.Do(request)
 	if e != nil {
 		logger.Err.Println("API request failed.", e.Error())
@@ -137,14 +141,55 @@ func SendDetect(input UserCliDetectInput) (*VoDetectResponse, error) {
 		logger.Err.Println("Read body failed.", e.Error())
 		return nil, e
 	}
-	logger.Debug.Println("body read succeed")
-	logger.Debug.Println("=== body ===")
-	logger.Debug.Println(string(b))
 	if r.StatusCode == http.StatusUnauthorized {
-		logger.Err.Println("API status:", r.StatusCode)
+		logger.Err.Println("API status:", r.StatusCode, r.Status)
 		logger.Err.Println("Invalid token")
 		return nil, ErrTokenInvalid
 	}
+	logger.Debug.Println("API response body")
+	logger.Debug.Println(string(b))
+	if r.StatusCode != http.StatusOK {
+		logger.Err.Println("API status:", r.StatusCode)
+		return nil, errors.New(fmt.Sprintf("API status: %d", r.StatusCode))
+	}
+	v := struct {
+		Data VoDetectResponse `json:"data"`
+	}{}
+	if e := json.Unmarshal(b, &v); e != nil {
+		logger.Err.Println("API response body decode failed.", e.Error())
+		return nil, e
+	}
+	return &v.Data, nil
+}
+
+func SendDetectHash(input *UserCliDetectInput) (*VoDetectResponse, error) {
+	uri := serverAddress() + "/message/v1/access/detect/user_cli_hash"
+	logger.Info.Println("Call API:", uri)
+	requestData := must.Byte(json.Marshal(input))
+	body := bytes.NewReader(requestData)
+	request := must.Req(http.NewRequest(http.MethodPost, uri, body))
+	request.Header.Set("Content-Type", "application/json")
+	// 发送请求
+	r, e := client.Do(request)
+	if e != nil {
+		logger.Err.Println("API request failed.", e.Error())
+		return nil, e
+	}
+	logger.Info.Println("HTTP request done. Status:", r.StatusCode)
+	//goland:noinspection GoUnhandledErrorResult
+	defer r.Body.Close()
+	b, e := io.ReadAll(r.Body)
+	if e != nil {
+		logger.Err.Println("Read body failed.", e.Error())
+		return nil, e
+	}
+	if r.StatusCode == http.StatusUnauthorized {
+		logger.Err.Println("API status:", r.StatusCode, r.Status)
+		logger.Err.Println("Invalid token")
+		return nil, ErrTokenInvalid
+	}
+	logger.Debug.Println("API response body")
+	logger.Debug.Println(string(b))
 	if r.StatusCode != http.StatusOK {
 		logger.Err.Println("API status:", r.StatusCode)
 		return nil, errors.New(fmt.Sprintf("API status: %d", r.StatusCode))

@@ -2,6 +2,7 @@ package must
 
 import (
 	"io"
+	"net/http"
 )
 
 // Must panics if err is not nil.
@@ -85,4 +86,9 @@ func Close(c io.Closer) {
 func ReadClose(rc io.ReadCloser, err error) io.ReadCloser {
 	Must(err)
 	return rc
+}
+
+func Req(req *http.Request, err error) *http.Request {
+	Must(err)
+	return req
 }
