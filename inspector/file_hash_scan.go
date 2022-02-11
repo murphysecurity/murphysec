@@ -84,7 +84,7 @@ func FileHashInspectScan(projectDir string) (map[string][]byte, int) {
 		for it := range hashCh {
 			if it.err != nil {
 				rs.errCount++
-				logger.Warn.Println("Calc hash failed: %v", it.err)
+				logger.Warn.Printf("Calc hash failed: %+v\n", it.err)
 				continue
 			}
 			logger.Debug.Printf("File hash %s %s", hex.EncodeToString(it.hash), it.path)

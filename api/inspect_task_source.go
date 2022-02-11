@@ -9,17 +9,14 @@ type InspectTaskSource int
 const (
 	TaskSourceIdea InspectTaskSource = iota + 1
 	TaskSourceCli
-	TaskSourceCI
 )
 
 func (receiver InspectTaskSource) String() string {
 	switch receiver {
-	case TaskSourceCI:
-		return "CI"
 	case TaskSourceCli:
-		return "CLI"
+		return "client"
 	case TaskSourceIdea:
-		return "IDEA"
+		return "plugin"
 	}
 	panic(int(receiver))
 }
