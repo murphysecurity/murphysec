@@ -27,7 +27,12 @@ compose-build:
   artifacts:
     expire_in: 1 day
     paths:
-      - out/*
+      - murphysec-linux-amd64
+      - murphysec-windows-amd64.exe
+      - murphysec-darwin-amd64
+      - murphysec-linux-amd64.sha256
+      - murphysec-windows-amd64.exe.sha256
+      - murphysec-darwin-amd64.sha256
   script:
     - export
     - GOOS=linux GOARCH=amd64 go build -o out/murphysec-linux-amd64 -v .
@@ -38,4 +43,6 @@ compose-build:
     - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
     - cat *.sha256
     - sha256sum -c *.sha256
+    - mv * ../
+    - cd ..
   
