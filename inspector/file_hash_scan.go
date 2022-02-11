@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"io"
 	"murphysec-cli-simple/api"
@@ -26,9 +27,21 @@ func FileHashInspect(ctx *ScanContext) (*api.VoDetectResponse, error) {
 	}
 	// api request object
 	req := ctx.getApiRequestObj()
-	for s := range hashStr {
-		req.FileHashList = append(req.FileHashList, api.FileHash{Hash: s})
+	moduleVo := api.VoModule{
+		FileHashList:   []api.FileHash{},
+		Language:       "C,C++",
+		Name:           ctx.ProjectName,
+		PackageFile:    ctx.ProjectName,
+		PackageManager: "unmanaged",
+		RelativePath:   "/",
+		RuntimeInfo:    nil,
+		Version:        "",
+		ModuleUUID:     uuid.UUID{},
 	}
+	for s := range hashStr {
+		moduleVo.FileHashList = append(moduleVo.FileHashList, api.FileHash{Hash: s})
+	}
+	req.Modules = []api.VoModule{moduleVo}
 	return api.SendDetectHash(req)
 }
 

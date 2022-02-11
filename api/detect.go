@@ -26,14 +26,15 @@ type VoDependency struct {
 }
 
 type VoModule struct {
-	Dependencies   []VoDependency `json:"dependencies"`
+	Dependencies   []VoDependency `json:"dependencies,omitempty"`
+	FileHashList   []FileHash     `json:"file_hash_list,omitempty"`
 	Language       string         `json:"language"`
 	Name           string         `json:"name"`
 	PackageFile    string         `json:"package_file"`
 	PackageManager string         `json:"package_manager"`
 	RelativePath   string         `json:"relative_path"`
-	RuntimeInfo    interface{}    `json:"runtime_info"`
-	Version        string         `json:"version"`
+	RuntimeInfo    interface{}    `json:"runtime_info,omitempty"`
+	Version        string         `json:"version,omitempty"`
 	ModuleUUID     uuid.UUID      `json:"module_uuid"`
 }
 
@@ -44,7 +45,6 @@ type UserCliDetectInput struct {
 	Engine             string            `json:"engine"`
 	GitInfo            *VoGitInfo        `json:"git_info"`
 	Modules            []VoModule        `json:"modules,omitempty"`
-	FileHashList       []FileHash        `json:"file_hash_list,omitempty"`
 	ProjectName        string            `json:"project_name"`
 	TargetAbsPath      string            `json:"target_abs_path"`
 	TaskConsumeTime    int               `json:"task_consume_time"`
