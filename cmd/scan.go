@@ -22,6 +22,7 @@ func scanCmd() *cobra.Command {
 }
 
 func scanRun(cmd *cobra.Command, args []string) {
+	logger.Info.Println("CLI scan dir:", args[0], must.String(filepath.Abs(args[0])))
 	_, e := inspector.CliScan(must.String(filepath.Abs(args[0])), CliJsonOutput)
 	if e != nil {
 		SetGlobalExitCode(1)
