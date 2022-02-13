@@ -56,7 +56,7 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 			resolver.AddRepo(MustNewHttpRepo(it))
 		}
 	}
-	if deps == nil {
+	if len(deps) == 0 {
 		logger.Warn.Println("Maven command execute failed, use another tools")
 		deps = map[Coordinate][]Dependency{}
 		cacheMap := &DepTreeCacheMap{}

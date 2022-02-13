@@ -57,7 +57,7 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 		return nil, errors.New(fmt.Sprintf("unsupported lockfileVersion: %d", lockfile.LockfileVersion))
 	}
 	for s := range lockfile.Dependencies {
-		if strings.HasPrefix(s, "node_modules/"){
+		if strings.HasPrefix(s, "node_modules/") {
 			delete(lockfile.Dependencies, s)
 		}
 	}
