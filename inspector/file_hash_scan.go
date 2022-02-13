@@ -23,7 +23,7 @@ func FileHashInspect(ctx *ScanContext) (*api.VoDetectResponse, error) {
 		hashStr[hex.EncodeToString(s)] = struct{}{}
 	}
 	if ctx.TaskSource == api.TaskSourceCli {
-		fmt.Println(fmt.Sprintf("共成功扫描 %d 个文件", errCount))
+		fmt.Println(fmt.Sprintf("共成功扫描 %d 个文件，%d 个文件扫描失败", len(hashStr), errCount))
 	}
 	// api request object
 	req := ctx.getApiRequestObj()
