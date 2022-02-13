@@ -51,7 +51,7 @@ func IdeaScan(dir string) (interface{}, error) {
 	return nil, nil
 }
 func CliScan(dir string, jsonOutput bool) (interface{}, error) {
-	ctx := &ScanContext{TaskSource: api.TaskSourceIdea, StartTime: time.Now()}
+	ctx := &ScanContext{TaskSource: api.TaskSourceCli, StartTime: time.Now()}
 	ctx.WrapProjectInfo(dir)
 	response, e := ManagedInspect(ctx)
 	// 扫描出错
