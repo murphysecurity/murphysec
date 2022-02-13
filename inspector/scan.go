@@ -3,9 +3,11 @@ package inspector
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
+	"os"
 	"time"
 )
 
@@ -20,6 +22,10 @@ func ManagedInspect(ctx *ScanContext) (*api.VoDetectResponse, error) {
 }
 
 func IdeaScan(dir string) (interface{}, error) {
+	if info, e := os.Stat(dir); e != nil || !info.IsDir() {
+		reportIdeaStatus(1, "directory invalid")
+		return nil, errors.Wrap(e, "invalid directory")
+	}
 	ctx := &ScanContext{TaskSource: api.TaskSourceIdea, StartTime: time.Now()}
 	ctx.WrapProjectInfo(dir)
 	response, e := ManagedInspect(ctx)
@@ -51,6 +57,10 @@ func IdeaScan(dir string) (interface{}, error) {
 	return nil, nil
 }
 func CliScan(dir string, jsonOutput bool) (interface{}, error) {
+	if info, e := os.Stat(dir); e != nil || !info.IsDir() {
+		fmt.Println("给定的路径无效")
+		return nil, errors.Wrap(e, "invalid directory")
+	}
 	ctx := &ScanContext{TaskSource: api.TaskSourceCli, StartTime: time.Now()}
 	ctx.WrapProjectInfo(dir)
 	response, e := ManagedInspect(ctx)
