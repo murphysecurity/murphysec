@@ -75,6 +75,15 @@ func FileHashInspectScan(projectDir string) (map[string][][]byte, int) {
 				case error:
 					logger.Warn.Println(v.Error())
 				case string:
+					if stat, e := os.Stat(v); e != nil {
+						logger.Debug.Println("Get file info failed, skip", v, e.Error())
+						continue
+					} else {
+						if stat.Size() < 32 {
+							logger.Debug.Println("File size < 32 bytes, skip", v, stat.Size(), "bytes")
+							continue
+						}
+					}
 					hash, e := calcFileHash(v)
 					hashCh <- hashResult{
 						path: v,
