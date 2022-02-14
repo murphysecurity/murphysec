@@ -32,7 +32,7 @@ func FileHashInspect(ctx *ScanContext) (*api.VoDetectResponse, error) {
 	req := ctx.getApiRequestObj()
 	moduleVo := api.VoModule{
 		FileHashList:   []api.FileHash{},
-		Language:       "C,C++",
+		Language:       "C/C++",
 		Name:           ctx.ProjectName,
 		PackageFile:    ctx.ProjectName,
 		PackageManager: "unmanaged",
