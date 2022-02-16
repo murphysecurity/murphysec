@@ -34,18 +34,13 @@ func NewPomFileFromData(data []byte) (*PomFile, error) {
 var pomInlineParameterPattern = regexp.MustCompile("\\$\\{([^{}]+)\\}")
 
 func (p *PomFile) inheritancePath() []*PomFile {
-	visited := map[Coordinate]struct{}{}
-	visited[p.Coordinate()] = struct{}{}
+	visited := map[*PomFile]struct{}{}
 	var rs []*PomFile
 	rs = append(rs, p)
 	curr := p.parentPom
 	for curr != nil {
-		if _, ok := visited[curr.Coordinate()]; ok {
-			var s []string
-			for _, it := range rs {
-				s = append(s, it.Coordinate().String())
-			}
-			logger.Warn.Println("Circular pom inheritance detected:", strings.Join(s, "->"))
+		if _, ok := visited[curr]; ok {
+			logger.Warn.Println("Circular pom inheritance detected.")
 			break
 		}
 		rs = append(rs, curr)
