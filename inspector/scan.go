@@ -62,6 +62,10 @@ func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 		return nil, errors.Wrap(e, "invalid directory")
 	}
 	ctx := &ScanContext{TaskSource: api.TaskSourceCli, StartTime: time.Now()}
+	// detect Jenkins environment
+	if os.Getenv("JENKINS_HOME") != "" && os.Getenv("JENKINS_URL") != "" {
+		ctx.TaskSource = api.TaskSourceJenkins
+	}
 	ctx.WrapProjectInfo(dir)
 	response, e := ManagedInspect(ctx)
 	// 扫描出错

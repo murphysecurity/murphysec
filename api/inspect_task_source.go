@@ -9,6 +9,7 @@ type InspectTaskSource int
 const (
 	TaskSourceIdea InspectTaskSource = iota + 1
 	TaskSourceCli
+	TaskSourceJenkins
 )
 
 func (receiver InspectTaskSource) String() string {
@@ -17,6 +18,8 @@ func (receiver InspectTaskSource) String() string {
 		return "client"
 	case TaskSourceIdea:
 		return "plugin"
+	case TaskSourceJenkins:
+		return "jenkins"
 	}
 	panic(int(receiver))
 }

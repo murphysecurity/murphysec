@@ -25,7 +25,7 @@ func FileHashInspect(ctx *ScanContext) (*api.VoDetectResponse, error) {
 			hashStr[hex.EncodeToString(it)] = struct{}{}
 		}
 	}
-	if ctx.TaskSource == api.TaskSourceCli {
+	if ctx.TaskSource == api.TaskSourceCli || ctx.TaskSource == api.TaskSourceJenkins {
 		fmt.Println(fmt.Sprintf("共成功扫描 %d 个文件，提交 %d 个哈希，%d 个文件扫描失败", len(m), len(hashStr), errCount))
 	}
 	// api request object
