@@ -15,7 +15,7 @@ func ManagedInspect(ctx *ScanContext) (*api.VoDetectResponse, error) {
 	logger.Info.Println("Start managed inspect...", ctx.ProjectDir)
 	// 包管理器的扫描
 	if e := managedInspectScan(ctx); e != nil {
-		logger.Info.Printf("Managed inspect failed, %+v\n", e)
+		logger.Info.Printf("Managed inspect failed, %v\n", e)
 		return nil, e
 	}
 	return managedInspectAPIRequest(ctx)
@@ -31,7 +31,7 @@ func IdeaScan(dir string) (interface{}, error) {
 	response, e := ManagedInspect(ctx)
 	// 扫描出错
 	if e != nil && e != ErrNoEngineMatched {
-		logger.Err.Printf("Managed scan failed: %+v\n", e)
+		logger.Err.Printf("Managed scan failed: %v\n", e)
 		if e == api.ErrTokenInvalid {
 			reportIdeaStatus(4, "Token invalid")
 			return nil, e
@@ -45,7 +45,7 @@ func IdeaScan(dir string) (interface{}, error) {
 	// 文件哈希扫描
 	response, e = FileHashInspect(ctx)
 	if e != nil {
-		logger.Err.Printf("FileHash scan failed: %+v\n", e)
+		logger.Err.Printf("FileHash scan failed: %v\n", e)
 		if e == api.ErrTokenInvalid {
 			reportIdeaStatus(4, "Token invalid")
 			return nil, e
@@ -66,7 +66,7 @@ func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 	response, e := ManagedInspect(ctx)
 	// 扫描出错
 	if e != nil && e != ErrNoEngineMatched {
-		logger.Err.Printf("Managed scan failed: %+v\n", e)
+		logger.Err.Printf("Managed scan failed: %v\n", e)
 		if e == api.ErrTokenInvalid {
 			fmt.Println("Token 无效")
 			return nil, e
@@ -84,7 +84,7 @@ func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 	// 文件哈希扫描
 	response, e = FileHashInspect(ctx)
 	if e != nil {
-		logger.Err.Printf("FileHash scan failed: %+v\n", e)
+		logger.Err.Printf("FileHash scan failed: %v\n", e)
 		if e == api.ErrTokenInvalid {
 			fmt.Println("Token 无效")
 			return nil, e
