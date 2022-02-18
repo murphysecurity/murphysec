@@ -42,18 +42,18 @@ func IdeaScan(dir string) (interface{}, error) {
 		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
 		return nil, nil
 	}
-	// 文件哈希扫描
-	response, e = FileHashInspect(ctx)
-	if e != nil {
-		logger.Err.Printf("FileHash scan failed: %v\n", e)
-		if e == api.ErrTokenInvalid {
-			reportIdeaStatus(4, "Token invalid")
-			return nil, e
-		}
-		return nil, e
-	}
-	// 扫描成功
-	fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
+	//// 文件哈希扫描
+	//response, e = FileHashInspect(ctx)
+	//if e != nil {
+	//	logger.Err.Printf("FileHash scan failed: %v\n", e)
+	//	if e == api.ErrTokenInvalid {
+	//		reportIdeaStatus(4, "Token invalid")
+	//		return nil, e
+	//	}
+	//	return nil, e
+	//}
+	//// 扫描成功
+	//fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
 	return nil, nil
 }
 func CliScan(dir string, jsonOutput bool) (interface{}, error) {
@@ -85,21 +85,21 @@ func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 		}
 		return nil, nil
 	}
-	// 文件哈希扫描
-	response, e = FileHashInspect(ctx)
-	if e != nil {
-		logger.Err.Printf("FileHash scan failed: %v\n", e)
-		if e == api.ErrTokenInvalid {
-			fmt.Println("Token 无效")
-			return nil, e
-		}
-		return nil, e
-	}
-	// 扫描成功
-	if jsonOutput {
-		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
-	} else {
-		fmt.Println(fmt.Sprintf("扫描完成，共计%d个组件，%d个漏洞", response.DependenciesCount, response.IssuesCompsCount))
-	}
+	//// 文件哈希扫描
+	//response, e = FileHashInspect(ctx)
+	//if e != nil {
+	//	logger.Err.Printf("FileHash scan failed: %v\n", e)
+	//	if e == api.ErrTokenInvalid {
+	//		fmt.Println("Token 无效")
+	//		return nil, e
+	//	}
+	//	return nil, e
+	//}
+	//// 扫描成功
+	//if jsonOutput {
+	//	fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
+	//} else {
+	//	fmt.Println(fmt.Sprintf("扫描完成，共计%d个组件，%d个漏洞", response.DependenciesCount, response.IssuesCompsCount))
+	//}
 	return nil, nil
 }
