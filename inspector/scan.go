@@ -38,23 +38,16 @@ func IdeaScan(dir string) (interface{}, error) {
 		}
 		return nil, e
 	}
+	if e == ErrNoEngineMatched {
+		reportIdeaStatus(IdeaNoEngineMatch, "Engine not match")
+		return nil, e
+	}
 	if e == nil {
 		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
 		return nil, nil
 	}
-	//// 文件哈希扫描
-	//response, e = FileHashInspect(ctx)
-	//if e != nil {
-	//	logger.Err.Printf("FileHash scan failed: %v\n", e)
-	//	if e == api.ErrTokenInvalid {
-	//		reportIdeaStatus(4, "Token invalid")
-	//		return nil, e
-	//	}
-	//	return nil, e
-	//}
-	//// 扫描成功
-	//fmt.Println(string(must.Byte(json.Marshal(mapForIdea(response)))))
-	return nil, nil
+	reportIdeaStatus(IdeaUnknownErr, e.Error())
+	return nil, e
 }
 func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 	if info, e := os.Stat(dir); e != nil || !info.IsDir() {
