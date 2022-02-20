@@ -1,8 +1,6 @@
 package maven
 
 import (
-	"bufio"
-	"fmt"
 	"github.com/ztrue/shutdown"
 	"io"
 	"murphysec-cli-simple/logger"
@@ -13,88 +11,6 @@ import (
 	"strings"
 	"sync"
 )
-
-var modulePattern = regexp.MustCompile("digraph +\\\"(.+?):(.+?):.+?:(.+?)\\\" .*\\{")
-var depPattern = regexp.MustCompile("\\\"([^:\\\"]+):([^:\\\"]+):(?:[^:\\\"]+):([^:\\\"]+)(?::([^:\\\"]+))?\\\"\\s*->\\s*\\\"([^:\\\"]+):([^:\\\"]+):(?:[^:\\\"]+):([^:\\\"]+)(?::([^:\\\"]+))?\\\"")
-var depVersionPattern = regexp.MustCompile("^(?:compile|runtime)")
-
-const _MaxLineSize = 128 * 1024
-
-func parseOutput(reader io.Reader) map[Coordinate][]Dependency {
-	collection := map[Coordinate]map[Coordinate][]Coordinate{}
-
-	input := bufio.NewScanner(reader)
-	input.Split(bufio.ScanLines)
-	input.Buffer(make([]byte, _MaxLineSize), _MaxLineSize)
-
-	var currentModule Coordinate
-
-	for input.Scan() {
-		line := input.Text()
-		if m := modulePattern.FindStringSubmatch(line); m != nil {
-			// module matched
-			currentModule = Coordinate{
-				GroupId:    m[1],
-				ArtifactId: m[2],
-				Version:    m[3],
-			}
-			continue
-		}
-		if m := depPattern.FindStringSubmatch(line); m != nil {
-			if collection[currentModule] == nil {
-				collection[currentModule] = map[Coordinate][]Coordinate{}
-			}
-			if (m[4] != "" && !depVersionPattern.MatchString(m[4])) || (m[4] != "" && !depVersionPattern.MatchString(m[8])) {
-				logger.Debug.Println("Skip line", line)
-				continue
-			}
-			left := Coordinate{
-				GroupId:    m[1],
-				ArtifactId: m[2],
-				Version:    m[3],
-			}
-			collection[currentModule][left] = append(collection[currentModule][left], Coordinate{
-				GroupId:    m[5],
-				ArtifactId: m[6],
-				Version:    m[7],
-			})
-			continue
-		}
-		logger.Debug.Println("Unrecognized line:", line)
-	}
-	logger.Debug.Println("Total modules:", len(collection))
-	var count int
-	for _, it := range collection {
-		for _, it := range it {
-			count += len(it)
-		}
-	}
-	logger.Debug.Println("Total items:", count)
-	graphs := map[Coordinate][]Dependency{}
-	for module, it := range collection {
-		graphs[module] = _conv(module, it, nil).Children
-	}
-	return graphs
-}
-func _conv(root Coordinate, m map[Coordinate][]Coordinate, visited []Coordinate) Dependency {
-	for i := range visited {
-		if visited[i] == root {
-			var names []string
-			for _, it := range visited {
-				names = append(names, it.String())
-			}
-			logger.Warn.Println("Circular dependency:", strings.Join(names, " -> "))
-			return Dependency{Coordinate: root}
-		}
-	}
-	rootDep := Dependency{Coordinate: root}
-	if len(visited) < 6 {
-		for _, it := range m[root] {
-			rootDep.Children = append(rootDep.Children, _conv(it, m, append(visited, root)))
-		}
-	}
-	return rootDep
-}
 
 type MvmCmdVersionInfo struct {
 	MavenVer  string `json:"maven_ver"`
@@ -135,7 +51,8 @@ func checkMvnVersion() (*MvmCmdVersionInfo, error) {
 const _MaxMvnOutputLine = 128 * 1024
 
 func scanMvnDependency(projectDir string) (map[Coordinate][]Dependency, error) {
-	cmd := exec.Command("mvn", "dependency:tree", "-DoutputType=dot", fmt.Sprintf("--file=%s/pom.xml", projectDir))
+	cmd := exec.Command("mvn", "dependency:tree", "-DoutputType=tgf", "--batch-mode", "-Dscope=compile")
+	cmd.Dir = projectDir
 	shutdownKey := shutdown.Add(func() {
 		logger.Warn.Println("Maven shutdown hook execute.")
 		p := cmd.Process
