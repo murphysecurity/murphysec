@@ -1,6 +1,7 @@
 package maven
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
@@ -10,8 +11,13 @@ import (
 )
 
 type Dependency struct {
+	fmt.Stringer
 	Coordinate
-	Children []Dependency `json:"children"`
+	Children []Dependency `json:"children,omitempty"`
+}
+
+func (d Dependency) String() string {
+	return fmt.Sprintf("%v: %v", d.Coordinate, d.Children)
 }
 
 func ScanMavenProject(dir string) ([]base.Module, error) {
