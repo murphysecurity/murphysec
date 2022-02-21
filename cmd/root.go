@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/api"
@@ -35,16 +34,8 @@ func rootCmd() *cobra.Command {
 	c.PersistentFlags().StringVar(&logger.ConsoleLogLevelOverride, "log-level", "", "specify log level, must be silent|error|warn|info|debug")
 	c.PersistentFlags().StringVar(&conf.APITokenCliOverride, "token", "", "specify API token")
 	c.PersistentFlags().StringVar(&api.CliServerAddressOverride, "server", "", "specify server address")
-	if argsMap["--ide"] {
-		c.PersistentFlags().String("ide", "", "ignore")
-	}
-	c.AddCommand(&cobra.Command{
-		Use: "test",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Hello world!")
-			logger.Debug.Println("log...")
-		},
-	})
+	c.PersistentFlags().String("ide", "", "hidden")
+	must.Must(c.PersistentFlags().MarkHidden("ide"))
 	c.AddCommand(authCmd())
 	c.AddCommand(scanCmd())
 	c.AddCommand(ideaScanCmd())
