@@ -5,7 +5,6 @@ go 1.17
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/antchfx/xmlquery v1.3.9
-	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220111164937-1b144fa7b40f
 	github.com/briandowns/spinner v1.16.0
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/uuid v1.3.0
