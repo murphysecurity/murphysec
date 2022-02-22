@@ -67,7 +67,7 @@ release-to-github:
     - ls
     - git clone https://isekiworking:$GITHUB_ISEKI_WORKING_TOKEN@github.com/murphysec/murphysec.git
     - cd murphysec
-    - gh release create $CI_COMMIT_TAG ../murphysec-windows-amd64.exe ../murphysec-linux-amd64 ../murphysec-darwin-amd64 ../murphysec-darwin-arm64 --generate-notes
+    - gh release create $CI_COMMIT_TAG ../murphysec-windows-amd64.exe ../murphysec-linux-amd64 ../murphysec-darwin-amd64 --generate-notes
     - git clone https://isekiworking:$GITHUB_ISEKI_WORKING_TOKEN@github.com/murphysec/scoop-bucket.git --depth 1
     - cd scoop-bucket
     - ls
