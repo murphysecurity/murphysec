@@ -81,8 +81,8 @@ release-to-github:
     - git add .
     - "echo \"Time: `date -Iseconds`\\nCommit:$CI_COMMIT_SHA\""
     - "git commit -am \"Time: `date -Iseconds`\nCommit:$CI_COMMIT_SHA\""
+    - git push
 
   only:
     variables:
-      - $CI_COMMIT_TAG
-      - $RELEASE_GH == "true"
+      - $CI_COMMIT_TAG && $RELEASE_GH == "true"
