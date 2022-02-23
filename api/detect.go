@@ -80,6 +80,14 @@ const (
 	VulnLevelLow      VulnLevelType = "Low"
 )
 
+type LicenseLevel string
+
+const (
+	LicenseLevelLow    LicenseLevel = "Low"
+	LicenseLevelMedium LicenseLevel = "Medium"
+	LicenseLevelHigh   LicenseLevel = "High"
+)
+
 type SendDetectRequest struct {
 	TaskInfo string     `json:"task_info"`
 	Modules  []VoModule `json:"modules"`

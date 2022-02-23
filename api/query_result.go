@@ -49,11 +49,20 @@ type TaskScanResponse struct {
 		Language       string    `json:"language"`
 		PackageManager string    `json:"package_manager"`
 		Comps          []struct {
-			CompId          int          `json:"comp_id"`
-			CompName        string       `json:"comp_name"`
-			CompVersion     string       `json:"comp_version"`
-			MinFixedVersion string       `json:"min_fixed_version"`
-			Vuls            []VoVulnInfo `json:"vuls"`
+			CompId          int    `json:"comp_id"`
+			CompName        string `json:"comp_name"`
+			CompVersion     string `json:"comp_version"`
+			MinFixedVersion string `json:"min_fixed_version"`
+			License         *struct {
+				Level LicenseLevel `json:"level"`
+				Spdx  string       `json:"spdx"`
+			} `json:"license,omitempty"`
+			Solutions []struct {
+				Compatibility *int   `json:"compatibility,omitempty"`
+				Description   string `json:"description"`
+				Type          string `json:"type,omitempty"`
+			} `json:"solutions,omitempty"`
+			Vuls []VoVulnInfo `json:"vuls"`
 		} `json:"comps"`
 	} `json:"modules"`
 	DetectStartTimestamp time.Time `json:"detect_start_timestamp"`

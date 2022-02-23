@@ -53,6 +53,21 @@ func mapForIdea(i *api.TaskScanResponse) PluginOutput {
 				MinFixedVersion: comp.MinFixedVersion,
 				Vulns:           comp.Vuls,
 				Version:         comp.CompVersion,
+				License:         nil,
+				Solutions:       []PluginCompSolution{},
+			}
+			if comp.License != nil {
+				p.License = &PluginCompLicense{
+					Level: comp.License.Level,
+					Spdx:  comp.License.Spdx,
+				}
+			}
+			for _, it := range comp.Solutions {
+				p.Solutions = append(p.Solutions, PluginCompSolution{
+					Compatibility: it.Compatibility,
+					Description:   it.Description,
+					Type:          it.Type,
+				})
 			}
 			for _, it := range comp.Vuls {
 				switch it.SuggestLevel {
@@ -127,9 +142,22 @@ func (p PluginOutput) MarshalJSON() ([]byte, error) {
 }
 
 type PluginComp struct {
-	CompName        string           `json:"comp_name"`
-	ShowLevel       int              `json:"show_level"`
-	MinFixedVersion string           `json:"min_fixed_version"`
-	Vulns           []api.VoVulnInfo `json:"vulns"`
-	Version         string           `json:"version"`
+	CompName        string               `json:"comp_name"`
+	ShowLevel       int                  `json:"show_level"`
+	MinFixedVersion string               `json:"min_fixed_version"`
+	Vulns           []api.VoVulnInfo     `json:"vulns"`
+	Version         string               `json:"version"`
+	License         *PluginCompLicense   `json:"license,omitempty"`
+	Solutions       []PluginCompSolution `json:"solutions,omitempty"`
+}
+
+type PluginCompLicense struct {
+	Level api.LicenseLevel `json:"level"`
+	Spdx  string           `json:"spdx"`
+}
+
+type PluginCompSolution struct {
+	Compatibility *int   `json:"compatibility,omitempty"`
+	Description   string `json:"description"`
+	Type          string `json:"type,omitempty"`
 }
