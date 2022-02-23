@@ -28,6 +28,7 @@ func (m Module) ApiVo() *api.VoModule {
 		RelativePath:   m.RelativePath,
 		RuntimeInfo:    m.RuntimeInfo,
 		Version:        m.Version,
+		ModuleType:     "version",
 	}
 	return r
 }

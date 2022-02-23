@@ -22,3 +22,13 @@ func TestSemErr(t *testing.T) {
 	assert.False(t, errors.Is(e, ErrQ))
 	assert.False(t, errors.Is(e, ErrQ.Decorate(io.EOF)))
 }
+
+func TestSemErrPrint(t *testing.T) {
+	var ErrT = New("TE")
+	e1 := errors.New("foo")
+	e2 := errors.Wrap(e1, "bar")
+	e := ErrT.Decorate(e2)
+	t.Logf("%+v\n", e)
+	t.Logf("============\n")
+	t.Logf("%v\n", e)
+}

@@ -3,6 +3,7 @@ package must
 import (
 	"io"
 	"net/http"
+	"net/url"
 )
 
 // Must panics if err is not nil.
@@ -91,4 +92,12 @@ func ReadClose(rc io.ReadCloser, err error) io.ReadCloser {
 func Req(req *http.Request, err error) *http.Request {
 	Must(err)
 	return req
+}
+
+func Url(input string) *url.URL {
+	u, e := url.Parse(input)
+	if e != nil {
+		panic(e)
+	}
+	return u
 }

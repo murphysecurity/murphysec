@@ -1,7 +1,9 @@
 package semerr
 
 import (
+	"fmt"
 	"github.com/savsgio/gotils/nocopy"
+	"io"
 )
 
 func New(name string) *SemErr {
@@ -61,4 +63,21 @@ func (i *Instance) Unwrap() error {
 
 func (i *Instance) Error() string {
 	return i.semErr.name + ": " + i.wrappedErr.Error()
+}
+func (i *Instance) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			_, _ = io.WriteString(s, i.wrappedErr.Error())
+			_, _ = fmt.Fprintf(s, "%+v", i.wrappedErr)
+			return
+		}
+		fallthrough
+	case 's':
+		_, _ = io.WriteString(s, i.Error())
+	case 'q':
+		_, _ = fmt.Fprintf(s, "%q", i.Error())
+	default:
+		_, _ = fmt.Fprintf(s, "[bad format]")
+	}
 }

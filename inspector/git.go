@@ -17,7 +17,7 @@ type GitInfo struct {
 	ProjectName    string `json:"project_name"`
 }
 
-func (g *GitInfo) AoiVo() *api.VoGitInfo {
+func (g *GitInfo) ApiVo() *api.VoGitInfo {
 	if g == nil {
 		return nil
 	}

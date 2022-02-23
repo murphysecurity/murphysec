@@ -1,15 +1,11 @@
 package inspector
 
 import (
-	"github.com/google/uuid"
-	"github.com/pkg/errors"
-	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/module/go_mod"
 	"murphysec-cli-simple/module/maven"
 	"murphysec-cli-simple/module/npm"
-	"murphysec-cli-simple/utils/must"
 	"time"
 )
 
@@ -19,29 +15,8 @@ var managedInspector = []base.Inspector{
 	npm.New(),
 }
 
-func managedInspectAPIRequest(ctx *ScanContext) (*api.VoDetectResponse, error) {
-	must.True(len(ctx.ManagedModules) > 0)
-	req := ctx.getApiRequestObj()
-	// 拼请求体
-	uuidModuleMap := map[uuid.UUID]base.Module{}
-	for _, it := range ctx.ManagedModules {
-		_uuid := uuid.Must(uuid.NewRandom())
-		uuidModuleMap[_uuid] = it
-		voM := it.ApiVo()
-		voM.ModuleUUID = _uuid
-		req.Modules = append(req.Modules, *voM)
-	}
-	response, e := api.SendDetect(req)
-	if e == api.ErrTokenInvalid {
-		return nil, ErrAPITokenInvalid
-	}
-	if e != nil {
-		return nil, errors.Wrap(e, "API request failed")
-	}
-	return response, nil
-}
-
 // 受管理扫描
+// returns ErrNoEngineMatched ErrNoModule
 func managedInspectScan(ctx *ScanContext) error {
 	dir := ctx.ProjectDir
 	startTime := time.Now()

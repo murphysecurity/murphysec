@@ -24,7 +24,7 @@ func reportIdeaStatus(code IdeaErrCode, msg string) {
 	fmt.Println(string(must.Byte(json.Marshal(PluginOutput{ErrCode: code, ErrMsg: msg}))))
 }
 
-func mapForIdea(i *api.VoDetectResponse) PluginOutput {
+func mapForIdea(i *api.TaskScanResponse) PluginOutput {
 	type id struct {
 		name    string
 		version string

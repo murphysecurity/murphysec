@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/inspector"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
@@ -23,7 +24,12 @@ func scanCmd() *cobra.Command {
 
 func scanRun(cmd *cobra.Command, args []string) {
 	logger.Info.Println("CLI scan dir:", args[0], must.String(filepath.Abs(args[0])))
-	_, e := inspector.CliScan(must.String(filepath.Abs(args[0])), CliJsonOutput)
+	var e error
+	if CliJsonOutput {
+		_, e = inspector.Scan(must.String(filepath.Abs(args[0])), api.TaskTypeJenkins)
+	} else {
+		_, e = inspector.Scan(must.String(filepath.Abs(args[0])), api.TaskTypeCli)
+	}
 	if e != nil {
 		SetGlobalExitCode(1)
 		if !CliJsonOutput {

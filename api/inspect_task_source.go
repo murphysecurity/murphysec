@@ -4,26 +4,26 @@ import (
 	"encoding/json"
 )
 
-type InspectTaskSource int
+type InspectTaskType int
 
 const (
-	TaskSourceIdea InspectTaskSource = iota + 1
-	TaskSourceCli
-	TaskSourceJenkins
+	TaskTypeIdea InspectTaskType = iota + 1
+	TaskTypeCli
+	TaskTypeJenkins
 )
 
-func (receiver InspectTaskSource) String() string {
+func (receiver InspectTaskType) String() string {
 	switch receiver {
-	case TaskSourceCli:
+	case TaskTypeCli:
 		return "client"
-	case TaskSourceIdea:
+	case TaskTypeIdea:
 		return "plugin"
-	case TaskSourceJenkins:
+	case TaskTypeJenkins:
 		return "jenkins"
 	}
 	panic(int(receiver))
 }
 
-func (receiver InspectTaskSource) MarshalJSON() ([]byte, error) {
+func (receiver InspectTaskType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(receiver.String())
 }

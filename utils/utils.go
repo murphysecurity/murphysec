@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
+	"murphysec-cli-simple/utils/must"
 	"strings"
 )
 
@@ -60,4 +63,12 @@ func (s StringSet) ToSlice() []string {
 		r = append(r, i)
 	}
 	return r
+}
+
+func base64UrlEncode(s string) string {
+	b := new(bytes.Buffer)
+	w := base64.NewEncoder(base64.URLEncoding, b)
+	must.Int(w.Write([]byte(s)))
+	must.Close(w)
+	return b.String()
 }
