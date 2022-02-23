@@ -59,38 +59,7 @@ func createTask(ctx *ScanContext) error {
 	}
 }
 
-func Scan(dir string, source api.InspectTaskType) (interface{}, error) {
-	ctx := createTaskContext(dir, source)
-	if e := createTask(ctx); e != nil {
-		logger.Err.Println("Create task failed.", e.Error())
-		logger.Debug.Printf("%+v", e)
-		return nil, e
-	}
-
-	if source == api.TaskTypeCli {
-		fmt.Printf("项目创建成功，项目名称：%s\n", ctx.ProjectName)
-	}
-
-	if e := managedInspectScan(ctx); e != nil {
-		if source == api.TaskTypeCli {
-			fmt.Println("受管理扫描失败，执行文件哈希扫描")
-		}
-		logger.Err.Println("Managed inspect failed.", e.Error())
-		logger.Debug.Printf("%+v", e)
-		// if managed inspect failed, start file hash scan
-		FileHashScan(ctx)
-		if e == ErrNoEngineMatched && len(ctx.FileHashes) == 0 {
-			if source == api.TaskTypeCli {
-				fmt.Println("扫描器无法支持当前项目")
-			}
-			return nil, ErrNoEngineMatched
-		}
-	}
-	if source == api.TaskTypeCli {
-		fmt.Printf("共扫描到模块：%d个\n，正在传输数据", len(ctx.ManagedModules))
-	}
-	// merge module info
-
+func commitModuleInfo(ctx *ScanContext) error {
 	req := new(api.SendDetectRequest)
 	req.TaskInfo = ctx.TaskId
 	for _, it := range ctx.ManagedModules {
@@ -103,10 +72,67 @@ func Scan(dir string, source api.InspectTaskType) (interface{}, error) {
 			ModuleType: "file_hash",
 		})
 	}
-
 	if e := api.SendDetect(req); e != nil {
 		logger.Err.Println("send module info failed.", e.Error())
+		return e
+	}
+	return nil
+}
+
+func displayTaskCreating(ctx *ScanContext) {
+	if ctx.TaskType == api.TaskTypeCli {
+		fmt.Println("正在创建扫描任务，请稍候，项目名称：", ctx.ProjectName)
+	}
+}
+
+func displayTaskCreated(ctx *ScanContext) {
+	if ctx.TaskType == api.TaskTypeCli {
+		fmt.Println("扫描任务已创建")
+	}
+}
+
+func displayManagedScanning(ctx *ScanContext) {
+	if ctx.TaskType == api.TaskTypeCli {
+		fmt.Println("正在执行受管理扫描")
+	}
+}
+
+func Scan(dir string, source api.InspectTaskType) (interface{}, error) {
+	ctx := createTaskContext(dir, source)
+
+	displayTaskCreating(ctx)
+	if e := createTask(ctx); e != nil {
+		logger.Err.Println("Create task failed.", e.Error())
+		logger.Debug.Printf("%+v", e)
 		return nil, e
+	}
+	displayTaskCreated(ctx)
+
+	displayManagedScanning(ctx)
+	if e := managedInspectScan(ctx); e != nil {
+		logger.Err.Println("Managed inspect failed.", e.Error())
+		logger.Debug.Printf("%+v", e)
+		if source == api.TaskTypeCli {
+			fmt.Println("受管理扫描失败，执行文件哈希扫描")
+		}
+		// if managed inspect failed, start file hash scan
+		FileHashScan(ctx)
+		if e == ErrNoEngineMatched && len(ctx.FileHashes) == 0 {
+			if source == api.TaskTypeCli {
+				fmt.Println("扫描器无法支持当前项目")
+			}
+			return nil, ErrNoEngineMatched
+		}
+	}
+	if source == api.TaskTypeCli {
+		fmt.Printf("共扫描到模块：%d个\n，正在传输数据", len(ctx.ManagedModules))
+	}
+	if e := commitModuleInfo(ctx); e != nil {
+		if source == api.TaskTypeCli {
+			fmt.Println("提交模块信息失败", e.Error())
+		}
+		logger.Debug.Printf("%+v", e)
+		logger.Err.Println(e.Error())
 	}
 
 	if source == api.TaskTypeCli {
@@ -123,7 +149,6 @@ func Scan(dir string, source api.InspectTaskType) (interface{}, error) {
 		logger.Err.Println("query result failed.", e.Error())
 		return nil, e
 	}
-	// todo: resp
 
 	if source == api.TaskTypeCli {
 		fmt.Printf("项目扫描成功，依赖数：%d，漏洞数：%d\n", resp.DependenciesCount, resp.IssuesCompsCount)
