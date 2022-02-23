@@ -19,9 +19,10 @@ const (
 )
 
 var logMutex sync.Mutex
-var consoleLogLevel = LogWarn
 
 var ConsoleLogLevelOverride string
+
+var PrintNetworkLog bool
 
 var getConsoleLogLevel = func() func() LogLevel {
 	o := sync.Once{}
@@ -52,6 +53,8 @@ var Debug = log.New(n(LogDebug), "[DEBUG]", log.Lshortfile+log.LstdFlags)
 var Info = log.New(n(LogInfo), "[INFO]", log.Lshortfile+log.LstdFlags)
 var Warn = log.New(n(LogWarn), "[WARN]", log.Lshortfile+log.LstdFlags)
 var Err = log.New(n(LogErr), "[ERROR]", log.Lshortfile+log.LstdFlags)
+var nt = n(0)
+var Net = log.New(nt, "[NET]", log.Lshortfile+log.LstdFlags)
 
 type W struct {
 	l LogLevel
@@ -64,12 +67,14 @@ func n(l LogLevel) *W {
 func (w *W) Write(p []byte) (n int, err error) {
 	logMutex.Lock()
 	defer logMutex.Unlock()
-	if w.l >= getConsoleLogLevel() {
+	if w.l >= getConsoleLogLevel() || (w == nt && PrintNetworkLog) {
 		must.Int(os.Stderr.Write(p))
 	}
 	f := loggerFile()
 	if f != nil {
-		must.Int(f.Write(p))
+		if w != nt || PrintNetworkLog {
+			must.Int(f.Write(p))
+		}
 	}
 	return len(p), nil
 }
