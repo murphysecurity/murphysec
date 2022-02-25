@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"io/fs"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
 	"murphysec-cli-simple/logger"
@@ -11,6 +12,7 @@ import (
 	"murphysec-cli-simple/utils/must"
 	"murphysec-cli-simple/version"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -97,7 +99,7 @@ func displayManagedScanning(ctx *ScanContext) {
 	}
 }
 
-func Scan(dir string, source api.InspectTaskType) (interface{}, error) {
+func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, error) {
 	ctx := createTaskContext(dir, source)
 
 	displayTaskCreating(ctx)
@@ -135,6 +137,33 @@ func Scan(dir string, source api.InspectTaskType) (interface{}, error) {
 		logger.Err.Println(e.Error())
 	}
 
+	if deepScan {
+		logger.Info.Printf("deep scan enabled, upload source code")
+		filepath.Walk(ctx.ProjectDir, func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				logger.Err.Println("walk err", err.Error())
+				return nil
+			}
+			if info.IsDir() {
+				return nil
+			}
+			if !info.Mode().IsRegular() {
+				return nil
+			}
+			if info.Size() < 32 {
+				return nil
+			}
+			if e := api.UploadFile(ctx.TaskId, path, ctx.ProjectDir); e != nil {
+				logger.Err.Println("Upload file failed", e.Error())
+				if source == api.TaskTypeCli {
+					fmt.Println("上传文件失败：", e.Error())
+				}
+				return e
+			}
+			return nil
+		})
+	}
+
 	if source == api.TaskTypeCli {
 		fmt.Println("检测中...")
 	}
@@ -156,4 +185,13 @@ func Scan(dir string, source api.InspectTaskType) (interface{}, error) {
 		fmt.Println(must.Byte(json.Marshal(mapForIdea(resp))))
 	}
 	return nil, nil
+}
+
+func ScannerScan(dir string) {
+	ctx := createTaskContext(must.String(filepath.Abs(dir)), api.TaskTypeIdea)
+	if e := managedInspectScan(ctx); e != nil {
+		logger.Err.Println("Managed inspect failed.", e.Error())
+		logger.Debug.Printf("%+v", e)
+	}
+	fmt.Println(string(must.Byte(json.Marshal(ctx.ManagedModules))))
 }

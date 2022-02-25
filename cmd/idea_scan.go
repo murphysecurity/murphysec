@@ -15,7 +15,7 @@ func ideaScanCmd() *cobra.Command {
 		Hidden: true,
 		Use:    "ideascan --dir ProjectDir",
 		Run: func(cmd *cobra.Command, args []string) {
-			_, e := inspector.Scan(must.String(filepath.Abs(dir)), api.TaskTypeIdea)
+			_, e := inspector.Scan(must.String(filepath.Abs(dir)), api.TaskTypeIdea, false)
 			if e != nil {
 				SetGlobalExitCode(1)
 				logger.Err.Println("idea plugin scan failed.", e.Error())

@@ -12,12 +12,15 @@ import (
 
 var CliJsonOutput bool
 
+var DeepScan bool
+
 func scanCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use: "scan DIR",
 		Run: scanRun,
 	}
 	c.Flags().BoolVar(&CliJsonOutput, "json", false, "json output")
+	c.Flags().BoolVar(&DeepScan, "deep", false, "deep scan, will upload the source code")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
@@ -26,9 +29,9 @@ func scanRun(cmd *cobra.Command, args []string) {
 	logger.Info.Println("CLI scan dir:", args[0], must.String(filepath.Abs(args[0])))
 	var e error
 	if CliJsonOutput {
-		_, e = inspector.Scan(must.String(filepath.Abs(args[0])), api.TaskTypeJenkins)
+		_, e = inspector.Scan(must.String(filepath.Abs(args[0])), api.TaskTypeJenkins, DeepScan)
 	} else {
-		_, e = inspector.Scan(must.String(filepath.Abs(args[0])), api.TaskTypeCli)
+		_, e = inspector.Scan(must.String(filepath.Abs(args[0])), api.TaskTypeCli, DeepScan)
 	}
 	if e != nil {
 		SetGlobalExitCode(1)
