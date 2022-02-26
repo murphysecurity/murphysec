@@ -20,7 +20,7 @@ func readProjectInfo(baseDir string) *ScanContext {
 	}
 	if ctx.ProjectName == "" {
 		logger.Info.Println("get project name failed, use directory name")
-		ctx.ProjectDir = filepath.Base(ctx.ProjectDir)
+		ctx.ProjectName = filepath.Base(ctx.ProjectDir)
 	}
 	if ctx.ProjectName == "" {
 		logger.Warn.Println("Get project name failed")

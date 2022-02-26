@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/google/uuid"
+	"murphysec-cli-simple/conf"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
 	"net/http"
@@ -90,12 +91,14 @@ const (
 
 type SendDetectRequest struct {
 	TaskInfo string     `json:"task_info"`
+	ApiToken string     `json:"api_token"`
 	Modules  []VoModule `json:"modules"`
 }
 
 func SendDetect(input *SendDetectRequest) error {
 	must.True(input != nil)
 	u := serverAddress() + "/message/v2/access/detect/user_cli"
+	input.ApiToken = conf.APIToken()
 	body := must.Byte(json.Marshal(input))
 	resp, e := http.Post(u, "application/json", bytes.NewReader(body))
 	if e != nil {

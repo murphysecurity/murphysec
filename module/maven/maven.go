@@ -97,7 +97,7 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 }
 
 func convDeps(deps []Dependency) []base.Dependency {
-	var rs []base.Dependency
+	rs := make([]base.Dependency, 0)
 	for _, it := range deps {
 		d := _convDep(it)
 		if d == nil {

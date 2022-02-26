@@ -28,6 +28,7 @@ func scanCmd() *cobra.Command {
 func scanRun(cmd *cobra.Command, args []string) {
 	logger.Info.Println("CLI scan dir:", args[0], must.String(filepath.Abs(args[0])))
 	var e error
+	println(filepath.Abs(args[0]))
 	if CliJsonOutput {
 		_, e = inspector.Scan(must.String(filepath.Abs(args[0])), api.TaskTypeJenkins, DeepScan)
 	} else {

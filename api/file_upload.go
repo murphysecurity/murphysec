@@ -21,7 +21,7 @@ func UploadFile(taskId string, filePath string, baseDir string) error {
 	v.Set("path", relPath)
 	u.RawQuery = v.Encode()
 	logger.Info.Println("Upload file to:", u.String())
-	resp, e := http.Post(u.Scheme, "application/octet-stream", f)
+	resp, e := http.Post(u.String(), "application/octet-stream", f)
 	if e != nil {
 		return ErrSendRequest
 	}
