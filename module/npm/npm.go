@@ -101,6 +101,9 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 }
 
 func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *base.Dependency {
+	if deep > 5 {
+		return nil
+	}
 	if _, ok := visited[root]; ok {
 		// circular dependency, print dependency path
 		var path []string
