@@ -35,7 +35,7 @@ func CreateTask(req *CreateTaskRequest) (*string, error) {
 	body := must.Byte(json.Marshal(req))
 	httpreq := must.Req(http.NewRequest(http.MethodPost, serverAddress()+"/message/v2/access/client/create_project", bytes.NewReader(body)))
 	httpreq.Header.Add("Machine-Id", must.String(machineid.ProtectedID("murphysec")))
-	resp, e := http.Post(serverAddress()+"/message/v2/access/client/create_project", "application/json", bytes.NewReader(body))
+	resp, e := client.Do(httpreq)
 	if e != nil {
 		logger.Err.Println("Request failed", e.Error())
 		return nil, errors.Wrap(ErrSendRequest, e.Error())
