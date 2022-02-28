@@ -35,8 +35,5 @@ func init() {
 	}
 	client = c
 }
-func getClient() *http.Client {
-	return client
-}
 
 var ErrTokenInvalid = errors.New("Token invalid")

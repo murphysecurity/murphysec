@@ -3,19 +3,13 @@ package must
 import (
 	"io"
 	"net/http"
+	"net/url"
 )
 
 // Must panics if err is not nil.
 func Must(err error) {
 	if err != nil {
 		panic(err)
-	}
-}
-
-// NotNil panics if any is nil
-func NotNil(any interface{}) {
-	if any == nil {
-		panic("NotNil")
 	}
 }
 
@@ -91,4 +85,9 @@ func ReadClose(rc io.ReadCloser, err error) io.ReadCloser {
 func Req(req *http.Request, err error) *http.Request {
 	Must(err)
 	return req
+}
+
+func Url(url *url.URL, err error) *url.URL {
+	Must(err)
+	return url
 }

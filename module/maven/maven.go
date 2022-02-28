@@ -2,16 +2,12 @@ package maven
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
-	"murphysec-cli-simple/utils/must"
-	"path/filepath"
 	"sync"
 )
 
 type Dependency struct {
-	fmt.Stringer
 	Coordinate
 	Children []Dependency `json:"children,omitempty"`
 }
@@ -34,51 +30,37 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 		}
 	}
 	// analyze pom file
-	repo, e := NewProjectRepoFromDir(dir)
-	if e != nil {
-		logger.Err.Println("Scan pom file failed")
-		return nil, errors.Wrap(e, "scan project pom failed")
-	}
-	// fill moduleFileMapping
-	for _, info := range repo.ListModuleInfo() {
-		relPath := must.String(filepath.Rel(dir, info.FilePath))
-		moduleFileMapping[info.Coordinate()] = relPath
-		logger.Debug.Println("Module path mapping:", info.Coordinate().String(), relPath)
-	}
-	if len(repo.ListModuleInfo()) == 0 {
-		logger.Debug.Println("No module found")
-	}
-	resolver := NewResolver(repo)
-	m2Settings := ReadM2SettingMirror()
-	if m2Settings == nil {
-		resolver.AddRepo(NewLocalRepo(""))
-	} else {
-		resolver.AddRepo(NewLocalRepo(m2Settings.RepoPath))
-	}
-	if m2Settings == nil || len(m2Settings.Mirrors) == 0 {
-		resolver.AddRepo(DefaultMavenRepo()...)
-	} else {
-		for _, it := range m2Settings.Mirrors {
-			resolver.AddRepo(MustNewHttpRepo(it))
+	{
+		if deps == nil {
+			deps = map[Coordinate][]Dependency{}
 		}
-	}
-	if len(deps) == 0 {
-		logger.Warn.Println("Maven command execute failed, use another tools")
-		deps = map[Coordinate][]Dependency{}
-		cacheMap := &DepTreeCacheMap{}
-		for _, info := range repo.ListModuleInfo() {
-			logger.Debug.Println("Resolving module", info.Coordinate())
-			pomFile, e := resolver.ResolvePomFile(nil, info.Coordinate())
-			if e != nil {
-				logger.Err.Println("Resolve local module failed", info.Coordinate(), e.Error())
+		pomFiles := InspectModule(dir)
+		logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
+
+		resolver := NewResolver()
+		for _, builder := range pomFiles {
+			{
+				pf := resolver.ResolveLocally(builder, nil)
+				if pf == nil {
+					continue
+				}
+				if len(deps[pf.coordinate]) > 0 {
+					continue
+				}
+			}
+			pf := resolver.Resolve(builder, nil)
+			if pf == nil {
 				continue
 			}
-			p := _resolve(nil, resolver, pomFile, cacheMap, nil, 3)
-			if p == nil {
-				logger.Info.Println("Resolve pom dependency failed.", info.PomFile.Coordinate().String())
-			} else {
-				deps[info.Coordinate()] = p.Children
+			if !pf.coordinate.Complete() {
+				logger.Info.Println("local pom coordinate can't be resolve", pf.coordinate)
+				continue
 			}
+			analyzer := NewDepTreeAnalyzer(resolver)
+			graph := analyzer.Resolve(pf)
+			logger.Info.Println("dep graph")
+			logger.Info.Println(graph.DOT())
+			deps[pf.coordinate] = graph.Tree(pf.coordinate)
 		}
 	}
 	for coordinate, dependencies := range deps {

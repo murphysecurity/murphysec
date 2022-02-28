@@ -19,7 +19,6 @@ const (
 )
 
 var logMutex sync.Mutex
-var consoleLogLevel = LogWarn
 
 var ConsoleLogLevelOverride string
 

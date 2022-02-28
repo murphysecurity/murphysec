@@ -1,9 +1,13 @@
 package maven
 
 import (
+	"github.com/pkg/errors"
+	"github.com/vifraa/gopom"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
+	"murphysec-cli-simple/utils/semerr"
 	"path/filepath"
+	"strings"
 )
 
 type Inspector struct{}
@@ -50,4 +54,27 @@ func (c Coordinate) String() string {
 		return c.GroupId + ":" + c.ArtifactId
 	}
 	return c.GroupId + ":" + c.ArtifactId + ":" + c.Version
+}
+
+func (c Coordinate) IsBad() bool {
+	if strings.HasPrefix(c.GroupId, "${") ||
+		strings.HasPrefix(c.ArtifactId, "${") ||
+		strings.HasPrefix(c.Version, "${") ||
+		strings.HasPrefix(c.Version, "[") ||
+		strings.HasPrefix(c.Version, "(") {
+		return true
+	}
+	return false
+}
+
+func (c Coordinate) Complete() bool {
+	return c.GroupId != "" && c.ArtifactId != "" && c.Version != "" && !c.IsBad()
+}
+
+var ErrInvalidCoordinate = errors.New("invalid coordinate")
+var ErrArtifactNotFound = errors.New("artifact not found")
+var ErrParsePomFailed = semerr.New("Parse pom failed.")
+
+type Repo interface {
+	Fetch(coordinate Coordinate) (*gopom.Project, error)
 }
