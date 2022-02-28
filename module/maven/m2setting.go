@@ -2,6 +2,7 @@ package maven
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/antchfx/xmlquery"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
@@ -12,11 +13,23 @@ import (
 	"strings"
 )
 
-func ReadM2SettingMirror() *M2Setting {
-	rs := &M2Setting{
-		Mirrors:  nil,
-		RepoPath: filepath.Join(must.String(homedir.Dir()), ".m2", "repository"),
+type MvnOption struct {
+	LocalRepoPath string
+	Remote        []string
+}
+
+func (o MvnOption) String() string {
+	return fmt.Sprintf("LocalRepo: %s, remotes: %s", o.LocalRepoPath, strings.Join(o.Remote, ","))
+}
+
+func DefaultMvnOption() MvnOption {
+	return MvnOption{
+		LocalRepoPath: filepath.Join(must.String(homedir.Dir()), ".m2", "repository"),
+		Remote:        []string{"https://repo1.maven.org/maven2/"},
 	}
+}
+
+func ReadMvnOption() MvnOption {
 	var data []byte
 	var e error
 	data, e = readUserHomeM2Settings()
@@ -29,20 +42,24 @@ func ReadM2SettingMirror() *M2Setting {
 	}
 	node, e := xmlquery.Parse(bytes.NewReader(data))
 	if e != nil {
-		logger.Err.Println("Parse m2 settings failed.", e.Error())
+		logger.Info.Println("Parse m2 settings failed.", e.Error())
+		return DefaultMvnOption()
 	}
+	opt := DefaultMvnOption()
+	opt.Remote = nil
 	for _, it := range xmlquery.Find(node, "/settings/mirrors/mirror") {
 		url := xmlquery.FindOne(it, "url")
 		if url == nil {
 			continue
 		}
-		rs.Mirrors = append(rs.Mirrors, url.InnerText())
+		opt.Remote = append(opt.Remote, url.InnerText())
 	}
+	opt.Remote = append(opt.Remote, "https://repo1.maven.org/maven2/")
 	if n := xmlquery.FindOne(node, "/settings/localRepository"); n != nil {
-		rs.RepoPath = n.InnerText()
+		opt.LocalRepoPath = strings.ReplaceAll(n.InnerText(), "${user.home}", must.String(homedir.Dir()))
 	}
-	logger.Info.Println("m2 info", rs)
-	return rs
+	logger.Info.Println("maven option", opt)
+	return opt
 }
 
 type M2Setting struct {

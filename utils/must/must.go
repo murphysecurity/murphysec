@@ -13,13 +13,6 @@ func Must(err error) {
 	}
 }
 
-// NotNil panics if any is nil
-func NotNil(any interface{}) {
-	if any == nil {
-		panic("NotNil")
-	}
-}
-
 // Reason panics with reason if err is not null.
 func Reason(err error, reason string) {
 	if err != nil {
@@ -94,10 +87,7 @@ func Req(req *http.Request, err error) *http.Request {
 	return req
 }
 
-func Url(input string) *url.URL {
-	u, e := url.Parse(input)
-	if e != nil {
-		panic(e)
-	}
-	return u
+func Url(url *url.URL, err error) *url.URL {
+	Must(err)
+	return url
 }

@@ -1,63 +1,51 @@
 package maven
 
 import (
-	"context"
+	"encoding/xml"
 	"fmt"
-	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
+	"github.com/vifraa/gopom"
 	"io/ioutil"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/utils/must"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 type LocalRepo struct {
-	basePath string
+	baseDir string
 }
 
-var _LocalRepoInstance = &LocalRepo{
-	basePath: filepath.Join(must.String(homedir.Dir()), ".m2", "repository"),
+func NewLocalRepo(s string) *LocalRepo {
+	return &LocalRepo{baseDir: s}
 }
 
-func NewLocalRepo(path string) *LocalRepo {
-	if path != "" {
-		_LocalRepoInstance.basePath = path
+func (l *LocalRepo) String() string {
+	return fmt.Sprintf("LocalRepo[%s]", l.baseDir)
+}
+
+func (l *LocalRepo) Fetch(coordinate Coordinate) (*gopom.Project, error) {
+	if !coordinate.Complete() {
+		return nil, ErrInvalidCoordinate
 	}
-	return _LocalRepoInstance
-}
-
-func (h *LocalRepo) FetchPomFile(ctx context.Context, coordinate Coordinate) (*PomFile, error) {
-	pathSeg := []string{mavenHome(), "repository"}
-	pathSeg = append(pathSeg, strings.Split(coordinate.GroupId, ".")...)
-	pathSeg = append(pathSeg, coordinate.ArtifactId, coordinate.Version, fmt.Sprintf("%s-%s.pom", coordinate.ArtifactId, coordinate.Version))
-	pomData, e := ioutil.ReadFile(filepath.Join(pathSeg...))
+	p := filepath.Join(l.baseDir)
+	for _, s := range strings.Split(coordinate.GroupId, ".") {
+		p = filepath.Join(p, s)
+	}
+	p = filepath.Join(p, coordinate.ArtifactId, coordinate.Version, coordinate.ArtifactId+"-"+coordinate.Version+".pom")
+	if info, err := os.Stat(p); errors.Is(err, os.ErrNotExist) {
+		return nil, ErrArtifactNotFound
+	} else {
+		if info.IsDir() {
+			return nil, errors.New("it's a directory")
+		}
+	}
+	data, e := ioutil.ReadFile(p)
 	if e != nil {
-		return nil, ErrArtifactNotFoundInRepo
+		return nil, errors.Wrap(e, "Read local pom file failed")
 	}
-	p, e := NewPomFileFromData(pomData)
-	if e != nil {
-		return nil, errors.Wrap(e, "invalid pom file")
+	var proj gopom.Project
+	if e := xml.Unmarshal(data, &proj); e != nil {
+		return nil, ErrParsePomFailed.Decorate(e)
 	}
-	if p.Coordinate() != coordinate {
-		return nil, ErrArtifactNotFoundInRepo
-	}
-	logger.Debug.Println("Local repo load:", p.Coordinate())
-	return p, nil
-}
-
-func (h *LocalRepo) String() string {
-	return fmt.Sprintf("LocalRepo[%v]", mavenHome())
-}
-
-func mavenHome() string {
-	var m2home string
-	if s := os.Getenv("M2_HOME"); s != "" {
-		m2home = s
-	}
-	if m2home == "" {
-		m2home = filepath.Join(must.String(homedir.Dir()), ".m2")
-	}
-	return m2home
+	return &proj, nil
 }
