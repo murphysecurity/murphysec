@@ -78,5 +78,12 @@ func CliScan(dir string, jsonOutput bool) (interface{}, error) {
 		}
 		return nil, nil
 	}
+	if e == ErrNoEngineMatched {
+		if jsonOutput {
+			reportIdeaStatus(IdeaNoEngineMatch, e.Error())
+		} else {
+			fmt.Println("没有找到受支持的模块")
+		}
+	}
 	return nil, nil
 }
