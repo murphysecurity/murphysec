@@ -294,7 +294,7 @@ func (p *PomBuilder) Build() *PomFile {
 			}
 		}
 		for _, it := range p.P.Dependencies {
-			if it.Scope == "test" {
+			if it.Scope != "" && it.Scope != "compile" {
 				continue
 			}
 			if it.Optional == "true" {
