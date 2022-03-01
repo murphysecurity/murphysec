@@ -247,15 +247,15 @@ func (p *PomBuilder) Build() *PomFile {
 	}
 	{
 		c := Coordinate{
-			GroupId:    pf.property(p.P.GroupID),
-			ArtifactId: pf.property(p.P.ArtifactID),
-			Version:    pf.property(p.P.Version),
+			GroupId:    strings.TrimSpace(pf.property(p.P.GroupID)),
+			ArtifactId: strings.TrimSpace(pf.property(p.P.ArtifactID)),
+			Version:    strings.TrimSpace(pf.property(p.P.Version)),
 		}
 		if c.GroupId == "" {
-			c.GroupId = pf.property(p.P.Parent.GroupID)
+			c.GroupId = strings.TrimSpace(pf.property(p.P.Parent.GroupID))
 		}
 		if c.Version == "" {
-			c.Version = pf.property(p.P.Parent.Version)
+			c.Version = strings.TrimSpace(pf.property(p.P.Parent.Version))
 		}
 		pf.coordinate = c
 	}
@@ -269,13 +269,13 @@ func (p *PomBuilder) Build() *PomFile {
 		}
 		for _, it := range p.P.DependencyManagement.Dependencies {
 			coor := Coordinate{
-				GroupId:    pf.property(it.GroupID),
-				ArtifactId: pf.property(it.ArtifactID),
+				GroupId:    strings.TrimSpace(pf.property(it.GroupID)),
+				ArtifactId: strings.TrimSpace(pf.property(it.ArtifactID)),
 			}
 			if coor.IsBad() {
 				continue
 			}
-			pf.dependencyManagement[coor] = pf.property(it.Version)
+			pf.dependencyManagement[coor] = strings.TrimSpace(pf.property(it.ArtifactID))
 		}
 	}
 	{
@@ -290,22 +290,22 @@ func (p *PomBuilder) Build() *PomFile {
 				if it.IsBad() {
 					continue
 				}
-				m[id{it.GroupId, it.ArtifactId}] = it
+				m[id{strings.TrimSpace(it.GroupId), strings.TrimSpace(it.ArtifactId)}] = it
 			}
 		}
 		for _, it := range p.P.Dependencies {
-			if it.Scope != "" && it.Scope != "compile" {
+			if it.Scope != "" && strings.TrimSpace(it.Scope) != "compile" {
 				continue
 			}
-			if it.Optional == "true" {
+			if strings.TrimSpace(it.Optional) == "true" {
 				continue
 			}
-			groupId := pf.property(it.GroupID)
-			artifactId := pf.property(it.ArtifactID)
+			groupId := strings.TrimSpace(pf.property(it.GroupID))
+			artifactId := strings.TrimSpace(pf.property(it.ArtifactID))
 			if groupId == "" || artifactId == "" {
 				continue
 			}
-			version := pf.property(it.Version)
+			version := strings.TrimSpace(pf.property(it.Version))
 			coor := Coordinate{GroupId: groupId, ArtifactId: artifactId}
 			if coor.IsBad() {
 				continue
@@ -315,7 +315,7 @@ func (p *PomBuilder) Build() *PomFile {
 			}
 			depItem := PomDependencyItem{
 				Coordinate: Coordinate{groupId, artifactId, version},
-				Scope:      it.Scope,
+				Scope:      strings.TrimSpace(it.Scope),
 			}
 			if !depItem.Complete() {
 				continue
