@@ -2,15 +2,17 @@ package go_mod
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
+	"github.com/pkg/errors"
 	"io"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/must"
+	"murphysec-cli-simple/utils/simplejson"
 	"os/exec"
 	"path/filepath"
-	"strings"
-	"sync"
 )
 
 type Inspector struct{}
@@ -48,7 +50,13 @@ func ScanGoProject(dir string) ([]base.Module, error) {
 		logger.Err.Println("go mod tidy execute failed.", e.Error())
 		return nil, e
 	}
-	deps, e := execGoModGraph(dir)
+	root, e := execGoListModule(dir)
+	if e != nil {
+		logger.Err.Println("execGoListModule:", e.Error())
+		return nil, e
+	}
+
+	deps, e := execGoList(dir)
 	if e != nil {
 		logger.Err.Println("Scan go project failed, ", e.Error())
 		return nil, e
@@ -58,95 +66,63 @@ func ScanGoProject(dir string) ([]base.Module, error) {
 		PackageManager: "Go",
 		Language:       "Go",
 		PackageFile:    "go.mod",
-		Name:           deps.Name,
-		Version:        deps.Version,
+		Name:           root.Get("Module", "Path").String("<NoName>"),
+		Version:        "",
 		RelativePath:   "go.mod",
-		Dependencies:   deps.Dependencies,
+		Dependencies:   deps,
 		RuntimeInfo:    map[string]interface{}{"go_version": version},
 	}
 	return []base.Module{module}, nil
 }
 
-func execGoModGraph(dir string) (*base.Dependency, error) {
-	cmd := exec.Command("go", "mod", "graph")
+func execGoListModule(dir string) (*simplejson.JSON, error) {
+	cmd := exec.Command("go", "list", "--json")
 	cmd.Dir = dir
-	r, w := io.Pipe()
-	defer must.Close(w)
-	cmd.Stdout = w
-	if e := cmd.Start(); e != nil {
-		logger.Err.Println("go mod graph execute failed.", e.Error())
+	data, e := cmd.Output()
+	if e != nil {
 		return nil, e
 	}
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	var deps *base.Dependency
-	go func() {
-		deps = parseGoModGraph(r)
-		wg.Done()
-	}()
-	if e := cmd.Wait(); e != nil {
-		logger.Err.Println("go mod graph exit with err:", e.Error())
+	var d *simplejson.JSON
+	if e := json.Unmarshal(data, &d); e != nil {
 		return nil, e
-	} else {
-		logger.Info.Println("go mod graph exit with no error.")
 	}
-	must.Close(w)
-	must.Close(w)
-	wg.Wait()
-	return deps, nil
+	if d == nil {
+		return nil, errors.New("json is nil")
+	}
+	return d, nil
 }
 
-func parseGoModGraph(reader io.Reader) *base.Dependency {
-	scanner := bufio.NewScanner(reader)
-	scanner.Split(bufio.ScanLines)
-	scanner.Buffer(make([]byte, 1024*4), 1024*4)
-	list := map[string][]string{}
-	root := ""
-	count := 0
-	for scanner.Scan() {
-		t := strings.Split(strings.TrimSpace(scanner.Text()), " ")
-		if len(t) != 2 {
-			logger.Debug.Println("Unrecognized line:", scanner.Text())
+func execGoList(dir string) ([]base.Dependency, error) {
+	cmd := exec.Command("go", "list", "--json")
+	cmd.Dir = dir
+	data, e := cmd.Output()
+	if e != nil {
+		logger.Err.Println("go list execute failed.", e.Error())
+		return nil, errors.New("Go list execute failed")
+	}
+	dep := make([]base.Dependency, 0)
+	dec := json.NewDecoder(bytes.NewReader(data))
+	for {
+		var m *simplejson.JSON
+		if e := dec.Decode(&m); e == io.EOF {
+			break
+		} else if e != nil {
+			logger.Err.Println(e.Error())
+			return nil, errors.Wrap(e, "parse go list failed")
+		}
+		if m == nil {
 			continue
 		}
-		count++
-		if root == "" {
-			root = t[0]
+		if m.Get("Version").String() == "" {
+			continue
 		}
-		list[t[0]] = append(list[t[0]], t[1])
+		dep = append(dep, base.Dependency{
+			Name:         m.Get("Path").String(),
+			Version:      m.Get("Version").String(),
+			Dependencies: []base.Dependency{},
+		})
 	}
-	logger.Debug.Println("go mod graph: Total process lines ", count)
-	return _convDependency(list, root, nil)
-}
-
-func _convDependency(m map[string][]string, root string, visited []string) *base.Dependency {
-	if len(visited) > 3 {
-		return nil
-	}
-	for _, it := range visited {
-		if it == root {
-			logger.Warn.Println("Circular dependency:", strings.Join(visited, " -> "))
-			return nil
-		}
-	}
-	t := strings.Split(root, "@")
-	if len(t) > 2 {
-		logger.Debug.Println("Invalid id:", root)
-		return nil
-	}
-	if len(t) == 1 {
-		t = []string{t[0], ""}
-	}
-	d := base.Dependency{
-		Name:    t[0],
-		Version: t[1],
-	}
-	for _, it := range m[root] {
-		if r := _convDependency(m, it, append(visited, root)); r != nil {
-			d.Dependencies = append(d.Dependencies, *r)
-		}
-	}
-	return &d
+	return dep, nil
 }
 
 func execGoModTidy(dir string) error {
