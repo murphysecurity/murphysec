@@ -4,6 +4,7 @@ import (
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 )
@@ -15,7 +16,7 @@ func UploadFile(taskId string, filePath string, baseDir string) error {
 	}
 	defer f.Close()
 	relPath := filepath.ToSlash(must.String(filepath.Rel(baseDir, filePath)))
-	u := must.Url(serverAddress() + "/message/v2/access/client/upload_check_files")
+	u := must.Url(url.Parse(serverAddress() + "/message/v2/access/client/upload_check_files"))
 	v := u.Query()
 	v.Set("task_info", taskId)
 	v.Set("path", relPath)
