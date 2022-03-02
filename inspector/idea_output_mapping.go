@@ -62,6 +62,18 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 					p.ShowLevel = utils.MinInt(p.ShowLevel, 1)
 				}
 			}
+			if comp.License != nil {
+				p.License = comp.License
+			}
+			p.IsDirectDependency = comp.IsDirectDependency
+			p.Solutions = comp.Solutions
+			if p.Solutions == nil {
+				p.Solutions = []struct {
+					Type          string `json:"type"`
+					Description   string `json:"description"`
+					Compatibility *int   `json:"compatibility"`
+				}{}
+			}
 			rs[id{comp.CompName, comp.CompVersion}] = p
 		}
 	}
@@ -132,4 +144,14 @@ type PluginComp struct {
 	MinFixedVersion string           `json:"min_fixed_version"`
 	Vulns           []api.VoVulnInfo `json:"vulns"`
 	Version         string           `json:"version"`
+	Solutions       []struct {
+		Type          string `json:"type"`
+		Description   string `json:"description"`
+		Compatibility *int   `json:"compatibility"`
+	} `json:"solutions"`
+	License *struct {
+		Spdx  string           `json:"spdx"`
+		Level api.LicenseLevel `json:"level"`
+	} `json:"license"`
+	IsDirectDependency bool `json:"is_direct_dependency"`
 }

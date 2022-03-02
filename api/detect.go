@@ -99,6 +99,14 @@ const (
 	VulnLevelLow      VulnLevelType = "Low"
 )
 
+type LicenseLevel string
+
+const (
+	LicenseLevelHigh   LicenseLevel = "High"
+	LicenseLevelMedium LicenseLevel = "Medium"
+	LicenseLevelLow    LicenseLevel = "Low"
+)
+
 type VoDetectResponse struct {
 	DependenciesCount int `json:"dependencies_count"`
 	IssuesCompsCount  int `json:"issues_comps_count"`
@@ -108,11 +116,21 @@ type VoDetectResponse struct {
 		Language       string    `json:"language"`
 		PackageManager string    `json:"package_manager"`
 		Comps          []struct {
-			CompId          int          `json:"comp_id"`
-			CompName        string       `json:"comp_name"`
-			CompVersion     string       `json:"comp_version"`
-			MinFixedVersion string       `json:"min_fixed_version"`
-			Vuls            []VoVulnInfo `json:"vuls"`
+			Solutions []struct {
+				Type          string `json:"type"`
+				Description   string `json:"description"`
+				Compatibility *int   `json:"compatibility"`
+			} `json:"solutions"`
+			License *struct {
+				Spdx  string       `json:"spdx"`
+				Level LicenseLevel `json:"level"`
+			} `json:"license"`
+			IsDirectDependency bool         `json:"is_direct_dependency"`
+			CompId             int          `json:"comp_id"`
+			CompName           string       `json:"comp_name"`
+			CompVersion        string       `json:"comp_version"`
+			MinFixedVersion    string       `json:"min_fixed_version"`
+			Vuls               []VoVulnInfo `json:"vuls"`
 		} `json:"comps"`
 	} `json:"modules"`
 	DetectStartTimestamp time.Time `json:"detect_start_timestamp"`
