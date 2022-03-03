@@ -14,7 +14,7 @@ type Module struct {
 	Name           string       `json:"name"`
 	Version        string       `json:"version"`
 	RelativePath   string       `json:"relative_path"`
-	Dependencies   []Dependency `json:"dependencies"`
+	Dependencies   []Dependency `json:"dependencies,omitempty"`
 	RuntimeInfo    interface{}  `json:"runtime_info"`
 }
 
@@ -36,7 +36,7 @@ func (m Module) ApiVo() *api.VoModule {
 type Dependency struct {
 	Name         string       `json:"name"`
 	Version      string       `json:"version"`
-	Dependencies []Dependency `json:"dependencies"`
+	Dependencies []Dependency `json:"dependencies,omitempty"`
 }
 
 var paddingPattern = regexp.MustCompile("^[\\r\\n\\t ]*|[\\r\\n\\t ]*$")

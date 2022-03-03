@@ -193,5 +193,8 @@ func ScannerScan(dir string) {
 		logger.Err.Println("Managed inspect failed.", e.Error())
 		logger.Debug.Printf("%+v", e)
 	}
+	if ctx.ManagedModules == nil {
+		ctx.ManagedModules = []base.Module{}
+	}
 	fmt.Println(string(must.Byte(json.Marshal(ctx.ManagedModules))))
 }
