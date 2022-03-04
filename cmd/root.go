@@ -39,6 +39,7 @@ func rootCmd() *cobra.Command {
 	c.AddCommand(authCmd())
 	c.AddCommand(scanCmd())
 	c.AddCommand(ideaScanCmd())
+	c.AddCommand(machineCmd())
 	return c
 }
 
