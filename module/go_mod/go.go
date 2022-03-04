@@ -93,7 +93,7 @@ func execGoListModule(dir string) (*simplejson.JSON, error) {
 }
 
 func execGoList(dir string) ([]base.Dependency, error) {
-	cmd := exec.Command("go", "list", "--json")
+	cmd := exec.Command("go", "list", "--json", "-m", "all")
 	cmd.Dir = dir
 	data, e := cmd.Output()
 	if e != nil {
