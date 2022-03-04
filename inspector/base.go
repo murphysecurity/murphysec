@@ -99,6 +99,18 @@ func displayManagedScanning(ctx *ScanContext) {
 	}
 }
 
+func shouldUploadFile(ctx *ScanContext) bool {
+	if len(ctx.ManagedModules) == 0 {
+		return true
+	}
+	for _, it := range ctx.ManagedModules {
+		if it.PackageManager == "Maven" {
+			return true
+		}
+	}
+	return false
+}
+
 func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, error) {
 	ctx := createTaskContext(dir, source)
 
@@ -137,7 +149,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 		logger.Err.Println(e.Error())
 	}
 
-	if deepScan {
+	if deepScan && shouldUploadFile(ctx) {
 		logger.Info.Printf("deep scan enabled, upload source code")
 		filepath.Walk(ctx.ProjectDir, func(path string, info fs.FileInfo, err error) error {
 			if err != nil {
