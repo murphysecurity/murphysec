@@ -24,16 +24,18 @@ func QueryResult(taskId string) (*TaskScanResponse, error) {
 			return nil, e
 		}
 		if resp.StatusCode == http.StatusOK {
-			var r TaskScanResponse
+			var r = struct {
+				Data TaskScanResponse `json:"data"`
+			}{}
 			if e := json.Unmarshal(data, &r); e != nil {
 				return nil, e
 			}
-			if !r.Complete {
+			if !r.Data.Complete {
 				logger.Debug.Println("not complete, retry")
 				time.Sleep(time.Second * 2)
 				continue
 			}
-			return &r, nil
+			return &r.Data, nil
 		}
 		return nil, readCommonErr(data, resp.StatusCode)
 	}
