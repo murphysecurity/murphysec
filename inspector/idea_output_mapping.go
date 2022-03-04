@@ -62,6 +62,7 @@ func mapForIdea(i *api.TaskScanResponse) PluginOutput {
 					Spdx:  comp.License.Spdx,
 				}
 			}
+			p.IsDirectDependency = comp.IsDirectDependency
 			for _, it := range comp.Solutions {
 				p.Solutions = append(p.Solutions, PluginCompSolution{
 					Compatibility: it.Compatibility,
@@ -142,13 +143,14 @@ func (p PluginOutput) MarshalJSON() ([]byte, error) {
 }
 
 type PluginComp struct {
-	CompName        string               `json:"comp_name"`
-	ShowLevel       int                  `json:"show_level"`
-	MinFixedVersion string               `json:"min_fixed_version"`
-	Vulns           []api.VoVulnInfo     `json:"vulns"`
-	Version         string               `json:"version"`
-	License         *PluginCompLicense   `json:"license,omitempty"`
-	Solutions       []PluginCompSolution `json:"solutions,omitempty"`
+	CompName           string               `json:"comp_name"`
+	ShowLevel          int                  `json:"show_level"`
+	MinFixedVersion    string               `json:"min_fixed_version"`
+	Vulns              []api.VoVulnInfo     `json:"vulns"`
+	Version            string               `json:"version"`
+	License            *PluginCompLicense   `json:"license,omitempty"`
+	Solutions          []PluginCompSolution `json:"solutions,omitempty"`
+	IsDirectDependency bool                 `json:"is_direct_dependency"`
 }
 
 type PluginCompLicense struct {

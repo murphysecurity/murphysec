@@ -51,11 +51,12 @@ type TaskScanResponse struct {
 		Language       string    `json:"language"`
 		PackageManager string    `json:"package_manager"`
 		Comps          []struct {
-			CompId          int    `json:"comp_id"`
-			CompName        string `json:"comp_name"`
-			CompVersion     string `json:"comp_version"`
-			MinFixedVersion string `json:"min_fixed_version"`
-			License         *struct {
+			IsDirectDependency bool   `json:"is_direct_dependency"`
+			CompId             int    `json:"comp_id"`
+			CompName           string `json:"comp_name"`
+			CompVersion        string `json:"comp_version"`
+			MinFixedVersion    string `json:"min_fixed_version"`
+			License            *struct {
 				Level LicenseLevel `json:"level"`
 				Spdx  string       `json:"spdx"`
 			} `json:"license,omitempty"`
