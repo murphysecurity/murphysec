@@ -162,7 +162,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 			if !info.Mode().IsRegular() {
 				return nil
 			}
-			if info.Size() < 32 {
+			if info.Size() < 32 || info.Size() > 8*1024*1024 {
 				return nil
 			}
 			if e := api.UploadFile(ctx.TaskId, path, ctx.ProjectDir); e != nil {
