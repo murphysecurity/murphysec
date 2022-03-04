@@ -156,6 +156,9 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 				logger.Err.Println("walk err", err.Error())
 				return nil
 			}
+			if strings.HasPrefix(info.Name(), ".") {
+				return filepath.SkipDir
+			}
 			if info.IsDir() {
 				return nil
 			}
