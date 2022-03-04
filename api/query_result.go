@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
 	"net/http"
@@ -35,7 +36,19 @@ func QueryResult(taskId string) (*TaskScanResponse, error) {
 				time.Sleep(time.Second * 2)
 				continue
 			}
-			return &r.Data, nil
+			if r.Data.Status == "err" {
+				logger.Err.Println("Detect error")
+				return nil, errors.New("Detect error")
+			}
+			if r.Data.Status == "success" {
+				logger.Info.Println("Detect Succeeded")
+				return &r.Data, nil
+			}
+			if r.Data.Status == "run" {
+				continue
+			}
+			logger.Warn.Println("Server-side unknown status:", r.Data.Status)
+			logger.Debug.Println(string(data))
 		}
 		return nil, readCommonErr(data, resp.StatusCode)
 	}
@@ -71,4 +84,5 @@ type TaskScanResponse struct {
 	DetectStartTimestamp time.Time `json:"detect_start_timestamp"`
 	DetectStatus         string    `json:"detect_status"`
 	TaskId               string    `json:"task_id"`
+	Status               string    `json:"status"`
 }

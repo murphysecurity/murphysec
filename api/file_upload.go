@@ -14,7 +14,7 @@ func UploadFile(taskId string, filePath string, baseDir string) error {
 	if e != nil {
 		return e
 	}
-	defer f.Close()
+	defer must.Close(f)
 	relPath := filepath.ToSlash(must.String(filepath.Rel(baseDir, filePath)))
 	u := must.Url(url.Parse(serverAddress() + "/message/v2/access/client/upload_check_files"))
 	v := u.Query()
