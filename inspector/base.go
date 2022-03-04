@@ -194,7 +194,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 	if source == api.TaskTypeCli {
 		fmt.Printf("项目扫描成功，依赖数：%d，漏洞数：%d\n", resp.DependenciesCount, resp.IssuesCompsCount)
 	} else if source == api.TaskTypeJenkins || source == api.TaskTypeIdea {
-		fmt.Println(must.Byte(json.Marshal(mapForIdea(resp))))
+		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(resp)))))
 	}
 	return nil, nil
 }
