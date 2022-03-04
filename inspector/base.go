@@ -127,7 +127,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 		}
 	}
 	if source == api.TaskTypeCli {
-		fmt.Printf("共扫描到模块：%d个\n，正在传输数据", len(ctx.ManagedModules))
+		fmt.Printf("共扫描到模块：%d个，正在传输数据", len(ctx.ManagedModules))
 	}
 	if e := commitModuleInfo(ctx); e != nil {
 		if source == api.TaskTypeCli {
