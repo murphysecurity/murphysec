@@ -3,10 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/denisbrodbeck/machineid"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
+	"murphysec-cli-simple/version"
 	"net/http"
 )
 
@@ -34,7 +34,7 @@ type CreateTaskResponse struct {
 func CreateTask(req *CreateTaskRequest) (*string, error) {
 	body := must.Byte(json.Marshal(req))
 	httpreq := must.Req(http.NewRequest(http.MethodPost, serverAddress()+"/message/v2/access/client/create_project", bytes.NewReader(body)))
-	httpreq.Header.Add("Machine-Id", must.String(machineid.ProtectedID("murphysec")))
+	httpreq.Header.Add("Machine-Id", version.MachineId())
 	resp, e := client.Do(httpreq)
 	if e != nil {
 		logger.Err.Println("Request failed", e.Error())
