@@ -53,7 +53,8 @@ func ScanGoProject(dir string) ([]base.Module, error) {
 	root, e := execGoListModule(dir)
 	if e != nil {
 		logger.Err.Println("execGoListModule:", e.Error())
-		return nil, e
+		// language=json
+		root, _ = simplejson.NewJSON([]byte(`{"Module": {"Path": "main"}}`))
 	}
 
 	deps, e := execGoList(dir)
@@ -66,7 +67,7 @@ func ScanGoProject(dir string) ([]base.Module, error) {
 		PackageManager: "Go",
 		Language:       "Go",
 		PackageFile:    "go.mod",
-		Name:           root.Get("Module", "Path").String("<NoName>"),
+		Name:           root.Get("Module", "Path").String("main"),
 		Version:        "",
 		RelativePath:   "go.mod",
 		Dependencies:   deps,
