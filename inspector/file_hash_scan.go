@@ -93,7 +93,7 @@ func dirScan(dir string, pathCh chan string) {
 		if info.Size() < 32 || info.Size() > 16*1024*1024 {
 			return nil
 		}
-		pathCh <- filepath.Join(path, info.Name())
+		pathCh <- filepath.Join(path)
 		return nil
 	})
 	if e != nil {
