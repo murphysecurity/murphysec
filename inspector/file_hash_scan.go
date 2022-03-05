@@ -1,12 +1,12 @@
 package inspector
 
 import (
-	"container/list"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"github.com/pkg/errors"
 	"io"
+	"io/fs"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils"
 	"os"
@@ -79,47 +79,24 @@ func dirScan(dir string, pathCh chan string) {
 	logger.Info.Printf("dir scan: %s", dir)
 	defer logger.Info.Println("dir scan terminated")
 	defer close(pathCh)
-	q := list.New()
-	q.PushBack(dir)
-	for q.Len() > 0 {
-		cur := q.Front().Value.(string)
-		q.Remove(q.Front())
-		if entries, e := os.ReadDir(cur); e != nil {
-			continue
-		} else {
-			for _, entry := range entries {
-				name := entry.Name()
-				// check name black list
-				if checkNameBlackList(name) {
-					continue
-				}
-
-				p := filepath.Join(cur, name)
-				info, e := entry.Info()
-				if e != nil {
-					logger.Info.Println("Get info failed", p)
-					continue
-				}
-
-				// check file mode
-				fileMod := info.Mode()
-				switch fileMod {
-				case os.ModeCharDevice, os.ModeDevice, os.ModeNamedPipe, os.ModeSocket, os.ModeSymlink, os.ModeIrregular:
-					continue
-				}
-
-				if entry.IsDir() {
-					q.PushBack(p)
-					continue
-				}
-				// check file size
-				if info.Size() < 32 {
-					continue
-				}
-
-				pathCh <- p
-			}
+	e := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
 		}
+		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || info.Name() == "node_modules") {
+			return filepath.SkipDir
+		}
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+		if info.Size() < 32 || info.Size() > 16*1024*1024 {
+			return nil
+		}
+		pathCh <- filepath.Join(path, info.Name())
+		return nil
+	})
+	if e != nil {
+		logger.Warn.Println("filepath.Walk err:", e.Error())
 	}
 }
 
