@@ -34,6 +34,7 @@ func FileHashScan(ctx *ScanContext) {
 			wg.Done()
 		}()
 	}
+	wg.Wait()
 	for s := range fileHashes {
 		ctx.FileHashes = append(ctx.FileHashes, s)
 	}

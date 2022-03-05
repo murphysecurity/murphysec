@@ -135,6 +135,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 			if source == api.TaskTypeCli {
 				fmt.Println("扫描器无法支持当前项目")
 			}
+			return nil, ErrNoEngineMatched
 		}
 	}
 	if source == api.TaskTypeCli {
