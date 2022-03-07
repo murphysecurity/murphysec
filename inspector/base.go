@@ -111,6 +111,15 @@ func shouldUploadFile(ctx *ScanContext) bool {
 }
 
 func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, error) {
+	{
+		info, e := os.Stat(dir)
+		if e != nil || info.IsDir() {
+			if source == api.TaskTypeCli {
+				fmt.Println("项目目录不存在或无效")
+			}
+			return nil, errors.New("Invalid project dir")
+		}
+	}
 	ctx := createTaskContext(dir, source)
 
 	displayTaskCreating(ctx)
