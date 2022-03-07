@@ -95,7 +95,7 @@ func getGitInfo(dir string) (*GitInfo, error) {
 	} else {
 		if head != nil {
 			commit, e := repo.CommitObject(head.Hash())
-			if e != nil {
+			if e == nil {
 				gitInfo.CommitTime = commit.Committer.When
 				gitInfo.CommitMsg = commit.Message
 				gitInfo.Committer = commit.Committer.Name
