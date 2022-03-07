@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
+	"path/filepath"
 	"sync"
 )
 
@@ -44,6 +45,8 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 				if pf == nil {
 					continue
 				}
+				relPath, _ := filepath.Rel(dir, pf.path)
+				moduleFileMapping[pf.coordinate] = relPath
 				if len(deps[pf.coordinate]) > 0 {
 					continue
 				}
@@ -70,7 +73,7 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 			PackageFile:    "pom.xml",
 			Name:           coordinate.Name(),
 			Version:        coordinate.Version,
-			RelativePath:   moduleFileMapping[coordinate],
+			RelativePath:   filepath.Join(moduleFileMapping[coordinate], "pom.xml"),
 			Dependencies:   convDeps(dependencies),
 			RuntimeInfo:    mvnVer,
 		})
