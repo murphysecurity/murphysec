@@ -7,14 +7,19 @@ import (
 	giturls "github.com/whilp/git-urls"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/logger"
+	"time"
 )
 
 type GitInfo struct {
-	RemoteName     string `json:"remote_name"`
-	RemoteURL      string `json:"remote_url"`
-	HeadCommitHash string `json:"head_commit_hash"`
-	HeadRefName    string `json:"head_ref_name"`
-	ProjectName    string `json:"project_name"`
+	RemoteName     string    `json:"remote_name"`
+	RemoteURL      string    `json:"remote_url"`
+	HeadCommitHash string    `json:"head_commit_hash"`
+	HeadRefName    string    `json:"head_ref_name"`
+	ProjectName    string    `json:"project_name"`
+	CommitMsg      string    `json:"commit_msg"`
+	Committer      string    `json:"committer"`
+	CommitterEmail string    `json:"committer_email"`
+	CommitTime     time.Time `json:"commit_time"`
 }
 
 func (g *GitInfo) ApiVo() *api.VoGitInfo {
@@ -22,9 +27,12 @@ func (g *GitInfo) ApiVo() *api.VoGitInfo {
 		return nil
 	}
 	return &api.VoGitInfo{
-		Commit:       g.HeadCommitHash,
-		GitRef:       g.HeadRefName,
-		GitRemoteUrl: g.RemoteURL,
+		Commit:        g.HeadCommitHash,
+		GitRef:        g.HeadRefName,
+		GitRemoteUrl:  g.RemoteURL,
+		CommitMessage: g.CommitMsg,
+		CommitEmail:   g.CommitterEmail,
+		CommitTime:    g.CommitTime,
 	}
 }
 
@@ -86,6 +94,15 @@ func getGitInfo(dir string) (*GitInfo, error) {
 		logger.Warn.Println("Get HEAD failed.", e.Error())
 	} else {
 		if head != nil {
+			commit, e := repo.CommitObject(head.Hash())
+			if e != nil {
+				gitInfo.CommitTime = commit.Committer.When
+				gitInfo.CommitMsg = commit.Message
+				gitInfo.Committer = commit.Committer.Name
+				gitInfo.CommitterEmail = commit.Committer.Email
+			} else {
+				logger.Warn.Println("Get commit info failed.", e.Error())
+			}
 			gitInfo.HeadCommitHash = head.Hash().String()
 			gitInfo.HeadRefName = head.Name().String()
 		} else {

@@ -8,12 +8,16 @@ import (
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
 	"net/http"
+	"time"
 )
 
 type VoGitInfo struct {
-	Commit       string `json:"commit"`
-	GitRef       string `json:"git_ref"`
-	GitRemoteUrl string `json:"git_remote_url"`
+	Commit        string    `json:"commit"`
+	GitRef        string    `json:"git_ref"`
+	GitRemoteUrl  string    `json:"git_remote_url"`
+	CommitMessage string    `json:"commit_message"`
+	CommitEmail   string    `json:"commit_email"`
+	CommitTime    time.Time `json:"commit_time"`
 }
 
 type VoDependency struct {
