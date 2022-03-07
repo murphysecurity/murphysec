@@ -133,7 +133,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 	displayManagedScanning(ctx)
 	if e := managedInspectScan(ctx); e != nil {
 		logger.Err.Println("Managed inspect failed.", e.Error())
-		logger.Debug.Printf("%+v", e)
+		logger.Debug.Printf("%v", e)
 		if source == api.TaskTypeCli {
 			fmt.Println("受管理扫描失败，执行文件哈希扫描")
 		}

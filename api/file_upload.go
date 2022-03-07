@@ -40,6 +40,7 @@ func UploadFile(taskId string, filePath string, baseDir string) error {
 }
 
 func UploadChunk(taskId string, chunkId int, reader io.Reader) error {
+	//ioutil.WriteFile("aaa.tar.gz", must.Byte(ioutil.ReadAll(reader)), 0777)
 	u := must.Url(url.Parse(serverAddress() + "/message/v2/access/client/upload_check_files"))
 	v := u.Query()
 	v.Set("task_info", taskId)

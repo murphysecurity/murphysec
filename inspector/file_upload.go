@@ -2,6 +2,7 @@ package inspector
 
 import (
 	"archive/tar"
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"github.com/pkg/errors"
@@ -9,6 +10,7 @@ import (
 	"io/fs"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/utils/must"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,9 +22,10 @@ func UploadCodeFile(ctx *ScanContext) error {
 	if len(codeFiles) == 0 {
 		return nil
 	}
-	r, w := io.Pipe()
+	r, pw := io.Pipe()
+	w := bufio.NewWriterSize(pw, 4*1024*1024)
 	gzipWriter := gzip.NewWriter(w)
-	tarWriter := tar.NewWriter(gzip.NewWriter(gzipWriter))
+	tarWriter := tar.NewWriter(gzipWriter)
 	failure := false
 	go func() {
 		e := func() error {
@@ -74,16 +77,10 @@ func UploadCodeFile(ctx *ScanContext) error {
 			failure = true
 			logger.Err.Println("Pkg files failed.", e.Error())
 		}
-		e = tarWriter.Close()
-		if e != nil {
-			failure = true
-			logger.Err.Println("Close tar stream failed.", e.Error())
-		}
-		e = gzipWriter.Close()
-		if e != nil {
-			failure = true
-			logger.Err.Println("Close gzip stream failed.", e.Error())
-		}
+		must.Must(tarWriter.Close())
+		must.Must(gzipWriter.Close())
+		must.Must(w.Flush())
+		must.Must(pw.Close())
 	}()
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -111,6 +108,8 @@ func UploadCodeFile(ctx *ScanContext) error {
 				logger.Err.Println("Upload file failed.", e.Error())
 				failure = true
 				return
+			} else {
+				logger.Info.Println("block sent")
 			}
 		}
 	}()
