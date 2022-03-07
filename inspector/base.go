@@ -94,7 +94,7 @@ func displayTaskCreated(ctx *ScanContext) {
 
 func displayManagedScanning(ctx *ScanContext) {
 	if ctx.TaskType == api.TaskTypeCli {
-		fmt.Println("正在执行受管理扫描")
+		fmt.Println("正在执行扫描")
 	}
 }
 
@@ -134,9 +134,6 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 	if e := managedInspectScan(ctx); e != nil {
 		logger.Debug.Println("Managed inspect failed.", e.Error())
 		logger.Debug.Printf("%v", e)
-		if source == api.TaskTypeCli {
-			fmt.Println("未检测到包管理器，执行文件扫描")
-		}
 		// if managed inspect failed, start file hash scan
 		FileHashScan(ctx)
 		if e == ErrNoEngineMatched && len(ctx.FileHashes) == 0 {
@@ -145,13 +142,6 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 			}
 			return nil, ErrNoEngineMatched
 		}
-	}
-	if source == api.TaskTypeCli {
-		fmt.Printf("共扫描到模块包管理器：%d个", len(ctx.ManagedModules))
-		if len(ctx.FileHashes) > 0 {
-			fmt.Printf("，找到%d个哈希", len(ctx.FileHashes))
-		}
-		fmt.Printf("，正在传输数据\n")
 	}
 	if e := commitModuleInfo(ctx); e != nil {
 		if source == api.TaskTypeCli {
@@ -163,7 +153,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 
 	if deepScan && shouldUploadFile(ctx) {
 		logger.Info.Printf("deep scan enabled, upload source code")
-		fmt.Println("正在上传文件以进行深度检测")
+		fmt.Println("正在上传文件到服务端以进行深度检测")
 		if e := UploadCodeFile(ctx); e != nil {
 			if source == api.TaskTypeCli {
 				fmt.Println("深度检测上传文件失败！")
@@ -176,7 +166,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 	}
 
 	if source == api.TaskTypeCli {
-		fmt.Println("检测中...")
+		fmt.Println("检测中，等待返回结果...")
 	}
 
 	if e := api.StartCheck(ctx.TaskId); e != nil {
