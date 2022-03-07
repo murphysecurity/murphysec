@@ -45,7 +45,8 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 				if pf == nil {
 					continue
 				}
-				moduleFileMapping[pf.coordinate] = pf.path
+				relPath, _ := filepath.Rel(dir, pf.path)
+				moduleFileMapping[pf.coordinate] = relPath
 				if len(deps[pf.coordinate]) > 0 {
 					continue
 				}
