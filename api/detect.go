@@ -26,9 +26,12 @@ type VoDependency struct {
 	Dependencies []VoDependency `json:"dependencies"`
 }
 
+type VoFileHash struct {
+	Hash string `json:"hash"`
+}
 type VoModule struct {
 	Dependencies   []VoDependency `json:"dependencies,omitempty"`
-	Hash           []string       `json:"hash,omitempty"`
+	FileHashList   []VoFileHash   `json:"file_hash_list"`
 	Language       string         `json:"language,omitempty"`
 	Name           string         `json:"name,omitempty"`
 	PackageFile    string         `json:"package_file,omitempty"`

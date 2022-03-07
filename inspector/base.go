@@ -67,10 +67,14 @@ func commitModuleInfo(ctx *ScanContext) error {
 		req.Modules = append(req.Modules, *it.ApiVo())
 	}
 	if len(ctx.FileHashes) != 0 {
+		list := make([]api.VoFileHash, 0)
+		for _, it := range ctx.FileHashes {
+			list = append(list, api.VoFileHash{Hash: it})
+		}
 		req.Modules = append(req.Modules, api.VoModule{
-			Hash:       ctx.FileHashes,
-			Language:   "C/C++",
-			ModuleType: "file_hash",
+			FileHashList: list,
+			Language:     "C/C++",
+			ModuleType:   "file_hash",
 		})
 	}
 	if e := api.SendDetect(req); e != nil {
