@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 )
 
 func UploadFile(taskId string, filePath string, baseDir string) error {
@@ -41,10 +40,10 @@ func UploadFile(taskId string, filePath string, baseDir string) error {
 }
 
 func UploadChunk(taskId string, chunkId int, reader io.Reader) error {
-	u := must.Url(url.Parse(serverAddress() + "/message/v2/access/client/chunked_upload"))
+	u := must.Url(url.Parse(serverAddress() + "/message/v2/access/client/upload_check_files"))
 	v := u.Query()
 	v.Set("task_info", taskId)
-	v.Set("chunk_id", strconv.Itoa(chunkId))
+	v.Set("chunk_id", fmt.Sprintf("%04d", chunkId))
 	u.RawQuery = v.Encode()
 	logger.Info.Println("Upload chunk:", u.String())
 	resp, e := http.Post(u.String(), "application/gzip", reader)
