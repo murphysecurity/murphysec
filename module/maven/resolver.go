@@ -49,7 +49,6 @@ func (r *Resolver) fetchLocalPom(coordinate Coordinate, dir string) *gopom.Proje
 	}
 	pom, e := gopom.Parse(filepath.Join(dir, "pom.xml"))
 	if e != nil {
-		logger.Info.Println(coordinate, e.Error())
 		return nil
 	}
 	if pom == nil {
