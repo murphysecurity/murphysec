@@ -65,6 +65,7 @@ func readHttpBody(res *http.Response) ([]byte, error) {
 		logger.Warn.Println("read body failed.", e.Error())
 		return nil, e
 	}
+	logger.Debug.Println(string(data))
 	logger.Debug.Println("body size", len(data), "bytes")
 	_ = res.Body.Close()
 	return data, e

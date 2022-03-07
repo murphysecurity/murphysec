@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
@@ -29,7 +28,7 @@ func QueryResult(taskId string) (*TaskScanResponse, error) {
 				Data TaskScanResponse `json:"data"`
 			}{}
 			if e := json.Unmarshal(data, &r); e != nil {
-				return nil, e
+				return nil, errors.Wrap(e, "decode response failed")
 			}
 			if !r.Data.Complete {
 				logger.Debug.Println("not complete, retry")
@@ -59,10 +58,9 @@ type TaskScanResponse struct {
 	DependenciesCount int  `json:"dependencies_count"`
 	IssuesCompsCount  int  `json:"issues_comps_count"`
 	Modules           []struct {
-		ModuleId       int       `json:"module_id"`
-		ModuleUUID     uuid.UUID `json:"module_uuid"`
-		Language       string    `json:"language"`
-		PackageManager string    `json:"package_manager"`
+		ModuleId       int    `json:"module_id"`
+		Language       string `json:"language"`
+		PackageManager string `json:"package_manager"`
 		Comps          []struct {
 			IsDirectDependency bool   `json:"is_direct_dependency"`
 			CompId             int    `json:"comp_id"`
