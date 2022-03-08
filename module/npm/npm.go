@@ -114,7 +114,6 @@ func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *base
 			return visited[path[i]] < visited[path[j]]
 		})
 		path = append(path, root)
-		logger.Warn.Println("Circular dependency:", strings.Join(path, " -> "))
 		return nil
 	}
 	visited[root] = deep
