@@ -53,7 +53,7 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 		return nil, e
 	}
 	logger.Debug.Println("lockfileVersion:", lockfile.LockfileVersion)
-	if lockfile.LockfileVersion != 2 {
+	if lockfile.LockfileVersion > 2 {
 		return nil, errors.New(fmt.Sprintf("unsupported lockfileVersion: %d", lockfile.LockfileVersion))
 	}
 	for s := range lockfile.Dependencies {
