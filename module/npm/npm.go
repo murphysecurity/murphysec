@@ -9,7 +9,6 @@ import (
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"path/filepath"
-	"sort"
 	"strings"
 )
 
@@ -105,15 +104,6 @@ func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *base
 		return nil
 	}
 	if _, ok := visited[root]; ok {
-		// circular dependency, print dependency path
-		var path []string
-		for s := range visited {
-			path = append(path, s)
-		}
-		sort.Slice(path, func(i, j int) bool {
-			return visited[path[i]] < visited[path[j]]
-		})
-		path = append(path, root)
 		return nil
 	}
 	visited[root] = deep
