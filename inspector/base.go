@@ -31,6 +31,15 @@ type ScanContext struct {
 	FileHashes     []string
 }
 
+func createSingleFileTaskContext(filePath string) *ScanContext {
+	ctx := new(ScanContext)
+	ctx.ProjectDir = filePath
+	ctx.ProjectName = filepath.Base(filePath)
+	ctx.TaskType = api.TaskTypeCli
+	ctx.StartTime = time.Now()
+	return ctx
+}
+
 func createTaskContext(baseDir string, taskType api.InspectTaskType) *ScanContext {
 	ctx := readProjectInfo(baseDir)
 	ctx.TaskType = taskType
@@ -173,7 +182,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 		fmt.Println("检测中，等待返回结果...")
 	}
 
-	if e := api.StartCheck(ctx.TaskId); e != nil {
+	if e := api.StartCheck(ctx.TaskId, api.TaskKindNormal); e != nil {
 		logger.Err.Println("send start check command failed.", e.Error())
 		return nil, e
 	}

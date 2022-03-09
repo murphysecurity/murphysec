@@ -41,6 +41,7 @@ func rootCmd() *cobra.Command {
 	c.AddCommand(ideaScanCmd())
 	c.AddCommand(scannerCmd())
 	c.AddCommand(machineCmd())
+	c.AddCommand(binScan())
 	return c
 }
 
