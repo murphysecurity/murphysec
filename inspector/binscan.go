@@ -25,7 +25,7 @@ func BinScan(projectDir string) error {
 			return errors.New("Path doesn't exists")
 		}
 	}
-	ctx := createTaskContext(projectDir, api.TaskTypeCli)
+	ctx := createBinaryTaskContext(projectDir)
 	ctx.ProjectName = filepath.Base(projectDir)
 	if e := createTask(ctx); e != nil {
 		logger.Err.Println("create task failed.", e.Error())

@@ -29,12 +29,27 @@ type ScanContext struct {
 	StartTime      time.Time
 	TaskId         string
 	FileHashes     []string
+	ProjectType    string
 }
 
 func createTaskContext(baseDir string, taskType api.InspectTaskType) *ScanContext {
 	ctx := readProjectInfo(baseDir)
 	ctx.TaskType = taskType
 	ctx.StartTime = time.Now()
+	if ctx.GitInfo != nil {
+		ctx.ProjectType = "Local"
+	} else {
+		ctx.ProjectType = "Git"
+	}
+	return ctx
+}
+
+func createBinaryTaskContext(baseDir string) *ScanContext {
+	ctx := readProjectInfo(baseDir)
+	ctx.GitInfo = nil
+	ctx.TaskType = api.TaskTypeCli
+	ctx.StartTime = time.Now()
+	ctx.ProjectType = "Binary"
 	return ctx
 }
 
@@ -47,6 +62,7 @@ func createTask(ctx *ScanContext) error {
 		ApiToken:      conf.APIToken(),
 		ProjectName:   ctx.ProjectName,
 		TargetAbsPath: ctx.ProjectDir,
+		ProjectType:   ctx.ProjectType,
 	}
 	req.GitInfo = ctx.GitInfo.ApiVo()
 	logger.Info.Printf("create task: %#v", ctx)

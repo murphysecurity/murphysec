@@ -19,6 +19,7 @@ type CreateTaskRequest struct {
 	GitInfo       *VoGitInfo      `json:"git_info,omitempty"`
 	ProjectName   string          `json:"project_name"`
 	TargetAbsPath string          `json:"target_abs_path"`
+	ProjectType   string          `json:"project_type"`
 }
 
 type CreateTaskGitInfo struct {
