@@ -44,9 +44,7 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 	rs := map[id]PluginComp{}
 	for _, mod := range i.Modules {
 		for _, comp := range mod.Comps {
-			if _, ok := rs[id{comp.CompName, comp.CompVersion}]; ok {
-				continue
-			}
+			cid := id{comp.CompName, comp.CompVersion}
 			p := PluginComp{
 				CompName:        comp.CompName,
 				ShowLevel:       3,
@@ -65,7 +63,12 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 			if comp.License != nil {
 				p.License = comp.License
 			}
-			p.IsDirectDependency = comp.IsDirectDependency
+			// Work-around to keep result consistency.
+			if rs[cid].IsDirectDependency {
+				p.IsDirectDependency = true
+			} else {
+				p.IsDirectDependency = comp.IsDirectDependency
+			}
 			p.Solutions = comp.Solutions
 			if p.Solutions == nil {
 				p.Solutions = []struct {
@@ -74,7 +77,7 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 					Compatibility *int   `json:"compatibility"`
 				}{}
 			}
-			rs[id{comp.CompName, comp.CompVersion}] = p
+			rs[cid] = p
 		}
 	}
 	for _, it := range rs {
