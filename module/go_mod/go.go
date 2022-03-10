@@ -118,6 +118,18 @@ func execGoList(dir string) ([]base.Dependency, error) {
 		if m.Get("Version").String() == "" {
 			continue
 		}
+		if !m.Get("Replace").IsNull() {
+			replacePath := m.Get("Replace", "Path").String("")
+			if replacePath == "" {
+				continue
+			}
+			replaceVersion := m.Get("Replace", "Path", "Version").String()
+			dep = append(dep, base.Dependency{
+				Name:    replacePath,
+				Version: replaceVersion,
+			})
+			continue
+		}
 		dep = append(dep, base.Dependency{
 			Name:         m.Get("Path").String(),
 			Version:      m.Get("Version").String(),
