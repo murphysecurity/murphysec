@@ -19,10 +19,10 @@ import (
 
 func BinScan(projectDir string) error {
 	{
-		info, e := os.Stat(projectDir)
-		if e != nil || !info.IsDir() {
-			fmt.Println("二进制不存在或无效")
-			return errors.New("File doesn't exists")
+		_, e := os.Stat(projectDir)
+		if e != nil {
+			fmt.Println("路径不存在或无效")
+			return errors.New("Path doesn't exists")
 		}
 	}
 	ctx := createTaskContext(projectDir, api.TaskTypeCli)
@@ -101,6 +101,9 @@ func packFileToTgzStream(fch chan string, baseDir string, w io.WriteCloser, errC
 			continue
 		}
 		rp := filepath.ToSlash(must.String(filepath.Rel(baseDir, s)))
+		if rp == "." {
+			rp = filepath.Base(baseDir)
+		}
 		f, e := os.Open(s)
 		if e != nil {
 			logger.Err.Println("Open file failed.", e.Error(), s)
