@@ -120,6 +120,7 @@ func packFileToTgzStream(fch chan string, baseDir string, w io.WriteCloser, errC
 			return
 		}
 		n, e := io.Copy(tarWriter, f)
+		f.Close()
 		if e != nil {
 			logger.Err.Println(e.Error())
 			errCh <- e
