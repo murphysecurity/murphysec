@@ -31,15 +31,6 @@ type ScanContext struct {
 	FileHashes     []string
 }
 
-func createSingleFileTaskContext(filePath string) *ScanContext {
-	ctx := new(ScanContext)
-	ctx.ProjectDir = filePath
-	ctx.ProjectName = filepath.Base(filePath)
-	ctx.TaskType = api.TaskTypeCli
-	ctx.StartTime = time.Now()
-	return ctx
-}
-
 func createTaskContext(baseDir string, taskType api.InspectTaskType) *ScanContext {
 	ctx := readProjectInfo(baseDir)
 	ctx.TaskType = taskType
