@@ -44,9 +44,7 @@ func mapForIdea(i *api.TaskScanResponse) PluginOutput {
 	rs := map[id]PluginComp{}
 	for _, mod := range i.Modules {
 		for _, comp := range mod.Comps {
-			if _, ok := rs[id{comp.CompName, comp.CompVersion}]; ok {
-				continue
-			}
+			cid := id{comp.CompName, comp.CompVersion}
 			p := PluginComp{
 				CompName:        comp.CompName,
 				ShowLevel:       3,
@@ -62,7 +60,12 @@ func mapForIdea(i *api.TaskScanResponse) PluginOutput {
 					Spdx:  comp.License.Spdx,
 				}
 			}
-			p.IsDirectDependency = comp.IsDirectDependency
+			// Work-around to keep result consistency.
+			if rs[cid].IsDirectDependency {
+				p.IsDirectDependency = true
+			} else {
+				p.IsDirectDependency = comp.IsDirectDependency
+			}
 			for _, it := range comp.Solutions {
 				p.Solutions = append(p.Solutions, PluginCompSolution{
 					Compatibility: it.Compatibility,
@@ -78,7 +81,7 @@ func mapForIdea(i *api.TaskScanResponse) PluginOutput {
 					p.ShowLevel = utils.MinInt(p.ShowLevel, 1)
 				}
 			}
-			rs[id{comp.CompName, comp.CompVersion}] = p
+			rs[cid] = p
 		}
 	}
 	for _, it := range rs {
