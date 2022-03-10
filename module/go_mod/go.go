@@ -9,10 +9,11 @@ import (
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
-	"murphysec-cli-simple/utils/must"
 	"murphysec-cli-simple/utils/simplejson"
+	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 type Inspector struct{}
@@ -129,11 +130,23 @@ func execGoList(dir string) ([]base.Dependency, error) {
 func execGoModTidy(dir string) error {
 	cmd := exec.Command("go", "mod", "tidy", "-v")
 	cmd.Dir = dir
-	r, w := io.Pipe()
-	defer must.Close(w)
-	cmd.Stdout = w
+	envs := make([]string, 0)
+	// Workaround for some environment that disables "go mod" default.
+	for _, it := range os.Environ() {
+		if strings.HasPrefix("GO111MODULE=", it) {
+			continue
+		}
+		envs = append(envs, it)
+	}
+	envs = append(envs, "GO111MODULE=on")
+	cmd.Env = envs
+	stdoutReader, e := cmd.StdoutPipe()
+	if e != nil {
+		logger.Warn.Println("Get stdout pipe failed", e.Error())
+		return e
+	}
 	go func() {
-		buf := bufio.NewScanner(r)
+		buf := bufio.NewScanner(stdoutReader)
 		buf.Split(bufio.ScanLines)
 		buf.Buffer(make([]byte, 24*1024), 24*2014)
 		for buf.Scan() {
