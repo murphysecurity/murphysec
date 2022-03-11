@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-const version = "v1.3.2"
+const version = "v1.3.3"
 
 // Version returns version string
 func Version() string {
