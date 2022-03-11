@@ -38,6 +38,9 @@ func IdeaScan(dir string) (interface{}, error) {
 		}
 		return nil, e
 	}
+	if errors.Is(e, api.ErrApiTimeout) {
+		reportIdeaStatus(IdeaApiTimeout, "API timeout")
+	}
 	if e == ErrNoEngineMatched {
 		reportIdeaStatus(IdeaNoEngineMatch, "Engine not match")
 		return nil, e

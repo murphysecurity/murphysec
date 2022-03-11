@@ -10,6 +10,7 @@ import (
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -149,6 +150,11 @@ func SendDetect(input *UserCliDetectInput) (*VoDetectResponse, error) {
 	r, e := client.Do(request)
 	if e != nil {
 		logger.Err.Println("API request failed.", e.Error())
+		if e, ok := e.(*url.Error); ok {
+			if e.Timeout() {
+				return nil, ErrApiTimeout
+			}
+		}
 		return nil, e
 	}
 	logger.Info.Println("HTTP request done. Status:", r.StatusCode)
