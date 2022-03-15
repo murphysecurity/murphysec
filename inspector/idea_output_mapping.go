@@ -17,6 +17,7 @@ const (
 	IdeaAPIFailed        IdeaErrCode = 2
 	IdeaNoEngineMatch    IdeaErrCode = 3
 	IdeaTokenInvalid     IdeaErrCode = 4
+	IdeaApiTimeout       IdeaErrCode = 5
 	IdeaUnknownErr       IdeaErrCode = -1
 )
 

@@ -37,3 +37,4 @@ func init() {
 }
 
 var ErrTokenInvalid = errors.New("Token invalid")
+var ErrApiTimeout = errors.New("API timeout")
