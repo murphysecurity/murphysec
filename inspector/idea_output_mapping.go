@@ -33,8 +33,6 @@ func mapForIdea(i *api.TaskScanResponse) PluginOutput {
 		IssuesCount:            i.IssuesCompsCount,
 		DependenciesCount:      i.DependenciesCount,
 		IssuesCompsCount:       i.IssuesCompsCount,
-		Language:               "java",
-		PackageManager:         "maven",
 		Comps:                  []PluginComp{},
 		DetectorStartTimestamp: i.DetectStartTimestamp,
 		DetectStatus:           i.DetectStatus,
@@ -53,6 +51,7 @@ func mapForIdea(i *api.TaskScanResponse) PluginOutput {
 				Version:         comp.CompVersion,
 				License:         nil,
 				Solutions:       []PluginCompSolution{},
+				Language:        mod.Language,
 			}
 			if comp.License != nil {
 				p.License = &PluginCompLicense{
@@ -123,8 +122,6 @@ type PluginOutput struct {
 	IssuesCount            int          `json:"issues_count,omitempty"`
 	DependenciesCount      int          `json:"dependencies_count,omitempty"`
 	IssuesCompsCount       int          `json:"issues_comps_count,omitempty"`
-	Language               string       `json:"language,omitempty"`
-	PackageManager         string       `json:"package_manager,omitempty"`
 	Comps                  []PluginComp `json:"comps,omitempty"`
 	DetectorStartTimestamp time.Time    `json:"detector_start_timestamp,omitempty"`
 	DetectStatus           string       `json:"detect_status,omitempty"`
@@ -154,6 +151,7 @@ type PluginComp struct {
 	License            *PluginCompLicense   `json:"license,omitempty"`
 	Solutions          []PluginCompSolution `json:"solutions,omitempty"`
 	IsDirectDependency bool                 `json:"is_direct_dependency"`
+	Language           string               `json:"language"`
 }
 
 type PluginCompLicense struct {
