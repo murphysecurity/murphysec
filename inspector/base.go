@@ -44,15 +44,6 @@ func createTaskContext(baseDir string, taskType api.InspectTaskType) *ScanContex
 	return ctx
 }
 
-func createBinaryTaskContext(baseDir string) *ScanContext {
-	ctx := readProjectInfo(baseDir)
-	ctx.GitInfo = nil
-	ctx.TaskType = api.TaskTypeCli
-	ctx.StartTime = time.Now()
-	ctx.ProjectType = "Binary"
-	return ctx
-}
-
 func createTask(ctx *ScanContext) error {
 	req := &api.CreateTaskRequest{
 		CliVersion:    version.Version(),
