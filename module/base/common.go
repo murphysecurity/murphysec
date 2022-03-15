@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"murphysec-cli-simple/api"
 	"regexp"
 	"strings"
@@ -16,6 +17,7 @@ type Module struct {
 	RelativePath   string       `json:"relative_path"`
 	Dependencies   []Dependency `json:"dependencies,omitempty"`
 	RuntimeInfo    interface{}  `json:"runtime_info,omitempty"`
+	UUID           uuid.UUID    `json:"uuid"`
 }
 
 func (m Module) ApiVo() *api.VoModule {
@@ -29,6 +31,7 @@ func (m Module) ApiVo() *api.VoModule {
 		RuntimeInfo:    m.RuntimeInfo,
 		Version:        m.Version,
 		ModuleType:     "version",
+		ModuleUUID:     m.UUID,
 	}
 	return r
 }

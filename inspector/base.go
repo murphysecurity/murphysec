@@ -3,6 +3,7 @@ package inspector
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
@@ -30,6 +31,11 @@ type ScanContext struct {
 	TaskId         string
 	FileHashes     []string
 	ProjectType    string
+}
+
+func (s *ScanContext) AddManagedModule(module base.Module) {
+	module.UUID = uuid.New()
+	s.ManagedModules = append(s.ManagedModules, module)
 }
 
 func createTaskContext(baseDir string, taskType api.InspectTaskType) *ScanContext {
@@ -67,6 +73,8 @@ func createTask(ctx *ScanContext) error {
 	}
 }
 
+var CPPModuleUUID = uuid.Must(uuid.Parse("794a5c39-ce6b-458e-8f26-ff26298bab09"))
+
 func commitModuleInfo(ctx *ScanContext) error {
 	req := new(api.SendDetectRequest)
 	req.TaskInfo = ctx.TaskId
@@ -82,6 +90,7 @@ func commitModuleInfo(ctx *ScanContext) error {
 			FileHashList: list,
 			Language:     "C/C++",
 			ModuleType:   "file_hash",
+			ModuleUUID:   CPPModuleUUID,
 		})
 	}
 	if e := api.SendDetect(req); e != nil {

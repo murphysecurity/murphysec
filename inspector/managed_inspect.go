@@ -47,7 +47,7 @@ func managedInspectScan(ctx *ScanContext) error {
 		}
 		logger.Info.Printf("Inspector terminated %v, total module: %v\n", it, len(rs))
 		for _, it := range rs {
-			ctx.ManagedModules = append(ctx.ManagedModules, it)
+			ctx.AddManagedModule(it)
 		}
 	}
 	endTime := time.Now()
