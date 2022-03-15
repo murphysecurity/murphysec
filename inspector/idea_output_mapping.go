@@ -33,8 +33,6 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 		IssuesCount:            i.IssuesCompsCount,
 		DependenciesCount:      i.DependenciesCount,
 		IssuesCompsCount:       i.IssuesCompsCount,
-		Language:               "java",
-		PackageManager:         "maven",
 		Comps:                  []PluginComp{},
 		DetectorStartTimestamp: i.DetectStartTimestamp,
 		DetectStatus:           i.DetectStatus,
@@ -51,6 +49,7 @@ func mapForIdea(i *api.VoDetectResponse) PluginOutput {
 				MinFixedVersion: comp.MinFixedVersion,
 				Vulns:           comp.Vuls,
 				Version:         comp.CompVersion,
+				Language:        mod.Language,
 			}
 			for _, it := range comp.Vuls {
 				switch it.SuggestLevel {
@@ -147,6 +146,7 @@ type PluginComp struct {
 	MinFixedVersion string           `json:"min_fixed_version"`
 	Vulns           []api.VoVulnInfo `json:"vulns"`
 	Version         string           `json:"version"`
+	Language        string           `json:"language"`
 	Solutions       []struct {
 		Type          string `json:"type"`
 		Description   string `json:"description"`
