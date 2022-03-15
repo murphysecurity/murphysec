@@ -91,24 +91,6 @@ func commitModuleInfo(ctx *ScanContext) error {
 	return nil
 }
 
-func displayTaskCreating(ctx *ScanContext) {
-	if ctx.TaskType == api.TaskTypeCli {
-		fmt.Println("正在创建扫描任务，请稍候，项目名称：", ctx.ProjectName)
-	}
-}
-
-func displayTaskCreated(ctx *ScanContext) {
-	if ctx.TaskType == api.TaskTypeCli {
-		fmt.Println("扫描任务已创建")
-	}
-}
-
-func displayManagedScanning(ctx *ScanContext) {
-	if ctx.TaskType == api.TaskTypeCli {
-		fmt.Println("正在执行扫描")
-	}
-}
-
 func shouldUploadFile(ctx *ScanContext) bool {
 	if len(ctx.ManagedModules) == 0 {
 		return true
@@ -121,18 +103,19 @@ func shouldUploadFile(ctx *ScanContext) bool {
 	return false
 }
 
+func checkProjectDirAvail(dir string) bool {
+	info, e := os.Stat(dir)
+	return e == nil && info.IsDir()
+}
+
 func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, error) {
-	{
-		info, e := os.Stat(dir)
-		if e != nil || !info.IsDir() {
-			if source == api.TaskTypeCli {
-				fmt.Println("项目目录不存在或无效")
-			}
-			return nil, errors.New("Invalid project dir")
+	if !checkProjectDirAvail(dir) {
+		if source == api.TaskTypeCli {
+			fmt.Println("项目目录不存在或无效")
 		}
+		return nil, errors.New("Invalid project dir")
 	}
 	ctx := createTaskContext(dir, source)
-
 	displayTaskCreating(ctx)
 	if e := createTask(ctx); e != nil {
 		logger.Err.Println("Create task failed.", e.Error())
@@ -164,7 +147,9 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 
 	if deepScan && shouldUploadFile(ctx) {
 		logger.Info.Printf("deep scan enabled, upload source code")
-		fmt.Println("正在上传文件到服务端以进行深度检测")
+		if source == api.TaskTypeCli {
+			fmt.Println("正在上传文件到服务端以进行深度检测")
+		}
 		if e := UploadCodeFile(ctx); e != nil {
 			if source == api.TaskTypeCli {
 				fmt.Println("深度检测上传文件失败！")
