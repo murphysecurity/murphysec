@@ -15,7 +15,7 @@ type Module struct {
 	Version        string       `json:"version"`
 	RelativePath   string       `json:"relative_path"`
 	Dependencies   []Dependency `json:"dependencies,omitempty"`
-	RuntimeInfo    interface{}  `json:"runtime_info"`
+	RuntimeInfo    interface{}  `json:"runtime_info,omitempty"`
 }
 
 func (m Module) ApiVo() *api.VoModule {
@@ -67,14 +67,15 @@ type Inspector interface {
 type PackageManagerType string
 
 const (
-	PMMaven PackageManagerType = "maven"
-	PMGoMod PackageManagerType = "gomod"
-	PMNpm   PackageManagerType = "npm"
+	PMMaven  PackageManagerType = "maven"
+	PMGoMod  PackageManagerType = "gomod"
+	PMNpm    PackageManagerType = "npm"
+	PMGradle PackageManagerType = "gradle"
 )
 
 func PackageManagerTypeOfName(name string) PackageManagerType {
 	switch PackageManagerType(strings.ToLower(name)) {
-	case PMNpm, PMGoMod, PMMaven:
+	case PMNpm, PMGoMod, PMMaven, PMGradle:
 		return PackageManagerType(strings.ToLower(name))
 	default:
 		panic("wtf?")
