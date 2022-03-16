@@ -7,9 +7,6 @@
 </h1>
 <p align="center">
   <img src="https://img.shields.io/github/go-mod/go-version/murphysecurity/murphysec.svg?style=flat-square">
-  <a href="https://github.com/murphysecurity/murphysec/releases/latest">
-    <img src="https://img.shields.io/github/release/murphysecurity/murphysec.svg?style=flat-square">
-  </a>
   <a href="https://github.com/murphysecurity/murphysec/blob/master/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/murphysecurity/murphysec?style=flat-square">
   </a>
