@@ -6,15 +6,15 @@
   <h4 align="center">一款专注于软件供应链安全的开源工具，包含开源组件依赖分析、漏洞检测及漏洞修复等功能。</h4>
 </h1>
 <p align="center">
-  <img src="https://img.shields.io/github/go-mod/go-version/murphysec/murphysec.svg?style=flat-square">
-  <a href="https://github.com/murphysec/murphysec/releases/latest">
-    <img src="https://img.shields.io/github/release/murphysec/murphysec.svg?style=flat-square">
+  <img src="https://img.shields.io/github/go-mod/go-version/murphysecurity/murphysec.svg?style=flat-square">
+  <a href="https://github.com/murphysecurity/murphysec/releases/latest">
+    <img src="https://img.shields.io/github/release/murphysecurity/murphysec.svg?style=flat-square">
   </a>
-  <a href="https://github.com/murphysec/murphysec/blob/master/LICENSE">
-    <img alt="GitHub" src="https://img.shields.io/github/license/murphysec/murphysec?style=flat-square">
+  <a href="https://github.com/murphysecurity/murphysec/blob/master/LICENSE">
+    <img alt="GitHub" src="https://img.shields.io/github/license/murphysecurity/murphysec?style=flat-square">
   </a>
-  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/murphysec/murphysec?style=flat-square">
-  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/murphysec/murphysec?style=social">
+  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/murphysecurity/murphysec?style=flat-square">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/murphysecurity/murphysec?style=social">
 
 </p>
 
