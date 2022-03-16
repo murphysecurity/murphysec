@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-const version = "v1.3.3-nio"
+const version = "v1.3.4-nio"
 
 // Version returns version string
 func Version() string {

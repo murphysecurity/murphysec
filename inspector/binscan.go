@@ -81,7 +81,7 @@ func BinScan(projectDir string) error {
 		logger.Err.Println("QueryResult failed.", e.Error())
 		fmt.Println("扫描失败", e.Error())
 	} else {
-		fmt.Printf("扫描成功！共计%d个组件，其中%d个存在风险\n", r.DependenciesCount, r.IssuesCompsCount)
+		fmt.Printf("项目扫描成功，依赖数：%d，漏洞数：%d\n", r.DependenciesCount, r.IssuesCompsCount)
 	}
 	return nil
 }
