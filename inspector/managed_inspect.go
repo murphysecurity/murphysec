@@ -10,6 +10,7 @@ import (
 	"murphysec-cli-simple/module/gradle"
 	"murphysec-cli-simple/module/maven"
 	"murphysec-cli-simple/module/npm"
+	"murphysec-cli-simple/module/yarn"
 	"murphysec-cli-simple/utils/must"
 	"time"
 )
@@ -19,6 +20,7 @@ var managedInspector = []base.Inspector{
 	maven.New(),
 	npm.New(),
 	gradle.New(),
+	yarn.New(),
 }
 
 func managedInspectAPIRequest(ctx *ScanContext) (*api.VoDetectResponse, error) {

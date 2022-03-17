@@ -70,11 +70,12 @@ const (
 	PMGoMod  PackageManagerType = "gomod"
 	PMNpm    PackageManagerType = "npm"
 	PMGradle PackageManagerType = "gradle"
+	PMYarn   PackageManagerType = "yarn"
 )
 
 func PackageManagerTypeOfName(name string) PackageManagerType {
 	switch PackageManagerType(strings.ToLower(name)) {
-	case PMNpm, PMGoMod, PMMaven, PMGradle:
+	case PMNpm, PMGoMod, PMMaven, PMGradle, PMYarn:
 		return PackageManagerType(strings.ToLower(name))
 	default:
 		panic("wtf?")
