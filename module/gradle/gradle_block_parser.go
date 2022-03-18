@@ -23,10 +23,13 @@ func (b *blockParser) consume() {
 // When i==1, this method returns the value of the current symbol in the stream (which is the next symbol to be consumed).
 // When i==-1, this method returns the value of the previously read symbol in the stream.
 func (b *blockParser) la(i int) string {
-	if i == 0 {
+	if i > 0 {
+		return b.lines[b.linePtr+i-1]
+	} else if i < 0 {
+		return b.lines[b.linePtr+i]
+	} else {
 		panic("invalid")
 	}
-	return b.lines[b.linePtr+i-1]
 }
 
 func __calcIndent(line string) int {
@@ -57,7 +60,7 @@ func (b *blockParser) _parse() []DepElement {
 	return rs
 }
 
-var __parseDepElementPattern1 = regexp.MustCompile("^([A-Za-z0-9\\.-]+)\\:([A-Za-z0-9\\.-]+)\\:([A-Za-z0-9\\.-]+)(?: *-> *([A-Za-z0-9\\.-]+))?")
+var __parseDepElementPattern1 = regexp.MustCompile("^([A-Za-z0-9\\.-]+)\\:([A-Za-z0-9\\.-]+)(?:\\:([A-Za-z0-9\\.-]+))?(?: *-> *([A-Za-z0-9\\.-]+))?")
 var __parseDepElementPattern2 = regexp.MustCompile("^project ([A-Za-z0-9_.:-]+)")
 
 func parseDepElement(s string) *DepElement {
