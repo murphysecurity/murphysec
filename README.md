@@ -63,6 +63,8 @@ scoop install murphysec
 
 ### 2. 获取访问令牌
 
+目前墨菲安全平台注册需要邀请码，限时发放中，[点击获取](https://www.murphysec.com/docs/faq/get-invite-code/)
+
 > CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/faq/access-token/)
 
 
@@ -138,6 +140,14 @@ Global Flags:
       --write-log-to string   specify log file path
 
 ```
+
+
+
+## 交流和问题反馈
+
+添加小助手Abby微信，拉您进墨菲安全交流微信群，备注：加群
+
+![wechat](./wechat.png)
 
 
 ## 开源协议
