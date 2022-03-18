@@ -7,3 +7,4 @@
 *.exe
 murphysec-cli-simple
 *.bak
+.run
