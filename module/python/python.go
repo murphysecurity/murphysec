@@ -29,7 +29,7 @@ func (i Inspector) CheckDir(dir string) bool {
 	r, e := os.ReadDir(dir)
 	if e == nil {
 		for _, it := range r {
-			if filepath.Ext(it.Name()) == ".py" {
+			if filepath.Ext(it.Name()) == ".py" || strings.HasPrefix(it.Name(), "requirements") {
 				return true
 			}
 		}
