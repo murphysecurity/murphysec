@@ -38,6 +38,7 @@ jobs:
           name: murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
           path: out/*
   release:
+    if: startsWith(github.ref, 'refs/tags/')
     needs:
       - build
     runs-on: ubuntu-latest
@@ -60,7 +61,7 @@ jobs:
           sha256sum * > sha256sum
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: out/*
+          draft: true
           
