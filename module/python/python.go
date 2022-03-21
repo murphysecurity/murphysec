@@ -13,7 +13,7 @@ import (
 )
 
 var pyImportPattern = regexp.MustCompile("^import +([A-Za-z_-][A-Za-z_0-9-]*)(?:\\.[A-Za-z_-][A-Za-z_0-9-]*)*(?:$|,|as)|^from +([A-Za-z_-][A-Za-z_0-9-]*)(?:\\.[A-Za-z_-][A-Za-z_0-9-]*)* +import")
-var pyRequirementsPattern = regexp.MustCompile("^([A-Za-z0-9_-]+)==([^= \\n\\r]+)$")
+var pyRequirementsPattern = regexp.MustCompile("^([A-Za-z0-9_-]+) *== *([^= \\n\\r]+)$")
 
 type Inspector struct{}
 
