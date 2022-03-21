@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-var pyImportPattern = regexp.MustCompile("^import +([A-Za-z_-][A-Za-z_0-9-]*)(?:\\.[A-Za-z_-][A-Za-z_0-9-]*)*|^from +([A-Za-z_-][A-Za-z_0-9-]*)(?:\\.[A-Za-z_-][A-Za-z_0-9-]*)* +import")
+var pyImportPattern = regexp.MustCompile("^import +([A-Za-z_-][A-Za-z_0-9-]*)(?:\\.[A-Za-z_-][A-Za-z_0-9-]*)*(?:$|,|as)|^from +([A-Za-z_-][A-Za-z_0-9-]*)(?:\\.[A-Za-z_-][A-Za-z_0-9-]*)* +import")
 var PythonUUID = uuid.Must(uuid.Parse("fab5210e-2a75-4f89-875f-f05544264f50"))
 
 func ScanPythonImport(dir string) map[string]string {
