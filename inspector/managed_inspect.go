@@ -8,6 +8,7 @@ import (
 	"murphysec-cli-simple/module/gradle"
 	"murphysec-cli-simple/module/maven"
 	"murphysec-cli-simple/module/npm"
+	"murphysec-cli-simple/module/python"
 	"murphysec-cli-simple/module/yarn"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,7 @@ var managedInspector = []base.Inspector{
 	npm.New(),
 	gradle.New(),
 	yarn.New(),
+	python.New(),
 }
 
 // 受管理扫描

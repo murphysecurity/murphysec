@@ -148,27 +148,6 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 		FileHashScan(ctx)
 	}
 
-	{
-		py := ScanPythonImport(ctx.ProjectDir)
-		if len(py) != 0 {
-			m := base.Module{
-				Name:           "Python",
-				PackageManager: "python",
-				Language:       "python",
-				Dependencies:   []base.Dependency{},
-				UUID:           PythonUUID,
-			}
-			for k, v := range py {
-				m.Dependencies = append(m.Dependencies, base.Dependency{
-					Name:    k,
-					Version: v,
-				})
-			}
-			ctx.ManagedModules = append(ctx.ManagedModules, m)
-		}
-
-	}
-
 	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
 	if e := commitModuleInfo(ctx); e != nil {
 		ui.Display(display.MsgError, fmt.Sprint("信息提交失败：", e.Error()))
