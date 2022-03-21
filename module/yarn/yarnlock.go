@@ -36,7 +36,7 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 		PackageManager: "yarn",
 		Language:       "javascript",
 		PackageFile:    "yarn.lock",
-		Name:           "main",
+		Name:           filepath.Base(dir),
 		Version:        "",
 		RelativePath:   "",
 		Dependencies:   rs,

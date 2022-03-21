@@ -104,3 +104,17 @@ func dirScan(dir string, pathCh chan string) {
 func checkNameBlackList(name string) bool {
 	return name == "node_modules" || strings.HasPrefix(name, ".")
 }
+
+var CxxExtSet = map[string]bool{
+	".c":   true,
+	".h":   true,
+	".hpp": true,
+	".cpp": true,
+	".cxx": true,
+	".c++": true,
+	".C":   true,
+	".cc":  true,
+	".hxx": true,
+	".C++": true,
+	".cp":  true,
+}

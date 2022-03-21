@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/muesli/termenv"
 	"github.com/pkg/errors"
+	"io/fs"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
 	"murphysec-cli-simple/display"
@@ -144,8 +145,26 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 	if e := managedInspectScan(ctx); e != nil {
 		logger.Debug.Println("Managed inspect failed.", e.Error())
 		logger.Debug.Printf("%v", e)
-		// if managed inspect failed, start file hash scan
-		FileHashScan(ctx)
+	}
+
+	{
+		enableCxx := false
+		filepath.Walk(ctx.ProjectDir, func(path string, info fs.FileInfo, err error) error {
+			if enableCxx {
+				return filepath.SkipDir
+			}
+			if strings.HasPrefix(info.Name(), ".") {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			enableCxx = CxxExtSet[filepath.Ext(info.Name())]
+			return nil
+		})
+		if enableCxx {
+			FileHashScan(ctx)
+		}
 	}
 
 	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
