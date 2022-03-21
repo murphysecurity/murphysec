@@ -1,6 +1,7 @@
 package inspector
 
 import (
+	"io/fs"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/module/go_mod"
@@ -8,6 +9,8 @@ import (
 	"murphysec-cli-simple/module/maven"
 	"murphysec-cli-simple/module/npm"
 	"murphysec-cli-simple/module/yarn"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -25,35 +28,38 @@ func managedInspectScan(ctx *ScanContext) error {
 	dir := ctx.ProjectDir
 	startTime := time.Now()
 	logger.Info.Println("Auto scan dir:", dir)
-	var inspectors []base.Inspector
-	{
-		// 尝试匹配检测器
-		logger.Debug.Println("Try match managed inspector...")
-		for _, it := range managedInspector {
-			if it.CheckDir(dir) {
-				inspectors = append(inspectors, it)
+	for _, inspector := range managedInspector {
+		logger.Debug.Println("For:", inspector.String())
+		filepath.WalkDir(ctx.ProjectDir, func(path string, d fs.DirEntry, err error) error {
+			if !d.IsDir() {
+				return nil
 			}
-		}
-		logger.Debug.Println("Matched managed inspector:", inspectors)
-	}
-	if len(inspectors) == 0 {
-		logger.Debug.Println("No managed inspector matched")
-		return ErrNoEngineMatched
-	}
-
-	for _, it := range inspectors {
-		rs, e := it.Inspect(dir)
-		if e != nil {
-			logger.Err.Printf("Engine: %v scan failed. Reason: %+v\n", it, e)
-			continue
-		}
-		logger.Info.Printf("Inspector terminated %v, total module: %v\n", it, len(rs))
-		for _, it := range rs {
-			ctx.AddManagedModule(it)
-		}
+			{
+				s, e := filepath.Rel(ctx.ProjectDir, path)
+				if strings.Count(filepath.ToSlash(s), "/") > 3 || e != nil {
+					return filepath.SkipDir
+				}
+			}
+			logger.Debug.Println("Visit dir:", path)
+			if inspector.CheckDir(path) {
+				logger.Debug.Println("Matched")
+				rs, e := inspector.Inspect(path)
+				if e != nil {
+					logger.Info.Println("inspect failed.", e.Error())
+					logger.Debug.Printf("%+v\n", e)
+				} else {
+					for _, it := range rs {
+						ctx.AddManagedModule(it)
+					}
+				}
+				return filepath.SkipDir
+			}
+			return nil
+		})
 	}
 	endTime := time.Now()
 	logger.Info.Println("Scan terminated. Cost time:", endTime.Sub(startTime))
+	logger.Info.Println("Total modules:", len(ctx.ManagedModules))
 	if len(ctx.ManagedModules) < 1 {
 		return ErrNoModule
 	}
