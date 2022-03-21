@@ -12,6 +12,7 @@ require (
 	github.com/iseki0/go-yarnlock v0.0.1
 	github.com/magiconair/properties v1.8.5
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/muesli/termenv v0.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/savsgio/gotils v0.0.0-20211223103454-d0aaa54c5899
 	github.com/spf13/cobra v1.3.0
@@ -50,8 +51,11 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

@@ -4,15 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/muesli/termenv"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
+	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils/must"
 	"murphysec-cli-simple/version"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -118,76 +121,65 @@ func checkProjectDirAvail(dir string) bool {
 }
 
 func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, error) {
+	ui := display.NONE
+	if source == api.TaskTypeCli {
+		ui = display.CLI
+	}
 	if !checkProjectDirAvail(dir) {
-		if source == api.TaskTypeCli {
-			fmt.Println("项目目录不存在或无效")
-		}
+		ui.Display(display.MsgError, "项目目录不存在或无效")
 		return nil, errors.New("Invalid project dir")
 	}
 	ctx := createTaskContext(dir, source)
-	displayTaskCreating(ctx)
+	ui.Display(display.MsgInfo, fmt.Sprint("项目名称：", ctx.ProjectName))
+	ui.UpdateStatus(display.StatusRunning, "正在创建扫描任务，请稍候······")
 	if e := createTask(ctx); e != nil {
+		ui.Display(display.MsgError, fmt.Sprint("项目创建失败：", e.Error()))
 		logger.Err.Println("Create task failed.", e.Error())
 		logger.Debug.Printf("%+v", e)
 		return nil, e
 	}
-	displayTaskCreated(ctx)
+	ui.Display(display.MsgInfo, fmt.Sprint("项目创建成功，项目唯一标识：", ctx.TaskId))
 
-	displayManagedScanning(ctx)
+	ui.UpdateStatus(display.StatusRunning, "正在进行扫描...")
 	if e := managedInspectScan(ctx); e != nil {
 		logger.Debug.Println("Managed inspect failed.", e.Error())
 		logger.Debug.Printf("%v", e)
 		// if managed inspect failed, start file hash scan
 		FileHashScan(ctx)
-		if e == ErrNoEngineMatched && len(ctx.FileHashes) == 0 {
-			if source == api.TaskTypeCli {
-				fmt.Println("扫描器无法支持当前项目")
-			}
-			return nil, ErrNoEngineMatched
-		}
 	}
+
+	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
 	if e := commitModuleInfo(ctx); e != nil {
-		if source == api.TaskTypeCli {
-			fmt.Println("提交模块信息失败", e.Error())
-		}
+		ui.Display(display.MsgError, fmt.Sprint("信息提交失败：", e.Error()))
 		logger.Debug.Printf("%+v", e)
 		logger.Err.Println(e.Error())
 	}
-
 	if deepScan && shouldUploadFile(ctx) {
 		logger.Info.Printf("deep scan enabled, upload source code")
-		if source == api.TaskTypeCli {
-			fmt.Println("正在上传文件到服务端以进行深度检测")
-		}
+		ui.UpdateStatus(display.StatusRunning, "正在上传文件到服务端以进行深度检测")
 		if e := UploadCodeFile(ctx); e != nil {
-			if source == api.TaskTypeCli {
-				fmt.Println("深度检测上传文件失败！")
-			}
+			ui.Display(display.MsgError, "上传文件失败："+e.Error())
 		} else {
-			if source == api.TaskTypeCli {
-				fmt.Println("深度检测上传文件成功！")
-			}
+			ui.Display(display.MsgInfo, "上传文件成功")
 		}
 	}
 
-	if source == api.TaskTypeCli {
-		fmt.Println("检测中，等待返回结果...")
-	}
+	ui.UpdateStatus(display.StatusRunning, "检测中，等待返回结果...")
 
 	if e := api.StartCheck(ctx.TaskId); e != nil {
+		ui.Display(display.MsgError, "启动检测失败："+e.Error())
 		logger.Err.Println("send start check command failed.", e.Error())
 		return nil, e
 	}
-
 	resp, e := api.QueryResult(ctx.TaskId)
 	if e != nil {
+		ui.Display(display.MsgError, "获取检测结果失败："+e.Error())
 		logger.Err.Println("query result failed.", e.Error())
 		return nil, e
 	}
 
-	if source == api.TaskTypeCli {
-		fmt.Printf("项目扫描成功，依赖数：%d，漏洞数：%d\n", resp.DependenciesCount, resp.IssuesCompsCount)
-	} else if source == api.TaskTypeJenkins || source == api.TaskTypeIdea {
+	ui.Display(display.MsgNotice, fmt.Sprint("项目扫描成功，依赖数：", termenv.String(strconv.Itoa(resp.DependenciesCount)).Foreground(termenv.ANSIBrightCyan), "，漏洞数：", termenv.String(strconv.Itoa(resp.IssuesCompsCount)).Foreground(termenv.ANSIBrightRed)))
+	if source == api.TaskTypeJenkins || source == api.TaskTypeIdea {
 		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(resp)))))
 	}
 	return nil, nil
