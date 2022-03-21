@@ -42,7 +42,9 @@ jobs:
       - build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/download-artifact@v3
+
       - name: test
         run: |
           pwd
-          ls
+          find
