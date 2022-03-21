@@ -37,3 +37,12 @@ jobs:
         with:
           name: murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
           path: out/*
+  release:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: test
+        run: |
+          pwd
+          ls
