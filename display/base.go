@@ -3,6 +3,7 @@ package display
 import (
 	"fmt"
 	"github.com/muesli/termenv"
+	"os"
 )
 
 var (
@@ -113,6 +114,10 @@ func statusRepaint() {
 	if cliStatus == StatusIdle {
 		return
 	}
+	if os.Getenv("TERM_PROGRAM") == "Apple_Terminal" {
+		fmt.Println(cliStatus.String(), cliStatusMsg)
+		return
+	}
 	termenv.SaveCursorPosition()
 	fmt.Print(termenv.String().Foreground(cliStatus.fColor()).Styled(cliStatus.String()))
 	if cliStatusMsg != "" {
@@ -123,11 +128,19 @@ func statusRepaint() {
 func (_ _CLI) UpdateStatus(s Status, msg string) {
 	cliStatus = s
 	cliStatusMsg = msg
+	if os.Getenv("TERM_PROGRAM") == "Apple_Terminal" {
+		statusRepaint()
+		return
+	}
 	termenv.ClearLine()
 	statusRepaint()
 }
 
 func (_ _CLI) Display(level MsgLevel, msg string) {
+	if os.Getenv("TERM_PROGRAM") == "Apple_Terminal" {
+		fmt.Println(level.String(), msg)
+		return
+	}
 	termenv.ClearLine()
 	fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg, "\r")
 	statusRepaint()

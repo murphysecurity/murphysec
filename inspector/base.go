@@ -125,7 +125,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 	ui := display.NONE
 	if source == api.TaskTypeCli {
 		ui = display.CLI
-		termenv.EnableWindowsANSIConsole()
+		EnableANSI()
 	}
 	if !checkProjectDirAvail(dir) {
 		ui.Display(display.MsgError, "项目目录不存在或无效")
