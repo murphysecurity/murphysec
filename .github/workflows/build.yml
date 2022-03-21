@@ -44,7 +44,23 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
 
-      - name: test
+      - name: Show files
         run: |
           pwd
           find
+
+      - name: Calc hash
+        run: |
+          mkdir out
+          cp ./murphysec-linux-amd64/murphysec-linux-amd64 ./out/
+          cp ./murphysec-windows-amd64/murphysec-windows-amd64.exe ./out/
+          cp ./murphysec-darwin-amd64/murphysec-darwin-amd64 ./out/
+          cp ./murphysec-darwin-arm64/murphysec-darwin-arm64 ./out
+          cd out
+          sha256sum * > sha256sum
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: out/*
+          
