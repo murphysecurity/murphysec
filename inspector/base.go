@@ -148,6 +148,27 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 		FileHashScan(ctx)
 	}
 
+	{
+		py := ScanPythonImport(ctx.ProjectDir)
+		if len(py) != 0 {
+			m := base.Module{
+				Name:           "Python",
+				PackageManager: "python",
+				Language:       "python",
+				Dependencies:   []base.Dependency{},
+				UUID:           PythonUUID,
+			}
+			for k, v := range py {
+				m.Dependencies = append(m.Dependencies, base.Dependency{
+					Name:    k,
+					Version: v,
+				})
+			}
+			ctx.ManagedModules = append(ctx.ManagedModules, m)
+		}
+
+	}
+
 	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
 	if e := commitModuleInfo(ctx); e != nil {
 		ui.Display(display.MsgError, fmt.Sprint("信息提交失败：", e.Error()))
@@ -162,6 +183,7 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 		} else {
 			ui.Display(display.MsgInfo, "上传文件成功")
 		}
+		ui.ClearStatus()
 	}
 
 	ui.UpdateStatus(display.StatusRunning, "检测中，等待返回结果...")
@@ -171,13 +193,14 @@ func Scan(dir string, source api.InspectTaskType, deepScan bool) (interface{}, e
 		logger.Err.Println("send start check command failed.", e.Error())
 		return nil, e
 	}
+	ui.ClearStatus()
 	resp, e := api.QueryResult(ctx.TaskId)
+	ui.ClearStatus()
 	if e != nil {
 		ui.Display(display.MsgError, "获取检测结果失败："+e.Error())
 		logger.Err.Println("query result failed.", e.Error())
 		return nil, e
 	}
-
 	ui.Display(display.MsgNotice, fmt.Sprint("项目扫描成功，依赖数：", termenv.String(strconv.Itoa(resp.DependenciesCount)).Foreground(termenv.ANSIBrightCyan), "，漏洞数：", termenv.String(strconv.Itoa(resp.IssuesCompsCount)).Foreground(termenv.ANSIBrightRed)))
 	if source == api.TaskTypeJenkins || source == api.TaskTypeIdea {
 		fmt.Println(string(must.Byte(json.Marshal(mapForIdea(resp)))))

@@ -13,6 +13,8 @@ var (
 type _CLI struct{}
 type _NONE struct{}
 
+func (_ _NONE) ClearStatus() {}
+
 func (_ _NONE) UpdateStatus(s Status, msg string) {}
 
 func (_ _NONE) Display(level MsgLevel, msg string) {}
@@ -96,10 +98,16 @@ func (m MsgLevel) String() string {
 type UI interface {
 	UpdateStatus(s Status, msg string)
 	Display(level MsgLevel, msg string)
+	ClearStatus()
 }
 
 var cliStatus = StatusIdle
 var cliStatusMsg = ""
+
+func (_ _CLI) ClearStatus() {
+	cliStatus = StatusIdle
+	cliStatusMsg = ""
+}
 
 func statusRepaint() {
 	if cliStatus == StatusIdle {
