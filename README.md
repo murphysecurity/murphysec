@@ -147,7 +147,7 @@ Global Flags:
 
 联系并添加运营微信号，拉您进墨菲安全交流微信群
 
-![wechat](./wechat.png)
+<img src="./wechat.png" width="200px">
 
 
 ## 开源协议
