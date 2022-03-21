@@ -114,6 +114,7 @@ func statusRepaint() {
 	if cliStatus == StatusIdle {
 		return
 	}
+	// todo: disable it for some old terminal
 	if os.Getenv("TERM_PROGRAM") == "Apple_Terminal" {
 		fmt.Println(cliStatus.String(), cliStatusMsg)
 		return
@@ -128,6 +129,7 @@ func statusRepaint() {
 func (_ _CLI) UpdateStatus(s Status, msg string) {
 	cliStatus = s
 	cliStatusMsg = msg
+	// todo
 	if os.Getenv("TERM_PROGRAM") == "Apple_Terminal" {
 		statusRepaint()
 		return
