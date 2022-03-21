@@ -1,6 +1,7 @@
 package yarn
 
 import (
+	"encoding/json"
 	"github.com/iseki0/go-yarnlock"
 	"github.com/pkg/errors"
 	"io"
@@ -23,6 +24,9 @@ func (i *Inspector) Version() string {
 
 func (i *Inspector) CheckDir(dir string) bool {
 	info, e := os.Stat(filepath.Join(dir, "yarn.lock"))
+	if e != nil {
+		info, e = os.Stat(filepath.Join(dir, "package.json"))
+	}
 	return e == nil && !info.IsDir()
 }
 
@@ -52,10 +56,48 @@ func New() base.Inspector {
 	return &Inspector{}
 }
 
+type pkgFile struct {
+	DevDependencies map[string]string `json:"dev_dependencies,omitempty"`
+	Dependencies    map[string]string `json:"dependencies,omitempty"`
+}
+
+func yarnFallback(dir string) ([]base.Dependency, error) {
+	f, e := os.Open(filepath.Join(dir, "package.json"))
+	if e != nil {
+		return nil, errors.Wrap(e, "Open package.json failed.")
+	}
+	defer f.Close()
+	r := io.LimitReader(f, 1024*1024)
+	data, e := io.ReadAll(r)
+	if e != nil {
+		return nil, e
+	}
+	var pkg pkgFile
+	if e := json.Unmarshal(data, &pkg); e != nil {
+		return nil, errors.Wrap(e, "parse failed")
+	}
+	rs := make([]base.Dependency, 0)
+	distinct := map[string]string{}
+	for k, v := range pkg.DevDependencies {
+		distinct[k] = v
+	}
+	for k, v := range pkg.Dependencies {
+		distinct[k] = v
+	}
+	for k, v := range distinct {
+		rs = append(rs, base.Dependency{
+			Name:    k,
+			Version: v,
+		})
+	}
+	return rs, nil
+}
+
 func analyzeYarnDep(dir string) ([]base.Dependency, error) {
 	f, e := os.Open(filepath.Join(dir, "yarn.lock"))
 	if e != nil {
-		return nil, errors.Wrap(e, "Open yarn.lock failed.")
+		logger.Info.Println("Open yarn.lock failed.", e.Error())
+		return yarnFallback(dir)
 	}
 	defer f.Close()
 	data, e := io.ReadAll(io.LimitReader(f, 16*1024*1024))
@@ -77,7 +119,7 @@ func buildDepTree(lkFile yarnlock.LockFile) []base.Dependency {
 	var rs []base.Dependency
 	repeatedElement := map[id]struct{}{}
 	for _, key := range lkFile.RootElement() {
-		node := _buildDepTree(lkFile, key, map[string]struct{}{})
+		node := _buildDepTree(lkFile, key, map[string]struct{}{}, 5)
 		if node == nil {
 			continue
 		}
@@ -89,7 +131,10 @@ func buildDepTree(lkFile yarnlock.LockFile) []base.Dependency {
 	return rs
 }
 
-func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[string]struct{}) *base.Dependency {
+func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[string]struct{}, depth int) *base.Dependency {
+	if depth < 0 {
+		return nil
+	}
 	{
 		// avoid circle dependency
 		if _, ok := visitedKey[element]; ok {
@@ -118,7 +163,7 @@ func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[stri
 	repeatedElement := map[id]struct{}{}
 	for childComp, childVer := range lkFile[element].Dependencies {
 		childKey := childComp + "@" + childVer
-		c := _buildDepTree(lkFile, childKey, visitedKey)
+		c := _buildDepTree(lkFile, childKey, visitedKey, depth-1)
 		if c == nil {
 			continue
 		}
