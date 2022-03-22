@@ -3,7 +3,6 @@ package display
 import (
 	"fmt"
 	"github.com/muesli/termenv"
-	"os"
 )
 
 var (
@@ -114,36 +113,23 @@ func statusRepaint() {
 	if cliStatus == StatusIdle {
 		return
 	}
-	// todo: disable it for some old terminal
-	if os.Getenv("TERM_PROGRAM") == "Apple_Terminal" {
-		fmt.Println(cliStatus.String(), cliStatusMsg)
-		return
-	}
-	termenv.SaveCursorPosition()
 	fmt.Print(termenv.String().Foreground(cliStatus.fColor()).Styled(cliStatus.String()))
 	if cliStatusMsg != "" {
 		fmt.Print(" - ", cliStatusMsg)
 	}
-	termenv.RestoreCursorPosition()
+	fmt.Print("\r")
 }
 func (_ _CLI) UpdateStatus(s Status, msg string) {
 	cliStatus = s
 	cliStatusMsg = msg
 	// todo
-	if os.Getenv("TERM_PROGRAM") == "Apple_Terminal" {
-		statusRepaint()
-		return
-	}
 	termenv.ClearLine()
+	fmt.Print("\r")
 	statusRepaint()
 }
 
 func (_ _CLI) Display(level MsgLevel, msg string) {
-	if os.Getenv("TERM_PROGRAM") == "Apple_Terminal" {
-		fmt.Println(level.String(), msg)
-		return
-	}
 	termenv.ClearLine()
-	fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg, "\r")
+	fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg)
 	statusRepaint()
 }
