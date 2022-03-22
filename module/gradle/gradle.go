@@ -6,6 +6,7 @@ import (
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -102,8 +103,9 @@ func evalGradleDependencies(projectDir string, projectName string, info *GradleI
 	logger.Debug.Println("Execute:", c.String())
 	c.Dir = projectDir
 	data, e := c.Output()
+	logger.Debug.Println("GradleOutput:", string(data))
 	if e != nil {
-		logger.Debug.Println("Gradle output", string(data))
+		logger.Debug.Println("Gradle output", string(e.(*exec.ExitError).Stderr))
 		return nil, e
 	}
 	var lines []string

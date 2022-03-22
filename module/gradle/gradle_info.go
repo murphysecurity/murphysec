@@ -84,6 +84,10 @@ func execWrappedGradleInfo(baseDir string) (*GradleInfo, error) {
 		c = exec.Command(wrapperPath, "--version")
 	} else {
 		wrapperPath = filepath.Join(baseDir, "gradlew")
+		d, e := exec.Command("chmod", "0755", wrapperPath).Output()
+		if e != nil {
+			logger.Warn.Println("Chmod wrapper 0755 failed.", e.Error(), string(d), wrapperPath)
+		}
 		c = exec.Command("sh", "-c", wrapperPath, "--version")
 	}
 	c.Dir = baseDir
@@ -104,9 +108,9 @@ func execWrappedGradleInfo(baseDir string) (*GradleInfo, error) {
 		}
 	} else {
 		rs.CallCmd = func(args ...string) *exec.Cmd {
-			aa := []string{"sh", "-c", wrapperPath}
+			aa := []string{wrapperPath}
 			aa = append(aa, args...)
-			return exec.Command("sh", aa...)
+			return exec.Command("sh", "-c", strings.Join(aa, " "))
 		}
 	}
 	return &rs, nil

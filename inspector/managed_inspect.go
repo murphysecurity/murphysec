@@ -42,9 +42,8 @@ func managedInspectScan(ctx *ScanContext) error {
 					return filepath.SkipDir
 				}
 			}
-			logger.Debug.Println("Visit dir:", path)
 			if inspector.CheckDir(path) {
-				logger.Debug.Println("Matched")
+				logger.Debug.Println("Matched", path)
 				rs, e := inspector.Inspect(path)
 				if e != nil {
 					logger.Info.Println("inspect failed.", e.Error())
