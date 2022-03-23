@@ -1,7 +1,7 @@
-# README.md
 
-墨菲安全的 **CLI 工具**，用于在命令行检测指定目录代码的依赖安全问题，也可以基于 CLI 工具实现在 CI 流程的检测。
+[中文](README_ZH.md) | EN
 
+**MurphySec CLI** is used for detecting vulnerable dependencies from the command-line, and also can be integrated into your CI/CD pipeline.
 
 <p>
 
@@ -17,65 +17,67 @@
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/murphysecurity/murphysec?style=social">
   </p>
 
+## Features
+1. Analyze dependencies being used by your project, including direct and indirect dependencies
+2. Detect known vulnerabilities in project dependencies
 
-## 功能
-1. 分析项目使用的依赖信息，包含直接和间接依赖
-2. 检测项目依赖存在的已知漏洞信息
 
 
-## 目录
+## Table of Contents
+1. [Supported languages](#supported-languages)
+2. [How it works](#how-it-works)
+3. [Working Scenarios](#working-scenarios)
+4. [Getting Started](#getting-started)
+5. [Command Introduction](#command-introduction)
+6. [Communication](#communication)
+7. [License](#license)
 
-1. [支持的语言](#支持的语言)
-2. [工作原理](#工作原理)
-3. [使用场景](#使用场景)
-4. [使用步骤](#使用步骤)
-5. [命令介绍](#命令介绍)
-6. [交流和问题反馈](#交流和问题反馈)
-7. [开源协议](#开源协议)
 
-## 支持的语言
+## Supported languages
 
-目前支持 Java、JavaScript、Golang 语言项目的检测，后续会逐渐支持其他的开发语言。
+Currently supports Java, JavaScript, Golang. Other development languages will be gradually supported in the future.
 
-详细的支持情况可以[查看文档](https://www.murphysec.com/docs/quick-start/language-support/)
+Want to learn more about language support? [check out our documentation](https://www.murphysec.com/docs/quick-start/language-support/)
 
-## 工作原理
 
-1. 对于使用不同语言/包管理工具的项目，墨菲安全的 CLI 工具主要采用`项目构建`或直接对`包管理文件`进行解析的方式，来准确获取到项目的依赖信息
-2. 项目的依赖信息会上传到服务端，并基于墨菲安全持续维护的`漏洞知识库`来识别项目中存在安全缺陷的依赖
+## How it works
+1. MurphySec CLI obtains the dependency information of your project mainly by building the project or parsing the package manifest files.
+
+1. The dependency information of the project will be uploaded to the server, and the dependencies with security issues in the project will be identified through the vulnerability knowledge base maintained by MurphySec.
 
 ![cli-flowchart](./flowchart.png)
 
-> 说明：CLI 工具只会将检测项目的依赖和基本信息发送到墨菲安全服务端，用于识别存在安全缺陷的依赖，不会上传任何本地代码。
-
-
-## 使用场景
-1. 希望在本地环境中检测代码文件
-2. 希望集成到 CI 环境中对代码项目进行检测
-
-参考：[墨菲安全 CLI 与 Jenkins CI 的集成](https://www.murphysec.com/docs/integrations/jenkins/)
+> Note: MurphySec CLI will only send the dependencies and basic information of your project to server for identifying the dependencies with security issues, and will not upload any code snippets.
 
 
 
-## 使用步骤
-### 1. 安装
+## Working Scenarios
+1. To detect security issues in your code locally
+2. To detect security issues in CI/CD pipeline 
 
-访问 [GitHub Releases](https://github.com/murphysecurity/murphysec/releases/latest) 页面下载最新版本的墨菲安全 CLI，或执行以下相关命令：
+[Learn how to integrate MurphySec CLI in Jenkins](https://www.murphysec.com/docs/integrations/jenkins/)
 
-#### 在 Linux 上安装
+
+
+## Getting Started
+
+### 1. Install MurphySec CLI
+Visit the [GitHub Releases](https://github.com/murphysecurity/murphysec/releases/latest) page to download the latest version of  MurphySec CLI, or install it by running:
+
+#### Linux
 
 ```
 curl -sL "https://github.com/murphysecurity/murphysec/releases/latest/download/murphysec-linux-amd64" -o murphysec
 chmod +x murphysec
 ```
-#### 在 OSX 上安装
+#### OSX
 
 ```
 curl -sL "https://github.com/murphysecurity/murphysec/releases/latest/download/murphysec-darwin-amd64" -o murphysec
 chmod +x murphysec
 ```
 
-#### 在 WINDOWS 上安装
+#### WINDOWS
 
 ```
 scoop bucket add murphysec https://github.com/murphysecurity/scoop-bucket
@@ -83,55 +85,49 @@ scoop update
 scoop install murphysec
 ```
 
-### 2. 获取访问令牌
 
-目前墨菲安全平台注册需要邀请码，限时发放中，[点击获取](https://www.murphysec.com/docs/faq/get-invite-code/)
+### 2. Get access token
+Currently, MurphySec requires an invitation code to register, which is available for a limited time. [Click for invitation code](https://www.murphysec.com/docs/faq/get-invite-code/)
 
-> CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/faq/access-token/)
+> MurphySec CLI requires an access token from your MurphySec account for authentication to work properly. [What is an access token?](https://www.murphysec.com/docs/faq/access-token/) 
 
-
-进入[墨菲安全控制台](https://www.murphysec.com/control/set)，点击`个人设置`，复制页面中的`访问令牌`
-
+Go to [MurphySec platform](https://www.murphysec.com/control/set), click `Personal Settings`, and copy the access token from the page.
 
 
-### 3. 认证
+### 3. Authentication
+There are two authentication methods available: `Interactive authentication` and `Parameter authentication`
 
-目前有两种认证方式可用：命令行交互认证、命令行参数认证
+#### Interactive authentication
+Execute `murphysec auth login` command and paste the access token.
 
-#### 命令行交互认证
-执行`murphysec auth login`命令，粘贴访问令牌即可。
+> If you need to change the access token, you can repeat this command to overwrite the old one.
+
+#### Parameter Authentication
+Specify the access token for authentication by adding the `--token` parameter
 
 
-> 认证后下次使用墨菲安全 CLI 无需再次执行此操作，如果需要更换访问令牌，可以重复执行此命令来覆盖旧的访问令牌。
+### 4. Detection
+To perform detection using the `murphysec scan` command, you can execute the following command.
 
-
-#### 命令行参数认证
-执行检测命令时，通过增加`--token`参数指定访问令牌进行认证
-
-### 4. 检测
-
-使用`murphysec scan`命令进行检测，可以执行以下命令：
-
-``` bash
+```bash
 murphysec scan [your-project-path]
 ```
 
-可用的参数
-- `--token`：指定访问令牌
-- `--log-level`：指定命令行输出流打印的日志级别，默认不打印日志，可选参数为`silent`、`error`、`warn`、`info`、`debug`
-- `--json`：指定检测的结果输出为json，默认不展示结果详情
+Available parameters
+
+- `--token`: Specify the access token
+- `--log-level`: Specify the log level to be printed on the command line output stream, no log will be printed by default, optional parameters are `silent`, `error`, `warn`, `info`, `debug`
+- `--json`: Specify the output of the result as json format, not showing the result details by default
+
+### 5. View results
+MurphySec CLI does not show the result details by default, you can view the results in [MurphySec platform](https://www.murphysec.com/control/project).
 
 
-### 5. 查看结果
-
-CLI 工具默认不展示结果详情，可以在[墨菲安全控制台](https://www.murphysec.com/control/project)-`项目`页面查看详细的检测结果
-
-
-
-## 命令介绍
+## Command Introduction
 
 ### murphysec auth
-`murphysec auth` 命令主要是管理 CLI 的认证
+
+Mainly used for the management of certification
 
 ```
 Usage:
@@ -143,7 +139,8 @@ Available Commands:
 ```
 
 ### murphysec scan
-`murphysec scan` 命令主要用于执行检测
+
+Mainly used to run detections
 
 ```
 Usage:
@@ -163,15 +160,11 @@ Global Flags:
 
 ```
 
+## Communication
 
-
-## 交流和问题反馈
-
-联系并添加运营微信号，拉您进墨菲安全交流微信群
+Contact our official WeChat account, and we'll add you into the group for communication. 
 
 <img src="./wechat.png" width="200px">
 
-
-## 开源协议
-
+## License
 [Apache 2.0](LICENSE)
