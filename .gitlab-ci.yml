@@ -15,6 +15,7 @@
 
 stages:          # List of stages for jobs, and their order of execution
   - build
+  - internal-pub
   - release
 
 variables:
@@ -48,3 +49,16 @@ compose-build:
     - sha256sum -c *.sha256
     - mv * ../
     - cd ..
+
+publish-internal:
+  stage: internal-pub
+  image: iseki0/openssh
+  before_script:
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | base64 -d | gzip -d | ssh-add -
+  script:
+    - ssh -v -o "StrictHostKeyChecking=no" root@10.0.1.17 "echo Hello"
+    - ssh root@10.0.1.17 "mkdir /srv/cli/$CI_COMMIT_REF_SLUG || true"
+    - scp murphysec-linux-amd64 root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
+    - scp murphysec-darwin-amd64 root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
+    - scp murphysec-windows-amd64.exe root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
