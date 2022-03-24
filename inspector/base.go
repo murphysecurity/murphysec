@@ -109,7 +109,7 @@ func shouldUploadFile(ctx *ScanContext) bool {
 		return true
 	}
 	for _, it := range ctx.ManagedModules {
-		if it.PackageManager == "Maven" {
+		if it.PackageManager == "maven" {
 			return true
 		}
 	}

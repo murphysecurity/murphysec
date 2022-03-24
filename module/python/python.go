@@ -95,7 +95,7 @@ func (i Inspector) Inspect(dir string) ([]base.Module, error) {
 	{
 		m := base.Module{
 			Name:           filepath.Base(dir),
-			PackageManager: "python",
+			PackageManager: "pip",
 			Language:       "python",
 			Dependencies:   []base.Dependency{},
 		}

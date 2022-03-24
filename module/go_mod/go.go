@@ -63,7 +63,7 @@ func ScanGoProject(dir string) ([]base.Module, error) {
 	}
 
 	module := base.Module{
-		PackageManager: "Go",
+		PackageManager: "go",
 		Language:       "Go",
 		PackageFile:    "go.mod",
 		Name:           root.Get("Module", "Path").String(filepath.Base(dir)),

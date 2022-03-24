@@ -68,7 +68,7 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 	}
 	for coordinate, dependencies := range deps {
 		modules = append(modules, base.Module{
-			PackageManager: "Maven",
+			PackageManager: "maven",
 			Language:       "java",
 			PackageFile:    "pom.xml",
 			Name:           coordinate.Name(),
