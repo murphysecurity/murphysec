@@ -33,6 +33,9 @@ func managedInspectScan(ctx *ScanContext) error {
 	for _, inspector := range managedInspector {
 		logger.Debug.Println("For:", inspector.String())
 		filepath.WalkDir(ctx.ProjectDir, func(path string, d fs.DirEntry, err error) error {
+			if d == nil {
+				return nil
+			}
 			if !d.IsDir() {
 				return nil
 			}
