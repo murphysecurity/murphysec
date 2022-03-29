@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/pkg/errors"
+	"murphysec-cli-simple/base"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
 	"murphysec-cli-simple/version"
@@ -11,15 +12,15 @@ import (
 )
 
 type CreateTaskRequest struct {
-	CliVersion    string          `json:"cli_version"`
-	TaskType      InspectTaskType `json:"task_type"`
-	UserAgent     string          `json:"user_agent"`
-	CmdLine       string          `json:"cmd_line"`
-	ApiToken      string          `json:"api_token"`
-	GitInfo       *VoGitInfo      `json:"git_info,omitempty"`
-	ProjectName   string          `json:"project_name"`
-	TargetAbsPath string          `json:"target_abs_path"`
-	ProjectType   string          `json:"project_type"`
+	CliVersion    string               `json:"cli_version"`
+	TaskType      base.InspectTaskType `json:"task_type"`
+	UserAgent     string               `json:"user_agent"`
+	CmdLine       string               `json:"cmd_line"`
+	ApiToken      string               `json:"api_token"`
+	GitInfo       *VoGitInfo           `json:"git_info,omitempty"`
+	ProjectName   string               `json:"project_name"`
+	TargetAbsPath string               `json:"target_abs_path"`
+	ProjectType   string               `json:"project_type"`
 }
 
 type CreateTaskGitInfo struct {

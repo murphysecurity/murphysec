@@ -42,6 +42,7 @@ func init() {
 
 var ErrTokenInvalid = errors.New("Token invalid")
 var ErrSendRequest = errors.New("Send request failed")
+var ErrParseErrMsg = errors.New("Parse error message failed")
 
 type CommonApiErr struct {
 	Error struct {
@@ -54,7 +55,7 @@ type CommonApiErr struct {
 func readCommonErr(data []byte, statusCode int) error {
 	var c CommonApiErr
 	if e := json.Unmarshal(data, &c); e != nil {
-		return errors.Wrap(e, "read error json failed")
+		return ErrParseErrMsg
 	}
 	return errors.New(fmt.Sprintf("API err[%d]: %s", statusCode, c.Error.Message))
 }

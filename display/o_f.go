@@ -1,5 +1,5 @@
 //go:build !windows
 
-package inspector
+package display
 
 func EnableANSI() {}

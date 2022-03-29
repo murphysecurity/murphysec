@@ -1,6 +1,6 @@
 //go:build windows
 
-package inspector
+package display
 
 import "github.com/muesli/termenv"
 

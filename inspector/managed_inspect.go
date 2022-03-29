@@ -25,13 +25,11 @@ var managedInspector = []base.Inspector{
 }
 
 // 受管理扫描
-// returns ErrNoEngineMatched ErrNoModule
 func managedInspectScan(ctx *ScanContext) error {
 	dir := ctx.ProjectDir
 	startTime := time.Now()
 	logger.Info.Println("Auto scan dir:", dir)
 	for _, inspector := range managedInspector {
-		logger.Debug.Println("For:", inspector.String())
 		filepath.WalkDir(ctx.ProjectDir, func(path string, d fs.DirEntry, err error) error {
 			if d == nil {
 				return nil
@@ -46,10 +44,10 @@ func managedInspectScan(ctx *ScanContext) error {
 				}
 			}
 			if inspector.CheckDir(path) {
-				logger.Debug.Println("Matched", path)
+				logger.Debug.Println("Matched", inspector, path)
 				rs, e := inspector.Inspect(path)
 				if e != nil {
-					logger.Info.Println("inspect failed.", e.Error())
+					logger.Info.Println("inspect failed.", inspector.String(), e.Error())
 					logger.Debug.Printf("%+v\n", e)
 				} else {
 					for _, it := range rs {
@@ -64,8 +62,5 @@ func managedInspectScan(ctx *ScanContext) error {
 	endTime := time.Now()
 	logger.Info.Println("Scan terminated. Cost time:", endTime.Sub(startTime))
 	logger.Info.Println("Total modules:", len(ctx.ManagedModules))
-	if len(ctx.ManagedModules) < 1 {
-		return ErrNoModule
-	}
 	return nil
 }
