@@ -1,55 +1,26 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
-	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
-	"net/http"
 	"time"
 )
 
 func QueryResult(taskId string) (*TaskScanResponse, error) {
 	must.True(taskId != "")
-	u := serverAddress() + fmt.Sprintf("/message/v2/access/detect/task_scan?scan_id=%s", taskId)
-	logger.Info.Println("Query result at:", u)
 	for {
-		resp, e := http.Get(u)
-		if e != nil {
-			return nil, ErrSendRequest
-		}
-		data, e := readHttpBody(resp)
-		if e != nil {
+		var r = struct {
+			Data TaskScanResponse `json:"data"`
+		}{}
+		httpReq := C.GET(fmt.Sprintf("/message/v2/access/detect/task_scan?scan_id=%s", taskId))
+		if e := C.Do(httpReq, &r); e != nil {
 			return nil, e
 		}
-		if resp.StatusCode == http.StatusOK {
-			var r = struct {
-				Data TaskScanResponse `json:"data"`
-			}{}
-			if e := json.Unmarshal(data, &r); e != nil {
-				return nil, errors.Wrap(e, "decode response failed")
-			}
-			if !r.Data.Complete {
-				logger.Debug.Println("not complete, retry")
-				time.Sleep(time.Second * 2)
-				continue
-			}
-			if r.Data.Status == "err" {
-				logger.Err.Println("Detect error")
-				return nil, errors.New("Detect error")
-			}
-			if r.Data.Status == "success" {
-				logger.Info.Println("Detect Succeeded")
-				return &r.Data, nil
-			}
-			if r.Data.Status == "run" {
-				continue
-			}
-			logger.Warn.Println("Server-side unknown status:", r.Data.Status)
-			logger.Debug.Println(string(data))
+		if !r.Data.Complete {
+			time.Sleep(time.Second * 2)
+			continue
 		}
-		return nil, readCommonErr(data, resp.StatusCode)
+		return &r.Data, nil
 	}
 }
 

@@ -1,13 +1,8 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"github.com/google/uuid"
-	"murphysec-cli-simple/conf"
-	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils/must"
-	"net/http"
 	"time"
 )
 
@@ -104,21 +99,7 @@ type SendDetectRequest struct {
 
 func SendDetect(input *SendDetectRequest) error {
 	must.True(input != nil)
-	u := serverAddress() + "/message/v2/access/detect/user_cli"
-	input.ApiToken = conf.APIToken()
-	body := must.Byte(json.Marshal(input))
-	resp, e := http.Post(u, "application/json", bytes.NewReader(body))
-	if e != nil {
-		logger.Warn.Println("send request failed.", e.Error())
-		return ErrSendRequest
-	}
-	if resp.StatusCode == 200 {
-		logger.Info.Println("SendDetect succeeded")
-		return nil
-	}
-	data, e := readHttpBody(resp)
-	if e != nil {
-		return e
-	}
-	return readCommonErr(data, resp.StatusCode)
+	input.ApiToken = C.Token
+	req := C.PostJson("/message/v2/access/detect/user_cli", input)
+	return C.Do(req, nil)
 }

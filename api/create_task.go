@@ -1,14 +1,7 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
-	"github.com/pkg/errors"
 	"murphysec-cli-simple/base"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/utils/must"
-	"murphysec-cli-simple/version"
-	"net/http"
 )
 
 type CreateTaskRequest struct {
@@ -33,34 +26,14 @@ type CreateTaskResponse struct {
 	TaskInfo string `json:"task_info"`
 }
 
-func CreateTask(req *CreateTaskRequest) (*string, error) {
-	body := must.Byte(json.Marshal(req))
-	httpreq := must.Req(http.NewRequest(http.MethodPost, serverAddress()+"/message/v2/access/client/create_project", bytes.NewReader(body)))
-	httpreq.Header.Add("Machine-Id", version.MachineId())
-	resp, e := client.Do(httpreq)
-	if e != nil {
-		logger.Err.Println("Request failed", e.Error())
-		return nil, errors.Wrap(ErrSendRequest, e.Error())
+func CreateTask(req *CreateTaskRequest) (*CreateTaskResponse, error) {
+	httpReq := C.PostJson("/message/v2/access/client/create_project", req)
+	type O struct {
+		Data CreateTaskResponse `json:"data"`
 	}
-	data, e := readHttpBody(resp)
-	if e != nil {
+	var resp O
+	if e := C.Do(httpReq, &resp); e != nil {
 		return nil, e
 	}
-	if resp.StatusCode == http.StatusOK {
-		type O struct {
-			Data CreateTaskResponse `json:"data"`
-		}
-		var o O
-		if e := json.Unmarshal(data, &o); e != nil {
-			return nil, e
-		}
-		if o.Data.TaskInfo == "" {
-			return nil, errors.New("empty task info")
-		}
-		return &o.Data.TaskInfo, nil
-	}
-	if resp.StatusCode == http.StatusUnauthorized {
-		return nil, ErrTokenInvalid
-	}
-	return nil, readCommonErr(data, resp.StatusCode)
+	return &resp.Data, nil
 }

@@ -14,6 +14,7 @@ import (
 )
 
 var versionFlag bool
+var CliServerAddressOverride string
 
 func rootCmd() *cobra.Command {
 	argsMap := map[string]bool{}
@@ -33,7 +34,7 @@ func rootCmd() *cobra.Command {
 	c.PersistentFlags().StringVar(&logger.CliLogFilePathOverride, "write-log-to", "", "specify log file path")
 	c.PersistentFlags().StringVar(&logger.ConsoleLogLevelOverride, "log-level", "silent", "specify log level, must be silent|error|warn|info|debug")
 	c.PersistentFlags().StringVar(&conf.APITokenCliOverride, "token", "", "specify API token")
-	c.PersistentFlags().StringVar(&api.CliServerAddressOverride, "server", "", "specify server address")
+	c.PersistentFlags().StringVar(&CliServerAddressOverride, "server", "", "specify server address")
 	c.PersistentFlags().String("ide", "", "hidden")
 	must.Must(c.PersistentFlags().MarkHidden("ide"))
 	c.AddCommand(authCmd())
@@ -52,6 +53,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if !utils.InStringSlice([]string{"", "warn", "error", "debug", "info", "silent"}, strings.ToLower(strings.TrimSpace(logger.ConsoleLogLevelOverride))) {
 		return errors.New("Loglevel invalid, must be silent|error|warn|info|debug")
 	}
+	if CliServerAddressOverride == "" {
+		CliServerAddressOverride = os.Getenv("MPS_CLI_SERVER")
+	}
+	if CliServerAddressOverride == "" {
+		CliServerAddressOverride = "https://www.murphysec.com"
+	}
+	api.C = api.NewClient(CliServerAddressOverride)
+	api.C.Token = conf.APIToken()
 	return nil
 }
 
