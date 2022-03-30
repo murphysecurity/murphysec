@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/display"
+	"murphysec-cli-simple/env"
 	"murphysec-cli-simple/logger"
 	"path/filepath"
 	"strings"
@@ -42,7 +43,7 @@ func Scan(ctx *ScanContext) (interface{}, error) {
 		logger.Debug.Printf("%v", e)
 	}
 
-	{
+	if env.AllowFileHash {
 		// todo: refactor
 		enableCxx := false
 		filepath.Walk(ctx.ProjectDir, func(path string, info fs.FileInfo, err error) error {
@@ -68,7 +69,7 @@ func Scan(ctx *ScanContext) (interface{}, error) {
 		logger.Debug.Printf("%+v", e)
 		logger.Err.Println(e.Error())
 	}
-	if ctx.EnableDeepScan {
+	if ctx.EnableDeepScan && env.AllowDeepScan {
 		logger.Info.Printf("deep scan enabled, upload source code")
 		ui.UpdateStatus(display.StatusRunning, "正在上传文件到服务端以进行深度检测")
 		if e := UploadCodeFile(ctx); e != nil {
