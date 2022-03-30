@@ -24,6 +24,30 @@ variables:
     value: "false"
     description: if true, release to github
 
+compose-build-saas:
+  image: golang:1.17.7-buster
+  stage: build
+  artifacts:
+    expire_in: 3 day
+    paths:
+      - murphysec-saas-linux-amd64
+      - murphysec-saas-windows-amd64.exe
+      - murphysec-saas-darwin-amd64
+      - murphysec-saas-linux-amd64.sha256
+      - murphysec-saas-windows-amd64.exe.sha256
+      - murphysec-saas-darwin-amd64.sha256
+  script:
+    - export
+    - GOOS=linux GOARCH=amd64 go build -o out/murphysec-saas-linux-amd64 -v .
+    - GOOS=windows GOARCH=amd64 go build -o out/murphysec-saas-windows-amd64.exe -v .
+    - GOOS=darwin GOARCH=amd64 go build -o out/murphysec-saas-darwin-amd64 -v .
+    - cd out
+    - chmod 0755 *
+    - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
+    - cat *.sha256
+    - sha256sum -c *.sha256
+    - mv * ../
+    - cd ..
 
 compose-build:
   image: golang:1.17.7-buster
@@ -39,9 +63,9 @@ compose-build:
       - murphysec-darwin-amd64.sha256
   script:
     - export
-    - GOOS=linux GOARCH=amd64 go build -o out/murphysec-linux-amd64 -v .
-    - GOOS=windows GOARCH=amd64 go build -o out/murphysec-windows-amd64.exe -v .
-    - GOOS=darwin GOARCH=amd64 go build -o out/murphysec-darwin-amd64 -v .
+    - GOOS=linux GOARCH=amd64 go build -tags pro -o out/murphysec-linux-amd64 -v .
+    - GOOS=windows GOARCH=amd64 go build -tags pro -o out/murphysec-windows-amd64.exe -v .
+    - GOOS=darwin GOARCH=amd64 go build -tags pro -o out/murphysec-darwin-amd64 -v .
     - cd out
     - chmod 0755 *
     - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
@@ -62,3 +86,6 @@ publish-internal:
     - scp murphysec-linux-amd64 root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
     - scp murphysec-darwin-amd64 root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
     - scp murphysec-windows-amd64.exe root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
+    - scp murphysec-saas-linux-amd64 root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
+    - scp murphysec-saas-darwin-amd64 root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
+    - scp murphysec-saas-windows-amd64.exe root@10.0.1.17:/srv/cli/$CI_COMMIT_REF_SLUG
