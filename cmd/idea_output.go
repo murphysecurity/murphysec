@@ -3,16 +3,34 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/inspector"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/must"
 )
 
-func reportIdeaErr(code IdeaErrCode) {
+func reportIdeaErr(e error, message string) {
+	code := IdeaUnknownErr
+	if errors.Is(e, api.ErrTokenInvalid) {
+		code = IdeaTokenInvalid
+	} else if errors.Is(e, api.ErrServerRequest) {
+		code = IdeaServerRequestFailed
+	} else if errors.Is(e, api.ErrTimeout) {
+		code = IdeaApiTimeout
+	} else if errors.Is(e, api.BaseCommonApiError) {
+		code = IdeaServerRequestFailed
+	}
+	if message == "" {
+		message = e.Error()
+	}
+	if message == "" {
+		message = code.Error()
+	}
 	fmt.Println(string(must.Byte(json.Marshal(struct {
 		ErrCode IdeaErrCode `json:"err_code"`
-	}{ErrCode: code}))))
+		ErrMsg  string      `json:"err_msg"`
+	}{ErrCode: code, ErrMsg: message}))))
 }
 
 type PluginOutput struct {

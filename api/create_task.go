@@ -32,7 +32,7 @@ func CreateTask(req *CreateTaskRequest) (*CreateTaskResponse, error) {
 		Data CreateTaskResponse `json:"data"`
 	}
 	var resp O
-	if e := C.Do(httpReq, &resp); e != nil {
+	if e := C.DoJson(httpReq, &resp); e != nil {
 		return nil, e
 	}
 	return &resp.Data, nil

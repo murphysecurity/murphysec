@@ -3,6 +3,8 @@ package cmd
 type IdeaErrCode int
 
 const (
+	IdeaUnknownErr          IdeaErrCode = -2
+	IdeaInspectErr          IdeaErrCode = -1
 	IdeaSucceed             IdeaErrCode = 0
 	IdeaEngineScanFailed    IdeaErrCode = 1
 	IdeaServerRequestFailed IdeaErrCode = 2
@@ -14,6 +16,10 @@ const (
 
 func (code IdeaErrCode) Error() string {
 	switch code {
+	case IdeaUnknownErr:
+		return "UnknownErr"
+	case IdeaInspectErr:
+		return "InspectErr"
 	case IdeaSucceed:
 		return "Succeed"
 	case IdeaEngineScanFailed:

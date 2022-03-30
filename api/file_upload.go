@@ -12,5 +12,5 @@ func UploadChunk(taskId string, chunkId int, reader io.Reader) error {
 	v.Set("chunk_id", fmt.Sprintf("%04d", chunkId))
 	req.URL.RawQuery = v.Encode()
 	req.Header.Set("Content-Type", "application/gzip")
-	return C.Do(req, nil)
+	return C.DoJson(req, nil)
 }

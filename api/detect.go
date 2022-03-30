@@ -101,5 +101,5 @@ func SendDetect(input *SendDetectRequest) error {
 	must.True(input != nil)
 	input.ApiToken = C.Token
 	req := C.PostJson("/message/v2/access/detect/user_cli", input)
-	return C.Do(req, nil)
+	return C.DoJson(req, nil)
 }

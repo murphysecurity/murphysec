@@ -13,7 +13,7 @@ func QueryResult(taskId string) (*TaskScanResponse, error) {
 			Data TaskScanResponse `json:"data"`
 		}{}
 		httpReq := C.GET(fmt.Sprintf("/message/v2/access/detect/task_scan?scan_id=%s", taskId))
-		if e := C.Do(httpReq, &r); e != nil {
+		if e := C.DoJson(httpReq, &r); e != nil {
 			return nil, e
 		}
 		if !r.Data.Complete {
