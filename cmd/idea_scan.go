@@ -21,6 +21,7 @@ func ideaScanCmd() *cobra.Command {
 	c.Args = cobra.NoArgs
 	must.Must(c.MarkFlagRequired("dir"))
 	must.Must(c.MarkFlagDirname("dir"))
+	c.Flags().StringVar(&ProjectId, "project-id", "", "team id")
 	return c
 }
 
