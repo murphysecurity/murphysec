@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
+	"murphysec-cli-simple/env"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/version"
 	"os"
@@ -45,7 +46,7 @@ func submitModuleInfo(ctx *ScanContext) error {
 	for _, it := range ctx.ManagedModules {
 		req.Modules = append(req.Modules, *it.ApiVo())
 	}
-	if len(ctx.FileHashes) != 0 {
+	if len(ctx.FileHashes) != 0 && env.AllowFileHash {
 		list := make([]api.VoFileHash, 0)
 		for _, it := range ctx.FileHashes {
 			list = append(list, api.VoFileHash{Hash: it})
