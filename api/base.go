@@ -155,19 +155,3 @@ func (c *CommonApiErr) Error() string {
 func (c *CommonApiErr) Is(e error) bool {
 	return e == BaseCommonApiError
 }
-
-func readCommonErr(data []byte, statusCode int) error {
-	panic(1)
-}
-
-func readHttpBody(res *http.Response) ([]byte, error) {
-	data, e := io.ReadAll(res.Body)
-	if e != nil {
-		logger.Warn.Println("read body failed.", e.Error())
-		return nil, e
-	}
-	logger.Debug.Println(string(data))
-	logger.Debug.Println("body size", len(data), "bytes")
-	_ = res.Body.Close()
-	return data, e
-}
