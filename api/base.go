@@ -78,7 +78,6 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 	}
 	logger.Info.Println("Send request: ", req.URL.RequestURI())
 	res, e := c.client.Do(req)
-	logger.Info.Println("API response:", res.StatusCode, res.Status)
 	if e != nil {
 		e := e.(*url.Error)
 		logger.Err.Println("Request failed.", e.Error())
@@ -87,6 +86,7 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 		}
 		return errors.Wrap(ErrServerRequest, e.Error())
 	}
+	logger.Info.Println("API response:", res.StatusCode, res.Status)
 	data, e := io.ReadAll(res.Body)
 	defer func() {
 
