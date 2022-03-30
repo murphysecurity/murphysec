@@ -17,18 +17,21 @@ var ErrProjectDirInvalid = errors.New("Project dir invalid.")
 var ErrGetProjectInfo = errors.New("Get project info failed.")
 
 type ScanContext struct {
-	GitInfo        *GitInfo
-	ProjectName    string
-	ProjectDir     string
-	ManagedModules []base.Module
-	StartTime      time.Time
-	TaskId         string
-	FileHashes     []string
-	ProjectType    string
-	EnableDeepScan bool
-	ScanResult     *api.TaskScanResponse
-	TaskType       base2.InspectTaskType
-	InspectorError []base.InspectorError
+	GitInfo           *GitInfo
+	ProjectName       string
+	ProjectDir        string
+	ManagedModules    []base.Module
+	StartTime         time.Time
+	TaskId            string
+	FileHashes        []string
+	ProjectType       string
+	EnableDeepScan    bool
+	ScanResult        *api.TaskScanResponse
+	TaskType          base2.InspectTaskType
+	InspectorError    []base.InspectorError
+	ContributorList   []api.Contributor
+	ProjectId         string
+	TotalContributors int
 }
 
 func (s *ScanContext) UI() display.UI {

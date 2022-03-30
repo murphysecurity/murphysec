@@ -8,6 +8,7 @@ import (
 var CliJsonOutput bool
 
 var DeepScan bool
+var ProjectId string
 
 func scanCmd() *cobra.Command {
 	c := &cobra.Command{
@@ -18,6 +19,7 @@ func scanCmd() *cobra.Command {
 	if env.AllowDeepScan {
 		c.Flags().BoolVar(&DeepScan, "deep", false, "deep scan, will upload the source code")
 	}
+	c.Flags().StringVar(&ProjectId, "project-id", "", "team id")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }

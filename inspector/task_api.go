@@ -12,20 +12,24 @@ import (
 
 func createTask(ctx *ScanContext) error {
 	req := &api.CreateTaskRequest{
-		CliVersion:    version.Version(),
-		TaskType:      ctx.TaskType,
-		UserAgent:     version.UserAgent(),
-		CmdLine:       strings.Join(os.Args, " "),
-		ApiToken:      conf.APIToken(),
-		ProjectName:   ctx.ProjectName,
-		TargetAbsPath: ctx.ProjectDir,
-		ProjectType:   ctx.ProjectType,
+		CliVersion:      version.Version(),
+		TaskType:        ctx.TaskType,
+		UserAgent:       version.UserAgent(),
+		CmdLine:         strings.Join(os.Args, " "),
+		ApiToken:        conf.APIToken(),
+		ProjectName:     ctx.ProjectName,
+		TargetAbsPath:   ctx.ProjectDir,
+		ProjectType:     ctx.ProjectType,
+		ContributorList: ctx.ContributorList,
+		ProjectId:       ctx.ProjectId,
 	}
 	req.GitInfo = ctx.GitInfo.ApiVo()
 	logger.Info.Printf("create task: %#v", ctx)
-	if taskId, e := api.CreateTask(req); e == nil {
-		ctx.TaskId = taskId.TaskInfo
-		logger.Info.Println("task created, id:", *taskId)
+	if res, e := api.CreateTask(req); e == nil {
+		ctx.TaskId = res.TaskInfo
+		ctx.TotalContributors = res.TotalContributors
+		ctx.ProjectId = res.ProjectId
+		logger.Info.Println("task created, id:", res.TaskInfo)
 		return nil
 	} else {
 		logger.Warn.Println("task create failed", e.Error())

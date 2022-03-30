@@ -59,6 +59,8 @@ type PluginComp struct {
 	Solutions          []PluginCompSolution `json:"solutions,omitempty"`
 	IsDirectDependency bool                 `json:"is_direct_dependency"`
 	Language           string               `json:"language"`
+	ProjectId          string               `json:"project_id"`
+	TotalContributors  int                  `json:"total_contributors"`
 }
 
 type PluginCompLicense struct {
@@ -91,14 +93,16 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 		for _, comp := range mod.Comps {
 			cid := id{comp.CompName, comp.CompVersion}
 			p := PluginComp{
-				CompName:        comp.CompName,
-				ShowLevel:       3,
-				MinFixedVersion: comp.MinFixedVersion,
-				Vulns:           comp.Vuls,
-				Version:         comp.CompVersion,
-				License:         nil,
-				Solutions:       []PluginCompSolution{},
-				Language:        mod.Language,
+				CompName:          comp.CompName,
+				ShowLevel:         3,
+				MinFixedVersion:   comp.MinFixedVersion,
+				Vulns:             comp.Vuls,
+				Version:           comp.CompVersion,
+				License:           nil,
+				Solutions:         []PluginCompSolution{},
+				Language:          mod.Language,
+				ProjectId:         ctx.ProjectId,
+				TotalContributors: ctx.TotalContributors,
 			}
 			if comp.License != nil {
 				p.License = &PluginCompLicense{

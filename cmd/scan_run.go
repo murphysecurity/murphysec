@@ -27,6 +27,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 		SetGlobalExitCode(1)
 		return
 	}
+	ctx.ProjectId = ProjectId
 	ctx.EnableDeepScan = DeepScan
 	if _, e = inspector.Scan(ctx); e != nil {
 		ui.Display(display.MsgError, "扫描失败："+e.Error())

@@ -1,8 +1,10 @@
 package inspector
 
 import (
+	"container/list"
 	"fmt"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pkg/errors"
 	giturls "github.com/whilp/git-urls"
 	"murphysec-cli-simple/api"
@@ -110,4 +112,66 @@ func getGitInfo(dir string) (*GitInfo, error) {
 		}
 	}
 	return gitInfo, nil
+}
+func CollectContributor(dir string) ([]api.Contributor, error) {
+	repo, e := git.PlainOpen(dir)
+	if e != nil {
+		return nil, errors.Wrap(e, "open repo failed")
+	}
+	branches, e := repo.References()
+	if e != nil {
+		return nil, errors.Wrap(e, "list branches failed")
+	}
+	distinctHashSet := map[string]struct{}{}
+	contributorSet := map[api.Contributor]struct{}{}
+	e = branches.ForEach(func(reference *plumbing.Reference) error {
+		h := reference.Hash()
+		q := list.New()
+		q.PushBack(h)
+		for q.Len() > 0 {
+			cur := q.Front().Value.(plumbing.Hash)
+			q.Remove(q.Front())
+			if len(distinctHashSet) > 10000 {
+				return nil
+			}
+			if cur.IsZero() {
+				continue
+			}
+			if _, ok := distinctHashSet[h.String()]; ok {
+				continue
+			}
+			distinctHashSet[h.String()] = struct{}{}
+			commit, e := repo.CommitObject(h)
+			if e == plumbing.ErrObjectNotFound {
+				continue
+			}
+			if e != nil {
+				return errors.Wrap(e, "get commit failed")
+			}
+			for _, hash := range commit.ParentHashes {
+				q.PushBack(hash)
+			}
+			if commit.Committer.Name != "" {
+				contributorSet[api.Contributor{
+					Name:  commit.Committer.Name,
+					Email: commit.Committer.Email,
+				}] = struct{}{}
+			}
+			if commit.Author.Name != "" {
+				contributorSet[api.Contributor{
+					Name:  commit.Author.Name,
+					Email: commit.Author.Email,
+				}] = struct{}{}
+			}
+		}
+		return nil
+	})
+	if e != nil {
+		return nil, errors.Wrap(e, "iterate failed.")
+	}
+	var rs []api.Contributor
+	for contributor := range contributorSet {
+		rs = append(rs, contributor)
+	}
+	return rs, e
 }

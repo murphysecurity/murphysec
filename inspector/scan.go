@@ -18,6 +18,16 @@ func Scan(ctx *ScanContext) (interface{}, error) {
 		return nil, ErrGetProjectInfo
 	}
 	ui.Display(display.MsgInfo, fmt.Sprint("项目名称：", ctx.ProjectName))
+	if ctx.GitInfo != nil {
+		ui.UpdateStatus(display.StatusRunning, "正在获取贡献者信息......")
+		list, e := CollectContributor(ctx.ProjectDir)
+		if e != nil {
+			ui.Display(display.MsgWarn, "获取贡献者信息失败："+e.Error())
+		} else {
+			ctx.ContributorList = list
+			ui.Display(display.MsgInfo, fmt.Sprint("共发现", len(ctx.ContributorList), "位仓库贡献者"))
+		}
+	}
 	ui.UpdateStatus(display.StatusRunning, "正在创建扫描任务，请稍候······")
 	if e := createTask(ctx); e != nil {
 		ui.Display(display.MsgError, fmt.Sprint("项目创建失败：", e.Error()))
@@ -52,7 +62,6 @@ func Scan(ctx *ScanContext) (interface{}, error) {
 			FileHashScan(ctx)
 		}
 	}
-
 	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
 	if e := submitModuleInfo(ctx); e != nil {
 		ui.Display(display.MsgError, fmt.Sprint("信息提交失败：", e.Error()))

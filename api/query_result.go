@@ -50,8 +50,6 @@ type TaskScanResponse struct {
 			Vuls []VoVulnInfo `json:"vuls"`
 		} `json:"comps"`
 	} `json:"modules"`
-	DetectStartTimestamp time.Time `json:"detect_start_timestamp"`
-	DetectStatus         string    `json:"detect_status"`
-	TaskId               string    `json:"task_id"`
-	Status               string    `json:"status"`
+	TaskId string `json:"task_id"`
+	Status string `json:"status"`
 }
