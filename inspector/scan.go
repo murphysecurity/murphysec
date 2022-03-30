@@ -59,7 +59,7 @@ func Scan(ctx *ScanContext) (interface{}, error) {
 		logger.Debug.Printf("%+v", e)
 		logger.Err.Println(e.Error())
 	}
-	if ctx.EnableDeepScan && shouldUploadFile(ctx) {
+	if ctx.EnableDeepScan {
 		logger.Info.Printf("deep scan enabled, upload source code")
 		ui.UpdateStatus(display.StatusRunning, "正在上传文件到服务端以进行深度检测")
 		if e := UploadCodeFile(ctx); e != nil {
