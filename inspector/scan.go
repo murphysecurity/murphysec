@@ -13,7 +13,7 @@ import (
 func Scan(ctx *ScanContext) (interface{}, error) {
 	ui := ctx.UI()
 	if e := ctx.FillProjectInfo(); e != nil {
-		logger.Debug.Printf("v+\n", e)
+		logger.Debug.Printf("%v+\n", e)
 		logger.Err.Println(e)
 		return nil, ErrGetProjectInfo
 	}
