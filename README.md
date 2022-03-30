@@ -1,80 +1,170 @@
-# README.md
 
-<h1 align="center">
-  <img src="logo.png" alt="murphysec" width="150">
-  <br><a href="https://murphysec.com" target="_blank">murphysec</a><br>
-  <h4 align="center">一款专注于软件供应链安全的开源工具，包含开源组件依赖分析、漏洞检测及漏洞修复等功能。</h4>
-</h1>
-<p align="center">
-  <img src="https://img.shields.io/github/go-mod/go-version/murphysec/murphysec.svg?style=flat-square">
-  <a href="https://github.com/murphysec/murphysec/releases/latest">
-    <img src="https://img.shields.io/github/release/murphysec/murphysec.svg?style=flat-square">
+[中文](README_ZH.md) | EN
+
+**MurphySec CLI** is used for detecting vulnerable dependencies from the command-line, and also can be integrated into your CI/CD pipeline.
+
+<p>
+
+  <a href="https://github.com/murphysecurity/murphysec">
+    <img src="https://badgen.net/badge/Github/murphysecurity/21D789?icon=github">
   </a>
-  <a href="https://github.com/murphysec/murphysec/blob/master/LICENSE">
-    <img alt="GitHub" src="https://img.shields.io/github/license/murphysec/murphysec?style=flat-square">
+
+<img src="https://img.shields.io/github/go-mod/go-version/murphysecurity/murphysec.svg?style=flat-square">
+  <a href="https://github.com/murphysecurity/murphysec/blob/master/LICENSE">
+    <img alt="GitHub" src="https://img.shields.io/github/license/murphysecurity/murphysec?style=flat-square">
   </a>
-  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/murphysec/murphysec?style=flat-square">
-  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/murphysec/murphysec?style=social">
+  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/murphysecurity/murphysec?style=flat-square">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/murphysecurity/murphysec?style=social">
+  </p>
 
-</p>
+## Features
+1. Analyze dependencies being used by your project, including direct and indirect dependencies
+2. Detect known vulnerabilities in project dependencies
 
-## 安装
 
-### macOS
 
-```shell
-wget https://github.com/murphysec/murphysec/releases/latest/download/murphysec-darwin-amd64
-chmod 0755 murphysec-darwin-amd64 && mv murphysec-darwin-amd64 /usr/bin/murphysec
+## Table of Contents
+1. [Supported languages](#supported-languages)
+2. [How it works](#how-it-works)
+3. [Working Scenarios](#working-scenarios)
+4. [Getting Started](#getting-started)
+5. [Command Introduction](#command-introduction)
+6. [Communication](#communication)
+7. [License](#license)
+
+
+## Supported languages
+
+Currently supports Java, JavaScript, Golang. Other development languages will be gradually supported in the future.
+
+Want to learn more about language support? [check out our documentation](https://www.murphysec.com/docs/quick-start/language-support/)
+
+
+## How it works
+1. MurphySec CLI obtains the dependency information of your project mainly by building the project or parsing the package manifest files.
+
+1. The dependency information of the project will be uploaded to the server, and the dependencies with security issues in the project will be identified through the vulnerability knowledge base maintained by MurphySec.
+
+![cli-flowchart](./flowchart.png)
+
+> Note: MurphySec CLI will only send the dependencies and basic information of your project to server for identifying the dependencies with security issues, and will not upload any code snippets.
+
+
+
+## Working Scenarios
+1. To detect security issues in your code locally
+2. To detect security issues in CI/CD pipeline 
+
+[Learn how to integrate MurphySec CLI in Jenkins](https://www.murphysec.com/docs/integrations/jenkins/)
+
+
+
+## Getting Started
+
+### 1. Install MurphySec CLI
+Visit the [GitHub Releases](https://github.com/murphysecurity/murphysec/releases/latest) page to download the latest version of  MurphySec CLI, or install it by running:
+
+#### Linux
+
+```
+curl -sL "https://github.com/murphysecurity/murphysec/releases/latest/download/murphysec-linux-amd64" -o murphysec
+chmod +x murphysec
+```
+#### OSX
+
+```
+curl -sL "https://github.com/murphysecurity/murphysec/releases/latest/download/murphysec-darwin-amd64" -o murphysec
+chmod +x murphysec
 ```
 
-### Windows
-
-使用scoop安装
+#### WINDOWS
 
 ```
-scoop bucket add murphysec https://github.com/murphysec/scoop-bucket
+scoop bucket add murphysec https://github.com/murphysecurity/scoop-bucket
 scoop update
 scoop install murphysec
 ```
 
-### Linux
 
-```shell
-wget https://github.com/murphysec/murphysec/releases/latest/download/murphysec-linux-amd64
-chmod 0755 murphysec-linux-amd64 && mv murphysec-linux-amd64 /usr/bin/murphysec
+### 2. Get access token
+Currently, MurphySec requires an invitation code to register, which is available for a limited time. [Click for invitation code](https://www.murphysec.com/docs/faq/get-invite-code/)
+
+> MurphySec CLI requires an access token from your MurphySec account for authentication to work properly. [What is an access token?](https://www.murphysec.com/docs/faq/access-token/) 
+
+Go to [MurphySec platform](https://www.murphysec.com/control/set), click `Personal Settings`, and copy the access token from the page.
+
+
+### 3. Authentication
+There are two authentication methods available: `Interactive authentication` and `Parameter authentication`
+
+#### Interactive authentication
+Execute `murphysec auth login` command and paste the access token.
+
+> If you need to change the access token, you can repeat this command to overwrite the old one.
+
+#### Parameter Authentication
+Specify the access token for authentication by adding the `--token` parameter
+
+
+### 4. Detection
+To perform detection using the `murphysec scan` command, you can execute the following command.
+
+```bash
+murphysec scan [your-project-path]
 ```
 
-## 配置
+Available parameters
 
-执行`murphysec auth login`完成身份验证
+- `--token`: Specify the access token
+- `--log-level`: Specify the log level to be printed on the command line output stream, no log will be printed by default, optional parameters are `silent`, `error`, `warn`, `info`, `debug`
+- `--json`: Specify the output of the result as json format, not showing the result details by default
 
-小范围公测中，[点此申请](https://murphysec.com/register)访问令牌
+### 5. View results
+MurphySec CLI does not show the result details by default, you can view the results in [MurphySec platform](https://www.murphysec.com/control/project).
 
-## 用法
+
+## Command Introduction
+
+### murphysec auth
+
+Mainly used for the management of certification
 
 ```
-murphysec: A software supply chain security inspection tool.
-
 Usage:
-  murphysec [flags]
-  murphysec [command]
+  murphysec auth [command]
 
 Available Commands:
-  auth        manage the API token
-  completion  generate the autocompletion script for the specified shell
-  help        Help about any command
-  scan        Scan open source vulnerabilities in project
-
-Flags:
-      --color          colorize the output (default true)
-  -h, --help           help for murphysec
-      --token string   specify the API token
-  -v, --verbose        show verbose log
-      --version        output version information and exit
-
-Use "murphysec [command] --help" for more information about a command.
+  login
+  logout
 ```
 
-## 开源协议
+### murphysec scan
 
+Mainly used to run detections
+
+```
+Usage:
+  murphysec scan DIR [flags]
+
+Flags:
+  -h, --help   help for scan
+      --json   json output
+
+Global Flags:
+      --log-level string      specify log level, must be silent|error|warn|info|debug
+      --no-log-file           do not write log file
+      --server string         specify server address
+      --token string          specify API token
+  -v, --version               show version and exit
+      --write-log-to string   specify log file path
+
+```
+
+## Communication
+
+Contact our official WeChat account, and we'll add you into the group for communication. 
+
+<img src="./wechat.png" width="200px">
+
+## License
 [Apache 2.0](LICENSE)
