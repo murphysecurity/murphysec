@@ -20,9 +20,6 @@ stages:          # List of stages for jobs, and their order of execution
 
 variables:
   GOPROXY: https://goproxy.cn,direct
-  RELEASE_GH:
-    value: "false"
-    description: if true, release to github
 
 compose-build-saas:
   image: golang:1.17.7-buster
