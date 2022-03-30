@@ -17,6 +17,8 @@ func (d Dependency) String() string {
 	return fmt.Sprintf("%v: %v", d.Coordinate, d.Children)
 }
 
+var MvnSkipped = base.NewInspectError("java", "Mvn inspect is skipped, please check you maven environment.")
+
 func ScanMavenProject(dir string) ([]base.Module, error) {
 	var modules []base.Module
 	var deps map[Coordinate][]Dependency
@@ -37,7 +39,6 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 		}
 		pomFiles := InspectModule(dir)
 		logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
-
 		resolver := NewResolver()
 		for _, builder := range pomFiles {
 			{
@@ -77,6 +78,9 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 			Dependencies:   convDeps(dependencies),
 			RuntimeInfo:    mvnVer,
 		})
+	}
+	if len(modules) == 0 && skipMvnScan {
+		return nil, MvnSkipped
 	}
 	return modules, nil
 }

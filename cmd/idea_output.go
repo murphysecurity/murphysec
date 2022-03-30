@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/inspector"
+	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/must"
 )
@@ -43,9 +44,10 @@ type PluginOutput struct {
 		Medium   int `json:"medium,omitempty"`
 		Low      int `json:"low,omitempty"`
 	} `json:"issues_level_count,omitempty"`
-	TaskId            string `json:"task_id,omitempty"`
-	TotalContributors int    `json:"total_contributors"`
-	ProjectId         string `json:"project_id"`
+	TaskId            string                `json:"task_id,omitempty"`
+	TotalContributors int                   `json:"total_contributors"`
+	ProjectId         string                `json:"project_id"`
+	InspectErrors     []base.InspectorError `json:"inspect_errors,omitempty"`
 }
 type PluginComp struct {
 	CompName           string               `json:"comp_name"`
@@ -77,10 +79,11 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 		version string
 	}
 	p := &PluginOutput{
-		ErrCode:     0,
-		IssuesCount: i.IssuesCompsCount,
-		Comps:       []PluginComp{},
-		TaskId:      i.TaskId,
+		ErrCode:       0,
+		IssuesCount:   i.IssuesCompsCount,
+		Comps:         []PluginComp{},
+		TaskId:        i.TaskId,
+		InspectErrors: ctx.InspectorError,
 	}
 	// merge module comps
 	rs := map[id]PluginComp{}

@@ -15,6 +15,8 @@ import (
 	"path/filepath"
 )
 
+var ErrGoEnv = base.NewInspectError("go", "Check Go version failed. Please check you go environment.")
+
 type Inspector struct{}
 
 func (i *Inspector) String() string {
@@ -44,7 +46,7 @@ func New() base.Inspector {
 func ScanGoProject(dir string) ([]base.Module, error) {
 	version, e := execGoVersion()
 	if e != nil {
-		return nil, e
+		return nil, ErrGoEnv
 	}
 	if e := execGoModTidy(dir); e != nil {
 		logger.Err.Println("go mod tidy execute failed.", e.Error())

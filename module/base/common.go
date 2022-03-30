@@ -3,6 +3,7 @@ package base
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
 	"regexp"
 	"strings"
@@ -85,4 +86,38 @@ func PackageManagerTypeOfName(name string) PackageManagerType {
 	default:
 		panic("wtf?")
 	}
+}
+
+//goland:noinspection GoNameStartsWithPackageName
+var BaseInspectorError = &InspectorError{}
+
+type InspectorError struct {
+	Message  string `json:"message"`
+	Language string `json:"language"`
+}
+
+func NewInspectError(language string, message string) *InspectorError {
+	return &InspectorError{
+		Message:  message,
+		Language: language,
+	}
+}
+
+func (i *InspectorError) Error() string {
+	return fmt.Sprintf("[%s]%s", i.Language, i.Message)
+}
+
+func (i *InspectorError) Is(e error) bool {
+	return e == BaseInspectorError
+}
+
+func UnwrapToInspectorError(e error) *InspectorError {
+	for e != nil {
+		if e2, ok := e.(*InspectorError); ok {
+			return e2
+		} else {
+			e = errors.Unwrap(e)
+		}
+	}
+	return nil
 }

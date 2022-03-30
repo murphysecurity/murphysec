@@ -49,6 +49,9 @@ func managedInspectScan(ctx *ScanContext) error {
 				if e != nil {
 					logger.Info.Println("inspect failed.", inspector.String(), e.Error())
 					logger.Debug.Printf("%+v\n", e)
+					if e := base.UnwrapToInspectorError(e); e != nil {
+						ctx.InspectorError = append(ctx.InspectorError, *e)
+					}
 				} else {
 					for _, it := range rs {
 						ctx.AddManagedModule(it)

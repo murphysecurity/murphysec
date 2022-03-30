@@ -28,6 +28,7 @@ type ScanContext struct {
 	EnableDeepScan bool
 	ScanResult     *api.TaskScanResponse
 	TaskType       base2.InspectTaskType
+	InspectorError []base.InspectorError
 }
 
 func (s *ScanContext) UI() display.UI {
