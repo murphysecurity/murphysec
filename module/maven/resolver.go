@@ -92,6 +92,7 @@ func (r *Resolver) fetchPom(coordinate Coordinate) (*gopom.Project, error) {
 }
 
 func (r *Resolver) ResolveByCoordinate(coordinate Coordinate) *PomFile {
+	coordinate = coordinate.Normalize()
 	if r.resolvedCache[coordinate] != nil {
 		return r.resolvedCache[coordinate]
 	}
@@ -115,7 +116,7 @@ func (r *Resolver) ResolveLocally(builder *PomBuilder, visitedCoor map[Coordinat
 		GroupId:    builder.P.Parent.GroupID,
 		ArtifactId: builder.P.Parent.ArtifactID,
 		Version:    builder.P.Parent.Version,
-	}
+	}.Normalize()
 
 	{
 		// circle detect
@@ -165,7 +166,7 @@ func (r *Resolver) Resolve(builder *PomBuilder, visitedCoor map[Coordinate]struc
 		GroupId:    builder.P.Parent.GroupID,
 		ArtifactId: builder.P.Parent.ArtifactID,
 		Version:    builder.P.Parent.Version,
-	}
+	}.Normalize()
 
 	{
 		// circle detect
@@ -246,17 +247,17 @@ func (p *PomBuilder) Build() *PomFile {
 	}
 	{
 		c := Coordinate{
-			GroupId:    strings.TrimSpace(pf.property(p.P.GroupID)),
-			ArtifactId: strings.TrimSpace(pf.property(p.P.ArtifactID)),
-			Version:    strings.TrimSpace(pf.property(p.P.Version)),
-		}
+			GroupId:    pf.property(p.P.GroupID),
+			ArtifactId: pf.property(p.P.ArtifactID),
+			Version:    pf.property(p.P.Version),
+		}.Normalize()
 		if c.GroupId == "" {
 			c.GroupId = strings.TrimSpace(pf.property(p.P.Parent.GroupID))
 		}
 		if c.Version == "" {
 			c.Version = strings.TrimSpace(pf.property(p.P.Parent.Version))
 		}
-		pf.coordinate = c
+		pf.coordinate = c.Normalize()
 	}
 	{
 		// fill dependencyManagement
@@ -268,13 +269,13 @@ func (p *PomBuilder) Build() *PomFile {
 		}
 		for _, it := range p.P.DependencyManagement.Dependencies {
 			coor := Coordinate{
-				GroupId:    strings.TrimSpace(pf.property(it.GroupID)),
-				ArtifactId: strings.TrimSpace(pf.property(it.ArtifactID)),
+				GroupId:    pf.property(it.GroupID),
+				ArtifactId: pf.property(it.ArtifactID),
 			}
 			if coor.IsBad() {
 				continue
 			}
-			pf.dependencyManagement[coor] = strings.TrimSpace(pf.property(it.ArtifactID))
+			pf.dependencyManagement[coor.Normalize()] = strings.TrimSpace(pf.property(it.Version))
 		}
 	}
 	{
@@ -313,7 +314,7 @@ func (p *PomBuilder) Build() *PomFile {
 				version = pf.dependencyManagement[coor]
 			}
 			depItem := PomDependencyItem{
-				Coordinate: Coordinate{groupId, artifactId, version},
+				Coordinate: Coordinate{groupId, artifactId, version}.Normalize(),
 				Scope:      strings.TrimSpace(it.Scope),
 			}
 			if !depItem.Complete() {

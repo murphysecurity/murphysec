@@ -7,6 +7,7 @@ import (
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/semerr"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -42,21 +43,37 @@ type Coordinate struct {
 	Version    string `json:"version"`
 }
 
+func (c Coordinate) Normalize() Coordinate {
+	return Coordinate{
+		GroupId:    rb.ReplaceAllString(c.GroupId, ""),
+		ArtifactId: rb.ReplaceAllString(c.ArtifactId, ""),
+		Version:    rb.ReplaceAllString(c.Version, ""),
+	}
+}
+
 func (c Coordinate) HasVersion() bool {
-	return c.Version != ""
+	return c.Normalize().Version != ""
 }
 func (c Coordinate) Name() string {
+	//goland:noinspection GoAssignmentToReceiver
+	c = c.Normalize()
 	return c.GroupId + ":" + c.ArtifactId
 }
 
 func (c Coordinate) String() string {
+	//goland:noinspection GoAssignmentToReceiver
+	c = c.Normalize()
 	if c.Version == "" {
 		return c.GroupId + ":" + c.ArtifactId
 	}
 	return c.GroupId + ":" + c.ArtifactId + ":" + c.Version
 }
 
+var rb = regexp.MustCompile("\\s")
+
 func (c Coordinate) IsBad() bool {
+	//goland:noinspection GoAssignmentToReceiver
+	c = c.Normalize()
 	if strings.HasPrefix(c.GroupId, "${") ||
 		strings.HasPrefix(c.ArtifactId, "${") ||
 		strings.HasPrefix(c.Version, "${") ||
@@ -68,6 +85,8 @@ func (c Coordinate) IsBad() bool {
 }
 
 func (c Coordinate) Complete() bool {
+	//goland:noinspection GoAssignmentToReceiver
+	c = c.Normalize()
 	return c.GroupId != "" && c.ArtifactId != "" && c.Version != "" && !c.IsBad()
 }
 
