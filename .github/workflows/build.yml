@@ -11,9 +11,6 @@ jobs:
       matrix:
         goos: [ windows, linux, darwin ]
         goarch: [ amd64 ]
-        include:
-          - goos: darwin
-            goarch: arm64
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
@@ -62,7 +59,6 @@ jobs:
           cp ./murphysec-linux-amd64/murphysec-linux-amd64 ./out/
           cp ./murphysec-windows-amd64/murphysec-windows-amd64.exe ./out/
           cp ./murphysec-darwin-amd64/murphysec-darwin-amd64 ./out/
-          cp ./murphysec-darwin-arm64/murphysec-darwin-arm64 ./out
           cd out
           sha256sum * > sha256sum
       - name: Release
