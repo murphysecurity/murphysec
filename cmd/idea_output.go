@@ -59,7 +59,6 @@ type PluginComp struct {
 	Solutions          []PluginCompSolution `json:"solutions,omitempty"`
 	IsDirectDependency bool                 `json:"is_direct_dependency"`
 	Language           string               `json:"language"`
-	ProjectId          string               `json:"project_id"`
 }
 
 type PluginCompLicense struct {
@@ -86,6 +85,7 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 		TaskId:            i.TaskId,
 		InspectErrors:     ctx.InspectorError,
 		TotalContributors: ctx.TotalContributors,
+		ProjectId:         ctx.ProjectId,
 	}
 	// merge module comps
 	rs := map[id]PluginComp{}
@@ -101,7 +101,6 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 				License:         nil,
 				Solutions:       []PluginCompSolution{},
 				Language:        mod.Language,
-				ProjectId:       ctx.ProjectId,
 			}
 			if comp.License != nil {
 				p.License = &PluginCompLicense{
