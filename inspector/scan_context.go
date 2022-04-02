@@ -29,7 +29,6 @@ type ScanContext struct {
 	ScanResult        *api.TaskScanResponse
 	TaskType          base2.InspectTaskType
 	InspectorError    []base.InspectorError
-	ContributorList   []api.Contributor
 	ProjectId         string
 	TotalContributors int
 }

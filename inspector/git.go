@@ -3,7 +3,6 @@ package inspector
 import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/pkg/errors"
 	giturls "github.com/whilp/git-urls"
 	"murphysec-cli-simple/api"
@@ -111,41 +110,4 @@ func getGitInfo(dir string) (*GitInfo, error) {
 		}
 	}
 	return gitInfo, nil
-}
-func CollectContributor(dir string) ([]api.Contributor, error) {
-	repo, e := git.PlainOpen(dir)
-	if e != nil {
-		return nil, errors.Wrap(e, "open repo failed")
-	}
-	contributorSet := map[api.Contributor]struct{}{}
-	commitIter, e := repo.CommitObjects()
-	if e != nil {
-		return nil, errors.Wrap(e, "list commit failed")
-	}
-	e = commitIter.ForEach(func(commit *object.Commit) error {
-		if commit.Hash.IsZero() {
-			return nil
-		}
-		if commit.Committer.Name != "" {
-			contributorSet[api.Contributor{
-				Name:  commit.Committer.Name,
-				Email: commit.Committer.Email,
-			}] = struct{}{}
-		}
-		if commit.Author.Name != "" {
-			contributorSet[api.Contributor{
-				Name:  commit.Author.Name,
-				Email: commit.Author.Email,
-			}] = struct{}{}
-		}
-		return nil
-	})
-	if e != nil {
-		return nil, errors.Wrap(e, "iterate failed.")
-	}
-	var rs []api.Contributor
-	for contributor := range contributorSet {
-		rs = append(rs, contributor)
-	}
-	return rs, e
 }
