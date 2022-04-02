@@ -13,15 +13,16 @@ import (
 
 func createTask(ctx *ScanContext) error {
 	req := &api.CreateTaskRequest{
-		CliVersion:    version.Version(),
-		TaskType:      ctx.TaskType,
-		UserAgent:     version.UserAgent(),
-		CmdLine:       strings.Join(os.Args, " "),
-		ApiToken:      conf.APIToken(),
-		ProjectName:   ctx.ProjectName,
-		TargetAbsPath: ctx.ProjectDir,
-		ProjectType:   ctx.ProjectType,
-		ProjectId:     ctx.ProjectId,
+		CliVersion:      version.Version(),
+		TaskType:        ctx.TaskType,
+		UserAgent:       version.UserAgent(),
+		CmdLine:         strings.Join(os.Args, " "),
+		ApiToken:        conf.APIToken(),
+		ProjectName:     ctx.ProjectName,
+		TargetAbsPath:   ctx.ProjectDir,
+		ProjectType:     ctx.ProjectType,
+		ContributorList: ctx.ContributorList,
+		ProjectId:       ctx.ProjectId,
 	}
 	req.GitInfo = ctx.GitInfo.ApiVo()
 	logger.Info.Printf("create task: %#v", ctx)
