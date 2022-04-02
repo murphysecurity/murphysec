@@ -34,6 +34,7 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 		SetGlobalExitCode(1)
 		return
 	}
+	ctx.ProjectId = ProjectId
 	_, e = inspector.Scan(ctx)
 	if e != nil {
 		reportIdeaErr(e, "")
