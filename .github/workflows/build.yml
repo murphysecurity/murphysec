@@ -28,9 +28,6 @@ jobs:
       - name: Install dependencies
         run: go install -v ./...
 
-      - name: Test
-        run: go test -v ./...
-
       - name: Build
         run: go build -v -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
 
