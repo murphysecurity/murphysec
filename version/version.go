@@ -9,16 +9,11 @@ import (
 	"sync"
 )
 
-const version = "v1.5.0"
-
-// Version returns version string
-func Version() string {
-	return version
-}
+const version = "v1.5.1"
 
 // PrintVersionInfo print version info to stdout
 func PrintVersionInfo() {
-	fmt.Printf("%s %s\n", filepath.Base(must.String(filepath.EvalSymlinks(must.String(os.Executable())))), version)
+	fmt.Printf("%s %s\n", filepath.Base(must.String(filepath.EvalSymlinks(must.String(os.Executable())))), Version())
 }
 
 var _ua = func() func() string {
