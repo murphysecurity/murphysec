@@ -13,7 +13,6 @@ import (
 func ScannerScan(dir string) {
 	ctx, e := NewTaskContext(must.String(filepath.Abs(dir)), base2.TaskTypeCli)
 	if e != nil {
-		fmt.Println(e)
 		panic(e)
 	}
 	if e := managedInspectScan(ctx); e != nil {
