@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
@@ -8,12 +9,27 @@ import (
 	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/inspector"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/utils/must"
 	"strconv"
 )
 
 func scanRun(cmd *cobra.Command, args []string) {
 	if CliJsonOutput {
-		ideascanRun(cmd, args)
+		ctx, e := inspector.NewTaskContext(args[0], base.TaskTypeIdea)
+		if e != nil {
+			logger.Err.Println(e)
+			reportIdeaErr(IdeaScanDirInvalid, "")
+			SetGlobalExitCode(1)
+			return
+		}
+		ctx.ProjectId = ProjectId
+		_, e = inspector.Scan(ctx)
+		if e != nil {
+			reportIdeaErr(e, "")
+			SetGlobalExitCode(3)
+			return
+		}
+		fmt.Println(string(must.Byte(json.MarshalIndent(generatePluginOutput(ctx), "", "  "))))
 		return
 	}
 	dir := args[0]
