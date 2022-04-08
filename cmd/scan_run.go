@@ -12,6 +12,10 @@ import (
 )
 
 func scanRun(cmd *cobra.Command, args []string) {
+	if CliJsonOutput {
+		ideascanRun(cmd, args)
+		return
+	}
 	dir := args[0]
 	source := base.TaskTypeCli
 	if CliJsonOutput {
