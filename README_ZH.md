@@ -85,8 +85,6 @@ scoop install murphysec
 
 ### 2. 获取访问令牌
 
-目前墨菲安全平台注册需要邀请码，限时发放中，[点击获取](https://www.murphysec.com/docs/faq/get-invite-code/)
-
 > CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/faq/access-token/)
 
 
