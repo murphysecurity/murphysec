@@ -18,6 +18,7 @@ var ErrGetProjectInfo = errors.New("Get project info failed.")
 
 type ScanContext struct {
 	GitInfo           *GitInfo
+	Kind              api.TaskKind
 	ProjectName       string
 	ProjectDir        string
 	ManagedModules    []base.Module
@@ -38,10 +39,23 @@ func (s *ScanContext) UI() display.UI {
 	return s.TaskType.UI()
 }
 
+func NewBinaryScanContext(path string, kind api.TaskKind) *ScanContext {
+	ctx := &ScanContext{
+		ProjectName: filepath.Base(path),
+		ProjectDir:  path,
+		StartTime:   time.Now(),
+		ProjectType: "Local",
+		TaskType:    base2.TaskTypeCli,
+		Kind:        kind,
+	}
+	return ctx
+}
+
 func NewTaskContext(dir string, taskType base2.InspectTaskType) (*ScanContext, error) {
 	ctx := &ScanContext{
 		TaskType:  taskType,
 		StartTime: time.Now(),
+		Kind:      api.TaskKindNormal,
 	}
 	if baseDir, e := filepath.Abs(dir); e != nil {
 		return nil, ErrProjectDirInvalid

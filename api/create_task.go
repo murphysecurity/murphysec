@@ -6,6 +6,7 @@ import (
 
 type CreateTaskRequest struct {
 	CliVersion      string               `json:"cli_version"`
+	TaskKind        TaskKind             `json:"task_kind"`
 	TaskType        base.InspectTaskType `json:"task_type"`
 	UserAgent       string               `json:"user_agent"`
 	CmdLine         string               `json:"cmd_line"`

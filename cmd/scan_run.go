@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/muesli/termenv"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/base"
 	"murphysec-cli-simple/display"
@@ -34,23 +35,22 @@ func scanRun(cmd *cobra.Command, args []string) {
 	}
 	dir := args[0]
 	source := base.TaskTypeCli
-	if CliJsonOutput {
-		source = base.TaskTypeJenkins
-	} else {
-		display.EnableANSI()
-	}
 	ui := source.UI()
 	ctx, e := inspector.NewTaskContext(dir, source)
 	if e != nil {
 		logger.Err.Println(e)
-		ui.Display(display.MsgError, "项目目录无效或不存在")
+		if errors.Is(inspector.ErrProjectDirInvalid, e) {
+			ui.Display(display.MsgError, "项目目录无效或不存在，请检查指定的路径是否是一个有效的项目目录")
+		} else {
+			ui.Display(display.MsgError, "启动扫描失败："+e.Error())
+		}
 		SetGlobalExitCode(1)
 		return
 	}
 	ctx.ProjectId = ProjectId
 	ctx.EnableDeepScan = DeepScan
 	if _, e = inspector.Scan(ctx); e != nil {
-		ui.Display(display.MsgError, "扫描失败："+e.Error())
+		//ui.Display(display.MsgError, "扫描失败："+e.Error())
 		SetGlobalExitCode(2)
 		return
 	}

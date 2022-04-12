@@ -39,6 +39,7 @@ func rootCmd() *cobra.Command {
 	must.Must(c.PersistentFlags().MarkHidden("ide"))
 	c.AddCommand(authCmd())
 	c.AddCommand(scanCmd())
+	c.AddCommand(binscanCmd())
 	c.AddCommand(ideaScanCmd())
 	c.AddCommand(scannerCmd())
 	c.AddCommand(machineCmd())

@@ -3,6 +3,7 @@ package display
 import (
 	"fmt"
 	"github.com/muesli/termenv"
+	"runtime"
 )
 
 var (
@@ -18,6 +19,12 @@ func (_ _NONE) ClearStatus() {}
 func (_ _NONE) UpdateStatus(s Status, msg string) {}
 
 func (_ _NONE) Display(level MsgLevel, msg string) {}
+
+func init() {
+	if runtime.GOOS == "windows" {
+		termenv.EnableWindowsANSIConsole()
+	}
+}
 
 type Status int
 

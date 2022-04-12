@@ -20,6 +20,7 @@ require (
 	github.com/vifraa/gopom v0.1.0
 	github.com/whilp/git-urls v1.0.0
 	github.com/ztrue/shutdown v0.1.1
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
 
 require (
