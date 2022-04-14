@@ -23,11 +23,11 @@ import (
 
 func BinScan(ctx *ScanContext) error {
 	ui := ctx.UI()
-	e := func() error {
-		ui.UpdateStatus(display.StatusRunning, "正在创建任务")
-		defer ui.ClearStatus()
-		return createTask(ctx)
-	}()
+	var e error
+	// 创建项目
+	ui.WithStatus(display.StatusRunning, "正在创建任务", func() {
+		e = createTask(ctx)
+	})
 	if e != nil {
 		logger.Err.Println("create task failed.", e.Error())
 		ui.Display(display.MsgError, fmt.Sprint("创建任务失败！"))
@@ -37,33 +37,34 @@ func BinScan(ctx *ScanContext) error {
 		return e
 	}
 	ui.Display(display.MsgInfo, fmt.Sprint("项目创建成功！", ctx.TaskId))
-	e = func() error {
-		ui.UpdateStatus(display.StatusRunning, "正在上传文件...")
-		defer ui.ClearStatus()
+
+	// 上传文件
+	ui.WithStatus(display.StatusRunning, "正在上传文件...", func() {
 		pathCh := make(chan string, 10)
 		g, goCtx := errgroup.WithContext(context.Background())
 		g.Go(func() error { return scanBinaryFile(goCtx, ctx.ProjectDir, pathCh) })
 		r, w := io.Pipe()
 		g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, ctx.ProjectDir, w) })
 		g.Go(func() error { return uploadTgzChunk(goCtx, r, ctx) })
-		return g.Wait()
-	}()
+		e = g.Wait()
+	})
 	if e != nil {
 		logger.Err.Println(e)
 		ui.Display(display.MsgError, fmt.Sprint("文件上传失败：", e.Error()))
 		return e
 	}
 	ui.Display(display.MsgInfo, "文件上传成功")
+	// 开始扫描
 	if e := api.StartCheckTaskType(ctx.TaskId, ctx.Kind); e != nil {
 		logger.Err.Println("StartCheck failed.", e.Error())
 		ui.Display(display.MsgError, fmt.Sprint("开始扫描失败 ", e.Error()))
 		return e
 	}
-	r, e := func() (*api.TaskScanResponse, error) {
-		ui.UpdateStatus(display.StatusRunning, "已提交，正在扫描...")
-		defer ui.ClearStatus()
-		return api.QueryResult(ctx.TaskId)
-	}()
+	// 等待返回结果
+	var r *api.TaskScanResponse
+	ui.WithStatus(display.StatusRunning, "已提交，正在扫描...", func() {
+		r, e = api.QueryResult(ctx.TaskId)
+	})
 	if e != nil {
 		logger.Err.Println("QueryResult failed.", e.Error())
 		fmt.Println("扫描失败", e.Error())
