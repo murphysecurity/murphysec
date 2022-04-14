@@ -5,14 +5,16 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"context"
 	"fmt"
+	ctxio "github.com/jbenet/go-context/io"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"io/fs"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/utils/eg"
 	"murphysec-cli-simple/utils/must"
 	"os"
 	"path/filepath"
@@ -38,12 +40,12 @@ func BinScan(ctx *ScanContext) error {
 	e = func() error {
 		ui.UpdateStatus(display.StatusRunning, "正在上传文件...")
 		defer ui.ClearStatus()
-		g := new(eg.EG)
 		pathCh := make(chan string, 10)
-		g.Go(func() { scanBinaryFile(ctx.ProjectDir, pathCh) })
+		g, goCtx := errgroup.WithContext(context.Background())
+		g.Go(func() error { return scanBinaryFile(goCtx, ctx.ProjectDir, pathCh) })
 		r, w := io.Pipe()
-		g.Go(func() { packFileToTgzStream(pathCh, ctx.ProjectDir, w) })
-		g.Go(func() { uploadTgzChunk(r, ctx) })
+		g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, ctx.ProjectDir, w) })
+		g.Go(func() error { return uploadTgzChunk(goCtx, r, ctx) })
 		return g.Wait()
 	}()
 	if e != nil {
@@ -73,33 +75,37 @@ func BinScan(ctx *ScanContext) error {
 	return nil
 }
 
-func uploadTgzChunk(r io.Reader, ctx *ScanContext) {
+func uploadTgzChunk(goctx context.Context, r io.Reader, ctx *ScanContext) error {
 	counter := 0
 	for {
-		counter++
-		buf := make([]byte, 4*1024*1024)
-		n, e := r.Read(buf)
-		if e == io.EOF {
+		if goctx.Err() != nil {
+			logger.Info.Println("context error:", goctx.Err())
 			break
 		}
-		must.Must(e)
-		if n == 0 {
-			continue
+		counter++
+		buf := make([]byte, 4*1024*1024)
+		n, e := ctxio.NewReader(goctx, r).Read(buf)
+		if e == io.EOF || e == context.Canceled {
+			break
 		}
+		if e != nil {
+			return e
+		}
+		must.True(n > 0)
 		logger.Debug.Println("write", n, "bytes")
 		e = api.UploadChunk(ctx.TaskId, counter, io.LimitReader(bytes.NewReader(buf), int64(n)))
 		if e != nil {
-			panic(errors.Wrap(e, "文件上传失败"))
+			return errors.Wrap(e, "文件上传失败")
 		} else {
 			logger.Info.Println("block sent", n)
 		}
 	}
-
+	return nil
 }
 
-func packFileToTgzStream(fileNameCh chan string, baseDir string, w io.WriteCloser) {
+func packFileToTgzStream(ctx context.Context, fileNameCh chan string, baseDir string, w io.WriteCloser) error {
 	defer w.Close()
-	bw := bufio.NewWriterSize(w, 1024*1024*4)
+	bw := bufio.NewWriterSize(ctxio.NewWriter(ctx, w), 1024*1024*4)
 	defer bw.Flush()
 	gzipWriter := gzip.NewWriter(bw)
 	defer gzipWriter.Close()
@@ -125,27 +131,34 @@ func packFileToTgzStream(fileNameCh chan string, baseDir string, w io.WriteClose
 			Size: info.Size(),
 			Mode: 0666,
 		})
-		must.Must(e)
+		if e != nil {
+			return e
+		}
 		_, e = io.Copy(tarWriter, f)
-		must.Must(e)
+		if e != nil {
+			return e
+		}
 	}
+	return nil
 }
 
-func scanBinaryFile(dir string, pathCh chan string) {
+var _ErrScanBinaryWalkStop = errors.New("_ErrScanBinaryWalkStop")
+
+func scanBinaryFile(ctx context.Context, dir string, pathCh chan string) error {
 	defer close(pathCh)
 	info, e := os.Stat(dir)
-	must.Must(e)
+	if e != nil {
+		return errors.Wrap(e, "ScanBinaryFile")
+	}
 	if !info.IsDir() {
 		pathCh <- dir
 	}
-	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
-		if err != nil {
-			logger.Warn.Println("WalkErr:", err)
-		}
-		if info == nil {
+	e = filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+		if info == nil || err != nil {
+			logger.Info.Println("Error during filepath walk:", err)
 			return nil
 		}
-		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || info.Name() == "node_modules") {
+		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || binaryScanDirBlackList[info.Name()]) {
 			return filepath.SkipDir
 		}
 		if info.IsDir() || strings.HasPrefix(info.Name(), ".") || !info.Mode().IsRegular() {
@@ -154,7 +167,24 @@ func scanBinaryFile(dir string, pathCh chan string) {
 		if info.Size() > 1*1024*1024*1024 {
 			return nil
 		}
-		pathCh <- path
+		select {
+		case pathCh <- path:
+		case <-ctx.Done():
+			return _ErrScanBinaryWalkStop
+		}
 		return nil
 	})
+	if e == _ErrScanBinaryWalkStop {
+		logger.Info.Println("ScanBinaryFile filepath walk cancel")
+		return nil
+	}
+	if e != nil {
+		logger.Warn.Println("Error happens during filepath walk:", e.Error())
+		return errors.Wrap(e, "ScanBinaryFile")
+	}
+	return nil
+}
+
+var binaryScanDirBlackList = map[string]bool{
+	"node_modules": true,
 }
