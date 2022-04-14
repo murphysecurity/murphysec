@@ -53,7 +53,7 @@ func binScanCmd() *cobra.Command {
 
 func iotScanCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use: "binscan DIR",
+		Use: "iotscan DIR",
 		Run: func(cmd *cobra.Command, args []string) {
 			path := args[0]
 			if !utils.IsPathExist(path) {
