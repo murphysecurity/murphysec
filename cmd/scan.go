@@ -30,29 +30,44 @@ func scanCmd() *cobra.Command {
 
 var IotScan bool
 
-func binscanCmd() *cobra.Command {
+func binScanCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use: "binscan DIR",
-		Run: binscanRun,
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			if !utils.IsPathExist(path) {
+				fmt.Println("路径不存在")
+				SetGlobalExitCode(1)
+				return
+			}
+			ctx := inspector.NewBinaryScanContext(path, api.TaskKindBinary)
+			if e := inspector.BinScan(ctx); e != nil {
+				SetGlobalExitCode(1)
+			}
+		},
 	}
 	c.Flags().BoolVar(&IotScan, "iot", false, "enable iot scan")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
 
-func binscanRun(cmd *cobra.Command, args []string) {
-	path := args[0]
-	if !utils.IsPathExist(path) {
-		fmt.Println("路径不存在")
-		SetGlobalExitCode(1)
-		return
+func iotScanCmd() *cobra.Command {
+	c := &cobra.Command{
+		Use: "binscan DIR",
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			if !utils.IsPathExist(path) {
+				fmt.Println("路径不存在")
+				SetGlobalExitCode(1)
+				return
+			}
+			ctx := inspector.NewBinaryScanContext(path, api.TaskKindIotScan)
+			if e := inspector.BinScan(ctx); e != nil {
+				SetGlobalExitCode(1)
+			}
+		},
 	}
-	t := api.TaskKindBinary
-	if IotScan {
-		t = api.TaskKindIotScan
-	}
-	ctx := inspector.NewBinaryScanContext(path, t)
-	if e := inspector.BinScan(ctx); e != nil {
-		SetGlobalExitCode(1)
-	}
+	c.Flags().BoolVar(&IotScan, "iot", false, "enable iot scan")
+	c.Args = cobra.ExactArgs(1)
+	return c
 }
