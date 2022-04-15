@@ -7,6 +7,7 @@ import (
 	"io"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
+	"murphysec-cli-simple/utils/simplejson"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -33,6 +34,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 	logger.Info.Println("yarn inspect.", dir)
 	rs, e := analyzeYarnDep(dir)
+
 	if e != nil {
 		return nil, e
 	}
@@ -44,6 +46,10 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 		Version:        "",
 		RelativePath:   "",
 		Dependencies:   rs,
+	}
+	if n, v := readModuleName(dir); n != "" {
+		m.Name = n
+		m.Version = v
 	}
 	return []base.Module{m}, nil
 }
@@ -59,6 +65,24 @@ func New() base.Inspector {
 type pkgFile struct {
 	DevDependencies map[string]string `json:"dev_dependencies,omitempty"`
 	Dependencies    map[string]string `json:"dependencies,omitempty"`
+}
+
+func readModuleName(dir string) (string, string) {
+	f, e := os.Open(filepath.Join(dir, "package.json"))
+	if e == nil {
+		return "", ""
+	}
+	defer f.Close()
+	r := io.LimitReader(f, 1024*1024)
+	data, e := io.ReadAll(r)
+	if e != nil {
+		return "", ""
+	}
+	var j *simplejson.JSON
+	if e := json.Unmarshal(data, &j); e != nil {
+		return "", ""
+	}
+	return j.Get("name").String(), j.Get("version").String()
 }
 
 func yarnFallback(dir string) ([]base.Dependency, error) {
