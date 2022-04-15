@@ -88,9 +88,6 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 	}
 	logger.Info.Println("API response:", res.StatusCode, res.Status)
 	data, e := io.ReadAll(res.Body)
-	defer func() {
-
-	}()
 	if e != nil {
 		return errors.Wrap(ErrServerRequest, "read response body failed:"+e.Error())
 	}
