@@ -87,7 +87,6 @@ scoop install murphysec
 
 
 ### 2. Get access token
-Currently, MurphySec requires an invitation code to register, which is available for a limited time. [Click for invitation code](https://www.murphysec.com/docs/faq/get-invite-code/)
 
 > MurphySec CLI requires an access token from your MurphySec account for authentication to work properly. [What is an access token?](https://www.murphysec.com/docs/faq/access-token/) 
 
