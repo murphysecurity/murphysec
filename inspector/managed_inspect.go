@@ -54,6 +54,9 @@ func managedInspectScan(ctx *ScanContext) error {
 					}
 				} else {
 					for _, it := range rs {
+						if it.RelativePath == "" {
+							it.RelativePath = path
+						}
 						ctx.AddManagedModule(it)
 					}
 				}
@@ -61,6 +64,15 @@ func managedInspectScan(ctx *ScanContext) error {
 			}
 			return nil
 		})
+	}
+	for i := range ctx.ManagedModules {
+		if ctx.ManagedModules[i].RelativePath == "" {
+			continue
+		}
+		relPath, e := filepath.Rel(ctx.ProjectDir, ctx.ManagedModules[i].RelativePath)
+		if e == nil {
+			ctx.ManagedModules[i].RelativePath = relPath
+		}
 	}
 	endTime := time.Now()
 	logger.Info.Println("Scan terminated. Cost time:", endTime.Sub(startTime))
