@@ -16,8 +16,9 @@ var ProjectId string
 
 func scanCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use: "scan DIR",
-		Run: scanRun,
+		Use:   "scan DIR",
+		Run:   scanRun,
+		Short: "Scan the source code of the specified project, currently supporting java, javascript, go, and python",
 	}
 	c.Flags().BoolVar(&CliJsonOutput, "json", false, "json output")
 	if env.AllowDeepScan {
@@ -45,6 +46,7 @@ func binScanCmd() *cobra.Command {
 				SetGlobalExitCode(1)
 			}
 		},
+		Short: "Scan specified binary files and software artifacts, currently supporting .jar, .war, and common binary file formats (The file will be uploaded to the server for analysis.)",
 	}
 	c.Flags().BoolVar(&IotScan, "iot", false, "enable iot scan")
 	c.Args = cobra.ExactArgs(1)
@@ -53,7 +55,8 @@ func binScanCmd() *cobra.Command {
 
 func iotScanCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use: "iotscan DIR",
+		Use:   "iotscan DIR",
+		Short: "Scan the specified IoT device firmware, currently supporting .bin or other formats (The file will be uploaded to the server for analysis.)",
 		Run: func(cmd *cobra.Command, args []string) {
 			path := args[0]
 			if !utils.IsPathExist(path) {

@@ -10,7 +10,10 @@ import (
 )
 
 func authCmd() *cobra.Command {
-	c := &cobra.Command{Use: "auth"}
+	c := &cobra.Command{
+		Use:   "auth",
+		Short: "Authenticate CLI with murphysec",
+	}
 	c.AddCommand(authLoginCmd())
 	c.AddCommand(authLogoutCmd())
 	return c
