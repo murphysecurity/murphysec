@@ -68,7 +68,7 @@ func managedInspectScan(ctx *ScanContext) error {
 		}
 		relPath, e := filepath.Rel(ctx.ProjectDir, ctx.ManagedModules[i].FilePath)
 		if e == nil {
-			ctx.ManagedModules[i].FilePath = relPath
+			ctx.ManagedModules[i].FilePath = "/" + relPath
 		}
 	}
 	endTime := time.Now()
