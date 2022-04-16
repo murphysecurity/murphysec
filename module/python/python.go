@@ -12,8 +12,9 @@ import (
 	"strings"
 )
 
-var pyImportPattern = regexp.MustCompile("^import +([A-Za-z_-][A-Za-z_0-9-]*)(?:\\.[A-Za-z_-][A-Za-z_0-9-]*)*(?:$|,|as)|^from +([A-Za-z_-][A-Za-z_0-9-]*)(?:\\.[A-Za-z_-][A-Za-z_0-9-]*)* +import")
 var pyRequirementsPattern = regexp.MustCompile("^([A-Za-z0-9_-]+) *== *([^= \\n\\r]+)$")
+var pyImportPattern1 = regexp.MustCompile("import\\s+(?:[A-Za-z_-][A-Za-z_0-9.-]*)(?:\\s*,\\s*(?:[A-Za-z_-][A-Za-z_0-9.-]*))")
+var pyImportPattern2 = regexp.MustCompile("from\\s+([A-Za-z_-][A-Za-z_0-9-]*)")
 
 type Inspector struct{}
 
@@ -35,6 +36,27 @@ func (i Inspector) CheckDir(dir string) bool {
 		}
 	}
 	return false
+}
+
+func parsePyImport(input string) []string {
+	var rs []string
+	input = strings.TrimSpace(input)
+	if strings.HasPrefix(input, "import ") {
+		// import aa, bb.cc
+		for _, it := range strings.Split(strings.TrimPrefix(pyImportPattern1.FindString(input), "import"), ",") {
+			it = strings.TrimSpace(it)
+			s := strings.Split(it, ".")[0]
+			if s != "" {
+				rs = append(rs, s)
+			}
+		}
+	}
+	if strings.HasPrefix(input, "from ") {
+		if m := pyImportPattern2.FindStringSubmatch(input); m != nil {
+			rs = append(rs, m[1])
+		}
+	}
+	return rs
 }
 
 func (i Inspector) Inspect(dir string) ([]base.Module, error) {
@@ -66,18 +88,12 @@ func (i Inspector) Inspect(dir string) ([]base.Module, error) {
 				return nil
 			}
 			t := strings.TrimSpace(scanner.Text())
-			m := pyImportPattern.FindStringSubmatch(t)
-			if m == nil {
-				continue
+			for _, pkg := range parsePyImport(t) {
+				if pyPkgBlackList[pkg] {
+					continue
+				}
+				componentMap[pkg] = ""
 			}
-			pkg := m[1]
-			if pkg == "" {
-				pkg = m[2]
-			}
-			if pyPkgBlackList[pkg] {
-				continue
-			}
-			componentMap[pkg] = ""
 		}
 		return nil
 	})
