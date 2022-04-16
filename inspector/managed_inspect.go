@@ -54,9 +54,6 @@ func managedInspectScan(ctx *ScanContext) error {
 					}
 				} else {
 					for _, it := range rs {
-						if it.RelativePath == "" {
-							it.RelativePath = path
-						}
 						ctx.AddManagedModule(it)
 					}
 				}
@@ -66,12 +63,12 @@ func managedInspectScan(ctx *ScanContext) error {
 		})
 	}
 	for i := range ctx.ManagedModules {
-		if ctx.ManagedModules[i].RelativePath == "" {
+		if ctx.ManagedModules[i].FilePath == "" {
 			continue
 		}
-		relPath, e := filepath.Rel(ctx.ProjectDir, ctx.ManagedModules[i].RelativePath)
+		relPath, e := filepath.Rel(ctx.ProjectDir, ctx.ManagedModules[i].FilePath)
 		if e == nil {
-			ctx.ManagedModules[i].RelativePath = relPath
+			ctx.ManagedModules[i].FilePath = relPath
 		}
 	}
 	endTime := time.Now()

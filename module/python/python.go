@@ -98,6 +98,7 @@ func (i Inspector) Inspect(dir string) ([]base.Module, error) {
 			PackageManager: "pip",
 			Language:       "python",
 			Dependencies:   []base.Dependency{},
+			FilePath:       filepath.Join(dir),
 		}
 		for k, v := range componentMap {
 			m.Dependencies = append(m.Dependencies, base.Dependency{

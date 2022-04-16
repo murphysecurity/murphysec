@@ -49,7 +49,7 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 		if e != nil {
 			logger.Info.Println("evalGradleDependencies failed. <root>", e.Error())
 		} else {
-			rs = append(rs, depInfo.BaseModule())
+			rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
 		}
 	}
 	for _, projectId := range projects {
@@ -57,7 +57,7 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 		if e != nil {
 			logger.Info.Println("evalGradleDependencies failed.", projectId, e.Error())
 		} else {
-			rs = append(rs, depInfo.BaseModule())
+			rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
 		}
 	}
 	return rs, nil // todo
@@ -125,12 +125,13 @@ type GradleDependencyInfo struct {
 	Dependencies []DepElement `json:"dependencies,omitempty"`
 }
 
-func (g *GradleDependencyInfo) BaseModule() base.Module {
+func (g *GradleDependencyInfo) BaseModule(path string) base.Module {
 	return base.Module{
 		PackageManager: "gradle",
 		Language:       "java",
 		Name:           g.ProjectName,
 		Dependencies:   _convDep(g.Dependencies),
+		FilePath:       path,
 	}
 }
 

@@ -44,7 +44,7 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 		PackageFile:    "yarn.lock",
 		Name:           filepath.Base(dir),
 		Version:        "",
-		RelativePath:   "",
+		FilePath:       filepath.Join(dir, "yarn.lock"),
 		Dependencies:   rs,
 	}
 	if n, v := readModuleName(dir); n != "" {

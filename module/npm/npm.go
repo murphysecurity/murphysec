@@ -86,7 +86,7 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 		PackageFile:    "package-lock.json",
 		Name:           lockfile.Name,
 		Version:        lockfile.Version,
-		RelativePath:   "",
+		FilePath:       filepath.Join(dir, "package.json"),
 		Dependencies:   []base.Dependency{},
 		RuntimeInfo:    nil,
 	}

@@ -70,7 +70,7 @@ func ScanGoProject(dir string) ([]base.Module, error) {
 		PackageFile:    "go.mod",
 		Name:           root.Get("Module", "Path").String(filepath.Base(dir)),
 		Version:        "",
-		RelativePath:   "",
+		FilePath:       filepath.Join(dir, "go.mod"),
 		Dependencies:   deps,
 		RuntimeInfo:    map[string]interface{}{"go_version": version},
 	}
