@@ -2,5 +2,9 @@
 
 package env
 
-const AllowDeepScan = false
-const AllowFileHash = false
+const (
+	AllowDeepScan = false
+	AllowFileHash = false
+	AllowBinScan  = false
+	ScannerScan   = false
+)

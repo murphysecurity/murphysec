@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/conf"
+	"murphysec-cli-simple/env"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/must"
@@ -39,10 +40,14 @@ func rootCmd() *cobra.Command {
 	must.Must(c.PersistentFlags().MarkHidden("ide"))
 	c.AddCommand(authCmd())
 	c.AddCommand(scanCmd())
-	c.AddCommand(binScanCmd())
-	c.AddCommand(iotScanCmd())
+	if env.AllowBinScan {
+		c.AddCommand(binScanCmd())
+		c.AddCommand(iotScanCmd())
+	}
 	c.AddCommand(ideaScanCmd())
-	c.AddCommand(scannerCmd())
+	if env.ScannerScan {
+		c.AddCommand(scannerCmd())
+	}
 	c.AddCommand(machineCmd())
 	return c
 }
