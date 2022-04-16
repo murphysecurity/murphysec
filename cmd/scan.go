@@ -29,8 +29,6 @@ func scanCmd() *cobra.Command {
 	return c
 }
 
-var IotScan bool
-
 func binScanCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use: "binscan DIR",
@@ -48,7 +46,6 @@ func binScanCmd() *cobra.Command {
 		},
 		Short: "Scan specified binary files and software artifacts, currently supporting .jar, .war, and common binary file formats (The file will be uploaded to the server for analysis.)",
 	}
-	c.Flags().BoolVar(&IotScan, "iot", false, "enable iot scan")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
@@ -70,7 +67,6 @@ func iotScanCmd() *cobra.Command {
 			}
 		},
 	}
-	c.Flags().BoolVar(&IotScan, "iot", false, "enable iot scan")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
