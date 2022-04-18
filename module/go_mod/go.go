@@ -9,7 +9,6 @@ import (
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
-	"murphysec-cli-simple/utils/must"
 	"murphysec-cli-simple/utils/simplejson"
 	"os/exec"
 	"path/filepath"
@@ -142,9 +141,10 @@ func execGoList(dir string) ([]base.Dependency, error) {
 func execGoModTidy(dir string) error {
 	cmd := exec.Command("go", "mod", "tidy", "-v")
 	cmd.Dir = dir
-	r, w := io.Pipe()
-	defer must.Close(w)
-	cmd.Stdout = w
+	r, e := cmd.StdoutPipe()
+	if e != nil {
+		return errors.Wrap(e, "Open stdout pipe failed.")
+	}
 	go func() {
 		buf := bufio.NewScanner(r)
 		buf.Split(bufio.ScanLines)
