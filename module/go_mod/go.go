@@ -1,7 +1,6 @@
 package go_mod
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"github.com/pkg/errors"
@@ -141,28 +140,16 @@ func execGoList(dir string) ([]base.Dependency, error) {
 func execGoModTidy(dir string) error {
 	cmd := exec.Command("go", "mod", "tidy", "-v")
 	cmd.Dir = dir
-	r, e := cmd.StdoutPipe()
-	if e != nil {
-		return errors.Wrap(e, "Open stdout pipe failed.")
-	}
-	go func() {
-		buf := bufio.NewScanner(r)
-		buf.Split(bufio.ScanLines)
-		buf.Buffer(make([]byte, 24*1024), 24*2014)
-		for buf.Scan() {
-			logger.Err.Println("go mod tidy:", buf.Text())
-		}
-	}()
-	if e := cmd.Start(); e != nil {
-		logger.Err.Println("Execute go mod tidy failed.", e.Error())
-		return e
-	}
-	if e := cmd.Wait(); e != nil {
-		logger.Err.Println("go mod tidy exit with errors.", e.Error())
-	} else {
+	logger.Debug.Println("Execute:", cmd.String(), cmd.Dir)
+	output, e := cmd.CombinedOutput()
+	if e == nil {
 		logger.Info.Println("go mod tidy exit with no error.")
+		return nil
+	} else {
+		logger.Err.Println("go mod tidy exit with errors.", e.Error())
+		logger.Debug.Println("Output:", string(output))
+		return errors.Wrap(e, "Go mod tidy execution failed.")
 	}
-	return nil
 }
 
 func execGoVersion() (string, error) {
