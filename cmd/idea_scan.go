@@ -15,7 +15,7 @@ func ideaScanCmd() *cobra.Command {
 	c := &cobra.Command{
 		Hidden: true,
 		Use:    "ideascan --dir ProjectDir",
-		Run:    ideascanRun,
+		Run:    ideaScanRun,
 	}
 	c.Flags().StringVar(&dir, "dir", "", "project base dir")
 	c.Args = cobra.NoArgs
@@ -25,7 +25,7 @@ func ideaScanCmd() *cobra.Command {
 	return c
 }
 
-func ideascanRun(cmd *cobra.Command, args []string) {
+func ideaScanRun(cmd *cobra.Command, args []string) {
 	dir := must.String(cmd.Flags().GetString("dir"))
 	ctx, e := inspector.NewTaskContext(dir, base.TaskTypeIdea)
 	if e != nil {
