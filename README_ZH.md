@@ -161,14 +161,17 @@ Global Flags:
 ## 常见问题
 
 **1. Windows下安装失败，提示“PowerShell requires an execution policy of 'RemoteSigned'”**
+
 Powershell默认不允许从远程加载安装脚本，需要使用管理员权限打开Powershell窗口，并执行`Set-ExecutionPolicy RemoteSigned -scope CurrentUser`。随后执行安装命令即可成功。
 
 **2. 为什么我的 Java（maven） 项目检测结果依赖信息不完整？**
+
 * 本地是否配置了 Maven 环境，可使用`mvn -v`查看
 * 请检查 Maven 的源是否配置正确。如果是企业内部代码，通常需要配置公司的私有源地址。一般情况下可通过修改`~/.m2/settings.xml`进行配置
 * 请检查代码目录下是否存在`pom.xml`文件，也可通过 `mvn dependency:tree --file="pom.xml"` 命令测试此项目本地是否可正常获取依赖
 
 **3. 为什么检测完依赖和缺陷组件数量都是0 ？**
+
 * 检查您的项目/文件是否在墨菲安全目前支持的范围内
 <table>
  <tr>
