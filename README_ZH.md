@@ -65,22 +65,19 @@
 #### 在 Linux 上安装
 
 ```
-curl -sL "https://github.com/murphysecurity/murphysec/releases/latest/download/murphysec-linux-amd64" -o murphysec
-chmod +x murphysec
+wget -q https://s.murphysec.com/install.sh -O - | /bin/bash
 ```
+
 #### 在 OSX 上安装
 
 ```
-curl -sL "https://github.com/murphysecurity/murphysec/releases/latest/download/murphysec-darwin-amd64" -o murphysec
-chmod +x murphysec
+curl -fsSL https://s.murphysec.com/install.sh | /bin/bash
 ```
 
 #### 在 WINDOWS 上安装
 
 ```
-scoop bucket add murphysec https://github.com/murphysecurity/scoop-bucket
-scoop update
-scoop install murphysec
+powershell -Command "iwr -useb https://s.murphysec.com/install.ps1 | iex"
 ```
 
 ### 2. 获取访问令牌
@@ -161,6 +158,62 @@ Global Flags:
 
 ```
 
+## 常见问题
+
+**1. Windows下安装失败，提示“PowerShell requires an execution policy of 'RemoteSigned'”**
+Powershell默认不允许从远程加载安装脚本，需要使用管理员权限打开Powershell窗口，并执行`Set-ExecutionPolicy RemoteSigned -scope CurrentUser`。随后执行安装命令即可成功。
+
+**2. 为什么我的 Java（maven） 项目检测结果依赖信息不完整？**
+* 本地是否配置了 Maven 环境，可使用`mvn -v`查看
+* 请检查 Maven 的源是否配置正确。如果是企业内部代码，通常需要配置公司的私有源地址。一般情况下可通过修改`~/.m2/settings.xml`进行配置
+* 请检查代码目录下是否存在`pom.xml`文件，也可通过 `mvn dependency:tree --file="pom.xml"` 命令测试此项目本地是否可正常获取依赖
+
+**3. 为什么检测完依赖和缺陷组件数量都是0 ？**
+* 检查您的项目/文件是否在墨菲安全目前支持的范围内
+<table>
+ <tr>
+     <th>语言</th>
+     <th>包管理工具</th>
+     <th>所需文件</th>
+ </tr >
+ <tr >
+     <td rowspan="2">Java</td>
+     <td>Maven</td>
+      <td>pom.xml</td>
+
+ </tr>
+ <tr>
+     <td>Gradle</td>
+    <td>build.gradle 或 build.gradle.kts</td>
+
+ </tr>
+
+  <tr >
+     <td>Go</td>
+     <td>Go Modules</td>
+      <td>go.mod</td>
+
+ </tr>
+
+  <tr >
+     <td rowspan="2">JavaScript</td>
+     <td>NPM</td>
+    <td>package.json, package-lock.json</td>
+
+ </tr>
+ <tr>
+     <td>Yarn</td>
+    <td>yarn.lock, package.json</td>
+
+ </tr>
+   <tr >
+     <td>Python</td>
+     <td>pip</td>
+    <td>requirements.txt</td>
+ </tr>
+ 
+</table>
+  
 
 
 ## 交流和问题反馈

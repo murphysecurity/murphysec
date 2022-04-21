@@ -67,22 +67,18 @@ Visit the [GitHub Releases](https://github.com/murphysecurity/murphysec/releases
 #### Linux
 
 ```
-curl -sL "https://github.com/murphysecurity/murphysec/releases/latest/download/murphysec-linux-amd64" -o murphysec
-chmod +x murphysec
+wget -q https://s.murphysec.com/install.sh -O - | /bin/bash
 ```
 #### OSX
 
 ```
-curl -sL "https://github.com/murphysecurity/murphysec/releases/latest/download/murphysec-darwin-amd64" -o murphysec
-chmod +x murphysec
+curl -fsSL https://s.murphysec.com/install.sh | /bin/bash
 ```
 
 #### WINDOWS
 
 ```
-scoop bucket add murphysec https://github.com/murphysecurity/scoop-bucket
-scoop update
-scoop install murphysec
+powershell -Command "iwr -useb https://s.murphysec.com/install.ps1 | iex"
 ```
 
 
