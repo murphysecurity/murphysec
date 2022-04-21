@@ -54,6 +54,7 @@ type PluginComp struct {
 	CompName           string               `json:"comp_name"`
 	ShowLevel          int                  `json:"show_level"`
 	MinFixedVersion    string               `json:"min_fixed_version"`
+	MinFixed           []PluginCompFix      `json:"min_fixed"`
 	Vulns              []api.VoVulnInfo     `json:"vulns"`
 	Version            string               `json:"version"`
 	License            *PluginCompLicense   `json:"license,omitempty"`
@@ -65,6 +66,12 @@ type PluginComp struct {
 type PluginCompLicense struct {
 	Level api.LicenseLevel `json:"level"`
 	Spdx  string           `json:"spdx"`
+}
+
+type PluginCompFix struct {
+	OldVersion string `json:"old_version"`
+	NewVersion string `json:"new_version"`
+	CompName   string `json:"comp_name"`
 }
 
 type PluginCompSolution struct {
@@ -98,11 +105,19 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 				CompName:        comp.CompName,
 				ShowLevel:       3,
 				MinFixedVersion: comp.MinFixedVersion,
+				MinFixed:        []PluginCompFix{},
 				Vulns:           comp.Vuls,
 				Version:         comp.CompVersion,
 				License:         nil,
 				Solutions:       []PluginCompSolution{},
 				Language:        mod.Language,
+			}
+			for _, it := range comp.MinFixedInfo {
+				p.MinFixed = append(p.MinFixed, PluginCompFix{
+					OldVersion: it.OldVersion,
+					NewVersion: it.NewVersion,
+					CompName:   it.Name,
+				})
 			}
 			if comp.License != nil {
 				p.License = &PluginCompLicense{

@@ -33,6 +33,11 @@ type TaskScanResponse struct {
 		Language       string `json:"language"`
 		PackageManager string `json:"package_manager"`
 		Comps          []struct {
+			MinFixedInfo []struct {
+				Name       string `json:"name"`
+				OldVersion string `json:"old_version"`
+				NewVersion string `json:"new_version"`
+			} `json:"min_fixed_info,omitempty"`
 			IsDirectDependency bool   `json:"is_direct_dependency"`
 			CompId             int    `json:"comp_id"`
 			CompName           string `json:"comp_name"`
