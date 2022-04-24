@@ -22,6 +22,17 @@
 2. Detect known vulnerabilities in project dependencies
 
 
+### Screenshots
+
+- CLI scan result
+
+  <img alt="cli output" src="./assets/cli.png" width="80%">
+ 
+- scan result page
+
+  <img alt="scan result" src="./assets/scan-result.png" width="80%">
+  <img alt="scan result" src="./assets/scan-detail-result.png" width="80%">
+
 
 ## Table of Contents
 1. [Supported languages](#supported-languages)
@@ -45,7 +56,7 @@ Want to learn more about language support? [check out our documentation](https:/
 
 1. The dependency information of the project will be uploaded to the server, and the dependencies with security issues in the project will be identified through the vulnerability knowledge base maintained by MurphySec.
 
-![cli-flowchart](./flowchart.png)
+![cli-flowchart](./assets/flowchart.png)
 
 > Note: MurphySec CLI will only send the dependencies and basic information of your project to server for identifying the dependencies with security issues, and will not upload any code snippets.
 
@@ -159,7 +170,7 @@ Global Flags:
 
 Contact our official WeChat account, and we'll add you into the group for communication. 
 
-<img src="./wechat.png" width="200px">
+<img src="./assets/wechat.png" width="200px">
 
 ## License
 [Apache 2.0](LICENSE)
