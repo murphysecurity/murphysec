@@ -23,6 +23,17 @@
 2. 检测项目依赖存在的已知漏洞信息
 
 
+### 效果截图
+
+- CLI 运行结果
+
+  <img alt="cli output" src="./assets/cli.png" width="80%">
+ 
+- 检测结果页面
+
+  <img alt="scan result" src="./assets/scan-result.png" width="80%">
+  <img alt="scan result" src="./assets/scan-detail-result.png" width="80%">
+
 ## 目录
 
 1. [支持的语言](#支持的语言)
@@ -44,7 +55,7 @@
 1. 对于使用不同语言/包管理工具的项目，墨菲安全的 CLI 工具主要采用`项目构建`或直接对`包管理文件`进行解析的方式，来准确获取到项目的依赖信息
 2. 项目的依赖信息会上传到服务端，并基于墨菲安全持续维护的`漏洞知识库`来识别项目中存在安全缺陷的依赖
 
-![cli-flowchart](./flowchart.png)
+![cli-flowchart](./assets/flowchart.png)
 
 > 说明：CLI 工具只会将检测项目的依赖和基本信息发送到墨菲安全服务端，用于识别存在安全缺陷的依赖，不会上传任何本地代码。
 
@@ -223,7 +234,7 @@ Powershell默认不允许从远程加载安装脚本，需要使用管理员权�
 
 联系并添加运营微信号，拉您进墨菲安全交流微信群
 
-<img src="./wechat.png" width="200px">
+<img src="./assets/wechat.png" width="200px">
 
 
 ## 开源协议
