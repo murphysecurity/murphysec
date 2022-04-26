@@ -114,12 +114,17 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 				Language:        mod.Language,
 				FixType:         comp.FixType,
 			}
-			for _, it := range comp.MinFixedInfo {
-				p.MinFixed = append(p.MinFixed, PluginCompFix{
-					OldVersion: it.OldVersion,
-					NewVersion: it.NewVersion,
-					CompName:   it.Name,
-				})
+			// Work-around to keep result consistency.
+			if len(rs[cid].MinFixed) > 0 {
+				p.MinFixed = rs[cid].MinFixed
+			} else {
+				for _, it := range comp.MinFixedInfo {
+					p.MinFixed = append(p.MinFixed, PluginCompFix{
+						OldVersion: it.OldVersion,
+						NewVersion: it.NewVersion,
+						CompName:   it.Name,
+					})
+				}
 			}
 			if comp.License != nil {
 				p.License = &PluginCompLicense{
