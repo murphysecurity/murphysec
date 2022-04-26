@@ -61,6 +61,7 @@ type PluginComp struct {
 	Solutions          []PluginCompSolution `json:"solutions,omitempty"`
 	IsDirectDependency bool                 `json:"is_direct_dependency"`
 	Language           string               `json:"language"`
+	FixType            string               `json:"fix_type"`
 }
 
 type PluginCompLicense struct {
@@ -111,6 +112,7 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 				License:         nil,
 				Solutions:       []PluginCompSolution{},
 				Language:        mod.Language,
+				FixType:         comp.FixType,
 			}
 			for _, it := range comp.MinFixedInfo {
 				p.MinFixed = append(p.MinFixed, PluginCompFix{

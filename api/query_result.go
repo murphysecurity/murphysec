@@ -52,7 +52,8 @@ type TaskScanResponse struct {
 				Description   string `json:"description"`
 				Type          string `json:"type,omitempty"`
 			} `json:"solutions,omitempty"`
-			Vuls []VoVulnInfo `json:"vuls"`
+			Vuls    []VoVulnInfo `json:"vuls"`
+			FixType string       `json:"fix_type"`
 		} `json:"comps"`
 	} `json:"modules"`
 	TaskId string `json:"task_id"`
