@@ -42,7 +42,7 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 	if e != nil {
 		logger.Info.Println("fetch gradle projects failed.", e.Error())
 	}
-	logger.Debug.Println("Gradle projects:", strings.Join(projects, ", "))
+	logger.Debug.Println("Gradle proje`cts:", strings.Join(projects, ", "))
 	var rs []base.Module
 	{
 		depInfo, e := evalGradleDependencies(dir, "", info)

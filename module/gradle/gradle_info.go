@@ -90,6 +90,7 @@ func execWrappedGradleInfo(baseDir string) (*GradleInfo, error) {
 		}
 		c = exec.Command(wrapperPath, "--version")
 	}
+	logger.Debug.Println("Query version:", c.String())
 	c.Dir = baseDir
 	data, e := c.Output()
 	if e != nil {
@@ -104,13 +105,17 @@ func execWrappedGradleInfo(baseDir string) (*GradleInfo, error) {
 	rs.Executable = wrapperPath
 	if runtime.GOOS == "windows" {
 		rs.CallCmd = func(args ...string) *exec.Cmd {
-			return exec.Command(wrapperPath, args...)
+			c := exec.Command(wrapperPath, args...)
+			logger.Debug.Println("Execute:", c.String())
+			return c
 		}
 	} else {
 		rs.CallCmd = func(args ...string) *exec.Cmd {
 			aa := []string{wrapperPath}
 			aa = append(aa, args...)
-			return exec.Command("sh", "-c", strings.Join(aa, " "))
+			c := exec.Command("sh", "-c", strings.Join(aa, " "))
+			logger.Debug.Println("Execute:", c.String())
+			return c
 		}
 	}
 	return &rs, nil
