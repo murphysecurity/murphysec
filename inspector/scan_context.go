@@ -24,7 +24,7 @@ type ScanContext struct {
 	ManagedModules    []base.Module
 	StartTime         time.Time
 	TaskId            string
-	FileHashes        []string
+	FileHashes        []FileHash
 	ProjectType       string
 	EnableDeepScan    bool
 	ScanResult        *api.TaskScanResponse
@@ -33,6 +33,11 @@ type ScanContext struct {
 	ContributorList   []api.Contributor
 	ProjectId         string
 	TotalContributors int
+}
+
+type FileHash struct {
+	Hash []string `json:"hash"`
+	Path string   `json:"path"`
 }
 
 func (s *ScanContext) UI() display.UI {

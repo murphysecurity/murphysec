@@ -49,7 +49,12 @@ func submitModuleInfo(ctx *ScanContext) error {
 	if len(ctx.FileHashes) != 0 && env.AllowFileHash {
 		list := make([]api.VoFileHash, 0)
 		for _, it := range ctx.FileHashes {
-			list = append(list, api.VoFileHash{Hash: it})
+			for _, hash := range it.Hash {
+				list = append(list, api.VoFileHash{
+					Path: it.Path,
+					Hash: hash,
+				})
+			}
 		}
 		req.Modules = append(req.Modules, api.VoModule{
 			FileHashList: list,

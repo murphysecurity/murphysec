@@ -15,30 +15,81 @@ import (
 	"sync"
 )
 
-func FileHashScan(ctx *ScanContext) {
-	fileCh := make(chan string, 16)
-	m := sync.Mutex{}
-	fileHashes := map[string]interface{}{}
-	go dirScan(ctx.ProjectDir, fileCh)
-	wg := sync.WaitGroup{}
-	for i := 0; i < 2; i++ {
-		wg.Add(1)
-		go func() {
-			for p := range fileCh {
-				for _, it := range calcFileHashIgnoreErr(p) {
-					m.Lock()
-					fileHashes[it] = struct{}{}
-					m.Unlock()
-				}
+const _FileHashScanConcurrency = 2
+
+func FileHashScan(ctx *ScanContext) error {
+	basePath, e := filepath.Abs(ctx.ProjectDir)
+	if e != nil {
+		return errors.Wrap(e, "Get absolute path fail.")
+	}
+	logger.Info.Println("FileHashScan: ", basePath)
+
+	filepathCh := make(chan string, 32)
+	go func() {
+		findAllCxxFile(basePath, filepathCh)
+		defer close(filepathCh)
+	}()
+
+	// file hash
+	hashChan := make(chan FileHash, 32)
+	go func() {
+		wg := sync.WaitGroup{}
+		for i := 0; i < _FileHashScanConcurrency; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				mapFilepathToHash(filepathCh, hashChan)
+			}()
+		}
+		wg.Wait()
+		close(hashChan)
+	}()
+
+	for it := range hashChan {
+		p, e := filepath.Rel(basePath, it.Path)
+		if e != nil {
+			logger.Err.Println("Get relative-path fail, skip.", e.Error())
+			continue
+		}
+		it.Path = p
+		ctx.FileHashes = append(ctx.FileHashes, it)
+	}
+	return nil
+}
+
+func mapFilepathToHash(fileCh chan string, outputCh chan FileHash) {
+	for file := range fileCh {
+		hash := calcFileHashIgnoreErr(file)
+		outputCh <- FileHash{
+			Path: file,
+			Hash: hash,
+		}
+	}
+}
+
+func findAllCxxFile(baseDir string, filepathCh chan string) {
+	logger.Info.Println("findAllCxxFile: ", baseDir)
+	filepath.WalkDir(baseDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			logger.Warn.Println("WalkDir error:", err.Error())
+			return nil
+		}
+		if d == nil {
+			logger.Warn.Println("DirEntry is nil, skip")
+			return nil
+		}
+		if checkNameBlackList(d.Name()) {
+			if d.IsDir() {
+				return fs.SkipDir
+			} else {
+				return nil
 			}
-			wg.Done()
-		}()
-	}
-	wg.Wait()
-	for s := range fileHashes {
-		ctx.FileHashes = append(ctx.FileHashes, s)
-	}
-	logger.Info.Println("total:", len(fileHashes), "hashes")
+		}
+		if CxxExtSet[filepath.Ext(d.Name())] {
+			filepathCh <- path
+		}
+		return nil
+	})
 }
 
 func calcFileHashIgnoreErr(path string) []string {
@@ -57,6 +108,7 @@ func calcFileHash(path string) ([]string, error) {
 	}
 	defer f.Close()
 
+	// TODO: switch to SHA-256
 	h1 := md5.New()
 	h2 := md5.New()
 	h3 := md5.New()
@@ -74,31 +126,6 @@ func calcFileHash(path string) ([]string, error) {
 	rs = append(rs, hex.EncodeToString(h3.Sum(make([]byte, 0, 16))))
 
 	return utils.DistinctStringSlice(rs), nil
-}
-
-func dirScan(dir string, pathCh chan string) {
-	logger.Info.Printf("dir scan: %s", dir)
-	defer logger.Info.Println("dir scan terminated")
-	defer close(pathCh)
-	e := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || info.Name() == "node_modules") {
-			return filepath.SkipDir
-		}
-		if !info.Mode().IsRegular() {
-			return nil
-		}
-		if info.Size() < 32 || info.Size() > 16*1024*1024 {
-			return nil
-		}
-		pathCh <- filepath.Join(path)
-		return nil
-	})
-	if e != nil {
-		logger.Warn.Println("filepath.Walk err:", e.Error())
-	}
 }
 
 func checkNameBlackList(name string) bool {

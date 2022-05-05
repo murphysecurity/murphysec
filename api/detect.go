@@ -22,6 +22,7 @@ type VoDependency struct {
 }
 
 type VoFileHash struct {
+	Path string `json:"path"`
 	Hash string `json:"hash"`
 }
 type VoModule struct {
@@ -36,10 +37,6 @@ type VoModule struct {
 	Version        string         `json:"version,omitempty"`
 	ModuleUUID     uuid.UUID      `json:"module_uuid,omitempty"`
 	ModuleType     string         `json:"module_type"`
-}
-
-type FileHash struct {
-	Hash string `json:"hash"`
 }
 
 type VoVulnInfo struct {
