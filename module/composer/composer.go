@@ -35,7 +35,7 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 		PackageFile:    "composer.json",
 		Name:           manifest.Name,
 		Version:        manifest.Version,
-		FilePath:       dir,
+		FilePath:       filepath.Join(dir, "composer.json"),
 		Dependencies:   []base.Dependency{},
 		RuntimeInfo:    nil,
 		UUID:           uuid.UUID{},
