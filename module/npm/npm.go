@@ -19,11 +19,7 @@ func New() base.Inspector {
 }
 
 func (i *Inspector) String() string {
-	return "NpmInspector@" + i.Version()
-}
-
-func (i *Inspector) Version() string {
-	return "v0.0.1"
+	return "NpmInspector"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {

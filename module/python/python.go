@@ -19,11 +19,7 @@ var pyImportPattern2 = regexp.MustCompile("from\\s+([A-Za-z_-][A-Za-z_0-9-]*)")
 type Inspector struct{}
 
 func (i Inspector) String() string {
-	return "PythonInspector@" + i.Version()
-}
-
-func (i Inspector) Version() string {
-	return "0.0.1"
+	return "PythonInspector"
 }
 
 func (i Inspector) CheckDir(dir string) bool {

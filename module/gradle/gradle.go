@@ -22,10 +22,6 @@ func (i *Inspector) String() string {
 	return "GradleInspector"
 }
 
-func (i *Inspector) Version() string {
-	return "0.0.1"
-}
-
 func (i *Inspector) PackageManagerType() base.PackageManagerType {
 	return base.PMGradle
 }

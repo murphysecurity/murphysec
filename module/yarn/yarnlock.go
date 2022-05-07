@@ -16,11 +16,7 @@ import (
 type Inspector struct{}
 
 func (i *Inspector) String() string {
-	return "YarnInspector@v0.0.1"
-}
-
-func (i *Inspector) Version() string {
-	return "0.0.1"
+	return "YarnInspector"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {

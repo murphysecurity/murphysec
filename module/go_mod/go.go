@@ -18,11 +18,7 @@ var ErrGoEnv = base.NewInspectError("go", "Check Go version failed. Please check
 type Inspector struct{}
 
 func (i *Inspector) String() string {
-	return "GoModInspector@" + i.Version()
-}
-
-func (i *Inspector) Version() string {
-	return "v0.0.1"
+	return "GoModInspector"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {

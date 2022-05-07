@@ -62,7 +62,6 @@ func mapVoDependency(d []Dependency) []api.VoDependency {
 
 type Inspector interface {
 	fmt.Stringer
-	Version() string
 	CheckDir(dir string) bool
 	Inspect(dir string) ([]Module, error)
 	PackageManagerType() PackageManagerType
