@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"murphysec-cli-simple/utils/must"
+	"os"
 	"strings"
 )
 
@@ -71,4 +73,13 @@ func base64UrlEncode(s string) string {
 	must.Int(w.Write([]byte(s)))
 	must.Close(w)
 	return b.String()
+}
+
+func ReadFileLimited(p string, maxRead int64) ([]byte, error) {
+	f, e := os.Open(p)
+	if e != nil {
+		return nil, e
+	}
+	defer f.Close()
+	return io.ReadAll(io.LimitReader(f, maxRead))
 }

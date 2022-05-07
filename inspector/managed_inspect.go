@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
+	"murphysec-cli-simple/module/composer"
 	"murphysec-cli-simple/module/go_mod"
 	"murphysec-cli-simple/module/gradle"
 	"murphysec-cli-simple/module/maven"
@@ -22,6 +23,7 @@ var managedInspector = []base.Inspector{
 	gradle.New(),
 	yarn.New(),
 	python.New(),
+	composer.New(),
 }
 
 // 受管理扫描
