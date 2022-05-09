@@ -76,17 +76,18 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 			panic("resBody must be a pointer")
 		}
 	}
-	logger.Info.Println("Send request: ", req.URL.RequestURI())
+	logger.Logger.Info("Send request: ", req.URL.RequestURI())
 	res, e := c.client.Do(req)
 	if e != nil {
 		e := e.(*url.Error)
-		logger.Err.Println("Request failed.", e.Error())
+		logger.Logger.Error("Request failed: ", e.Error())
 		if e.Timeout() {
+			logger.Logger.Error("Request timeout")
 			return ErrTimeout
 		}
 		return errors.Wrap(ErrServerRequest, e.Error())
 	}
-	logger.Info.Println("API response:", res.StatusCode, res.Status)
+	logger.Logger.Info("API response:", res.StatusCode)
 	data, e := io.ReadAll(res.Body)
 	if e != nil {
 		return errors.Wrap(ErrServerRequest, "read response body failed:"+e.Error())

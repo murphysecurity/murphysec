@@ -1,80 +1,90 @@
 package logger
 
 import (
-	"log"
-	"murphysec-cli-simple/utils/must"
+	"fmt"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"os"
 	"strings"
-	"sync"
 )
-
-type LogLevel int
-
-const (
-	LogDebug LogLevel = iota + 1
-	LogInfo
-	LogWarn
-	LogErr
-	LogSilent
-)
-
-var logMutex sync.Mutex
 
 var ConsoleLogLevelOverride string
+var Logger *zap.SugaredLogger
+var NetworkLogger *zap.SugaredLogger
 
-var PrintNetworkLog bool
-
-var getConsoleLogLevel = func() func() LogLevel {
-	o := sync.Once{}
-	c := LogWarn
-	return func() LogLevel {
-		o.Do(func() {
-			switch strings.ToLower(strings.TrimSpace(ConsoleLogLevelOverride)) {
-			case "error":
-				c = LogErr
-			case "warn":
-				c = LogWarn
-			case "info":
-				c = LogInfo
-			case "debug":
-				c = LogDebug
-			case "silent":
-				c = LogSilent
-			case "":
-			default:
-				panic("loglevel invalid")
-			}
-		})
-		return c
-	}
-}()
-
-var Debug = log.New(n(LogDebug), "[DEBUG]", log.Lshortfile+log.LstdFlags)
-var Info = log.New(n(LogInfo), "[INFO]", log.Lshortfile+log.LstdFlags)
-var Warn = log.New(n(LogWarn), "[WARN]", log.Lshortfile+log.LstdFlags)
-var Err = log.New(n(LogErr), "[ERROR]", log.Lshortfile+log.LstdFlags)
-var nt = n(0)
-var Net = log.New(nt, "[NET]", log.Lshortfile+log.LstdFlags)
-
-type W struct {
-	l LogLevel
+type WrappedLogger struct {
+	*zap.Logger
+	f func(msg string, fields ...zap.Field)
 }
 
-func n(l LogLevel) *W {
-	return &W{l: l}
+var noOp = &WrappedLogger{
+	Logger: zap.NewNop(),
+	f:      func(msg string, fields ...zap.Field) {},
 }
 
-func (w *W) Write(p []byte) (n int, err error) {
-	logMutex.Lock()
-	defer logMutex.Unlock()
-	if w.l >= getConsoleLogLevel() || (w == nt && PrintNetworkLog) {
-		must.Int(os.Stderr.Write(p))
-	}
-	f := loggerFile()
-	if f != nil {
-		if w != nt || PrintNetworkLog {
-			must.Int(f.Write(p))
-		}
-	}
-	return len(p), nil
+func (this *WrappedLogger) Printf(format string, a ...interface{}) {
+	this.f(fmt.Sprintf(strings.TrimSuffix(format, "\n"), a...))
 }
+
+func (this *WrappedLogger) Println(args ...interface{}) {
+	this.f(fmt.Sprint(args...))
+}
+
+func w(logger *zap.Logger, f func(msg string, fields ...zap.Field)) *WrappedLogger {
+	return &WrappedLogger{
+		Logger: logger,
+		f:      f,
+	}
+}
+
+func InitLogger() {
+	encoderConfig := zapcore.EncoderConfig{
+		MessageKey:          "message",
+		LevelKey:            "level",
+		TimeKey:             "time",
+		NameKey:             "name",
+		CallerKey:           "caller",
+		FunctionKey:         "",
+		StacktraceKey:       "stacktrace",
+		SkipLineEnding:      false,
+		LineEnding:          "",
+		EncodeLevel:         zapcore.CapitalLevelEncoder,
+		EncodeTime:          zapcore.RFC3339TimeEncoder,
+		EncodeDuration:      zapcore.StringDurationEncoder,
+		EncodeCaller:        zapcore.ShortCallerEncoder,
+		EncodeName:          nil,
+		NewReflectedEncoder: nil,
+		ConsoleSeparator:    " ",
+	}
+	encoder := zapcore.NewConsoleEncoder(encoderConfig)
+	fileCore := zapcore.NewCore(encoder, zapcore.Lock(loggerFile()), zapcore.DebugLevel)
+	consoleCore := zapcore.NewNopCore()
+	switch strings.ToLower(strings.TrimSpace(ConsoleLogLevelOverride)) {
+	case "silent":
+		consoleCore = zapcore.NewNopCore()
+	case "error":
+		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.ErrorLevel)
+	case "warn":
+		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.WarnLevel)
+	case "info":
+		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.InfoLevel)
+	case "debug":
+		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.DebugLevel)
+	}
+	core := zapcore.NewTee(fileCore, consoleCore)
+
+	logger := zap.New(core, zap.AddCaller())
+	wl := logger.WithOptions(zap.AddCallerSkip(1))
+	Debug = w(logger, wl.Debug)
+	Info = w(logger, wl.Info)
+	Warn = w(logger, wl.Warn)
+	Err = w(logger, wl.Warn)
+	Logger = logger.Sugar()
+
+	NetworkLogger = zap.NewNop().Sugar()
+}
+
+var Debug = noOp
+var Info = noOp
+var Warn = noOp
+var Err = noOp

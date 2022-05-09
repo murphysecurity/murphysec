@@ -15,6 +15,7 @@ import (
 )
 
 func scanRun(cmd *cobra.Command, args []string) {
+	logger.InitLogger()
 	if CliJsonOutput {
 		ctx, e := inspector.NewTaskContext(args[0], base.TaskTypeIdea)
 		if e != nil {

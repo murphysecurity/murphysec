@@ -71,7 +71,7 @@ func getGitInfo(dir string) (*GitInfo, error) {
 		logger.Debug.Println("No origin remote, use first one")
 	}
 	remoteUrls := selectedRemote.Config().URLs
-	logger.Debug.Printf("Selected remote: %s", selectedRemote.String())
+	logger.Debug.Println("Selected remote:", selectedRemote.String())
 	logger.Debug.Printf("Total %d urls", len(remoteUrls))
 	gitInfo := &GitInfo{
 		RemoteName:     selectedRemote.Config().Name,

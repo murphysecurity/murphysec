@@ -26,6 +26,7 @@ func ideaScanCmd() *cobra.Command {
 }
 
 func ideaScanRun(cmd *cobra.Command, args []string) {
+	logger.InitLogger()
 	dir := must.String(cmd.Flags().GetString("dir"))
 	ctx, e := inspector.NewTaskContext(dir, base.TaskTypeIdea)
 	if e != nil {

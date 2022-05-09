@@ -27,13 +27,13 @@ var tokenReader = func() func() string {
 		o.Do(func() {
 			dir, e := homedir.Expand(tokenPath)
 			if e != nil {
-				logger.Debug.Printf("Cannot get home path, ignore")
+				logger.Debug.Println("Cannot get home path, ignore")
 				return
 			}
-			logger.Debug.Printf("Read token from: %s", dir)
+			logger.Debug.Println("Read token from:", dir)
 			data, e := ioutil.ReadFile(dir)
 			if e != nil {
-				logger.Debug.Printf("Read fail, ignore")
+				logger.Debug.Println("Read fail, ignore")
 				return
 			}
 			t = strings.TrimSpace(string(data))
@@ -65,14 +65,14 @@ func ReadTokenFile() (t string, e error) {
 // APIToken returns API token
 func APIToken() string {
 	if len(strings.TrimSpace(APITokenCliOverride)) != 0 {
-		logger.Debug.Printf("Use API token from cli argument")
+		logger.Debug.Println("Use API token from cli argument")
 		return APITokenCliOverride
 	}
 	if len(strings.TrimSpace(_APITokenEnvOverride)) != 0 {
-		logger.Debug.Printf("Use API token from env")
+		logger.Debug.Println("Use API token from env")
 		return _APITokenEnvOverride
 	}
-	logger.Debug.Printf("Use API token from config file")
+	logger.Debug.Println("Use API token from config file")
 	return tokenReader()
 }
 

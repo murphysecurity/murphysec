@@ -6,6 +6,7 @@ import (
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/env"
 	"murphysec-cli-simple/inspector"
+	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/utils"
 )
 
@@ -33,6 +34,7 @@ func binScanCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use: "binscan DIR",
 		Run: func(cmd *cobra.Command, args []string) {
+			logger.InitLogger()
 			path := args[0]
 			if !utils.IsPathExist(path) {
 				fmt.Println("路径不存在")
@@ -55,6 +57,7 @@ func iotScanCmd() *cobra.Command {
 		Use:   "iotscan DIR",
 		Short: "Scan the specified IoT device firmware, currently supporting .bin or other formats (The file will be uploaded to the server for analysis.)",
 		Run: func(cmd *cobra.Command, args []string) {
+			logger.InitLogger()
 			path := args[0]
 			if !utils.IsPathExist(path) {
 				fmt.Println("路径不存在")
