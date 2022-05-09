@@ -54,7 +54,7 @@ type PluginComp struct {
 	CompName           string               `json:"comp_name"`
 	ShowLevel          int                  `json:"show_level"`
 	MinFixedVersion    string               `json:"min_fixed_version"`
-	MinFixed           []PluginCompFix      `json:"min_fixed"`
+	MinFixed           PluginCompFixList    `json:"min_fixed"`
 	Vulns              []api.VoVulnInfo     `json:"vulns"`
 	Version            string               `json:"version"`
 	License            *PluginCompLicense   `json:"license,omitempty"`
@@ -73,6 +73,20 @@ type PluginCompFix struct {
 	OldVersion string `json:"old_version"`
 	NewVersion string `json:"new_version"`
 	CompName   string `json:"comp_name"`
+}
+
+type PluginCompFixList []PluginCompFix
+
+func (this PluginCompFixList) MarshalJSON() ([]byte, error) {
+	m := map[PluginCompFix]struct{}{}
+	for _, it := range this {
+		m[it] = struct{}{}
+	}
+	rs := make([]PluginCompFix, 0)
+	for it := range m {
+		rs = append(rs, it)
+	}
+	return must.Byte(json.Marshal(rs)), nil
 }
 
 type PluginCompSolution struct {
@@ -106,7 +120,7 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 				CompName:        comp.CompName,
 				ShowLevel:       3,
 				MinFixedVersion: comp.MinFixedVersion,
-				MinFixed:        []PluginCompFix{},
+				MinFixed:        PluginCompFixList{},
 				Vulns:           comp.Vuls,
 				Version:         comp.CompVersion,
 				License:         nil,
@@ -114,17 +128,12 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 				Language:        mod.Language,
 				FixType:         comp.FixType,
 			}
-			// Work-around to keep result consistency.
-			if len(rs[cid].MinFixed) > 0 {
-				p.MinFixed = rs[cid].MinFixed
-			} else {
-				for _, it := range comp.MinFixedInfo {
-					p.MinFixed = append(p.MinFixed, PluginCompFix{
-						OldVersion: it.OldVersion,
-						NewVersion: it.NewVersion,
-						CompName:   it.Name,
-					})
-				}
+			for _, it := range comp.MinFixedInfo {
+				p.MinFixed = append(p.MinFixed, PluginCompFix{
+					OldVersion: it.OldVersion,
+					NewVersion: it.NewVersion,
+					CompName:   it.Name,
+				})
 			}
 			if comp.License != nil {
 				p.License = &PluginCompLicense{
