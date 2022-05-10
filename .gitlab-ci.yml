@@ -35,7 +35,7 @@ compose-build-saas:
       - murphysec-saas-darwin-amd64.sha256
   script:
     - export
-    - deno run --allow-all gobuild-saas.ts
+    - deno run --allow-all gobuild.ts saas
     - cd out
     - chmod 0755 *
     - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
