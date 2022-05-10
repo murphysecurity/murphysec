@@ -22,7 +22,7 @@ variables:
   GOPROXY: https://goproxy.cn,direct
 
 compose-build-saas:
-  image: golang:1.17.7-buster
+  image: iseki0/go-deno:latest
   stage: build
   artifacts:
     expire_in: 3 day
@@ -35,9 +35,7 @@ compose-build-saas:
       - murphysec-saas-darwin-amd64.sha256
   script:
     - export
-    - GOOS=linux GOARCH=amd64 go build -o out/murphysec-saas-linux-amd64 .
-    - GOOS=windows GOARCH=amd64 go build -o out/murphysec-saas-windows-amd64.exe .
-    - GOOS=darwin GOARCH=amd64 go build -o out/murphysec-saas-darwin-amd64 .
+    - deno run --allow-all gobuild-saas.ts
     - cd out
     - chmod 0755 *
     - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
@@ -47,7 +45,7 @@ compose-build-saas:
     - cd ..
 
 compose-build:
-  image: golang:1.17.7-buster
+  image: iseki0/go-deno:latest
   stage: build
   artifacts:
     expire_in: 1 day
@@ -60,9 +58,7 @@ compose-build:
       - murphysec-darwin-amd64.sha256
   script:
     - export
-    - GOOS=linux GOARCH=amd64 go build -tags pro -o out/murphysec-linux-amd64 .
-    - GOOS=windows GOARCH=amd64 go build -tags pro -o out/murphysec-windows-amd64.exe .
-    - GOOS=darwin GOARCH=amd64 go build -tags pro -o out/murphysec-darwin-amd64 .
+    - deno run --allow-all gobuild.ts
     - cd out
     - chmod 0755 *
     - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
