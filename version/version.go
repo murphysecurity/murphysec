@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-const version = "v1.5.13"
+const version = "v1.5.14"
 
 // PrintVersionInfo print version info to stdout
 func PrintVersionInfo() {
