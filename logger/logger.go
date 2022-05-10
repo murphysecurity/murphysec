@@ -63,13 +63,13 @@ func InitLogger() {
 	case "silent":
 		consoleCore = zapcore.NewNopCore()
 	case "error":
-		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.ErrorLevel)
+		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), zapcore.ErrorLevel)
 	case "warn":
-		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.WarnLevel)
+		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), zapcore.WarnLevel)
 	case "info":
-		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.InfoLevel)
+		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), zapcore.InfoLevel)
 	case "debug":
-		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.DebugLevel)
+		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), zapcore.DebugLevel)
 	}
 	core := zapcore.NewTee(fileCore, consoleCore)
 
