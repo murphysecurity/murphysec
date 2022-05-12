@@ -7,6 +7,8 @@ import (
 	"murphysec-cli-simple/utils/must"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -14,6 +16,7 @@ import (
 var CliLogFilePathOverride string
 var DisableLogFile bool
 
+var defaultLogFile = filepath.Join(must.String(homedir.Dir()), ".murphysec", "logs", fmt.Sprintf("%d.log", time.Now().UnixMilli()))
 var loggerFile = func() func() *os.File {
 	o := sync.Once{}
 	var file *os.File
@@ -22,7 +25,7 @@ var loggerFile = func() func() *os.File {
 			if DisableLogFile {
 				return
 			}
-			var logFilePath = filepath.Join(must.String(homedir.Dir()), ".murphysec", "logs", fmt.Sprintf("%d.log", time.Now().UnixMilli()))
+			var logFilePath = defaultLogFile
 			if CliLogFilePathOverride != "" {
 				logFilePath = CliLogFilePathOverride
 			}
@@ -39,3 +42,35 @@ var loggerFile = func() func() *os.File {
 	}
 	return f
 }()
+
+func LogFileCleanup() {
+	refTime, _ := time.Parse(time.RFC3339, "2020-01-01T00:00:00Z")
+	logFilePattern := regexp.MustCompile("^(\\d+)\\.log$")
+	basePath := filepath.Dir(defaultLogFile)
+	if basePath == "" {
+		return
+	}
+	d, e := os.ReadDir(basePath)
+	if e != nil {
+		return
+	}
+	for _, entry := range d {
+		if entry.IsDir() || !entry.Type().IsRegular() {
+			continue
+		}
+		if m := logFilePattern.FindStringSubmatch(entry.Name()); m != nil {
+			ts, e := strconv.Atoi(m[1])
+			if e != nil {
+				continue
+			}
+			lt := time.UnixMilli(int64(ts))
+			if lt.Before(refTime) {
+				continue
+			}
+
+			if time.Now().Sub(time.UnixMilli(int64(ts))) > time.Hour*24*7 {
+				_ = os.Remove(filepath.Join(basePath, entry.Name()))
+			}
+		}
+	}
+}

@@ -14,6 +14,7 @@ func main() {
 		logger.Warn.Println("Signal received")
 		os.Exit(-1)
 	}()
+	logger.LogFileCleanup()
 	e := cmd.Execute()
 	if e != nil {
 		os.Exit(-1)
