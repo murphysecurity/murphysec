@@ -25,7 +25,6 @@ func createTask(ctx *ScanContext) error {
 		ProjectId:       ctx.ProjectId,
 	}
 	req.GitInfo = ctx.GitInfo.ApiVo()
-	logger.Info.Printf("create task: %#v", ctx)
 	if res, e := api.CreateTask(req); e == nil {
 		ctx.TaskId = res.TaskInfo
 		ctx.TotalContributors = res.TotalContributors
