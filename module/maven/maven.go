@@ -5,6 +5,7 @@ import (
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"path/filepath"
+	"sort"
 	"sync"
 )
 
@@ -40,7 +41,14 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 		pomFiles := InspectModule(dir)
 		logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
 		resolver := NewResolver()
-		for _, builder := range pomFiles {
+		var builders []*PomBuilder
+		for _, it := range pomFiles {
+			builders = append(builders, it)
+		}
+		sort.Slice(builders, func(i, j int) bool {
+			return builders[i].Path < builders[j].Path
+		})
+		for _, builder := range builders {
 			{
 				pf := resolver.ResolveLocally(builder, nil)
 				if pf == nil {

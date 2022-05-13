@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.4
+	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/antchfx/xmlquery v1.3.10
 	github.com/briandowns/spinner v1.18.1
 	github.com/denisbrodbeck/machineid v1.0.1

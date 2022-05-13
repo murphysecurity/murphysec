@@ -2,19 +2,23 @@ package maven
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
 type DepGraph map[Coordinate]map[Coordinate]struct{}
 
 func (d DepGraph) DOT() string {
-	var s []string
-	s = append(s, "digraph dep {")
+	var t []string
 	for k, list := range d {
 		for v := range list {
-			s = append(s, fmt.Sprintf("  \"%s\" -> \"%s\"", k.String(), v.String()))
+			t = append(t, fmt.Sprintf("  \"%s\" -> \"%s\"", k.String(), v.String()))
 		}
 	}
+	sort.Strings(t)
+	var s []string
+	s = append(s, "digraph dep {")
+	s = append(s, t...)
 	s = append(s, "}")
 	return strings.Join(s, "\n")
 }
