@@ -11,7 +11,7 @@ import (
 )
 
 func ScannerScan(dir string) {
-	ctx, e := NewTaskContext(must.String(filepath.Abs(dir)), base2.TaskTypeCli)
+	ctx, e := NewTaskContext(must.String(filepath.Abs(dir)), base2.TaskTypeIdea)
 	if e != nil {
 		panic(e)
 	}
