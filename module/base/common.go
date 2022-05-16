@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
+	"murphysec-cli-simple/display"
 	"regexp"
 	"strings"
 )
@@ -63,7 +64,7 @@ func mapVoDependency(d []Dependency) []api.VoDependency {
 type Inspector interface {
 	fmt.Stringer
 	CheckDir(dir string) bool
-	Inspect(dir string) ([]Module, error)
+	Inspect(task *ScanTask) ([]Module, error)
 	PackageManagerType() PackageManagerType
 }
 
@@ -120,4 +121,11 @@ func UnwrapToInspectorError(e error) *InspectorError {
 		}
 	}
 	return nil
+}
+
+// TODO: refactor to interface
+
+type ScanTask struct {
+	ProjectDir string
+	UI         display.UI
 }

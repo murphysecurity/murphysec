@@ -87,6 +87,7 @@ func scanMvnDependency(projectDir string) (map[Coordinate][]Dependency, error) {
 	}
 	if e := cmd.Wait(); e != nil {
 		logger.Err.Println("Mvn terminated with err.", e.Error())
+		return mvnResult, e
 	} else {
 		logger.Info.Println("Mvn terminated with no err")
 	}

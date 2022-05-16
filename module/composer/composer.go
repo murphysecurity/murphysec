@@ -23,8 +23,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "composer.json"))
 }
 
-func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
-
+func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
+	dir := task.ProjectDir
 	manifest, e := readManifest(filepath.Join(dir, "composer.json"))
 	if e != nil {
 		return nil, e

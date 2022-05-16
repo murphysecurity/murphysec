@@ -142,6 +142,10 @@ func (_ _CLI) UpdateStatus(s Status, msg string) {
 
 func (_ _CLI) Display(level MsgLevel, msg string) {
 	termenv.ClearLine()
-	fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg)
+	if level == MsgError {
+		fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s] %s", level.String(), msg)))
+	} else {
+		fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg)
+	}
 	statusRepaint()
 }

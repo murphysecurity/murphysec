@@ -47,7 +47,10 @@ func managedInspectScan(ctx *ScanContext) error {
 			}
 			if inspector.CheckDir(path) {
 				logger.Debug.Println("Matched", inspector, path)
-				rs, e := inspector.Inspect(path)
+				rs, e := inspector.Inspect(&base.ScanTask{
+					ProjectDir: path,
+					UI:         ctx.UI(),
+				})
 				if e != nil {
 					logger.Info.Println("inspect failed.", inspector.String(), e.Error())
 					logger.Debug.Printf("%+v\n", e)
