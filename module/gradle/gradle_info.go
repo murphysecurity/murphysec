@@ -24,7 +24,29 @@ func (g *GradleInfo) String() string {
 }
 
 func evalGradleInfo(dir string) (*GradleInfo, error) {
-	info, e := execWrappedGradleInfo(dir)
+	/**
+	1.
+	由于 ../../inspector/managed_inspect.go:35 使用了filepath.WalkDir
+	这里必然是/xx/current，所以 filepath.Split 方法必然返回dir和name
+
+	2.
+	根据gradle wrapper的介绍，执行gradle wrapper命令后，目录结构如下：
+	.
+	├── a-subproject
+	│   └── build.gradle
+	├── settings.gradle
+	├── gradle
+	│   └── wrapper
+	│       ├── gradle-wrapper.jar
+	│       └── gradle-wrapper.properties
+	├── gradlew
+	└── gradlew.bat
+	所以，需要向上一级，才能正确访问gradlew/gradlew.bat
+	https://docs.gradle.org/current/userguide/gradle_wrapper.html
+	 */
+	gradlewDir , name := filepath.Split(dir)
+	logger.Debug.Println("to gradlew.dir=%s,name=%s", gradlewDir, name)
+	info, e := execWrappedGradleInfo(gradlewDir)
 	if e != nil {
 		logger.Debug.Println("check gradle wrapper failed.", e.Error())
 	} else {
