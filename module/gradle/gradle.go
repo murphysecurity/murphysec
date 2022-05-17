@@ -59,14 +59,14 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 	return rs, nil // todo
 }
 
+var gradleBuildFiles = []string{"build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"}
+
 func (i *Inspector) CheckDir(dir string) bool {
-	info, e := os.Stat(filepath.Join(dir, "build.gradle"))
-	if e == nil && !info.IsDir() {
-		return true
-	}
-	info, e = os.Stat(filepath.Join(dir, "build.gradle.kts"))
-	if e == nil && !info.IsDir() {
-		return true
+	for _, it := range gradleBuildFiles {
+		info, e := os.Stat(filepath.Join(dir, it))
+		if e == nil && !info.IsDir() {
+			return true
+		}
 	}
 	return false
 }
