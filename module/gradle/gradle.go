@@ -3,6 +3,7 @@ package gradle
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"os"
@@ -26,10 +27,12 @@ func (i *Inspector) PackageManagerType() base.PackageManagerType {
 	return base.PMGradle
 }
 
-func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
+func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
+	dir := task.ProjectDir
 	logger.Debug.Println("gradle inspect dir:", dir)
 	info, e := evalGradleInfo(dir)
 	if e != nil {
+		task.UI.Display(display.MsgError, fmt.Sprintf("【%s】识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		logger.Info.Println("check gradle failed", e.Error())
 		return nil, e
 	}
@@ -38,7 +41,7 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 	if e != nil {
 		logger.Info.Println("fetch gradle projects failed.", e.Error())
 	}
-	logger.Debug.Println("Gradle proje`cts:", strings.Join(projects, ", "))
+	logger.Debug.Println("Gradle projects:", strings.Join(projects, ", "))
 	var rs []base.Module
 	{
 		depInfo, e := evalGradleDependencies(dir, "", info)
@@ -51,6 +54,7 @@ func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
 	for _, projectId := range projects {
 		depInfo, e := evalGradleDependencies(dir, projectId, info)
 		if e != nil {
+			task.UI.Display(display.MsgError, fmt.Sprintf("【%s】通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 			logger.Info.Println("evalGradleDependencies failed.", projectId, e.Error())
 		} else {
 			rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))

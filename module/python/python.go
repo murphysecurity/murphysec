@@ -55,7 +55,8 @@ func parsePyImport(input string) []string {
 	return rs
 }
 
-func (i Inspector) Inspect(dir string) ([]base.Module, error) {
+func (i Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
+	dir := task.ProjectDir
 	componentMap := map[string]string{}
 	requirementsFiles := map[string]struct{}{}
 	ignoreSet := map[string]struct{}{}

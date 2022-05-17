@@ -3,8 +3,10 @@ package go_mod
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/pkg/errors"
 	"io"
+	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
@@ -25,8 +27,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "go.mod"))
 }
 
-func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
-	return ScanGoProject(dir)
+func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
+	return ScanGoProject(task.ProjectDir, task)
 }
 
 func (i *Inspector) PackageManagerType() base.PackageManagerType {
@@ -37,12 +39,14 @@ func New() base.Inspector {
 	return &Inspector{}
 }
 
-func ScanGoProject(dir string) ([]base.Module, error) {
+func ScanGoProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 	version, e := execGoVersion()
 	if e != nil {
+		task.UI.Display(display.MsgError, fmt.Sprintf("【%s】识别到您的环境中 Go 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		return nil, ErrGoEnv
 	}
 	if e := execGoModTidy(dir); e != nil {
+		task.UI.Display(display.MsgError, fmt.Sprintf("【%s】通过 Go获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		logger.Err.Println("go mod tidy execute failed.", e.Error())
 		return nil, e
 	}

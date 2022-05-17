@@ -27,7 +27,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return e == nil && !info.IsDir()
 }
 
-func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
+func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
+	dir := task.ProjectDir
 	logger.Info.Println("yarn inspect.", dir)
 	rs, e := analyzeYarnDep(dir)
 

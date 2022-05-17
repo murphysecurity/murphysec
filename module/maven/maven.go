@@ -2,6 +2,7 @@ package maven
 
 import (
 	"fmt"
+	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"path/filepath"
@@ -20,7 +21,7 @@ func (d Dependency) String() string {
 
 var MvnSkipped = base.NewInspectError("java", "Mvn inspect is skipped, please check you maven environment.")
 
-func ScanMavenProject(dir string) ([]base.Module, error) {
+func ScanMavenProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 	var modules []base.Module
 	var deps map[Coordinate][]Dependency
 	moduleFileMapping := map[Coordinate]string{}
@@ -30,8 +31,11 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 	if doMvnScan {
 		deps, e = scanMvnDependency(dir)
 		if e != nil {
+			task.UI.Display(display.MsgError, fmt.Sprintf("【%s】通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 			logger.Err.Printf("mvn scan failed: %+v\n", e)
 		}
+	} else {
+		task.UI.Display(display.MsgError, fmt.Sprintf("【%s】识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 	}
 	// analyze pom file
 	{

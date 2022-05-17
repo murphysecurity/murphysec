@@ -25,8 +25,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "pom.xml"))
 }
 
-func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
-	return ScanMavenProject(dir)
+func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
+	return ScanMavenProject(task.ProjectDir, task)
 }
 
 func (i *Inspector) PackageManagerType() base.PackageManagerType {

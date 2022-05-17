@@ -27,8 +27,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 		utils.IsFile(filepath.Join(dir, "package-lock.json"))
 }
 
-func (i *Inspector) Inspect(dir string) ([]base.Module, error) {
-	return ScanNpmProject(dir)
+func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
+	return ScanNpmProject(task.ProjectDir)
 }
 
 func (i *Inspector) PackageManagerType() base.PackageManagerType {
