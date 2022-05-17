@@ -5,6 +5,9 @@
 
 <p>
 
+  <a href="https://www.oscs1024.com/cd/1522831757949284352">
+    <img src="https://www.oscs1024.com/platform/badge/murphysecurity/murphysec.svg">
+  </a>
   <a href="https://github.com/murphysecurity/murphysec">
     <img src="https://badgen.net/badge/Github/murphysecurity/21D789?icon=github">
   </a>
