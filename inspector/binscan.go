@@ -71,7 +71,7 @@ func BinScan(ctx *ScanContext) error {
 		ui.Display(display.MsgError, fmt.Sprint("扫描失败，", e.Error()))
 		return e
 	} else {
-		ui.Display(display.MsgNotice, fmt.Sprintf("项目扫描成功，依赖数：%d，漏洞数：%d\n", r.DependenciesCount, r.IssuesCompsCount))
+		ui.Display(display.MsgNotice, fmt.Sprintf("项目扫描完成，依赖数：%d，漏洞数：%d\n", r.DependenciesCount, r.IssuesCompsCount))
 	}
 	return nil
 }

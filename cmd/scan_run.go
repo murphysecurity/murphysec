@@ -59,7 +59,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 		totalDep := strconv.Itoa(ctx.ScanResult.DependenciesCount)
 		totalVuln := strconv.Itoa(ctx.ScanResult.IssuesCompsCount)
 		t := fmt.Sprint(
-			"项目扫描成功，依赖数：",
+			"项目扫描完成，依赖数：",
 			termenv.String(totalDep).Foreground(termenv.ANSIBrightCyan),
 			"，漏洞数：",
 			termenv.String(totalVuln).Foreground(termenv.ANSIBrightRed),
