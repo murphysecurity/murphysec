@@ -9,6 +9,7 @@ import (
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/simplejson"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -43,6 +44,17 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 	lockfilePkgs := map[string]Package{}
 
 	{
+		if !utils.IsPathExist(filepath.Join(dir, "composer.lock")) {
+			logger.Info.Println("composer.lock doesn't exists. Try generate it")
+			c := exec.Command("composer", "update", "--ignore-platform-req=*", "--no-dev", "--no-progress")
+			logger.Info.Println("Command:", c.String())
+			_, e := c.Output()
+			if e != nil {
+				logger.Info.Println("composer update exit with no errors")
+			} else {
+				logger.Warn.Warn("composer update exit with error:" + e.Error())
+			}
+		}
 		pkgs, e := readComposerLockFile(filepath.Join(dir, "composer.lock"))
 		if e != nil {
 			logger.Info.Println("Composer:", e.Error())
