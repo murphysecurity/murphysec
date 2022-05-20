@@ -41,20 +41,17 @@ func evalGradleInfo(dir string) (info *GradleInfo, e error) {
 	│       └── gradle-wrapper.properties
 	├── gradlew
 	└── gradlew.bat
-	所以，需要向上一级，才能正确访问gradlew/gradlew.bat
+	应当考虑 settings.gradle 文件的存在
 	https://docs.gradle.org/current/userguide/gradle_wrapper.html
 
 	==== 此类目录结构并非强制，但处于兼容考虑应当支持~~~
 	*/
 	gradlewDir := dir
-	for backTrackCount := 0; backTrackCount < 2 && gradlewDir != ""; backTrackCount++ {
-		info, e = execWrappedGradleInfo(gradlewDir)
-		if e == nil {
-			return // gradle wrapper 找到了，就他了
-		} else {
-			logger.Debug.Println("check gradle wrapper failed.", e.Error())
-			gradlewDir = filepath.Dir(gradlewDir)
-		}
+	info, e = execWrappedGradleInfo(gradlewDir)
+	if e == nil {
+		return // gradle wrapper 找到了，就他了
+	} else {
+		logger.Debug.Println("check gradle wrapper failed.", e.Error())
 	}
 	info, e = execRawGradleInfo(dir)
 	if e != nil {
