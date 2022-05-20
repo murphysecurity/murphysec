@@ -47,6 +47,7 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 		if !utils.IsPathExist(filepath.Join(dir, "composer.lock")) {
 			logger.Info.Println("composer.lock doesn't exists. Try generate it")
 			c := exec.Command("composer", "update", "--ignore-platform-req=*", "--no-dev", "--no-progress")
+			c.Dir = dir
 			logger.Info.Println("Command:", c.String())
 			_, e := c.Output()
 			if e != nil {
