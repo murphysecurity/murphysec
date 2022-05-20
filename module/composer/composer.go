@@ -1,6 +1,7 @@
 package composer
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -9,7 +10,6 @@ import (
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/simplejson"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -46,14 +46,10 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 	{
 		if !utils.IsPathExist(filepath.Join(dir, "composer.lock")) {
 			logger.Info.Println("composer.lock doesn't exists. Try generate it")
-			c := exec.Command("composer", "update", "--ignore-platform-req=*", "--no-dev", "--no-progress")
-			c.Dir = dir
-			logger.Info.Println("Command:", c.String())
-			_, e := c.Output()
-			if e != nil {
-				logger.Info.Println("composer update exit with no errors")
+			if e := doComposerInstall(context.TODO(), dir); e != nil {
+				logger.Err.Println("Do composer install fail.", e.Error())
 			} else {
-				logger.Warn.Warn("composer update exit with error:" + e.Error())
+				logger.Info.Println("Do composer install succeeded")
 			}
 		}
 		pkgs, e := readComposerLockFile(filepath.Join(dir, "composer.lock"))
