@@ -41,7 +41,7 @@ func managedInspectScan(ctx *ScanContext) error {
 			}
 			{
 				s, e := filepath.Rel(ctx.ProjectDir, path)
-				if strings.Count(filepath.ToSlash(s), "/") > 5 || e != nil {
+				if strings.Count(filepath.ToSlash(s), "/") > 3 || e != nil {
 					return filepath.SkipDir
 				}
 			}
