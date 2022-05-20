@@ -1,6 +1,7 @@
 package maven
 
 import (
+	"context"
 	"fmt"
 	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
@@ -29,7 +30,7 @@ func ScanMavenProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 	// check maven version, skip maven scan if check fail
 	doMvnScan, mvnVer := checkMvnEnv()
 	if doMvnScan {
-		deps, e = scanMvnDependency(dir)
+		deps, e = scanMvnDependency(context.TODO(), dir)
 		if e != nil {
 			task.UI.Display(display.MsgError, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 			logger.Err.Printf("mvn scan failed: %+v\n", e)

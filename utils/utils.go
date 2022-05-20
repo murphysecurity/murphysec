@@ -34,6 +34,13 @@ func MinInt(a, b int) int {
 	return b
 }
 
+func MaxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func DistinctStringSlice(s []string) []string {
 	m := map[string]struct{}{}
 	var rs []string
