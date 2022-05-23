@@ -3,6 +3,7 @@ package gradle
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"io/fs"
 	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
@@ -28,39 +29,85 @@ func (i *Inspector) PackageManagerType() base.PackageManagerType {
 }
 
 func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
+	var rs []base.Module
 	dir := task.ProjectDir
 	logger.Debug.Println("gradle inspect dir:", dir)
+	useGradle := true
 	info, e := evalGradleInfo(dir)
 	if e != nil {
 		task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		logger.Info.Println("check gradle failed", e.Error())
-		return nil, e
+		logger.Warn.Println("Gradle disabled")
+		useGradle = false
 	}
-	logger.Info.Println(info)
-	projects, e := fetchGradleProjects(dir, info)
-	if e != nil {
-		logger.Info.Println("fetch gradle projects failed.", e.Error())
-	}
-	logger.Debug.Println("Gradle projects:", strings.Join(projects, ", "))
-	var rs []base.Module
-	{
-		depInfo, e := evalGradleDependencies(dir, "", info)
+	if useGradle {
+		logger.Info.Println(info)
+		projects, e := fetchGradleProjects(dir, info)
 		if e != nil {
-			logger.Info.Println("evalGradleDependencies failed. <root>", e.Error())
-		} else {
-			rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+			logger.Info.Println("fetch gradle projects failed.", e.Error())
+		}
+		logger.Debug.Println("Gradle projects:", strings.Join(projects, ", "))
+
+		{
+			depInfo, e := evalGradleDependencies(dir, "", info)
+			if e != nil {
+				logger.Info.Println("evalGradleDependencies failed. <root>", e.Error())
+			} else {
+				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+			}
+		}
+		for _, projectId := range projects {
+			depInfo, e := evalGradleDependencies(dir, projectId, info)
+			if e != nil {
+				task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+				logger.Info.Println("evalGradleDependencies failed.", projectId, e.Error())
+			} else {
+				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+			}
 		}
 	}
-	for _, projectId := range projects {
-		depInfo, e := evalGradleDependencies(dir, projectId, info)
-		if e != nil {
-			task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
-			logger.Info.Println("evalGradleDependencies failed.", projectId, e.Error())
-		} else {
-			rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+	if len(rs) == 0 {
+		// if no module find, use backup solution
+		if m := backupParser(dir); m != nil {
+			rs = append(rs, m.BaseModule(dir))
 		}
 	}
 	return rs, nil // todo
+}
+
+func backupParser(dir string) *GradleDependencyInfo {
+	var dep []DepElement
+	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d == nil || !d.Type().IsRegular() || !strings.HasPrefix(d.Name(), "build.gradle") {
+			return nil
+		}
+		if d.Name() == "build.gradle.kts" {
+			data, e := os.ReadFile(path)
+			if e != nil {
+				logger.Err.Println("Read gradle file failed.", e.Error())
+				return nil
+			}
+			dep = append(dep, parseGradleKts(string(data))...)
+			return nil
+		}
+		if d.Name() == "build.gradle" {
+			data, e := os.ReadFile(path)
+			if e != nil {
+				logger.Err.Println("Read gradle file failed.", e.Error())
+				return nil
+			}
+			dep = append(dep, parseGradleGroovy(string(data))...)
+			return nil
+		}
+		return nil
+	})
+	if len(dep) != 0 {
+		return &GradleDependencyInfo{
+			ProjectName:  fmt.Sprintf("GradleProject-%s", filepath.Base(dir)),
+			Dependencies: dep,
+		}
+	}
+	return nil
 }
 
 var gradleBuildFiles = []string{"build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"}
