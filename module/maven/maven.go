@@ -32,11 +32,11 @@ func ScanMavenProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 	if doMvnScan {
 		deps, e = scanMvnDependency(context.TODO(), dir)
 		if e != nil {
-			task.UI.Display(display.MsgError, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+			task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 			logger.Err.Printf("mvn scan failed: %+v\n", e)
 		}
 	} else {
-		task.UI.Display(display.MsgError, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+		task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 	}
 	// analyze pom file
 	{
