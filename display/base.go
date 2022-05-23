@@ -85,7 +85,7 @@ func (m MsgLevel) fColor() termenv.ANSIColor {
 	case MsgError:
 		return termenv.ANSIBrightRed
 	case MsgWarn:
-		return termenv.ANSIBrightYellow
+		return termenv.ANSIBrightRed
 	case MsgNotice:
 		return termenv.ANSIBrightCyan
 	}
