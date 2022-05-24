@@ -78,6 +78,7 @@ const (
 	PMYarn     PackageManagerType = "yarn"
 	PMPython   PackageManagerType = "python"
 	PMComposer PackageManagerType = "composer"
+	PMBundler  PackageManagerType = "bundler"
 )
 
 func PackageManagerTypeOfName(name string) PackageManagerType {
