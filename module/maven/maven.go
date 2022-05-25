@@ -37,34 +37,36 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 		if deps == nil {
 			deps = map[Coordinate][]Dependency{}
 		}
-		pomFiles := InspectModule(dir)
-		logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
-		resolver := NewResolver()
-		for _, builder := range pomFiles {
-			{
-				pf := resolver.ResolveLocally(builder, nil)
+		if len(deps) == 0 {
+			pomFiles := InspectModule(dir)
+			logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
+			resolver := NewResolver()
+			for _, builder := range pomFiles {
+				{
+					pf := resolver.ResolveLocally(builder, nil)
+					if pf == nil {
+						continue
+					}
+					relPath, _ := filepath.Rel(dir, pf.path)
+					moduleFileMapping[pf.coordinate] = relPath
+					if len(deps[pf.coordinate]) > 0 {
+						continue
+					}
+				}
+				pf := resolver.Resolve(builder, nil)
 				if pf == nil {
 					continue
 				}
-				relPath, _ := filepath.Rel(dir, pf.path)
-				moduleFileMapping[pf.coordinate] = relPath
-				if len(deps[pf.coordinate]) > 0 {
+				if !pf.coordinate.Complete() {
+					logger.Info.Println("local pom coordinate can't be resolve", pf.coordinate)
 					continue
 				}
+				analyzer := NewDepTreeAnalyzer(resolver)
+				graph := analyzer.Resolve(pf)
+				logger.Info.Println("dep graph")
+				logger.Info.Println(graph.DOT())
+				deps[pf.coordinate] = graph.Tree(pf.coordinate)
 			}
-			pf := resolver.Resolve(builder, nil)
-			if pf == nil {
-				continue
-			}
-			if !pf.coordinate.Complete() {
-				logger.Info.Println("local pom coordinate can't be resolve", pf.coordinate)
-				continue
-			}
-			analyzer := NewDepTreeAnalyzer(resolver)
-			graph := analyzer.Resolve(pf)
-			logger.Info.Println("dep graph")
-			logger.Info.Println(graph.DOT())
-			deps[pf.coordinate] = graph.Tree(pf.coordinate)
 		}
 	}
 	for coordinate, dependencies := range deps {
