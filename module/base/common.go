@@ -7,7 +7,6 @@ import (
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/display"
 	"regexp"
-	"strings"
 )
 
 type Module struct {
@@ -81,15 +80,6 @@ const (
 	PMBundler   PackageManagerType = "bundler"
 	PMCocoaPods PackageManagerType = "cocoapods"
 )
-
-func PackageManagerTypeOfName(name string) PackageManagerType {
-	switch PackageManagerType(strings.ToLower(name)) {
-	case PMNpm, PMGoMod, PMMaven, PMGradle, PMYarn, PMPython, PMComposer:
-		return PackageManagerType(strings.ToLower(name))
-	default:
-		panic("wtf?")
-	}
-}
 
 //goland:noinspection GoNameStartsWithPackageName
 var BaseInspectorError = &InspectorError{}
