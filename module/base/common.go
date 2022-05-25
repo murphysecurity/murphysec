@@ -71,14 +71,15 @@ type Inspector interface {
 type PackageManagerType string
 
 const (
-	PMMaven    PackageManagerType = "maven"
-	PMGoMod    PackageManagerType = "gomod"
-	PMNpm      PackageManagerType = "npm"
-	PMGradle   PackageManagerType = "gradle"
-	PMYarn     PackageManagerType = "yarn"
-	PMPython   PackageManagerType = "python"
-	PMComposer PackageManagerType = "composer"
-	PMBundler  PackageManagerType = "bundler"
+	PMMaven     PackageManagerType = "maven"
+	PMGoMod     PackageManagerType = "gomod"
+	PMNpm       PackageManagerType = "npm"
+	PMGradle    PackageManagerType = "gradle"
+	PMYarn      PackageManagerType = "yarn"
+	PMPython    PackageManagerType = "python"
+	PMComposer  PackageManagerType = "composer"
+	PMBundler   PackageManagerType = "bundler"
+	PMCocoaPods PackageManagerType = "cocoapods"
 )
 
 func PackageManagerTypeOfName(name string) PackageManagerType {

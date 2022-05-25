@@ -1,0 +1,295 @@
+PODS:
+  - Alamofire (5.6.1)
+  - AlamofireImage (4.2.0):
+    - Alamofire (~> 5.4)
+  - AnyFormatKit (2.5.1)
+  - CocoaLumberjack/Core (3.7.4)
+  - CocoaLumberjack/Swift (3.7.4):
+    - CocoaLumberjack/Core
+  - DatePickerDialog (4.0)
+  - Firebase/AnalyticsWithoutAdIdSupport (9.0.0):
+    - Firebase/CoreOnly
+    - FirebaseAnalytics/WithoutAdIdSupport (~> 9.0.0)
+  - Firebase/CoreOnly (9.0.0):
+    - FirebaseCore (= 9.0.0)
+  - Firebase/Crashlytics (9.0.0):
+    - Firebase/CoreOnly
+    - FirebaseCrashlytics (~> 9.0.0)
+  - Firebase/Messaging (9.0.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 9.0.0)
+  - FirebaseAnalytics/WithoutAdIdSupport (9.0.0):
+    - FirebaseCore (~> 9.0)
+    - FirebaseInstallations (~> 9.0)
+    - GoogleAppMeasurement/WithoutAdIdSupport (= 9.0.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
+    - GoogleUtilities/MethodSwizzler (~> 7.7)
+    - GoogleUtilities/Network (~> 7.7)
+    - "GoogleUtilities/NSData+zlib (~> 7.7)"
+    - nanopb (~> 2.30908.0)
+  - FirebaseCore (9.0.0):
+    - FirebaseCoreDiagnostics (~> 9.0)
+    - FirebaseCoreInternal (~> 9.0)
+    - GoogleUtilities/Environment (~> 7.7)
+    - GoogleUtilities/Logger (~> 7.7)
+  - FirebaseCoreDiagnostics (9.0.0):
+    - GoogleDataTransport (~> 9.1)
+    - GoogleUtilities/Environment (~> 7.7)
+    - GoogleUtilities/Logger (~> 7.7)
+    - nanopb (~> 2.30908.0)
+  - FirebaseCoreInternal (9.1.0):
+    - "GoogleUtilities/NSData+zlib (~> 7.7)"
+  - FirebaseCrashlytics (9.0.0):
+    - FirebaseCore (~> 9.0)
+    - FirebaseInstallations (~> 9.0)
+    - GoogleDataTransport (~> 9.1)
+    - GoogleUtilities/Environment (~> 7.7)
+    - nanopb (~> 2.30908.0)
+    - PromisesObjC (~> 2.1)
+  - FirebaseInstallations (9.0.0):
+    - FirebaseCore (~> 9.0)
+    - GoogleUtilities/Environment (~> 7.7)
+    - GoogleUtilities/UserDefaults (~> 7.7)
+    - PromisesObjC (~> 2.1)
+  - FirebaseMessaging (9.0.0):
+    - FirebaseCore (~> 9.0)
+    - FirebaseInstallations (~> 9.0)
+    - GoogleDataTransport (~> 9.1)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
+    - GoogleUtilities/Environment (~> 7.7)
+    - GoogleUtilities/Reachability (~> 7.7)
+    - GoogleUtilities/UserDefaults (~> 7.7)
+    - nanopb (~> 2.30908.0)
+  - FloatRatingView (2.0)
+  - FSCalendar (2.7.9)
+  - GoogleAppMeasurement/WithoutAdIdSupport (9.0.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
+    - GoogleUtilities/MethodSwizzler (~> 7.7)
+    - GoogleUtilities/Network (~> 7.7)
+    - "GoogleUtilities/NSData+zlib (~> 7.7)"
+    - nanopb (~> 2.30908.0)
+  - GoogleDataTransport (9.1.4):
+    - GoogleUtilities/Environment (~> 7.7)
+    - nanopb (< 2.30910.0, >= 2.30908.0)
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleMaps (5.2.0):
+    - GoogleMaps/Maps (= 5.2.0)
+  - GoogleMaps/Base (5.2.0)
+  - GoogleMaps/Maps (5.2.0):
+    - GoogleMaps/Base
+  - GooglePlaces (5.1.0)
+  - GoogleUtilities/AppDelegateSwizzler (7.7.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+  - GoogleUtilities/Environment (7.7.0):
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/Logger (7.7.0):
+    - GoogleUtilities/Environment
+  - GoogleUtilities/MethodSwizzler (7.7.0):
+    - GoogleUtilities/Logger
+  - GoogleUtilities/Network (7.7.0):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (7.7.0)"
+  - GoogleUtilities/Reachability (7.7.0):
+    - GoogleUtilities/Logger
+  - GoogleUtilities/UserDefaults (7.7.0):
+    - GoogleUtilities/Logger
+  - IBLocalizable (1.3.0)
+  - MaterialComponents/ActivityIndicator (124.2.0):
+    - MaterialComponents/Palettes
+    - MaterialComponents/private/Application
+    - MDFInternationalization
+    - MotionAnimator (~> 4.0)
+  - MaterialComponents/Palettes (124.2.0)
+  - MaterialComponents/private/Application (124.2.0)
+  - MDFInternationalization (3.0.0)
+  - MotionAnimator (4.0.1):
+    - MotionInterchange (~> 3.0)
+  - MotionInterchange (3.0.0)
+  - nanopb (2.30908.0):
+    - nanopb/decode (= 2.30908.0)
+    - nanopb/encode (= 2.30908.0)
+  - nanopb/decode (2.30908.0)
+  - nanopb/encode (2.30908.0)
+  - ObjectMapper (3.3.0)
+  - paper-onboarding (6.1.3)
+  - PromisesObjC (2.1.0)
+  - R.swift (6.1.0):
+    - R.swift.Library (~> 5.3.0)
+  - R.swift.Library (5.3.0)
+  - RxAlamofire (6.1.1):
+    - RxAlamofire/Core (= 6.1.1)
+  - RxAlamofire/Core (6.1.1):
+    - Alamofire (~> 5.4)
+    - RxSwift (~> 6.0)
+  - RxCocoa (6.5.0):
+    - RxRelay (= 6.5.0)
+    - RxSwift (= 6.5.0)
+  - RxKeyboard (2.0.0):
+    - RxCocoa (~> 6.0)
+    - RxSwift (~> 6.0)
+  - RxRelay (6.5.0):
+    - RxSwift (= 6.5.0)
+  - RxSwift (6.5.0)
+  - SegueKit (3.0.0):
+    - SegueKit/Core (= 3.0.0)
+  - SegueKit/Core (3.0.0)
+  - SimpleCheckbox (2.1.0)
+  - SnapKit (5.0.1)
+  - Socket.IO-Client-Swift (13.1.3):
+    - Starscream (~> 3.0.2)
+  - Starscream (3.0.6)
+  - SwiftLocation (3.2.3):
+    - SwiftyJSON (~> 4.0.0-alpha.1)
+  - SwiftyJSON (4.0.0)
+  - Swinject (2.4.1)
+  - TinkoffASDKCore (2.4.3)
+  - TinkoffASDKUI (2.4.3):
+    - TinkoffASDKCore
+  - XLPagerTabStrip (9.0.0)
+
+DEPENDENCIES:
+  - Alamofire (~> 5)
+  - AlamofireImage (~> 4.1)
+  - AnyFormatKit (= 2.5.1)
+  - AnyFormatKit (~> 2.5.1)
+  - CocoaLumberjack/Swift (~> 3.7.4)
+  - DatePickerDialog (= 4.0)
+  - Firebase/AnalyticsWithoutAdIdSupport
+  - Firebase/Crashlytics
+  - Firebase/Messaging
+  - FloatRatingView (= 2.0)
+  - FSCalendar (~> 2.7.9)
+  - GoogleMaps
+  - GooglePlaces
+  - IBLocalizable (= 1.3.0)
+  - MaterialComponents/ActivityIndicator (= 124.2.0)
+  - ObjectMapper (= 3.3.0)
+  - paper-onboarding (= 6.1.3)
+  - R.swift (= 6.1.0)
+  - RxAlamofire (= 6.1.1)
+  - RxKeyboard (~> 2.0.0)
+  - RxSwift (~> 6.5.0)
+  - SegueKit (from `https://github.com/langyanduan/SegueKit`)
+  - SimpleCheckbox
+  - SnapKit (~> 5.0.0)
+  - Socket.IO-Client-Swift (~> 13.1.3)
+  - SwiftLocation (~> 3.2.3)
+  - Swinject (~> 2.4.0)
+  - TinkoffASDKCore (~> 2.4.3)
+  - TinkoffASDKUI (~> 2.4.3)
+  - XLPagerTabStrip (~> 9.0.0)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - AlamofireImage
+    - AnyFormatKit
+    - CocoaLumberjack
+    - DatePickerDialog
+    - Firebase
+    - FirebaseAnalytics
+    - FirebaseCore
+    - FirebaseCoreDiagnostics
+    - FirebaseCoreInternal
+    - FirebaseCrashlytics
+    - FirebaseInstallations
+    - FirebaseMessaging
+    - FloatRatingView
+    - FSCalendar
+    - GoogleAppMeasurement
+    - GoogleDataTransport
+    - GoogleMaps
+    - GooglePlaces
+    - GoogleUtilities
+    - IBLocalizable
+    - MaterialComponents
+    - MDFInternationalization
+    - MotionAnimator
+    - MotionInterchange
+    - nanopb
+    - ObjectMapper
+    - paper-onboarding
+    - PromisesObjC
+    - R.swift
+    - R.swift.Library
+    - RxAlamofire
+    - RxCocoa
+    - RxKeyboard
+    - RxRelay
+    - RxSwift
+    - SimpleCheckbox
+    - SnapKit
+    - Socket.IO-Client-Swift
+    - Starscream
+    - SwiftLocation
+    - SwiftyJSON
+    - Swinject
+    - TinkoffASDKCore
+    - TinkoffASDKUI
+    - XLPagerTabStrip
+
+EXTERNAL SOURCES:
+  SegueKit:
+    :git: https://github.com/langyanduan/SegueKit
+
+CHECKOUT OPTIONS:
+  SegueKit:
+    :commit: 5d95f2bb596ec3b8e39a9884040f38a71e970be6
+    :git: https://github.com/langyanduan/SegueKit
+
+SPEC CHECKSUMS:
+  Alamofire: 87bd8c952f9a4454320fce00d9cc3de57bcadaf5
+  AlamofireImage: 34a2d90b0e5fe6a5605f85ae4b7b01e784c60192
+  AnyFormatKit: 4ef60ad3f48c69962d482bb2de0a6d3214e8527b
+  CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
+  DatePickerDialog: ccff2f91ff7a018057a4d72fa5ad6de49c8cb0cd
+  Firebase: a876fadc5ea653a377693376fd4f885c62704512
+  FirebaseAnalytics: ea4f6f4b604a20b4de4d3c7f7a2cb51d9a989040
+  FirebaseCore: e4c0b5d9727eaee0b43f9ed00baff7500c188d7b
+  FirebaseCoreDiagnostics: 54410e5d156bf406a764c2722d9f77d682723b4c
+  FirebaseCoreInternal: f3c838ae0b41cd840bbf34f90debfede78d352e5
+  FirebaseCrashlytics: 08561398868790fc9694b85efb4c080940926fcc
+  FirebaseInstallations: e693c0dfe404af44afbd553de42498b2ca1ca189
+  FirebaseMessaging: 411a61cde991cbd00b5b11c7a25e0c8f28c44990
+  FloatRatingView: 857ab8f10040d06a42fc979f486c8f9fecd2f2e5
+  FSCalendar: a04b09f16f811bc92e82f3cf852a15225233b9d5
+  GoogleAppMeasurement: 2c2792d43ebdea0524adbc90cba9139721f3039b
+  GoogleDataTransport: 5fffe35792f8b96ec8d6775f5eccd83c998d5a3b
+  GoogleMaps: 025272d5876d3b32604e5c080dc25eaf68764693
+  GooglePlaces: c57cd5aa7e91d10fa5106c792de74f3bd6436260
+  GoogleUtilities: e0913149f6b0625b553d70dae12b49fc62914fd1
+  IBLocalizable: bebcf04d98f422a2544f2b000d19387dfe8c317b
+  MaterialComponents: 1a9b2d9d45b1601ae544de85089adc4c464306d4
+  MDFInternationalization: d697c55307816222a55685c4ccb1044ffb030c12
+  MotionAnimator: 5f99d7c9592928c0f28a66283eda9c3b657dc480
+  MotionInterchange: 13adae439b377e31d1674cc165539d50e1d1566a
+  nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
+  ObjectMapper: b612bf8c8e99c4dc0bb6013a51f7c27966ed5da9
+  paper-onboarding: 47ded9ede6ae9dd7ec135dddd8bd3e170b79d799
+  PromisesObjC: 99b6f43f9e1044bd87a95a60beff28c2c44ddb72
+  R.swift: ec98ff71c4ab2f6fd01dd077e5afd15e63a4834c
+  R.swift.Library: 0fc583cb55a99e28901299cc451614cad1161962
+  RxAlamofire: beb75a1c452d0de225651db4903f5d29d034a620
+  RxCocoa: 94f817b71c07517321eb4f9ad299112ca8af743b
+  RxKeyboard: 4f5863f43b4ff0cbb2a20b94688d6b80c8a43c14
+  RxRelay: 1de1523e604c72b6c68feadedd1af3b1b4d0ecbd
+  RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
+  SegueKit: aa60201e65de107d7f70ed41690a7075e34dd87d
+  SimpleCheckbox: ddcd433ab8c3a8f57300bebda13151a8f302c7f9
+  SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
+  Socket.IO-Client-Swift: d30d6fd08a38ad2a182b090936a043bf512ab2de
+  Starscream: ef3ece99d765eeccb67de105bfa143f929026cf5
+  SwiftLocation: a3c3bc2023118171ef3572188a31def94aa0892c
+  SwiftyJSON: 070dabdcb1beb81b247c65ffa3a79dbbfb3b48aa
+  Swinject: f7f15a9672e99328c1f07f277091087917215700
+  TinkoffASDKCore: 2121c29c4e54e4f920c3390a1a6a8c5c51aa0b8b
+  TinkoffASDKUI: 02d120f38c79f17746947796ec806dfce4ff16a9
+  XLPagerTabStrip: 61c57fd61f611ee5f01ff1495ad6fbee8bf496c5
+
+PODFILE CHECKSUM: a1e84d11741a9998485c1686b501260328c724f4
+
+COCOAPODS: 1.11.3

@@ -5,6 +5,7 @@ import (
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/module/bundler"
+	"murphysec-cli-simple/module/cocoapods"
 	"murphysec-cli-simple/module/composer"
 	"murphysec-cli-simple/module/go_mod"
 	"murphysec-cli-simple/module/gradle"
@@ -26,6 +27,7 @@ var managedInspector = []base.Inspector{
 	python.New(),
 	composer.New(),
 	bundler.New(),
+	cocoapods.New(),
 }
 
 // 受管理扫描
