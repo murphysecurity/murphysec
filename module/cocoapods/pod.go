@@ -35,8 +35,8 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 		return nil, errors.Wrap(e, "Bundler")
 	}
 	return []base.Module{{
-		PackageManager: "bundler",
-		Language:       "ruby",
+		PackageManager: "cocoapods",
+		Language:       "oc",
 		PackageFile:    "Gemfile.lock",
 		Name:           tree[0].Name,
 		Dependencies:   tree,
