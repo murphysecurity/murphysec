@@ -20,6 +20,7 @@ stages:          # List of stages for jobs, and their order of execution
 
 variables:
   GOPROXY: https://goproxy.cn,direct
+  GOPATH: "$CI_PROJECT_DIR/.go"
 
 compose-build-saas:
   image: iseki0/go-deno:latest
@@ -33,6 +34,12 @@ compose-build-saas:
       - murphysec-saas-linux-amd64.sha256
       - murphysec-saas-windows-amd64.exe.sha256
       - murphysec-saas-darwin-amd64.sha256
+  cache:
+    key: cli-build-cache-0041
+    paths:
+      - .go/pkg/mod/
+  before_script:
+    - mkdir -p .go
   script:
     - export
     - deno run --allow-all gobuild.ts saas
@@ -56,6 +63,12 @@ compose-build:
       - murphysec-linux-amd64.sha256
       - murphysec-windows-amd64.exe.sha256
       - murphysec-darwin-amd64.sha256
+  cache:
+    key: cli-build-cache-0041
+    paths:
+      - .go/pkg/mod/
+  before_script:
+    - mkdir -p .go
   script:
     - export
     - deno run --allow-all gobuild.ts
