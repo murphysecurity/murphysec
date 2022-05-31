@@ -11,6 +11,7 @@ import (
 	"murphysec-cli-simple/module/gradle"
 	"murphysec-cli-simple/module/maven"
 	"murphysec-cli-simple/module/npm"
+	"murphysec-cli-simple/module/poetry"
 	"murphysec-cli-simple/module/python"
 	"murphysec-cli-simple/module/yarn"
 	"path/filepath"
@@ -28,6 +29,7 @@ var managedInspector = []base.Inspector{
 	composer.New(),
 	bundler.New(),
 	cocoapods.New(),
+	poetry.New(),
 }
 
 // 受管理扫描

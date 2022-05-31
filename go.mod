@@ -1,10 +1,9 @@
 module murphysec-cli-simple
 
-go 1.17
+go 1.18
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.4
-	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/antchfx/xmlquery v1.3.10
 	github.com/briandowns/spinner v1.18.1
 	github.com/denisbrodbeck/machineid v1.0.1
@@ -14,10 +13,11 @@ require (
 	github.com/magiconair/properties v1.8.5
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.11.0
+	github.com/pelletier/go-toml/v2 v2.0.1
 	github.com/pkg/errors v0.9.1
 	github.com/savsgio/gotils v0.0.0-20220401102855-e56b59f40436
 	github.com/spf13/cobra v1.4.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/vifraa/gopom v0.1.0
 	github.com/whilp/git-urls v1.0.0
 	github.com/ztrue/shutdown v0.1.1
