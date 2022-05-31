@@ -1,10 +1,12 @@
 package gradle
 
 import (
+	"context"
 	"fmt"
 	"github.com/pkg/errors"
 	"io/fs"
 	"murphysec-cli-simple/display"
+	"murphysec-cli-simple/env"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"os"
@@ -12,6 +14,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type Inspector struct{}
@@ -33,7 +36,9 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 	dir := task.ProjectDir
 	logger.Debug.Println("gradle inspect dir:", dir)
 	useGradle := true
-	info, e := evalGradleInfo(dir)
+	ctx, cf := context.WithTimeout(context.TODO(), time.Second*time.Duration(env.GradleExecutionTimeoutSecond))
+	defer cf()
+	info, e := evalGradleInfo(ctx, dir)
 	if e != nil {
 		task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		logger.Info.Println("check gradle failed", e.Error())
@@ -42,14 +47,14 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 	}
 	if useGradle {
 		logger.Info.Println(info)
-		projects, e := fetchGradleProjects(dir, info)
+		projects, e := fetchGradleProjects(ctx, dir, info)
 		if e != nil {
 			logger.Info.Println("fetch gradle projects failed.", e.Error())
 		}
 		logger.Debug.Println("Gradle projects:", strings.Join(projects, ", "))
 
 		{
-			depInfo, e := evalGradleDependencies(dir, "", info)
+			depInfo, e := evalGradleDependencies(ctx, dir, "", info)
 			if e != nil {
 				logger.Info.Println("evalGradleDependencies failed. <root>", e.Error())
 			} else {
@@ -57,7 +62,7 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 			}
 		}
 		for _, projectId := range projects {
-			depInfo, e := evalGradleDependencies(dir, projectId, info)
+			depInfo, e := evalGradleDependencies(ctx, dir, projectId, info)
 			if e != nil {
 				task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 				logger.Info.Println("evalGradleDependencies failed.", projectId, e.Error())
@@ -123,8 +128,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 // fetchGradleProjects evaluate `gradle projects` and parse the result, then returns a project identifier list.
-func fetchGradleProjects(projectDir string, info *GradleInfo) ([]string, error) {
-	c := info.CallCmd("--console", "plain", "-q", "projects")
+func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleInfo) ([]string, error) {
+	c := info.CallCmd(ctx, "--console", "plain", "-q", "projects")
 	c.Dir = projectDir
 	pattern := regexp.MustCompile("Project\\s+'(:.+?)'")
 	output, e := c.Output()
@@ -145,8 +150,8 @@ func fetchGradleProjects(projectDir string, info *GradleInfo) ([]string, error) 
 	return rs, nil
 }
 
-func evalGradleDependencies(projectDir string, projectName string, info *GradleInfo) (*GradleDependencyInfo, error) {
-	c := info.CallCmd(fmt.Sprintf("%s:dependencies", projectName), "--console", "plain", "-q", "--configuration=runtimeClasspath")
+func evalGradleDependencies(ctx context.Context, projectDir string, projectName string, info *GradleInfo) (*GradleDependencyInfo, error) {
+	c := info.CallCmd(ctx, fmt.Sprintf("%s:dependencies", projectName), "--console", "plain", "-q", "--configuration=runtimeClasspath")
 	logger.Debug.Println("Execute:", c.String())
 	c.Dir = projectDir
 	data, e := c.Output()

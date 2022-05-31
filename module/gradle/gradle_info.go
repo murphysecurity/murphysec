@@ -1,6 +1,7 @@
 package gradle
 
 import (
+	"context"
 	"fmt"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/logger"
@@ -16,14 +17,14 @@ type GradleInfo struct {
 	Executable string
 	Version    string
 	Revision   string
-	CallCmd    func(args ...string) *exec.Cmd
+	CallCmd    func(ctx context.Context, args ...string) *exec.Cmd
 }
 
 func (g *GradleInfo) String() string {
 	return fmt.Sprintf("Gradle[%s]: %s , revision: %s", g.Version, g.Executable, g.Revision)
 }
 
-func evalGradleInfo(dir string) (info *GradleInfo, e error) {
+func evalGradleInfo(ctx context.Context, dir string) (info *GradleInfo, e error) {
 	/**
 	1.
 	由于 ../../inspector/managed_inspect.go:35 使用了filepath.WalkDir
@@ -47,13 +48,13 @@ func evalGradleInfo(dir string) (info *GradleInfo, e error) {
 	==== 此类目录结构并非强制，但处于兼容考虑应当支持~~~
 	*/
 	gradlewDir := dir
-	info, e = execWrappedGradleInfo(gradlewDir)
+	info, e = execWrappedGradleInfo(ctx, gradlewDir)
 	if e == nil {
 		return // gradle wrapper 找到了，就他了
 	} else {
 		logger.Debug.Println("check gradle wrapper failed.", e.Error())
 	}
-	info, e = execRawGradleInfo(dir)
+	info, e = execRawGradleInfo(ctx, dir)
 	if e != nil {
 		logger.Debug.Println("check raw gradle failed.", e.Error())
 	}
@@ -78,8 +79,8 @@ func parseGradleVersion(s string) GradleInfo {
 	return rs
 }
 
-func execRawGradleInfo(baseDir string) (*GradleInfo, error) {
-	c := exec.Command("gradle", "--version")
+func execRawGradleInfo(ctx context.Context, baseDir string) (*GradleInfo, error) {
+	c := exec.CommandContext(ctx, "gradle", "--version")
 	c.Dir = baseDir
 	data, e := c.Output()
 	if e != nil {
@@ -90,26 +91,26 @@ func execRawGradleInfo(baseDir string) (*GradleInfo, error) {
 		return nil, errors.Wrap(e, "Get version failed: "+s)
 	}
 	rs := parseGradleVersion(string(data))
-	rs.CallCmd = func(args ...string) *exec.Cmd {
-		return exec.Command("gradle", args...)
+	rs.CallCmd = func(ctx context.Context, args ...string) *exec.Cmd {
+		return exec.CommandContext(ctx, "gradle", args...)
 	}
 	rs.Executable = "gradle"
 	return &rs, nil
 }
 
-func execWrappedGradleInfo(baseDir string) (*GradleInfo, error) {
+func execWrappedGradleInfo(ctx context.Context, baseDir string) (*GradleInfo, error) {
 	var c *exec.Cmd
 	var wrapperPath string
 	if runtime.GOOS == "windows" {
 		wrapperPath = filepath.Join(baseDir, "gradlew.bat")
-		c = exec.Command(wrapperPath, "--version")
+		c = exec.CommandContext(ctx, wrapperPath, "--version")
 	} else {
 		wrapperPath = filepath.Join(baseDir, "gradlew")
 		d, e := exec.Command("chmod", "0755", wrapperPath).Output()
 		if e != nil {
 			logger.Warn.Println("Chmod wrapper 0755 failed.", e.Error(), string(d), wrapperPath)
 		}
-		c = exec.Command(wrapperPath, "--version")
+		c = exec.CommandContext(ctx, wrapperPath, "--version")
 	}
 	logger.Debug.Println("Query version:", c.String())
 	c.Dir = baseDir
@@ -125,16 +126,16 @@ func execWrappedGradleInfo(baseDir string) (*GradleInfo, error) {
 	rs := parseGradleVersion(string(data))
 	rs.Executable = wrapperPath
 	if runtime.GOOS == "windows" {
-		rs.CallCmd = func(args ...string) *exec.Cmd {
-			c := exec.Command(wrapperPath, args...)
+		rs.CallCmd = func(ctx context.Context, args ...string) *exec.Cmd {
+			c := exec.CommandContext(ctx, wrapperPath, args...)
 			logger.Debug.Println("Execute:", c.String())
 			return c
 		}
 	} else {
-		rs.CallCmd = func(args ...string) *exec.Cmd {
+		rs.CallCmd = func(ctx context.Context, args ...string) *exec.Cmd {
 			aa := []string{wrapperPath}
 			aa = append(aa, args...)
-			c := exec.Command("sh", "-c", strings.Join(aa, " "))
+			c := exec.CommandContext(ctx, "sh", "-c", strings.Join(aa, " "))
 			logger.Debug.Println("Execute:", c.String())
 			return c
 		}
