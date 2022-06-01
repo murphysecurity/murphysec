@@ -37,7 +37,7 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 	return []base.Module{{
 		PackageManager: "cocoapods",
 		Language:       "oc",
-		PackageFile:    "Gemfile.lock",
+		PackageFile:    "Podfile.lock",
 		Name:           tree[0].Name,
 		Dependencies:   tree,
 	}}, nil
