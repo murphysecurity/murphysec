@@ -109,7 +109,7 @@ func (i Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 		m := base.Module{
 			Name:           "Python",
 			PackageManager: "pip",
-			Language:       "python",
+			Language:       "Python",
 			Dependencies:   []base.Dependency{},
 			FilePath:       filepath.Join(dir),
 		}

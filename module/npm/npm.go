@@ -78,7 +78,7 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 
 	module := base.Module{
 		PackageManager: "npm",
-		Language:       "javascript",
+		Language:       "JavaScript",
 		PackageFile:    "package-lock.json",
 		Name:           lockfile.Name,
 		Version:        lockfile.Version,

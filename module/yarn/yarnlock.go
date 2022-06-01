@@ -37,7 +37,7 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 	}
 	m := base.Module{
 		PackageManager: "yarn",
-		Language:       "javascript",
+		Language:       "JavaScript",
 		PackageFile:    "yarn.lock",
 		Name:           filepath.Base(dir),
 		Version:        "",

@@ -180,7 +180,7 @@ type GradleDependencyInfo struct {
 func (g *GradleDependencyInfo) BaseModule(path string) base.Module {
 	return base.Module{
 		PackageManager: "gradle",
-		Language:       "java",
+		Language:       "Java",
 		Name:           g.ProjectName,
 		Dependencies:   _convDep(g.Dependencies),
 		FilePath:       path,

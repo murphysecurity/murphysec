@@ -32,7 +32,7 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 	}
 	module := &base.Module{
 		PackageManager: "composer",
-		Language:       "php",
+		Language:       "PHP",
 		PackageFile:    "composer.json",
 		Name:           manifest.Name,
 		Version:        manifest.Version,

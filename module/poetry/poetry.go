@@ -35,7 +35,7 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 
 	return []base.Module{{
 		PackageManager: "poetry",
-		Language:       "python",
+		Language:       "Python",
 		PackageFile:    "pyprojject.toml",
 		Name:           manifest.Name,
 		Dependencies:   manifest.Dependencies,

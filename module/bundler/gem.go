@@ -36,7 +36,7 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 	}
 	return []base.Module{{
 		PackageManager: "bundler",
-		Language:       "ruby",
+		Language:       "Ruby",
 		PackageFile:    "Gemfile.lock",
 		Name:           tree[0].Name,
 		Dependencies:   tree,
