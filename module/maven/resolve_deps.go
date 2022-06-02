@@ -2,19 +2,23 @@ package maven
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
 type DepGraph map[Coordinate]map[Coordinate]struct{}
 
 func (d DepGraph) DOT() string {
-	var s []string
-	s = append(s, "digraph dep {")
+	var t []string
 	for k, list := range d {
 		for v := range list {
-			s = append(s, fmt.Sprintf("  \"%s\" -> \"%s\"", k.String(), v.String()))
+			t = append(t, fmt.Sprintf("  \"%s\" -> \"%s\"", k.String(), v.String()))
 		}
 	}
+	sort.Strings(t)
+	var s []string
+	s = append(s, "digraph dep {")
+	s = append(s, t...)
 	s = append(s, "}")
 	return strings.Join(s, "\n")
 }
@@ -78,18 +82,15 @@ func (d *DepTreeAnalyzer) _resolve(p *PomFile, visited map[Coordinate]struct{}, 
 		defer delete(visited, p.coordinate)
 	}
 
-	if _, ok := visited[p.coordinate]; !ok {
-		panic("wtf")
-	}
-
 	// iterate all dependencies, fetch it, resolve it
 	for _, dep := range p.dependencies {
+		if d.graph[p.coordinate] == nil {
+			d.graph[p.coordinate] = map[Coordinate]struct{}{}
+		}
+		d.graph[p.coordinate][dep.Coordinate] = struct{}{}
 		pf := d.resolver.ResolveByCoordinate(dep.Coordinate)
 		if pf == nil {
 			continue
-		}
-		if d.graph[p.coordinate] == nil {
-			d.graph[p.coordinate] = map[Coordinate]struct{}{}
 		}
 		d.graph[p.coordinate][pf.coordinate] = struct{}{}
 		d._resolve(pf, visited, depth-1)

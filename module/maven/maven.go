@@ -1,10 +1,12 @@
 package maven
 
 import (
+	"context"
 	"fmt"
 	"murphysec-cli-simple/logger"
 	"murphysec-cli-simple/module/base"
 	"path/filepath"
+	"sort"
 	"sync"
 )
 
@@ -25,54 +27,60 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 	moduleFileMapping := map[Coordinate]string{}
 	var e error
 	// check maven version, skip maven scan if check fail
-	skipMvnScan, mvnVer := checkMvnEnv()
-	if skipMvnScan {
-		deps, e = scanMvnDependency(dir)
+	doMvnScan, mvnVer := checkMvnEnv()
+	if doMvnScan {
+		deps, e = scanMvnDependency(context.TODO(), dir)
 		if e != nil {
 			logger.Err.Printf("mvn scan failed: %+v\n", e)
 		}
+	} else {
+		logger.Warn.Println("Maven disabled")
 	}
 	// analyze pom file
 	{
 		if deps == nil {
 			deps = map[Coordinate][]Dependency{}
 		}
-		if len(deps) == 0 {
-			pomFiles := InspectModule(dir)
-			logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
-			resolver := NewResolver()
-			for _, builder := range pomFiles {
-				{
-					pf := resolver.ResolveLocally(builder, nil)
-					if pf == nil {
-						continue
-					}
-					relPath, _ := filepath.Rel(dir, pf.path)
-					moduleFileMapping[pf.coordinate] = relPath
-					if len(deps[pf.coordinate]) > 0 {
-						continue
-					}
-				}
-				pf := resolver.Resolve(builder, nil)
+		pomFiles := InspectModule(dir)
+		logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
+		resolver := NewResolver()
+		var builders []*PomBuilder
+		for _, it := range pomFiles {
+			builders = append(builders, it)
+		}
+		sort.Slice(builders, func(i, j int) bool {
+			return builders[i].Path < builders[j].Path
+		})
+		for _, builder := range builders {
+			{
+				pf := resolver.ResolveLocally(builder, nil)
 				if pf == nil {
 					continue
 				}
-				if !pf.coordinate.Complete() {
-					logger.Info.Println("local pom coordinate can't be resolve", pf.coordinate)
+				moduleFileMapping[pf.coordinate] = pf.path
+				if len(deps[pf.coordinate]) > 0 {
 					continue
 				}
-				analyzer := NewDepTreeAnalyzer(resolver)
-				graph := analyzer.Resolve(pf)
-				logger.Info.Println("dep graph")
-				logger.Info.Println(graph.DOT())
-				deps[pf.coordinate] = graph.Tree(pf.coordinate)
 			}
+			pf := resolver.Resolve(builder, nil)
+			if pf == nil {
+				continue
+			}
+			if !pf.coordinate.Complete() {
+				logger.Info.Println("local pom coordinate can't be resolve", pf.coordinate)
+				continue
+			}
+			analyzer := NewDepTreeAnalyzer(resolver)
+			graph := analyzer.Resolve(pf)
+			logger.Info.Println("dep graph")
+			logger.Info.Println(graph.DOT())
+			deps[pf.coordinate] = graph.Tree(pf.coordinate)
 		}
 	}
 	for coordinate, dependencies := range deps {
 		modules = append(modules, base.Module{
 			PackageManager: "maven",
-			Language:       "java",
+			Language:       "Java",
 			PackageFile:    "pom.xml",
 			Name:           coordinate.Name(),
 			Version:        coordinate.Version,
@@ -81,7 +89,7 @@ func ScanMavenProject(dir string) ([]base.Module, error) {
 			RuntimeInfo:    mvnVer,
 		})
 	}
-	if len(modules) == 0 && skipMvnScan {
+	if len(modules) == 0 && !doMvnScan {
 		return nil, MvnSkipped
 	}
 	return modules, nil

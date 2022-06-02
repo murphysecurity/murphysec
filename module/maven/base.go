@@ -13,16 +13,16 @@ import (
 
 type Inspector struct{}
 
+func (i *Inspector) Version() string {
+	return "v0.0.1"
+}
+
 func New() base.Inspector {
 	return &Inspector{}
 }
 
 func (i *Inspector) String() string {
-	return "MavenInspector@" + i.Version()
-}
-
-func (i *Inspector) Version() string {
-	return "v0.0.1"
+	return "MavenInspector"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {
