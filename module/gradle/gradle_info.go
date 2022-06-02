@@ -88,7 +88,7 @@ func execWrappedGradleInfo(baseDir string) (*GradleInfo, error) {
 		if e != nil {
 			logger.Warn.Println("Chmod wrapper 0755 failed.", e.Error(), string(d), wrapperPath)
 		}
-		c = exec.Command("sh", "-c", wrapperPath, "--version")
+		c = exec.Command(wrapperPath, "--version")
 	}
 	c.Dir = baseDir
 	data, e := c.Output()
@@ -108,9 +108,7 @@ func execWrappedGradleInfo(baseDir string) (*GradleInfo, error) {
 		}
 	} else {
 		rs.CallCmd = func(args ...string) *exec.Cmd {
-			aa := []string{wrapperPath}
-			aa = append(aa, args...)
-			return exec.Command("sh", "-c", strings.Join(aa, " "))
+			return exec.Command(wrapperPath, args...)
 		}
 	}
 	return &rs, nil
