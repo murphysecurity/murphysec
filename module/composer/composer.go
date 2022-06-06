@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"io/fs"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/simplejson"
@@ -24,20 +25,21 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "composer.json"))
 }
 
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	dir := task.ProjectDir
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectorTask(ctx)
+	dir := task.ScanDir
 	manifest, e := readManifest(filepath.Join(dir, "composer.json"))
 	if e != nil {
-		return nil, e
+		return e
 	}
-	module := &base.Module{
-		PackageManager: "composer",
-		Language:       "PHP",
+	module := &model.Module{
+		PackageManager: model.PMComposer,
+		Language:       model.PHP,
 		PackageFile:    "composer.json",
 		Name:           manifest.Name,
 		Version:        manifest.Version,
 		FilePath:       filepath.Join(dir, "composer.json"),
-		Dependencies:   []base.Dependency{},
+		Dependencies:   []model.Dependency{},
 		RuntimeInfo:    nil,
 		UUID:           uuid.UUID{},
 	}
@@ -68,16 +70,17 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 			module.Dependencies = append(module.Dependencies, *node)
 		}
 	}
-	return []base.Module{*module}, nil
+	task.AddModule(*module)
+	return nil
 }
 
-func _buildDepTree(lockfile map[string]Package, visitedDep map[string]struct{}, targetName string, versionConstraint string) *base.Dependency {
+func _buildDepTree(lockfile map[string]Package, visitedDep map[string]struct{}, targetName string, versionConstraint string) *model.Dependency {
 	if _, ok := visitedDep[targetName]; ok || len(visitedDep) > 3 {
 		return nil
 	}
 	visitedDep[targetName] = struct{}{}
 	defer delete(visitedDep, targetName)
-	rs := &base.Dependency{
+	rs := &model.Dependency{
 		Name:    targetName,
 		Version: versionConstraint,
 	}
@@ -96,10 +99,6 @@ func _buildDepTree(lockfile map[string]Package, visitedDep map[string]struct{}, 
 		}
 	}
 	return rs
-}
-
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMComposer
 }
 
 func New() base.Inspector {

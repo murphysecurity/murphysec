@@ -6,5 +6,5 @@ import (
 )
 
 func MachineId() string {
-	return must.String(machineid.ProtectedID("murphysec"))
+	return must.A(machineid.ProtectedID("murphysec"))
 }

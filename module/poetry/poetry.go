@@ -1,9 +1,11 @@
 package poetry
 
 import (
+	"context"
 	"github.com/google/uuid"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/pkg/errors"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"path/filepath"
@@ -22,29 +24,26 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "pyproject.toml"))
 }
 
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	pyprojectFile := filepath.Join(task.ProjectDir, "pyproject.toml")
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectorTask(ctx)
+	pyprojectFile := filepath.Join(task.ScanDir, "pyproject.toml")
 	data, e := utils.ReadFileLimited(pyprojectFile, 1024*1024*4)
 	if e != nil {
-		return nil, errors.Wrap(e, "Read pyproject.toml fail")
+		return errors.Wrap(e, "Read pyproject.toml fail")
 	}
 	manifest, e := parsePoetry(data)
 	if e != nil {
-		return nil, errors.Wrap(e, "PoetryInspector")
+		return errors.Wrap(e, "PoetryInspector")
 	}
-
-	return []base.Module{{
-		PackageManager: "poetry",
-		Language:       "Python",
+	task.AddModule(model.Module{
+		PackageManager: model.PMPoetry,
+		Language:       model.Python,
 		PackageFile:    "pyprojject.toml",
 		Name:           manifest.Name,
 		Dependencies:   manifest.Dependencies,
 		UUID:           uuid.Must(uuid.NewRandom()),
-	}}, nil
-}
-
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMPython
+	})
+	return nil
 }
 
 func New() base.Inspector {
@@ -53,7 +52,7 @@ func New() base.Inspector {
 
 type Manifest struct {
 	Name         string
-	Dependencies []base.Dependency
+	Dependencies []model.Dependency
 }
 
 func parsePoetry(input []byte) (*Manifest, error) {
@@ -65,13 +64,13 @@ func parsePoetry(input []byte) (*Manifest, error) {
 	if !ok {
 		return nil, errors.Wrap(ErrParsePoetry, "bad toml")
 	}
-	var deps []base.Dependency
+	var deps []model.Dependency
 	for k, v := range m {
 		v := strings.Trim(v, "~^* ")
 		if v == "" {
 			continue
 		}
-		deps = append(deps, base.Dependency{
+		deps = append(deps, model.Dependency{
 			Name:    k,
 			Version: v,
 		})

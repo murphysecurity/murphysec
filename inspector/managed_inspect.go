@@ -1,8 +1,12 @@
 package inspector
 
 import (
+	"context"
+	_ "embed"
+	"fmt"
 	"io/fs"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/module/bundler"
 	"murphysec-cli-simple/module/cocoapods"
@@ -32,58 +36,64 @@ var managedInspector = []base.Inspector{
 	poetry.New(),
 }
 
-// 受管理扫描
-func managedInspectScan(ctx *ScanContext) error {
-	dir := ctx.ProjectDir
-	startTime := time.Now()
-	logger.Info.Println("Auto scan dir:", dir)
+type inspectorAcceptance struct {
+	inspector base.Inspector
+	dir       string
+}
+
+func (i inspectorAcceptance) String() string {
+	return fmt.Sprintf("[%s]%s", i.inspector, i.dir)
+}
+
+func managedInspect(ctx context.Context) error {
+	scanTask := model.UseScanTask(ctx)
+	baseDir := scanTask.ProjectDir
+	logger.Info.Println("Auto scan dir:", baseDir)
+
+	// todo: 重构，随着检查器越来越多，这里越来越慢
+	var inspectorAcceptances []inspectorAcceptance
 	for _, inspector := range managedInspector {
-		filepath.WalkDir(ctx.ProjectDir, func(path string, d fs.DirEntry, err error) error {
+		e := filepath.WalkDir(baseDir, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				logger.Warn.Println(fmt.Sprintf("Can't walk into: %s due an error: %s", path, err.Error()))
+				return nil
+			}
 			if d == nil {
 				return nil
 			}
-			if !d.IsDir() {
-				return nil
+			if d.IsDir() && dirIgnored(d.Name()) {
+				return filepath.SkipDir
 			}
-			{
-				s, e := filepath.Rel(ctx.ProjectDir, path)
-				if strings.Count(filepath.ToSlash(s), "/") > 3 || e != nil {
+			if relDir, e := filepath.Rel(baseDir, path); e == nil {
+				if strings.Count(filepath.ToSlash(relDir), "/") > 3 {
 					return filepath.SkipDir
 				}
+			} else {
+				return nil
 			}
 			if inspector.CheckDir(path) {
-				logger.Debug.Println("Matched", inspector, path)
-				rs, e := inspector.Inspect(&base.ScanTask{
-					ProjectDir: path,
-					UI:         ctx.UI(),
-				})
-				if e != nil {
-					logger.Info.Println("inspect failed.", inspector.String(), e.Error())
-					logger.Debug.Printf("%+v\n", e)
-					if e := base.UnwrapToInspectorError(e); e != nil {
-						ctx.InspectorError = append(ctx.InspectorError, *e)
-					}
-				} else {
-					for _, it := range rs {
-						ctx.AddManagedModule(it)
-					}
-				}
+				inspectorAcceptances = append(inspectorAcceptances, inspectorAcceptance{inspector, path})
 				return filepath.SkipDir
 			}
 			return nil
 		})
-	}
-	for i := range ctx.ManagedModules {
-		if ctx.ManagedModules[i].FilePath == "" {
-			continue
-		}
-		relPath, e := filepath.Rel(ctx.ProjectDir, ctx.ManagedModules[i].FilePath)
-		if e == nil {
-			ctx.ManagedModules[i].FilePath = "/" + filepath.ToSlash(relPath)
+		if e != nil {
+			return e
 		}
 	}
-	endTime := time.Now()
-	logger.Info.Println("Scan terminated. Cost time:", endTime.Sub(startTime))
-	logger.Info.Println("Total modules:", len(ctx.ManagedModules))
+
+	logger.Info.Printf("Found %d directories, in %v", len(inspectorAcceptances), time.Now().Sub(scanTask.StartTime))
+	for _, it := range inspectorAcceptances {
+		logger.Debug.Println(it)
+	}
+	for _, acceptance := range inspectorAcceptances {
+		st := time.Now()
+		c := model.WithInspectorTask(ctx, acceptance.dir)
+		e := acceptance.inspector.InspectProject(c)
+		logger.Info.Printf("%v, duration: %v", acceptance, time.Now().Sub(st))
+		if e != nil {
+			logger.Err.Println("InspectorError:", e.Error())
+		}
+	}
 	return nil
 }

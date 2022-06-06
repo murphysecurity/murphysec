@@ -5,11 +5,13 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"context"
 	"github.com/pkg/errors"
 	"io"
 	"io/fs"
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/utils/must"
 	"os"
 	"path/filepath"
@@ -17,7 +19,8 @@ import (
 	"sync"
 )
 
-func UploadCodeFile(ctx *ScanContext) error {
+func UploadCodeFile(ctx context.Context) error {
+	task := model.UseScanTask(ctx)
 	codeFiles := ScanCodeFile(ctx)
 	if len(codeFiles) == 0 {
 		return nil
@@ -35,7 +38,7 @@ func UploadCodeFile(ctx *ScanContext) error {
 					logger.Warn.Println("os.Stat file failed.", e.Error(), p)
 					continue
 				}
-				rp, e := filepath.Rel(ctx.ProjectDir, p)
+				rp, e := filepath.Rel(task.ProjectDir, p)
 				if e != nil {
 					logger.Warn.Println("get relative-path failed.", e.Error(), p)
 					continue
@@ -103,7 +106,7 @@ func UploadCodeFile(ctx *ScanContext) error {
 				logger.Info.Println("read zero byte")
 				continue
 			}
-			e = api.UploadChunk(ctx.TaskId, counter, io.LimitReader(bytes.NewReader(buf), int64(n)))
+			e = api.UploadChunk(task.TaskId, counter, io.LimitReader(bytes.NewReader(buf), int64(n)))
 			if e != nil {
 				logger.Err.Println("Upload file failed.", e.Error())
 				failure = true
@@ -120,10 +123,11 @@ func UploadCodeFile(ctx *ScanContext) error {
 	return nil
 }
 
-func ScanCodeFile(ctx *ScanContext) []string {
-	logger.Debug.Println("Start scan code files:", ctx.ProjectDir, "...")
+func ScanCodeFile(ctx context.Context) []string {
+	task := model.UseScanTask(ctx)
+	logger.Debug.Println("Start scan code files:", task.ProjectDir, "...")
 	fileSet := map[string]struct{}{}
-	e := filepath.Walk(ctx.ProjectDir, func(path string, info fs.FileInfo, err error) error {
+	e := filepath.Walk(task.ProjectDir, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || folderNameBlackList[info.Name()]) {
 			return filepath.SkipDir
 		}

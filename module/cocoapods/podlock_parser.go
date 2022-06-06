@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"encoding/json"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/module/base"
+	"murphysec-cli-simple/model"
 	"regexp"
 	"strings"
 )
@@ -72,7 +72,7 @@ func tokenizePodLocks(input string) (pdTokens, error) {
 	return rs, nil
 }
 
-func getDepFromLock(input string) ([]base.Dependency, error) {
+func getDepFromLock(input string) ([]model.Dependency, error) {
 	tree, e := parse(input)
 	if e != nil {
 		return nil, e
@@ -115,7 +115,7 @@ func getDepFromLock(input string) ([]base.Dependency, error) {
 			}
 		}
 	}
-	var rs []base.Dependency
+	var rs []model.Dependency
 	for _, it := range directDep {
 		t := _buildTree(graph, versionMap, map[string]struct{}{}, it)
 		if t == nil {
@@ -126,14 +126,14 @@ func getDepFromLock(input string) ([]base.Dependency, error) {
 	return rs, nil
 }
 
-func _buildTree(graph map[string][]string, versions map[string]string, visited map[string]struct{}, target string) *base.Dependency {
+func _buildTree(graph map[string][]string, versions map[string]string, visited map[string]struct{}, target string) *model.Dependency {
 	if _, ok := visited[target]; ok {
 		return nil
 	}
 	visited[target] = struct{}{}
 	defer delete(visited, target)
 
-	r := &base.Dependency{
+	r := &model.Dependency{
 		Name:         target,
 		Version:      versions[target],
 		Dependencies: nil,

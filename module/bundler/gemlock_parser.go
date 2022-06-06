@@ -5,7 +5,7 @@ import (
 	"container/list"
 	"fmt"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/module/base"
+	"murphysec-cli-simple/model"
 	"regexp"
 	"strings"
 )
@@ -142,7 +142,7 @@ func _calcIndent(s string) int {
 	return len(s) - len(strings.TrimLeft(s, " \t"))
 }
 
-func getDepGraph(input string) ([]base.Dependency, error) {
+func getDepGraph(input string) ([]model.Dependency, error) {
 	// ([\w.-]+)\s*\(([\w.-]+)\)
 	// catch group: name, version
 	var pattern = regexp.MustCompile("([\\w.-]+)\\s*\\(([\\w.-]+)\\)")
@@ -189,7 +189,7 @@ func getDepGraph(input string) ([]base.Dependency, error) {
 		roots = append(roots, left)
 	}
 	// build tree
-	var rs []base.Dependency
+	var rs []model.Dependency
 	for _, it := range roots {
 		if t := _buildCompTree(graph, versionMap, it, map[string]struct{}{}); t != nil {
 			rs = append(rs, *t)
@@ -198,7 +198,7 @@ func getDepGraph(input string) ([]base.Dependency, error) {
 	return rs, nil
 }
 
-func _buildCompTree(graph map[string][]string, versionMap map[string]string, target string, visited map[string]struct{}) *base.Dependency {
+func _buildCompTree(graph map[string][]string, versionMap map[string]string, target string, visited map[string]struct{}) *model.Dependency {
 	// avoid cycling
 	if _, ok := visited[target]; ok {
 		return nil
@@ -206,7 +206,7 @@ func _buildCompTree(graph map[string][]string, versionMap map[string]string, tar
 	visited[target] = struct{}{}
 	defer delete(visited, target)
 
-	d := &base.Dependency{
+	d := &model.Dependency{
 		Name:         target,
 		Version:      versionMap[target],
 		Dependencies: nil,

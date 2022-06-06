@@ -17,5 +17,5 @@ func TestGradleDep(t *testing.T) {
 	for i := range lines {
 		lines[i] = strings.Trim(lines[i], "\r")
 	}
-	fmt.Println(string(must.Byte(json.Marshal(parseGradleDependencies(lines)))))
+	fmt.Println(string(must.A(json.Marshal(parseGradleDependencies(lines)))))
 }

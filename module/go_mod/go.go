@@ -2,12 +2,14 @@ package go_mod
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"io"
 	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/simplejson"
@@ -15,7 +17,7 @@ import (
 	"path/filepath"
 )
 
-var ErrGoEnv = base.NewInspectError("go", "Check Go version failed. Please check you go environment.")
+var ErrGoEnv = model.NewInspectError(model.Go, "Check Go version failed. Please check you go environment.")
 
 type Inspector struct{}
 
@@ -27,28 +29,26 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "go.mod"))
 }
 
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	return ScanGoProject(task.ProjectDir, task)
-}
-
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMGoMod
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectorTask(ctx)
+	return ScanGoProject(task)
 }
 
 func New() base.Inspector {
 	return &Inspector{}
 }
 
-func ScanGoProject(dir string, task *base.ScanTask) ([]base.Module, error) {
+func ScanGoProject(task *model.InspectorTask) error {
+	dir := task.ScanDir
 	version, e := execGoVersion()
 	if e != nil {
-		task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Go 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
-		return nil, ErrGoEnv
+		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Go 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+		return ErrGoEnv
 	}
 	if e := execGoModTidy(dir); e != nil {
-		task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Go获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Go获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		logger.Err.Println("go mod tidy execute failed.", e.Error())
-		return nil, e
+		return e
 	}
 	root, e := execGoListModule(dir)
 	if e != nil {
@@ -59,12 +59,11 @@ func ScanGoProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 	deps, e := execGoList(dir)
 	if e != nil {
 		logger.Err.Println("Scan go project failed, ", e.Error())
-		return nil, e
+		return e
 	}
-
-	module := base.Module{
-		PackageManager: "go",
-		Language:       "Go",
+	module := model.Module{
+		PackageManager: model.PMGoMod,
+		Language:       model.Go,
 		PackageFile:    "go.mod",
 		Name:           root.Get("Module", "Path").String(filepath.Base(dir)),
 		Version:        "",
@@ -72,7 +71,8 @@ func ScanGoProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 		Dependencies:   deps,
 		RuntimeInfo:    map[string]interface{}{"go_version": version},
 	}
-	return []base.Module{module}, nil
+	task.AddModule(module)
+	return nil
 }
 
 func execGoListModule(dir string) (*simplejson.JSON, error) {
@@ -92,7 +92,7 @@ func execGoListModule(dir string) (*simplejson.JSON, error) {
 	return d, nil
 }
 
-func execGoList(dir string) ([]base.Dependency, error) {
+func execGoList(dir string) ([]model.Dependency, error) {
 	cmd := exec.Command("go", "list", "--json", "-m", "all")
 	cmd.Dir = dir
 	data, e := cmd.Output()
@@ -100,7 +100,7 @@ func execGoList(dir string) ([]base.Dependency, error) {
 		logger.Err.Println("go list execute failed.", e.Error())
 		return nil, errors.New("Go list execute failed")
 	}
-	dep := make([]base.Dependency, 0)
+	dep := make([]model.Dependency, 0)
 	dec := json.NewDecoder(bytes.NewReader(data))
 	for {
 		var m *simplejson.JSON
@@ -122,16 +122,16 @@ func execGoList(dir string) ([]base.Dependency, error) {
 				continue
 			}
 			replaceVersion := m.Get("Replace", "Version").String()
-			dep = append(dep, base.Dependency{
+			dep = append(dep, model.Dependency{
 				Name:    replacePath,
 				Version: replaceVersion,
 			})
 			continue
 		}
-		dep = append(dep, base.Dependency{
+		dep = append(dep, model.Dependency{
 			Name:         m.Get("Path").String(),
 			Version:      m.Get("Version").String(),
-			Dependencies: []base.Dependency{},
+			Dependencies: []model.Dependency{},
 		})
 	}
 	return dep, nil

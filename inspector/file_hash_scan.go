@@ -1,6 +1,7 @@
 package inspector
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/utils"
 	"os"
 	"path/filepath"
@@ -17,8 +19,9 @@ import (
 
 const _FileHashScanConcurrency = 2
 
-func FileHashScan(ctx *ScanContext) error {
-	basePath, e := filepath.Abs(ctx.ProjectDir)
+func FileHashScan(ctx context.Context) error {
+	task := model.UseScanTask(ctx)
+	basePath, e := filepath.Abs(task.ProjectDir)
 	if e != nil {
 		return errors.Wrap(e, "Get absolute path fail.")
 	}
@@ -31,7 +34,7 @@ func FileHashScan(ctx *ScanContext) error {
 	}()
 
 	// file hash
-	hashChan := make(chan FileHash, 32)
+	hashChan := make(chan model.FileHash, 32)
 	go func() {
 		wg := sync.WaitGroup{}
 		for i := 0; i < _FileHashScanConcurrency; i++ {
@@ -52,15 +55,15 @@ func FileHashScan(ctx *ScanContext) error {
 			continue
 		}
 		it.Path = p
-		ctx.FileHashes = append(ctx.FileHashes, it)
+		task.FileHashes = append(task.FileHashes, it)
 	}
 	return nil
 }
 
-func mapFilepathToHash(fileCh chan string, outputCh chan FileHash) {
+func mapFilepathToHash(fileCh chan string, outputCh chan model.FileHash) {
 	for file := range fileCh {
 		hash := calcFileHashIgnoreErr(file)
-		outputCh <- FileHash{
+		outputCh <- model.FileHash{
 			Path: file,
 			Hash: hash,
 		}

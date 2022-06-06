@@ -1,11 +1,13 @@
 package yarn
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/iseki0/go-yarnlock"
 	"github.com/pkg/errors"
 	"io"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils/simplejson"
 	"os"
@@ -27,17 +29,18 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return e == nil && !info.IsDir()
 }
 
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	dir := task.ProjectDir
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectorTask(ctx)
+	dir := task.ScanDir
 	logger.Info.Println("yarn inspect.", dir)
 	rs, e := analyzeYarnDep(dir)
 
 	if e != nil {
-		return nil, e
+		return e
 	}
-	m := base.Module{
-		PackageManager: "yarn",
-		Language:       "JavaScript",
+	m := model.Module{
+		PackageManager: model.PMYarn,
+		Language:       model.JavaScript,
 		PackageFile:    "yarn.lock",
 		Name:           filepath.Base(dir),
 		Version:        "",
@@ -48,11 +51,8 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 		m.Name = n
 		m.Version = v
 	}
-	return []base.Module{m}, nil
-}
-
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMYarn
+	task.AddModule(m)
+	return nil
 }
 
 func New() base.Inspector {
@@ -82,7 +82,7 @@ func readModuleName(dir string) (string, string) {
 	return j.Get("name").String(), j.Get("version").String()
 }
 
-func yarnFallback(dir string) ([]base.Dependency, error) {
+func yarnFallback(dir string) ([]model.Dependency, error) {
 	f, e := os.Open(filepath.Join(dir, "package.json"))
 	if e != nil {
 		return nil, errors.Wrap(e, "Open package.json failed.")
@@ -97,7 +97,7 @@ func yarnFallback(dir string) ([]base.Dependency, error) {
 	if e := json.Unmarshal(data, &pkg); e != nil {
 		return nil, errors.Wrap(e, "parse failed")
 	}
-	rs := make([]base.Dependency, 0)
+	rs := make([]model.Dependency, 0)
 	distinct := map[string]string{}
 	for k, v := range pkg.DevDependencies {
 		distinct[k] = v
@@ -106,7 +106,7 @@ func yarnFallback(dir string) ([]base.Dependency, error) {
 		distinct[k] = v
 	}
 	for k, v := range distinct {
-		rs = append(rs, base.Dependency{
+		rs = append(rs, model.Dependency{
 			Name:    k,
 			Version: v,
 		})
@@ -114,7 +114,7 @@ func yarnFallback(dir string) ([]base.Dependency, error) {
 	return rs, nil
 }
 
-func analyzeYarnDep(dir string) ([]base.Dependency, error) {
+func analyzeYarnDep(dir string) ([]model.Dependency, error) {
 	f, e := os.Open(filepath.Join(dir, "yarn.lock"))
 	if e != nil {
 		logger.Info.Println("Open yarn.lock failed.", e.Error())
@@ -132,12 +132,12 @@ func analyzeYarnDep(dir string) ([]base.Dependency, error) {
 	return buildDepTree(lockfile), nil
 }
 
-func buildDepTree(lkFile yarnlock.LockFile) []base.Dependency {
+func buildDepTree(lkFile yarnlock.LockFile) []model.Dependency {
 	type id struct {
 		name    string
 		version string
 	}
-	var rs []base.Dependency
+	var rs []model.Dependency
 	repeatedElement := map[id]struct{}{}
 	for _, key := range lkFile.RootElement() {
 		node := _buildDepTree(lkFile, key, map[string]struct{}{}, 5)
@@ -152,7 +152,7 @@ func buildDepTree(lkFile yarnlock.LockFile) []base.Dependency {
 	return rs
 }
 
-func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[string]struct{}, depth int) *base.Dependency {
+func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[string]struct{}, depth int) *model.Dependency {
 	if depth < 0 {
 		return nil
 	}
@@ -172,7 +172,7 @@ func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[stri
 	if pkgName == "" || pkgVer == "" {
 		return nil
 	}
-	node := &base.Dependency{
+	node := &model.Dependency{
 		Name:         pkgName,
 		Version:      info.Version, // use real version
 		Dependencies: nil,

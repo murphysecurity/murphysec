@@ -1,7 +1,9 @@
 package cocoapods
 
 import (
+	"context"
 	"github.com/pkg/errors"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"os"
@@ -9,10 +11,6 @@ import (
 )
 
 type Inspector struct{}
-
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMCocoaPods
-}
 
 func New() base.Inspector {
 	return &Inspector{}
@@ -25,20 +23,24 @@ func (i *Inspector) String() string {
 func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "Podfile.lock"))
 }
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	data, e := os.ReadFile(filepath.Join(task.ProjectDir, "Podfile.lock"))
+
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectorTask(ctx)
+	projectDir := task.ScanDir
+	data, e := os.ReadFile(filepath.Join(projectDir, "Podfile.lock"))
 	if e != nil {
-		return nil, errors.Wrap(e, "Open Gemfile.lock failed")
+		return errors.Wrap(e, "ReadPodLock")
 	}
 	tree, e := getDepFromLock(string(data))
 	if e != nil {
-		return nil, errors.Wrap(e, "Bundler")
+		return errors.Wrap(e, "ParsePodLock")
 	}
-	return []base.Module{{
-		PackageManager: "cocoapods",
-		Language:       "Objective-C",
+	task.AddModule(model.Module{
+		PackageManager: model.PMCocoaPods,
+		Language:       model.ObjectiveC,
 		PackageFile:    "Podfile.lock",
 		Name:           tree[0].Name,
 		Dependencies:   tree,
-	}}, nil
+	})
+	return nil
 }
