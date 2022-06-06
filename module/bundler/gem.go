@@ -1,18 +1,16 @@
 package bundler
 
 import (
+	"context"
 	"github.com/pkg/errors"
+	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
-	"os"
 	"path/filepath"
 )
 
 type Inspector struct{}
-
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMBundler
-}
 
 func New() base.Inspector {
 	return &Inspector{}
@@ -25,20 +23,30 @@ func (i *Inspector) String() string {
 func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "Gemfile")) && utils.IsFile(filepath.Join(dir, "Gemfile.lock"))
 }
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	data, e := os.ReadFile(filepath.Join(task.ProjectDir, "Gemfile.lock"))
+
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectorTask(ctx)
+	scanDir := task.ScanDir
+	gemFile := filepath.Join(scanDir, "Gemfile")
+	gemLockFile := filepath.Join(scanDir, "Gemfile.lock")
+	if !utils.IsFile(gemFile) || !utils.IsFile(gemLockFile) {
+		return nil
+	}
+	logger.Info.Println("RubyGems inspect: ", scanDir)
+	data, e := utils.ReadFileLimited(gemLockFile, 1024*1024*4)
 	if e != nil {
-		return nil, errors.Wrap(e, "Open Gemfile.lock failed")
+		return errors.Wrap(e, "ReadRubyGemsLockFile")
 	}
 	tree, e := getDepGraph(string(data))
 	if e != nil {
-		return nil, errors.Wrap(e, "Bundler")
+		return errors.Wrap(e, "ParseGemLockFile")
 	}
-	return []base.Module{{
-		PackageManager: "bundler",
-		Language:       "Ruby",
+	task.AddModule(model.Module{
+		PackageManager: model.PMBundler,
+		Language:       model.Ruby,
 		PackageFile:    "Gemfile.lock",
 		Name:           tree[0].Name,
 		Dependencies:   tree,
-	}}, nil
+	})
+	return nil
 }

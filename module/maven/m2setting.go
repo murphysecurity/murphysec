@@ -24,7 +24,7 @@ func (o MvnOption) String() string {
 
 func DefaultMvnOption() MvnOption {
 	return MvnOption{
-		LocalRepoPath: filepath.Join(must.String(homedir.Dir()), ".m2", "repository"),
+		LocalRepoPath: filepath.Join(must.A(homedir.Dir()), ".m2", "repository"),
 		Remote:        []string{"https://repo1.maven.org/maven2/"},
 	}
 }
@@ -56,7 +56,7 @@ func ReadMvnOption() MvnOption {
 	}
 	opt.Remote = append(opt.Remote, "https://repo1.maven.org/maven2/")
 	if n := xmlquery.FindOne(node, "/settings/localRepository"); n != nil {
-		opt.LocalRepoPath = strings.ReplaceAll(n.InnerText(), "${user.home}", must.String(homedir.Dir()))
+		opt.LocalRepoPath = strings.ReplaceAll(n.InnerText(), "${user.home}", must.A(homedir.Dir()))
 	}
 	logger.Info.Println("maven option", opt)
 	return opt

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/module/base"
+	"murphysec-cli-simple/model"
 	"path/filepath"
 	"sort"
 	"sync"
@@ -20,10 +20,11 @@ func (d Dependency) String() string {
 	return fmt.Sprintf("%v: %v", d.Coordinate, d.Children)
 }
 
-var MvnSkipped = base.NewInspectError("java", "Mvn inspect is skipped, please check you maven environment.")
+var MvnSkipped = model.NewInspectError(model.Java, "Mvn inspect is skipped, please check you maven environment.")
 
-func ScanMavenProject(dir string, task *base.ScanTask) ([]base.Module, error) {
-	var modules []base.Module
+func ScanMavenProject(task *model.InspectorTask) ([]model.Module, error) {
+	dir := task.ScanDir
+	var modules []model.Module
 	var deps map[Coordinate][]Dependency
 	moduleFileMapping := map[Coordinate]string{}
 	var e error
@@ -32,11 +33,11 @@ func ScanMavenProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 	if doMvnScan {
 		deps, e = scanMvnDependency(context.TODO(), dir)
 		if e != nil {
-			task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+			task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 			logger.Err.Printf("mvn scan failed: %+v\n", e)
 		}
 	} else {
-		task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 	}
 	// analyze pom file
 	{
@@ -80,9 +81,9 @@ func ScanMavenProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 		}
 	}
 	for coordinate, dependencies := range deps {
-		modules = append(modules, base.Module{
-			PackageManager: "maven",
-			Language:       "Java",
+		modules = append(modules, model.Module{
+			PackageManager: model.PMMaven,
+			Language:       model.Java,
 			PackageFile:    "pom.xml",
 			Name:           coordinate.Name(),
 			Version:        coordinate.Version,
@@ -97,8 +98,8 @@ func ScanMavenProject(dir string, task *base.ScanTask) ([]base.Module, error) {
 	return modules, nil
 }
 
-func convDeps(deps []Dependency) []base.Dependency {
-	rs := make([]base.Dependency, 0)
+func convDeps(deps []Dependency) []model.Dependency {
+	rs := make([]model.Dependency, 0)
 	for _, it := range deps {
 		d := _convDep(it)
 		if d == nil {
@@ -109,14 +110,14 @@ func convDeps(deps []Dependency) []base.Dependency {
 	return rs
 }
 
-func _convDep(dep Dependency) *base.Dependency {
+func _convDep(dep Dependency) *model.Dependency {
 	if dep.GroupId == "" || dep.ArtifactId == "" || dep.Version == "" {
 		return nil
 	}
-	d := &base.Dependency{
+	d := &model.Dependency{
 		Name:         dep.Name(),
 		Version:      dep.Version,
-		Dependencies: []base.Dependency{},
+		Dependencies: []model.Dependency{},
 	}
 	for _, it := range dep.Children {
 		dd := _convDep(it)

@@ -1,12 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"murphysec-cli-simple/api"
-	"murphysec-cli-simple/inspector"
-	"murphysec-cli-simple/module/base"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/must"
 )
@@ -28,7 +28,7 @@ func reportIdeaErr(e error, message string) {
 	if message == "" {
 		message = code.Error()
 	}
-	fmt.Println(string(must.Byte(json.Marshal(struct {
+	fmt.Println(string(must.A(json.Marshal(struct {
 		ErrCode IdeaErrCode `json:"err_code"`
 		ErrMsg  string      `json:"err_msg"`
 	}{ErrCode: code, ErrMsg: message}))))
@@ -44,18 +44,18 @@ type PluginOutput struct {
 		Medium   int `json:"medium,omitempty"`
 		Low      int `json:"low,omitempty"`
 	} `json:"issues_level_count,omitempty"`
-	TaskId            string                `json:"task_id,omitempty"`
-	TotalContributors int                   `json:"total_contributors"`
-	ProjectId         string                `json:"project_id"`
-	InspectErrors     []base.InspectorError `json:"inspect_errors,omitempty"`
-	DependenciesCount int                   `json:"dependencies_count"`
+	TaskId            string               `json:"task_id,omitempty"`
+	TotalContributors int                  `json:"total_contributors"`
+	ProjectId         string               `json:"project_id"`
+	InspectErrors     []model.InspectError `json:"inspect_errors,omitempty"`
+	DependenciesCount int                  `json:"dependencies_count"`
 }
 type PluginComp struct {
 	CompName           string               `json:"comp_name"`
 	ShowLevel          int                  `json:"show_level"`
 	MinFixedVersion    string               `json:"min_fixed_version"`
 	MinFixed           PluginCompFixList    `json:"min_fixed"`
-	Vulns              []api.VoVulnInfo     `json:"vulns"`
+	Vulns              []model.VoVulnInfo   `json:"vulns"`
 	Version            string               `json:"version"`
 	License            *PluginCompLicense   `json:"license,omitempty"`
 	Solutions          []PluginCompSolution `json:"solutions,omitempty"`
@@ -65,8 +65,8 @@ type PluginComp struct {
 }
 
 type PluginCompLicense struct {
-	Level api.LicenseLevel `json:"level"`
-	Spdx  string           `json:"spdx"`
+	Level model.LicenseLevel `json:"level"`
+	Spdx  string             `json:"spdx"`
 }
 
 type PluginCompFix struct {
@@ -86,7 +86,7 @@ func (this PluginCompFixList) MarshalJSON() ([]byte, error) {
 	for it := range m {
 		rs = append(rs, it)
 	}
-	return must.Byte(json.Marshal(rs)), nil
+	return must.A(json.Marshal(rs)), nil
 }
 
 type PluginCompSolution struct {
@@ -95,18 +95,19 @@ type PluginCompSolution struct {
 	Type          string `json:"type,omitempty"`
 }
 
-func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
+func generatePluginOutput(c context.Context) *PluginOutput {
+	ctx := model.UseScanTask(c)
 	i := ctx.ScanResult
 	type id struct {
 		name    string
 		version string
 	}
 	p := &PluginOutput{
-		ErrCode:           0,
-		IssuesCount:       i.IssuesCompsCount,
-		Comps:             []PluginComp{},
-		TaskId:            i.TaskId,
-		InspectErrors:     ctx.InspectorError,
+		ErrCode:     0,
+		IssuesCount: i.IssuesCompsCount,
+		Comps:       []PluginComp{},
+		TaskId:      i.TaskId,
+		//InspectErrors:     ctx.InspectorError,
 		TotalContributors: ctx.TotalContributors,
 		ProjectId:         ctx.ProjectId,
 		DependenciesCount: ctx.ScanResult.DependenciesCount,
@@ -156,9 +157,9 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 			}
 			for _, it := range comp.Vuls {
 				switch it.SuggestLevel {
-				case api.SuggestLevelRecommend:
+				case model.SuggestLevelRecommend:
 					p.ShowLevel = utils.MinInt(p.ShowLevel, 2)
-				case api.SuggestLevelStrongRecommend:
+				case model.SuggestLevelStrongRecommend:
 					p.ShowLevel = utils.MinInt(p.ShowLevel, 1)
 				}
 			}
@@ -178,13 +179,13 @@ func generatePluginOutput(ctx *inspector.ScanContext) *PluginOutput {
 			for _, comp := range it.Comps {
 				for _, vul := range comp.Vuls {
 					switch vul.Level {
-					case api.VulnLevelCritical:
+					case model.VulnLevelCritical:
 						critical[vul.VulnNo] = struct{}{}
-					case api.VulnLevelHigh:
+					case model.VulnLevelHigh:
 						high[vul.VulnNo] = struct{}{}
-					case api.VulnLevelMedium:
+					case model.VulnLevelMedium:
 						medium[vul.VulnNo] = struct{}{}
-					case api.VulnLevelLow:
+					case model.VulnLevelLow:
 						low[vul.VulnNo] = struct{}{}
 					}
 				}

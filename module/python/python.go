@@ -2,9 +2,11 @@ package python
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"io/fs"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"os"
 	"path/filepath"
@@ -55,8 +57,8 @@ func parsePyImport(input string) []string {
 	return rs
 }
 
-func (i Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	dir := task.ProjectDir
+func (i Inspector) InspectProject(ctx context.Context) error {
+	dir := model.UseInspectorTask(ctx).ScanDir
 	componentMap := map[string]string{}
 	requirementsFiles := map[string]struct{}{}
 	ignoreSet := map[string]struct{}{}
@@ -103,23 +105,24 @@ func (i Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 		delete(componentMap, s)
 	}
 	if len(componentMap) == 0 {
-		return nil, nil
+		return nil
 	}
 	{
-		m := base.Module{
+		m := model.Module{
 			Name:           "Python",
-			PackageManager: "pip",
-			Language:       "Python",
-			Dependencies:   []base.Dependency{},
+			PackageManager: model.PMPip,
+			Language:       model.Python,
+			Dependencies:   []model.Dependency{},
 			FilePath:       filepath.Join(dir),
 		}
 		for k, v := range componentMap {
-			m.Dependencies = append(m.Dependencies, base.Dependency{
+			m.Dependencies = append(m.Dependencies, model.Dependency{
 				Name:    k,
 				Version: v,
 			})
 		}
-		return []base.Module{m}, nil
+		model.UseInspectorTask(ctx).AddModule(m)
+		return nil
 	}
 }
 
@@ -145,10 +148,6 @@ func parsePythonRequirements(p string) map[string]string {
 		rs[m[1]] = m[2]
 	}
 	return rs
-}
-
-func (i Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMPython
 }
 
 func New() base.Inspector {

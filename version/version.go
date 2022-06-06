@@ -13,7 +13,7 @@ const version = "v1.5.20"
 
 // PrintVersionInfo print version info to stdout
 func PrintVersionInfo() {
-	fmt.Printf("%s %s\n", filepath.Base(must.String(filepath.EvalSymlinks(must.String(os.Executable())))), Version())
+	fmt.Printf("%s %s\n", filepath.Base(must.A(filepath.EvalSymlinks(must.A(os.Executable())))), Version())
 }
 
 var _ua = func() func() string {

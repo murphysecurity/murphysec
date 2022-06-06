@@ -77,7 +77,7 @@ func (s StringSet) ToSlice() []string {
 func base64UrlEncode(s string) string {
 	b := new(bytes.Buffer)
 	w := base64.NewEncoder(base64.URLEncoding, b)
-	must.Int(w.Write([]byte(s)))
+	must.A(w.Write([]byte(s)))
 	must.Close(w)
 	return b.String()
 }

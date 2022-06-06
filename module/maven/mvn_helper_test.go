@@ -15,5 +15,5 @@ func TestParseGraph(t *testing.T) {
 	var d dependencyGraph
 	assert.NoError(t, json.Unmarshal(testGraph, &d))
 
-	t.Log(string(must.Byte(json.MarshalIndent(d.Tree(), "", "  "))))
+	t.Log(string(must.A(json.MarshalIndent(d.Tree(), "", "  "))))
 }

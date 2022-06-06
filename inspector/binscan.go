@@ -15,37 +15,42 @@ import (
 	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/utils/must"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func BinScan(ctx *ScanContext) error {
-	ui := ctx.UI()
+func BinScan(ctx context.Context) error {
 	var e error
-	// 创建项目
-	ui.WithStatus(display.StatusRunning, "正在创建任务", func() {
-		e = createTask(ctx)
-	})
-	if e != nil {
-		logger.Err.Println("create task failed.", e.Error())
-		ui.Display(display.MsgError, fmt.Sprint("创建任务失败！"))
+	scanTask := model.UseScanTask(ctx)
+	ui := scanTask.UI()
+	ui.Display(display.MsgInfo, fmt.Sprint("项目名称：", scanTask.ProjectName))
+
+	ui.UpdateStatus(display.StatusRunning, "正在创建扫描任务，请稍候······")
+	if e := createTask(ctx); e != nil {
+		logger.Err.Println("Create task failed.", e.Error())
+		logger.Debug.Printf("%+v", e)
+		ui.Display(display.MsgError, fmt.Sprint("项目创建失败"))
 		if errors.Is(api.ErrTokenInvalid, e) {
-			ui.Display(display.MsgError, "原因：当前 Token 无效")
+			ui.Display(display.MsgError, "当前 Token 无效")
+		} else {
+			ui.Display(display.MsgError, e.Error())
 		}
 		return e
 	}
-	ui.Display(display.MsgInfo, fmt.Sprint("项目创建成功！", ctx.TaskId))
+
+	ui.Display(display.MsgInfo, fmt.Sprint("项目创建成功"))
 
 	// 上传文件
 	ui.WithStatus(display.StatusRunning, "正在上传文件...", func() {
 		pathCh := make(chan string, 10)
-		g, goCtx := errgroup.WithContext(context.Background())
-		g.Go(func() error { return scanBinaryFile(goCtx, ctx.ProjectDir, pathCh) })
+		g, goCtx := errgroup.WithContext(ctx)
+		g.Go(func() error { return scanBinaryFile(goCtx, scanTask.ProjectDir, pathCh) })
 		r, w := io.Pipe()
-		g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, ctx.ProjectDir, w) })
-		g.Go(func() error { return uploadTgzChunk(goCtx, r, ctx) })
+		g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, scanTask.ProjectDir, w) })
+		g.Go(func() error { return uploadTgzChunk(goCtx, r) })
 		e = g.Wait()
 	})
 	if e != nil {
@@ -55,15 +60,15 @@ func BinScan(ctx *ScanContext) error {
 	}
 	ui.Display(display.MsgInfo, "文件上传成功")
 	// 开始扫描
-	if e := api.StartCheckTaskType(ctx.TaskId, ctx.Kind); e != nil {
+	if e := api.StartCheckTaskType(scanTask.TaskId, scanTask.Kind); e != nil {
 		logger.Err.Println("StartCheck failed.", e.Error())
 		ui.Display(display.MsgError, fmt.Sprint("开始扫描失败 ", e.Error()))
 		return e
 	}
 	// 等待返回结果
-	var r *api.TaskScanResponse
+	var r *model.TaskScanResponse
 	ui.WithStatus(display.StatusRunning, "已提交，正在扫描...", func() {
-		r, e = api.QueryResult(ctx.TaskId)
+		r, e = api.QueryResult(scanTask.TaskId)
 	})
 	if e != nil {
 		logger.Err.Println("QueryResult failed.", e.Error())
@@ -76,7 +81,8 @@ func BinScan(ctx *ScanContext) error {
 	return nil
 }
 
-func uploadTgzChunk(goctx context.Context, r io.Reader, ctx *ScanContext) error {
+func uploadTgzChunk(goctx context.Context, r io.Reader) error {
+	task := model.UseScanTask(goctx)
 	counter := 0
 	for {
 		if goctx.Err() != nil {
@@ -94,7 +100,7 @@ func uploadTgzChunk(goctx context.Context, r io.Reader, ctx *ScanContext) error 
 		}
 		must.True(n > 0)
 		logger.Debug.Println("write", n, "bytes")
-		e = api.UploadChunk(ctx.TaskId, counter, io.LimitReader(bytes.NewReader(buf), int64(n)))
+		e = api.UploadChunk(task.TaskId, counter, io.LimitReader(bytes.NewReader(buf), int64(n)))
 		if e != nil {
 			return errors.Wrap(e, "文件上传失败")
 		} else {
@@ -118,7 +124,7 @@ func packFileToTgzStream(ctx context.Context, fileNameCh chan string, baseDir st
 			logger.Warn.Println("Stat file failed.", e.Error(), s)
 			continue
 		}
-		rp := filepath.ToSlash(must.String(filepath.Rel(baseDir, s)))
+		rp := filepath.ToSlash(must.A(filepath.Rel(baseDir, s)))
 		if rp == "." {
 			rp = filepath.Base(baseDir)
 		}

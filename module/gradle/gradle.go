@@ -8,6 +8,7 @@ import (
 	"murphysec-cli-simple/display"
 	"murphysec-cli-simple/env"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"os"
 	"os/exec"
@@ -27,20 +28,17 @@ func (i *Inspector) String() string {
 	return "GradleInspector"
 }
 
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMGradle
-}
-
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	var rs []base.Module
-	dir := task.ProjectDir
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	var rs []model.Module
+	task := model.UseInspectorTask(ctx)
+	dir := task.ScanDir
 	logger.Debug.Println("gradle inspect dir:", dir)
 	useGradle := true
 	ctx, cf := context.WithTimeout(context.TODO(), time.Second*time.Duration(env.GradleExecutionTimeoutSecond))
 	defer cf()
 	info, e := evalGradleInfo(ctx, dir)
 	if e != nil {
-		task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		logger.Info.Println("check gradle failed", e.Error())
 		logger.Warn.Println("Gradle disabled")
 		useGradle = false
@@ -64,7 +62,7 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 		for _, projectId := range projects {
 			depInfo, e := evalGradleDependencies(ctx, dir, projectId, info)
 			if e != nil {
-				task.UI.Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+				task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 				logger.Info.Println("evalGradleDependencies failed.", projectId, e.Error())
 			} else {
 				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
@@ -77,7 +75,10 @@ func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
 			rs = append(rs, m.BaseModule(dir))
 		}
 	}
-	return rs, nil // todo
+	for _, it := range rs {
+		task.AddModule(it)
+	}
+	return nil
 }
 
 func backupParser(dir string) *GradleDependencyInfo {
@@ -177,20 +178,20 @@ type GradleDependencyInfo struct {
 	Dependencies []DepElement `json:"dependencies,omitempty"`
 }
 
-func (g *GradleDependencyInfo) BaseModule(path string) base.Module {
-	return base.Module{
-		PackageManager: "gradle",
-		Language:       "Java",
+func (g *GradleDependencyInfo) BaseModule(path string) model.Module {
+	return model.Module{
+		PackageManager: model.PMGradle,
+		Language:       model.Java,
 		Name:           g.ProjectName,
 		Dependencies:   _convDep(g.Dependencies),
 		FilePath:       path,
 	}
 }
 
-func _convDep(input []DepElement) []base.Dependency {
-	var rs []base.Dependency
+func _convDep(input []DepElement) []model.Dependency {
+	var rs []model.Dependency
 	for _, it := range input {
-		rs = append(rs, base.Dependency{
+		rs = append(rs, model.Dependency{
 			Name:         it.CompName(),
 			Version:      it.Version,
 			Dependencies: _convDep(it.Children),

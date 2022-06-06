@@ -1,11 +1,13 @@
 package npm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"path/filepath"
@@ -27,15 +29,18 @@ func (i *Inspector) CheckDir(dir string) bool {
 		utils.IsFile(filepath.Join(dir, "package-lock.json"))
 }
 
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	return ScanNpmProject(task.ProjectDir)
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	m, e := ScanNpmProject(model.UseInspectorTask(ctx).ScanDir)
+	if e != nil {
+		return e
+	}
+	for _, it := range m {
+		model.UseInspectorTask(ctx).AddModule(it)
+	}
+	return nil
 }
 
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMNpm
-}
-
-func ScanNpmProject(dir string) ([]base.Module, error) {
+func ScanNpmProject(dir string) ([]model.Module, error) {
 	logger.Info.Println("Scan dir, npm.", dir)
 	pkgFile := filepath.Join(dir, "package-lock.json")
 	logger.Debug.Println("Read package-lock file:", pkgFile)
@@ -76,14 +81,14 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 		}
 	}
 
-	module := base.Module{
-		PackageManager: "npm",
-		Language:       "JavaScript",
+	module := model.Module{
+		PackageManager: model.PMNpm,
+		Language:       model.JavaScript,
 		PackageFile:    "package-lock.json",
 		Name:           lockfile.Name,
 		Version:        lockfile.Version,
 		FilePath:       filepath.Join(dir, "package.json"),
-		Dependencies:   []base.Dependency{},
+		Dependencies:   []model.Dependency{},
 		RuntimeInfo:    nil,
 	}
 	m := map[string]int{}
@@ -92,10 +97,10 @@ func ScanNpmProject(dir string) ([]base.Module, error) {
 			module.Dependencies = append(module.Dependencies, *d)
 		}
 	}
-	return []base.Module{module}, nil
+	return []model.Module{module}, nil
 }
 
-func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *base.Dependency {
+func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *model.Dependency {
 	if deep > 5 {
 		return nil
 	}
@@ -108,7 +113,7 @@ func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *base
 	if !ok {
 		return nil
 	}
-	r := base.Dependency{
+	r := model.Dependency{
 		Name:         root,
 		Version:      d.Version,
 		Dependencies: nil,

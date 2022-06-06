@@ -54,7 +54,7 @@ func (c *Client) POST(relUri string, body io.Reader) *http.Request {
 }
 
 func (c *Client) PostJson(relUri string, a interface{}) *http.Request {
-	u := c.POST(relUri, bytes.NewReader(must.Byte(json.Marshal(a))))
+	u := c.POST(relUri, bytes.NewReader(must.A(json.Marshal(a))))
 	u.Header.Set("Content-Type", "application/json")
 	return u
 }

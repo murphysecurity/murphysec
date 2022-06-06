@@ -1,13 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/api"
 	"murphysec-cli-simple/env"
 	"murphysec-cli-simple/inspector"
 	"murphysec-cli-simple/logger"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/utils"
+	"path/filepath"
 )
 
 var CliJsonOutput bool
@@ -17,8 +19,32 @@ var ProjectId string
 
 func scanCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use:   "scan DIR",
-		Run:   scanRun,
+		Use: "scan DIR",
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+			logger.InitLogger()
+			projectDir := args[0]
+			var e error
+			if !filepath.IsAbs(projectDir) {
+				projectDir, e = filepath.Abs(projectDir)
+				if e != nil || !utils.IsPathExist(projectDir) {
+					fmt.Println("读取路径失败", e.Error())
+					SetGlobalExitCode(1)
+					return
+				}
+			}
+			tt := model.TaskTypeCli
+			if CliJsonOutput {
+				tt = model.TaskTypeJenkins
+			}
+			task := model.CreateScanTask(projectDir, model.TaskKindNormal, tt)
+			task.EnableDeepScan = DeepScan
+			ctx = model.WithScanTask(ctx, task)
+
+			if e := inspector.Scan(ctx); e != nil {
+				SetGlobalExitCode(-1)
+			}
+		},
 		Short: "Scan the source code of the specified project, currently supporting java, javascript, go, and python",
 	}
 	c.Flags().BoolVar(&CliJsonOutput, "json", false, "json output")
@@ -34,14 +60,20 @@ func binScanCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use: "binscan DIR",
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
 			logger.InitLogger()
-			path := args[0]
-			if !utils.IsPathExist(path) {
-				fmt.Println("路径不存在")
-				SetGlobalExitCode(1)
-				return
+			projectDir := args[0]
+			var e error
+			if !filepath.IsAbs(projectDir) {
+				projectDir, e = filepath.Abs(projectDir)
+				if e != nil || !utils.IsPathExist(projectDir) {
+					fmt.Println("读取路径失败", e.Error())
+					SetGlobalExitCode(1)
+					return
+				}
 			}
-			ctx := inspector.NewBinaryScanContext(path, api.TaskKindBinary)
+			task := model.CreateScanTask(projectDir, model.TaskKindBinary, model.TaskTypeCli)
+			ctx = model.WithScanTask(ctx, task)
 			if e := inspector.BinScan(ctx); e != nil {
 				SetGlobalExitCode(1)
 			}
@@ -57,14 +89,20 @@ func iotScanCmd() *cobra.Command {
 		Use:   "iotscan DIR",
 		Short: "Scan the specified IoT device firmware, currently supporting .bin or other formats (The file will be uploaded to the server for analysis.)",
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
 			logger.InitLogger()
-			path := args[0]
-			if !utils.IsPathExist(path) {
-				fmt.Println("路径不存在")
-				SetGlobalExitCode(1)
-				return
+			projectDir := args[0]
+			var e error
+			if !filepath.IsAbs(projectDir) {
+				projectDir, e = filepath.Abs(projectDir)
+				if e != nil || !utils.IsPathExist(projectDir) {
+					fmt.Println("读取路径失败", e.Error())
+					SetGlobalExitCode(1)
+					return
+				}
 			}
-			ctx := inspector.NewBinaryScanContext(path, api.TaskKindIotScan)
+			task := model.CreateScanTask(projectDir, model.TaskKindIotScan, model.TaskTypeCli)
+			ctx = model.WithScanTask(ctx, task)
 			if e := inspector.BinScan(ctx); e != nil {
 				SetGlobalExitCode(1)
 			}

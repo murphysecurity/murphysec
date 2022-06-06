@@ -1,8 +1,10 @@
 package maven
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	"github.com/vifraa/gopom"
+	"murphysec-cli-simple/model"
 	"murphysec-cli-simple/module/base"
 	"murphysec-cli-simple/utils"
 	"murphysec-cli-simple/utils/semerr"
@@ -25,12 +27,16 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "pom.xml"))
 }
 
-func (i *Inspector) Inspect(task *base.ScanTask) ([]base.Module, error) {
-	return ScanMavenProject(task.ProjectDir, task)
-}
-
-func (i *Inspector) PackageManagerType() base.PackageManagerType {
-	return base.PMMaven
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectorTask(ctx)
+	modules, e := ScanMavenProject(task)
+	if e != nil {
+		return e
+	}
+	for _, it := range modules {
+		task.AddModule(it)
+	}
+	return nil
 }
 
 type Coordinate struct {

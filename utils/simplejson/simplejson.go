@@ -70,7 +70,7 @@ func (j *JSON) MarshalString() string {
 	if s, ok := j.data.(string); ok {
 		return s
 	}
-	return string(must.Byte(j.MarshalJSON()))
+	return string(must.A(j.MarshalJSON()))
 }
 
 // NewJSON returns a pointer to a new `JSON` object

@@ -16,7 +16,7 @@ import (
 var CliLogFilePathOverride string
 var DisableLogFile bool
 
-var defaultLogFile = filepath.Join(must.String(homedir.Dir()), ".murphysec", "logs", fmt.Sprintf("%d.log", time.Now().UnixMilli()))
+var defaultLogFile = filepath.Join(must.A(homedir.Dir()), ".murphysec", "logs", fmt.Sprintf("%d.log", time.Now().UnixMilli()))
 var loggerFile = func() func() *os.File {
 	o := sync.Once{}
 	var file *os.File
