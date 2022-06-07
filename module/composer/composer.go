@@ -2,18 +2,18 @@ package composer
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/murphysecurity/murphysec/utils/simplejson"
-	"github.com/pkg/errors"
 	"io/fs"
 	"path/filepath"
 	"strings"
 )
+
+const _ComposerManifestFileSizeLimit = 4 * 1024 * 1024 // 4MiB
+const _ComposerLockFileSizeLimit = _ComposerManifestFileSizeLimit
 
 type Inspector struct{}
 
@@ -118,68 +118,6 @@ type Package struct {
 type Manifest struct {
 	Element
 	Require []Element
-}
-
-func readComposerLockFile(path string) ([]Package, error) {
-	lockFileData, e := utils.ReadFileLimited(path, 4*1024*1024)
-	if e != nil {
-		return nil, errors.Wrap(e, "Read composer.lock failed")
-	}
-	pkgs, e := parseComposerLock(lockFileData)
-	if e != nil {
-		return nil, errors.Wrap(e, "Parse composer.lock failed")
-	}
-	return pkgs, nil
-}
-
-func parseComposerLock(data []byte) ([]Package, error) {
-	var j simplejson.JSON
-	if e := json.Unmarshal(data, &j); e != nil {
-		return nil, errors.Wrap(e, "ParseComposerLock:")
-	}
-	pkgList := make([]Package, 0)
-	for _, pkg := range j.Get("packages").JSONArray() {
-		p := Package{}
-		p.Name = pkg.Get("name").String()
-		p.Version = pkg.Get("version").String()
-		if p.Name == "" || p.Version == "" {
-			continue
-		}
-		for s := range pkg.Get("require").JSONMap() {
-			p.Require = append(p.Require, s)
-		}
-		pkgList = append(pkgList, p)
-	}
-	return pkgList, nil
-}
-
-func readManifest(path string) (*Manifest, error) {
-	composerFileData, e := utils.ReadFileLimited(path, 4*1024*1024)
-	if e != nil {
-		return nil, errors.Wrap(e, "Read composer.json failed.")
-	}
-	manifest, e := parseComposeManifest(composerFileData)
-	if e != nil {
-		return nil, errors.Wrap(e, "Parse composer.json failed.")
-	}
-	return manifest, nil
-}
-
-func parseComposeManifest(data []byte) (*Manifest, error) {
-	var j simplejson.JSON
-	if e := json.Unmarshal(data, &j); e != nil {
-		return nil, errors.Wrap(e, "ParseComposeManifest:")
-	}
-	m := &Manifest{}
-	m.Name = j.Get("name").String()
-	m.Version = j.Get("version").String()
-	for name, versionConstraint := range j.Get("require").JSONMap() {
-		m.Require = append(m.Require, Element{
-			Name:    name,
-			Version: versionConstraint.String(),
-		})
-	}
-	return m, nil
 }
 
 func vendorScan(dir string) []Package {
