@@ -2,6 +2,7 @@ package version
 
 import (
 	"fmt"
+	"github.com/iseki0/osname"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"os"
@@ -19,9 +20,13 @@ func PrintVersionInfo() {
 var _ua = func() func() string {
 	o := sync.Once{}
 	ua := ""
+	osn, e := osname.OsName()
+	if e != nil {
+		osn = "<unknownOS>"
+	}
 	return func() string {
 		o.Do(func() {
-			ua = fmt.Sprintf("murphysec-cli/%s (%s);", Version(), getOSVersion())
+			ua = fmt.Sprintf("murphysec-cli/%s (%s);", Version(), osn)
 			logger.Debug.Println("user-agent:", ua)
 		})
 		return ua
