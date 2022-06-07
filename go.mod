@@ -10,7 +10,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/uuid v1.3.0
 	github.com/iseki0/go-yarnlock v0.0.1
-	github.com/magiconair/properties v1.8.5
+	github.com/magiconair/properties v1.8.6
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.12.0
 	github.com/pelletier/go-toml/v2 v2.0.1
