@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"murphysec-cli-simple/logger"
 	"path/filepath"
 )
 
@@ -11,8 +12,15 @@ type InspectorTask struct {
 }
 
 func (i *InspectorTask) AddModule(module Module) {
+	if filepath.IsAbs(module.FilePath) {
+		f, e := filepath.Rel(i.ProjectDir, module.FilePath)
+		if e != nil {
+			logger.Warn.Println("Calc rel-path failed.", e.Error(), module.FilePath)
+		} else {
+			module.FilePath = f
+		}
+	}
 	module.FilePath = filepath.ToSlash(module.FilePath)
-	module.PackageFile = filepath.ToSlash(module.PackageFile)
 	i.Modules = append(i.Modules, module)
 }
 
