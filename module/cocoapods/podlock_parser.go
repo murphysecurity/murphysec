@@ -3,8 +3,8 @@ package cocoapods
 import (
 	"container/list"
 	"encoding/json"
+	"github.com/murphysecurity/murphysec/model"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/model"
 	"regexp"
 	"strings"
 )

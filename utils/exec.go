@@ -1,10 +1,10 @@
 package utils
 
 import (
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/pkg/errors"
 	"github.com/ztrue/shutdown"
 	"io/ioutil"
-	"murphysec-cli-simple/logger"
 	"os"
 	"os/exec"
 	"sync"

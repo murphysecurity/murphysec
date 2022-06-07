@@ -3,8 +3,8 @@ package logger
 import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/utils/must"
 	"os"
 	"path/filepath"
 	"regexp"

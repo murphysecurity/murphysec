@@ -33,9 +33,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"io"
 	"log"
-	"murphysec-cli-simple/utils/must"
 	"reflect"
 	"strconv"
 )

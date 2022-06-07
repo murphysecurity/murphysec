@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/pkg/errors"
 	giturls "github.com/whilp/git-urls"
-	"murphysec-cli-simple/api"
-	"murphysec-cli-simple/logger"
 	"time"
 )
 

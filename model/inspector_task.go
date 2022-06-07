@@ -2,7 +2,7 @@ package model
 
 import (
 	"context"
-	"murphysec-cli-simple/logger"
+	"github.com/murphysecurity/murphysec/logger"
 	"path/filepath"
 )
 

@@ -2,10 +2,10 @@ package model
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/display"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/display"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/utils/must"
 	"path/filepath"
 	"time"
 )

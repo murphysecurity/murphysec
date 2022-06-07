@@ -2,11 +2,11 @@ package bundler
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module/base"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/module/base"
-	"murphysec-cli-simple/utils"
 	"path/filepath"
 )
 

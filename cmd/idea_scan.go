@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/inspector"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/inspector"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/utils"
-	"murphysec-cli-simple/utils/must"
 	"path/filepath"
 )
 

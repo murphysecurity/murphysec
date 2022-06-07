@@ -3,12 +3,12 @@ package inspector
 import (
 	"context"
 	"github.com/google/uuid"
-	"murphysec-cli-simple/api"
-	"murphysec-cli-simple/conf"
-	"murphysec-cli-simple/env"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/version"
+	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/conf"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/version"
 	"os"
 	"strings"
 )

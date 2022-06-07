@@ -3,12 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/inspector"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/env"
-	"murphysec-cli-simple/inspector"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/utils"
 	"path/filepath"
 )
 

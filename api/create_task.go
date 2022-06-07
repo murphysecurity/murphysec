@@ -1,7 +1,7 @@
 package api
 
 import (
-	"murphysec-cli-simple/model"
+	"github.com/murphysecurity/murphysec/model"
 )
 
 type CreateTaskRequest struct {

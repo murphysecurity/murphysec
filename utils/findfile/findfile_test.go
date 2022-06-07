@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/magiconair/properties/assert"
-	"murphysec-cli-simple/utils/must"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"os"
 	"path/filepath"
 	"sort"

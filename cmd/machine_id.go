@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/murphysecurity/murphysec/version"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/version"
 )
 
 func machineCmd() *cobra.Command {

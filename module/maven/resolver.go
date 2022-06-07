@@ -2,10 +2,10 @@ package maven
 
 import (
 	"fmt"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
 	"github.com/vifraa/gopom"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/utils/must"
 	"net/url"
 	"path/filepath"
 	"regexp"

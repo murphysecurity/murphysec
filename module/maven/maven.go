@@ -3,9 +3,9 @@ package maven
 import (
 	"context"
 	"fmt"
-	"murphysec-cli-simple/display"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/model"
+	"github.com/murphysecurity/murphysec/display"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
 	"path/filepath"
 	"sort"
 	"sync"

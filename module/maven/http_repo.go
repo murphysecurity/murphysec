@@ -3,10 +3,10 @@ package maven
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/pkg/errors"
 	"github.com/vifraa/gopom"
 	"io"
-	"murphysec-cli-simple/logger"
 	"net/http"
 	"net/url"
 	"path"

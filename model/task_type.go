@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"murphysec-cli-simple/display"
+	"github.com/murphysecurity/murphysec/display"
 )
 
 type TaskType int

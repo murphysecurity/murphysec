@@ -1,15 +1,15 @@
 package cmd
 
 import (
+	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/conf"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/murphysecurity/murphysec/version"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/api"
-	"murphysec-cli-simple/conf"
-	"murphysec-cli-simple/env"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/utils"
-	"murphysec-cli-simple/utils/must"
-	"murphysec-cli-simple/version"
 	"os"
 	"strings"
 )

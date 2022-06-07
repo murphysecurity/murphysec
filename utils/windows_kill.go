@@ -4,7 +4,7 @@
 package utils
 
 import (
-	"murphysec-cli-simple/logger"
+	"github.com/murphysecurity/murphysec/logger"
 	"os/exec"
 	"strconv"
 )

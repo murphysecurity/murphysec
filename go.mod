@@ -1,4 +1,4 @@
-module murphysec-cli-simple
+module github.com/murphysecurity/murphysec
 
 go 1.18
 

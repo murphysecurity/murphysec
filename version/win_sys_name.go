@@ -3,8 +3,8 @@
 package version
 
 import (
+	"github.com/murphysecurity/murphysec/logger"
 	"golang.org/x/sys/windows/registry"
-	"murphysec-cli-simple/logger"
 )
 
 func getOSVersion() string {

@@ -1,8 +1,8 @@
 package maven
 
 import (
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/vifraa/gopom"
-	"murphysec-cli-simple/logger"
 	"path/filepath"
 	"strings"
 )

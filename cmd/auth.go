@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/murphysecurity/murphysec/conf"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/conf"
-	"murphysec-cli-simple/logger"
 	"strings"
 )
 

@@ -3,7 +3,7 @@ package utils
 import (
 	"bytes"
 	"github.com/magiconair/properties/assert"
-	"murphysec-cli-simple/utils/must"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"testing"
 )
 

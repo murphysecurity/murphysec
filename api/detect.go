@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/google/uuid"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/utils/must"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"time"
 )
 

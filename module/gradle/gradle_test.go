@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"murphysec-cli-simple/utils/must"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"strings"
 	"testing"
 )

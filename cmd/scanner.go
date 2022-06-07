@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"github.com/murphysecurity/murphysec/inspector"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/spf13/cobra"
-	"murphysec-cli-simple/inspector"
-	"murphysec-cli-simple/logger"
 )
 
 func scannerCmd() *cobra.Command {

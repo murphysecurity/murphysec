@@ -5,8 +5,8 @@ package version
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/murphysecurity/murphysec/logger"
 	"io/ioutil"
-	"murphysec-cli-simple/logger"
 )
 
 func getOSVersion() string {

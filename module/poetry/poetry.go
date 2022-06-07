@@ -3,11 +3,11 @@ package poetry
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module/base"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/module/base"
-	"murphysec-cli-simple/utils"
 	"path/filepath"
 	"strings"
 )

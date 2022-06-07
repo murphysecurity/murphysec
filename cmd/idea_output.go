@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/api"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/utils"
-	"murphysec-cli-simple/utils/must"
 )
 
 func reportIdeaErr(e error, message string) {

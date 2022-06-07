@@ -3,8 +3,8 @@ package maven
 import (
 	_ "embed"
 	"encoding/json"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/stretchr/testify/assert"
-	"murphysec-cli-simple/utils/must"
 	"testing"
 )
 

@@ -2,9 +2,9 @@ package conf
 
 import (
 	"github.com/mitchellh/go-homedir"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"murphysec-cli-simple/logger"
 	"os"
 	"path/filepath"
 	"strings"

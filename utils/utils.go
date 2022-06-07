@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"io"
-	"murphysec-cli-simple/utils/must"
 	"os"
 	"strings"
 )

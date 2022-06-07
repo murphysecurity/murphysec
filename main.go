@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/murphysecurity/murphysec/cmd"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/ztrue/shutdown"
-	"murphysec-cli-simple/cmd"
-	"murphysec-cli-simple/logger"
 	"os"
 	"syscall"
 )

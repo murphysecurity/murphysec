@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"container/list"
 	"fmt"
+	"github.com/murphysecurity/murphysec/model"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/model"
 	"regexp"
 	"strings"
 )

@@ -3,8 +3,8 @@ package gradle
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/pkg/errors"
-	"murphysec-cli-simple/logger"
 	"os/exec"
 	"path/filepath"
 	"regexp"

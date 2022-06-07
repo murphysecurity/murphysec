@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/muesli/termenv"
-	"murphysec-cli-simple/api"
-	"murphysec-cli-simple/display"
-	"murphysec-cli-simple/env"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/model"
+	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/display"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
 	"strconv"
 )
 

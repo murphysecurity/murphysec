@@ -2,8 +2,8 @@ package version
 
 import (
 	"fmt"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/utils/must"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"os"
 	"path/filepath"
 	"sync"

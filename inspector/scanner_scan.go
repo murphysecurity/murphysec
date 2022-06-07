@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"murphysec-cli-simple/logger"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/utils/must"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"path/filepath"
 )
 

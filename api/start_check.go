@@ -1,8 +1,8 @@
 package api
 
 import (
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/utils/must"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils/must"
 )
 
 func StartCheck(taskId string) error {

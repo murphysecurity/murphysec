@@ -2,12 +2,12 @@ package maven
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module/base"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/utils/semerr"
 	"github.com/pkg/errors"
 	"github.com/vifraa/gopom"
-	"murphysec-cli-simple/model"
-	"murphysec-cli-simple/module/base"
-	"murphysec-cli-simple/utils"
-	"murphysec-cli-simple/utils/semerr"
 	"path/filepath"
 	"regexp"
 	"strings"

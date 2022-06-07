@@ -3,8 +3,8 @@
 package version
 
 import (
+	"github.com/murphysecurity/murphysec/logger"
 	"io/ioutil"
-	"murphysec-cli-simple/logger"
 	"regexp"
 )
 

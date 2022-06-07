@@ -2,7 +2,7 @@ package version
 
 import (
 	"github.com/denisbrodbeck/machineid"
-	"murphysec-cli-simple/utils/must"
+	"github.com/murphysecurity/murphysec/utils/must"
 )
 
 func MachineId() string {

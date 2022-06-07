@@ -2,7 +2,7 @@ package base
 
 import (
 	"encoding/json"
-	"murphysec-cli-simple/display"
+	"github.com/murphysecurity/murphysec/display"
 )
 
 type InspectTaskType int
