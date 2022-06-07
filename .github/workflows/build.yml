@@ -36,7 +36,7 @@ jobs:
         run: mv out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}.exe
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
           path: out/*
