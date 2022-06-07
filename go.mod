@@ -20,7 +20,6 @@ require (
 	github.com/stretchr/testify v1.7.2
 	github.com/vifraa/gopom v0.2.0
 	github.com/whilp/git-urls v1.0.0
-	github.com/ztrue/shutdown v0.1.1
 	go.uber.org/zap v1.21.0
 	golang.org/x/mod v0.5.1
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
