@@ -29,7 +29,7 @@ jobs:
         run: go install -v ./...
 
       - name: Build
-        run: go build -v -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
+        run: go build -v -ldflags '-s -w' -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
 
       - name: Rename for Windows
         if: matrix.goos == 'windows'
