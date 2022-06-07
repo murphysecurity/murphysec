@@ -12,6 +12,8 @@ const opts = targets.map((it) => ({
     cmd: [
         "go",
         "build",
+        "-ldflags",
+        "-s -w",
         tags.length > 0 ? ["-tags", ...tags] : [],
         "-o",
         `out/${bn}-${it[0]}-${it[1]}${it[0] === "windows" ? ".exe" : ""}`,
