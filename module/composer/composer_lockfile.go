@@ -8,7 +8,7 @@ import (
 )
 
 func readComposerLockFile(path string) ([]Package, error) {
-	lockFileData, e := utils.ReadFileLimited(path, 4*1024*1024)
+	lockFileData, e := utils.ReadFileLimited(path, _ComposerLockFileSizeLimit)
 	if e != nil {
 		return nil, errors.Wrap(e, "Read composer.lock failed")
 	}
