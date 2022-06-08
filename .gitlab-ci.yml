@@ -51,6 +51,18 @@ compose-build-saas:
     - mv * ../
     - cd ..
 
+test:
+  image: iseki0/go-deno:latest
+  stage: build
+  cache:
+    key: cli-build-cache-0041
+    paths:
+      - .go/pkg/mod/
+  before_script:
+    - mkdir -p .go
+  script:
+    go test -v ./...
+
 compose-build:
   image: iseki0/go-deno:latest
   stage: build
