@@ -13,7 +13,7 @@ require (
 	github.com/magiconair/properties v1.8.6
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.12.0
-	github.com/pelletier/go-toml/v2 v2.0.1
+	github.com/pelletier/go-toml/v2 v2.0.2
 	github.com/pkg/errors v0.9.1
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d
 	github.com/spf13/cobra v1.4.0
