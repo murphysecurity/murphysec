@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-var pyRequirementsPattern = regexp.MustCompile("^([A-Za-z0-9_-]+) *== *([^= \\n\\r]+)$")
+var pyRequirementsPattern = regexp.MustCompile("^([A-Za-z0-9_-]+) *.?= *([^= \\n\\r]+)$")
 var pyImportPattern1 = regexp.MustCompile("import\\s+(?:[A-Za-z_-][A-Za-z_0-9.-]*)(?:\\s*,\\s*(?:[A-Za-z_-][A-Za-z_0-9.-]*))")
 var pyImportPattern2 = regexp.MustCompile("from\\s+([A-Za-z_-][A-Za-z_0-9-]*)")
 
