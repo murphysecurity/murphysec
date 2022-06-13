@@ -2,6 +2,7 @@ package inspector
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/conf"
@@ -38,6 +39,10 @@ func createTask(ctx context.Context) error {
 			CommitTime:    g.CommitTime,
 		}
 		req.GitInfo = v
+	}
+	if env.SpecificProjectName != "" {
+		// force set project dir, in order to create new project
+		req.TargetAbsPath = fmt.Sprintf(`/%s`, env.SpecificProjectName)
 	}
 	if res, e := api.CreateTask(req); e == nil {
 		c.TaskId = res.TaskInfo
