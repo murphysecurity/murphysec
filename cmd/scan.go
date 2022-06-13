@@ -16,6 +16,7 @@ var CliJsonOutput bool
 
 var DeepScan bool
 var ProjectId string
+var SpecificProjectName string
 
 func scanCmd() *cobra.Command {
 	c := &cobra.Command{
@@ -38,6 +39,9 @@ func scanCmd() *cobra.Command {
 				tt = model.TaskTypeJenkins
 			}
 			task := model.CreateScanTask(projectDir, model.TaskKindNormal, tt)
+			if SpecificProjectName != "" {
+				task.ProjectName = SpecificProjectName
+			}
 			task.EnableDeepScan = DeepScan
 			ctx = model.WithScanTask(ctx, task)
 
@@ -52,6 +56,7 @@ func scanCmd() *cobra.Command {
 		c.Flags().BoolVar(&DeepScan, "deep", false, "deep scan, will upload the source code")
 	}
 	c.Flags().StringVar(&ProjectId, "project-id", "", "team id")
+	c.Flags().StringVar(&SpecificProjectName, "project-name", "", "force specific project name")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
