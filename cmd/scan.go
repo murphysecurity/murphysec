@@ -17,6 +17,7 @@ var CliJsonOutput bool
 var DeepScan bool
 var ProjectId string
 var SpecificProjectName string
+var SkipGitInfo bool
 
 func scanCmd() *cobra.Command {
 	c := &cobra.Command{
@@ -39,6 +40,12 @@ func scanCmd() *cobra.Command {
 				tt = model.TaskTypeJenkins
 			}
 			task := model.CreateScanTask(projectDir, model.TaskKindNormal, tt)
+			if SkipGitInfo {
+				task.GitInfo = nil
+				task.ProjectName = filepath.Base(projectDir)
+				task.ProjectType = model.ProjectTypeLocal
+				task.ContributorList = nil
+			}
 			if SpecificProjectName != "" {
 				task.ProjectName = SpecificProjectName
 				// force set project dir, in order to create new project
@@ -59,6 +66,7 @@ func scanCmd() *cobra.Command {
 	}
 	c.Flags().StringVar(&ProjectId, "project-id", "", "team id")
 	c.Flags().StringVar(&SpecificProjectName, "project-name", "", "force specific project name")
+	c.Flags().BoolVar(&SkipGitInfo, "skip-git", false, "force ignore git info")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
