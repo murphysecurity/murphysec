@@ -15,4 +15,5 @@ func envi(name string, defaultValue int) int {
 	}
 }
 
+var SpecificProjectName = ""
 var DisableGit = false
