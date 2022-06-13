@@ -81,7 +81,7 @@ const (
 func (m MsgLevel) fColor() termenv.ANSIColor {
 	switch m {
 	case MsgInfo:
-		return termenv.ANSIBrightWhite
+		return termenv.ANSIBrightGreen
 	case MsgError:
 		return termenv.ANSIBrightRed
 	case MsgWarn:
