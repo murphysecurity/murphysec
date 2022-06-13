@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/display"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
@@ -72,6 +73,9 @@ func CreateScanTask(projectDir string, taskKind TaskKind, taskType TaskType) *Sc
 }
 
 func fillScanTaskGitInfo(task *ScanTask) {
+	if env.DisableGit {
+		return
+	}
 	gitInfo, e := getGitInfo(task.ProjectDir)
 	if errors.Is(e, ErrNoGitRepo) {
 		logger.Info.Println("No git repo information.", e.Error())

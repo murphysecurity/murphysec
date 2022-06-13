@@ -14,3 +14,5 @@ func envi(name string, defaultValue int) int {
 		return i
 	}
 }
+
+var DisableGit = false
