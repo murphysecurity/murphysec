@@ -41,6 +41,8 @@ func scanCmd() *cobra.Command {
 			task := model.CreateScanTask(projectDir, model.TaskKindNormal, tt)
 			if SpecificProjectName != "" {
 				task.ProjectName = SpecificProjectName
+				// force set project dir, in order to create new project
+				task.ProjectDir = fmt.Sprintf(`/%s`, SpecificProjectName)
 			}
 			task.EnableDeepScan = DeepScan
 			ctx = model.WithScanTask(ctx, task)
