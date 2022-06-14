@@ -49,6 +49,7 @@ type PluginOutput struct {
 	ProjectId         string               `json:"project_id"`
 	InspectErrors     []model.InspectError `json:"inspect_errors,omitempty"`
 	DependenciesCount int                  `json:"dependencies_count"`
+	InspectReportUrl  string               `json:"inspect_report_url"`
 }
 type PluginComp struct {
 	CompName           string               `json:"comp_name"`
@@ -111,6 +112,7 @@ func generatePluginOutput(c context.Context) *PluginOutput {
 		TotalContributors: ctx.TotalContributors,
 		ProjectId:         ctx.ProjectId,
 		DependenciesCount: ctx.ScanResult.DependenciesCount,
+		InspectReportUrl:  ctx.ScanResult.InspectReportUrl,
 	}
 	// merge module comps
 	rs := map[id]PluginComp{}

@@ -32,8 +32,9 @@ type TaskScanResponse struct {
 			FixType string       `json:"fix_type"`
 		} `json:"comps"`
 	} `json:"modules"`
-	TaskId string `json:"task_id"`
-	Status string `json:"status"`
+	TaskId           string `json:"task_id"`
+	Status           string `json:"status"`
+	InspectReportUrl string `json:"inspect_report_url"`
 }
 
 type VoVulnInfo struct {
