@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +13,7 @@ func scannerCmd() *cobra.Command {
 		Hidden: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			dir := args[0]
-			logger.InitLogger()
+			must.Must(logger.InitLogger())
 			inspector.ScannerScan(dir)
 		},
 	}

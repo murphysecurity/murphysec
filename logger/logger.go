@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
@@ -37,31 +38,30 @@ func w(logger *zap.Logger, f func(msg string, fields ...zap.Field)) *WrappedLogg
 	}
 }
 
-func InitLogger() {
-	encoderConfig := zapcore.EncoderConfig{
-		MessageKey:          "message",
-		LevelKey:            "level",
-		TimeKey:             "time",
-		NameKey:             "name",
-		CallerKey:           "caller",
-		FunctionKey:         "",
-		StacktraceKey:       "stacktrace",
-		SkipLineEnding:      false,
-		LineEnding:          "",
-		EncodeLevel:         zapcore.CapitalLevelEncoder,
-		EncodeTime:          zapcore.RFC3339TimeEncoder,
-		EncodeDuration:      zapcore.StringDurationEncoder,
-		EncodeCaller:        zapcore.ShortCallerEncoder,
-		EncodeName:          nil,
-		NewReflectedEncoder: nil,
-		ConsoleSeparator:    " ",
-	}
-	encoder := zapcore.NewConsoleEncoder(encoderConfig)
-	fileCore := zapcore.NewCore(encoder, zapcore.Lock(loggerFile()), zapcore.DebugLevel)
+var loggerEncoderConfig = zapcore.EncoderConfig{
+	MessageKey:          "message",
+	LevelKey:            "level",
+	TimeKey:             "time",
+	NameKey:             "name",
+	CallerKey:           "caller",
+	FunctionKey:         "",
+	StacktraceKey:       "stacktrace",
+	SkipLineEnding:      false,
+	LineEnding:          zapcore.DefaultLineEnding,
+	EncodeLevel:         zapcore.CapitalLevelEncoder,
+	EncodeTime:          zapcore.RFC3339TimeEncoder,
+	EncodeDuration:      zapcore.StringDurationEncoder,
+	EncodeCaller:        zapcore.ShortCallerEncoder,
+	EncodeName:          nil,
+	NewReflectedEncoder: nil,
+	ConsoleSeparator:    " ",
+}
+
+func InitLogger() error {
+	// console logger
+	encoder := zapcore.NewConsoleEncoder(loggerEncoderConfig)
 	consoleCore := zapcore.NewNopCore()
 	switch strings.ToLower(strings.TrimSpace(ConsoleLogLevelOverride)) {
-	case "silent":
-		consoleCore = zapcore.NewNopCore()
 	case "error":
 		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), zapcore.ErrorLevel)
 	case "warn":
@@ -71,6 +71,19 @@ func InitLogger() {
 	case "debug":
 		consoleCore = zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), zapcore.DebugLevel)
 	}
+
+	// file logger
+	var fileCore zapcore.Core
+	logFile, e := CreateLogFile()
+	if e == nil {
+		fileCore = zapcore.NewCore(encoder, logFile, zapcore.DebugLevel)
+	} else if errors.Is(e, ErrLogFileDisabled) {
+		fileCore = zapcore.NewNopCore()
+	} else {
+		return e
+	}
+
+	// all
 	core := zapcore.NewTee(fileCore, consoleCore)
 
 	logger := zap.New(core, zap.AddCaller())
@@ -82,6 +95,8 @@ func InitLogger() {
 	Logger = logger.Sugar()
 
 	NetworkLogger = zap.NewNop().Sugar()
+
+	return nil
 }
 
 var Debug = noOp

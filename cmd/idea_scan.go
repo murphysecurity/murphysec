@@ -27,7 +27,11 @@ func ideaScanCmd() *cobra.Command {
 				SetGlobalExitCode(1)
 				return
 			}
-			logger.InitLogger()
+			if e := logger.InitLogger(); e != nil {
+				reportIdeaErr(e, "")
+				SetGlobalExitCode(10)
+				return
+			}
 			task := model.CreateScanTask(dir, model.TaskKindNormal, model.TaskTypeIdea)
 			task.ProjectId = ProjectId
 			ctx := model.WithScanTask(context.TODO(), task)

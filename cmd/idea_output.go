@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -21,6 +22,8 @@ func reportIdeaErr(e error, message string) {
 		code = IdeaApiTimeout
 	} else if errors.Is(e, api.BaseCommonApiError) {
 		code = IdeaServerRequestFailed
+	} else if errors.Is(e, logger.ErrCreateLogFileFailed) {
+		code = IdeaLogFileCreateErr
 	}
 	if message == "" {
 		message = e.Error()

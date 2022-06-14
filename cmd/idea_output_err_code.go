@@ -12,6 +12,7 @@ const (
 	IdeaTokenInvalid        IdeaErrCode = 4
 	IdeaApiTimeout          IdeaErrCode = 5
 	IdeaScanDirInvalid      IdeaErrCode = 6
+	IdeaLogFileCreateErr    IdeaErrCode = 7
 )
 
 func (code IdeaErrCode) Error() string {
@@ -34,6 +35,8 @@ func (code IdeaErrCode) Error() string {
 		return "ApiTimeout"
 	case IdeaScanDirInvalid:
 		return "ScanDirInvalid"
+	case IdeaLogFileCreateErr:
+		return "LogFileCreateErr"
 	}
 	panic(code)
 }
