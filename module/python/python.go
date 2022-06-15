@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
+	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"io/fs"
 	"os"
@@ -28,7 +29,7 @@ func (i Inspector) CheckDir(dir string) bool {
 	r, e := os.ReadDir(dir)
 	if e == nil {
 		for _, it := range r {
-			if filepath.Ext(it.Name()) == ".py" || strings.HasPrefix(it.Name(), "requirements") {
+			if filepath.Ext(it.Name()) == ".py" || strings.HasPrefix(it.Name(), "requirements") || it.Name() == "pyproject.toml" {
 				return true
 			}
 		}
@@ -36,6 +37,7 @@ func (i Inspector) CheckDir(dir string) bool {
 	return false
 }
 
+// returns package name list
 func parsePyImport(input string) []string {
 	var rs []string
 	input = strings.TrimSpace(input)
@@ -101,6 +103,16 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 			componentMap[k] = v
 		}
 	}
+
+	tomlPath := filepath.Join(dir, "pyproject.toml")
+	if utils.IsFile(tomlPath) {
+		if list, e := tomlBuildSysFile(tomlPath); e != nil {
+			logger.Warn.Println("Analyze pyproject.toml failed", e.Error())
+		} else {
+			mergeComponentInto(componentMap, list)
+		}
+	}
+
 	for s := range ignoreSet {
 		delete(componentMap, s)
 	}
@@ -123,6 +135,16 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		}
 		model.UseInspectorTask(ctx).AddModule(m)
 		return nil
+	}
+}
+
+func mergeComponentInto(source map[string]string, append []model.Dependency) {
+	for _, it := range append {
+		name, version := it.Name, it.Version
+		if version == "" && source[name] != "" {
+			continue
+		}
+		source[name] = version
 	}
 }
 
