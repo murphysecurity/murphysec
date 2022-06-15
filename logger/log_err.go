@@ -28,7 +28,7 @@ func (e *LogErr) Error() string {
 		prefix = fmt.Sprintf("%s: ", e.Key.Error())
 	}
 	if e.Cause != nil {
-		suffix = e.Error()
+		suffix = e.Cause.Error()
 	}
 	return prefix + suffix
 }
