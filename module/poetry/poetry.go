@@ -90,7 +90,7 @@ func (t *tomlTree) Get(path ...string) *tomlTree {
 	for _, it := range path {
 		m, ok := cur.v.(map[string]any)
 		if !ok {
-			return nil
+			return &tomlTree{}
 		}
 		cur = &tomlTree{m[it]}
 	}
