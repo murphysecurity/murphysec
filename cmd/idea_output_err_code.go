@@ -3,16 +3,16 @@ package cmd
 type IdeaErrCode int
 
 const (
-	IdeaUnknownErr          IdeaErrCode = -2
-	IdeaInspectErr          IdeaErrCode = -1
-	IdeaSucceed             IdeaErrCode = 0
-	IdeaEngineScanFailed    IdeaErrCode = 1
-	IdeaServerRequestFailed IdeaErrCode = 2
-	IdeaUnknownProject      IdeaErrCode = 3
-	IdeaTokenInvalid        IdeaErrCode = 4
-	IdeaApiTimeout          IdeaErrCode = 5
-	IdeaScanDirInvalid      IdeaErrCode = 6
-	IdeaLogFileCreateErr    IdeaErrCode = 7
+	IdeaUnknownErr IdeaErrCode = iota - 2
+	IdeaInspectErr
+	IdeaSucceed
+	IdeaEngineScanFailed
+	IdeaServerRequestFailed
+	IdeaUnknownProject
+	IdeaTokenInvalid
+	IdeaApiTimeout
+	IdeaScanDirInvalid
+	IdeaLogFileCreateErr
 )
 
 func (code IdeaErrCode) Error() string {
