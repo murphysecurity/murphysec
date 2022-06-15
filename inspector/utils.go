@@ -7,21 +7,22 @@ import (
 
 //go:embed auto_scan_ignore
 var _dirIgnoreText string
+var ignoredDirMap map[string]struct{}
 
-var dirIgnored = func() func(name string) bool {
-	m := map[string]struct{}{}
-	for _, it := range strings.Split(_dirIgnoreText, "\n") {
-		s := strings.TrimSpace(it)
-		if strings.HasPrefix(s, "#") {
+func init() {
+	for _, s := range strings.Split(_dirIgnoreText, "\n") {
+		s := strings.TrimSpace(s)
+		if s == "" || strings.HasPrefix(s, "#") {
 			continue
 		}
-		m[s] = struct{}{}
+		ignoredDirMap[s] = struct{}{}
 	}
-	return func(name string) bool {
-		if strings.HasPrefix(name, ".") {
-			return true
-		}
-		_, ok := m[name]
-		return ok
+}
+
+func dirIgnored(name string) bool {
+	if strings.HasPrefix(name, ".") {
+		return true
 	}
-}()
+	_, ok := ignoredDirMap[name]
+	return ok
+}
