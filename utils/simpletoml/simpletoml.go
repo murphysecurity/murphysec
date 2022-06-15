@@ -17,7 +17,7 @@ func (t TOML) Get(path ...string) *TOML {
 		if m, ok := cur.(map[string]any); ok {
 			cur = m[it]
 		} else {
-			return nil
+			return &TOML{}
 		}
 	}
 	return &TOML{V: cur}
