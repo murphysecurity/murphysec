@@ -7,7 +7,7 @@ import (
 
 //go:embed auto_scan_ignore
 var _dirIgnoreText string
-var ignoredDirMap map[string]struct{}
+var ignoredDirMap = map[string]struct{}{}
 
 func init() {
 	for _, s := range strings.Split(_dirIgnoreText, "\n") {
