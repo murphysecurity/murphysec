@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
 	"io"
@@ -19,10 +20,10 @@ import (
 	"time"
 )
 
-var ErrTokenInvalid = errors.New("Token invalid")
-var ErrServerRequest = errors.New("Send request failed")
-var UnprocessableResponse = errors.New("Unprocessable response")
-var ErrTimeout = errors.New("API request timeout")
+var ErrTokenInvalid = model.WrapIdeaErr(errors.New("Token invalid"), model.IdeaApiTimeout)
+var ErrServerRequest = model.WrapIdeaErr(errors.New("Send request failed"), model.IdeaServerRequestFailed)
+var UnprocessableResponse = model.WrapIdeaErr(errors.New("Unprocessable response"), model.IdeaServerRequestFailed)
+var ErrTimeout = model.WrapIdeaErr(errors.New("API request timeout"), model.IdeaApiTimeout)
 
 var C *Client
 

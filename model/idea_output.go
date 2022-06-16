@@ -1,40 +1,18 @@
-package cmd
+package model
 
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"github.com/murphysecurity/murphysec/api"
-	"github.com/murphysecurity/murphysec/logger"
-	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/pkg/errors"
 )
 
-func reportIdeaErr(e error, message string) {
-	code := IdeaUnknownErr
-	if errors.Is(e, api.ErrTokenInvalid) {
-		code = IdeaTokenInvalid
-	} else if errors.Is(e, api.ErrServerRequest) {
-		code = IdeaServerRequestFailed
-	} else if errors.Is(e, api.ErrTimeout) {
-		code = IdeaApiTimeout
-	} else if errors.Is(e, api.BaseCommonApiError) {
-		code = IdeaServerRequestFailed
-	} else if errors.Is(e, logger.ErrCreateLogFileFailed) {
-		code = IdeaLogFileCreateErr
-	}
-	if message == "" {
-		message = e.Error()
-	}
-	if message == "" {
-		message = code.Error()
-	}
-	fmt.Println(string(must.A(json.Marshal(struct {
+func GenerateIdeaErrorOutput(e error) string {
+	iec := GetIdeaErrCode(e)
+	return string(must.A(json.Marshal(struct {
 		ErrCode IdeaErrCode `json:"err_code"`
 		ErrMsg  string      `json:"err_msg"`
-	}{ErrCode: code, ErrMsg: message}))))
+	}{ErrCode: iec, ErrMsg: e.Error()})))
 }
 
 type PluginOutput struct {
@@ -47,19 +25,19 @@ type PluginOutput struct {
 		Medium   int `json:"medium,omitempty"`
 		Low      int `json:"low,omitempty"`
 	} `json:"issues_level_count,omitempty"`
-	TaskId            string               `json:"task_id,omitempty"`
-	TotalContributors int                  `json:"total_contributors"`
-	ProjectId         string               `json:"project_id"`
-	InspectErrors     []model.InspectError `json:"inspect_errors,omitempty"`
-	DependenciesCount int                  `json:"dependencies_count"`
-	InspectReportUrl  string               `json:"inspect_report_url"`
+	TaskId            string         `json:"task_id,omitempty"`
+	TotalContributors int            `json:"total_contributors"`
+	ProjectId         string         `json:"project_id"`
+	InspectErrors     []InspectError `json:"inspect_errors,omitempty"`
+	DependenciesCount int            `json:"dependencies_count"`
+	InspectReportUrl  string         `json:"inspect_report_url"`
 }
 type PluginComp struct {
 	CompName           string               `json:"comp_name"`
 	ShowLevel          int                  `json:"show_level"`
 	MinFixedVersion    string               `json:"min_fixed_version"`
 	MinFixed           PluginCompFixList    `json:"min_fixed"`
-	Vulns              []model.VoVulnInfo   `json:"vulns"`
+	Vulns              []VoVulnInfo         `json:"vulns"`
 	Version            string               `json:"version"`
 	License            *PluginCompLicense   `json:"license,omitempty"`
 	Solutions          []PluginCompSolution `json:"solutions,omitempty"`
@@ -69,8 +47,8 @@ type PluginComp struct {
 }
 
 type PluginCompLicense struct {
-	Level model.LicenseLevel `json:"level"`
-	Spdx  string             `json:"spdx"`
+	Level LicenseLevel `json:"level"`
+	Spdx  string       `json:"spdx"`
 }
 
 type PluginCompFix struct {
@@ -99,8 +77,8 @@ type PluginCompSolution struct {
 	Type          string `json:"type,omitempty"`
 }
 
-func generatePluginOutput(c context.Context) *PluginOutput {
-	ctx := model.UseScanTask(c)
+func GenerateIdeaOutput(c context.Context) string {
+	ctx := UseScanTask(c)
 	i := ctx.ScanResult
 	type id struct {
 		name    string
@@ -162,9 +140,9 @@ func generatePluginOutput(c context.Context) *PluginOutput {
 			}
 			for _, it := range comp.Vuls {
 				switch it.SuggestLevel {
-				case model.SuggestLevelRecommend:
+				case SuggestLevelRecommend:
 					p.ShowLevel = utils.MinInt(p.ShowLevel, 2)
-				case model.SuggestLevelStrongRecommend:
+				case SuggestLevelStrongRecommend:
 					p.ShowLevel = utils.MinInt(p.ShowLevel, 1)
 				}
 			}
@@ -184,13 +162,13 @@ func generatePluginOutput(c context.Context) *PluginOutput {
 			for _, comp := range it.Comps {
 				for _, vul := range comp.Vuls {
 					switch vul.Level {
-					case model.VulnLevelCritical:
+					case VulnLevelCritical:
 						critical[vul.VulnNo] = struct{}{}
-					case model.VulnLevelHigh:
+					case VulnLevelHigh:
 						high[vul.VulnNo] = struct{}{}
-					case model.VulnLevelMedium:
+					case VulnLevelMedium:
 						medium[vul.VulnNo] = struct{}{}
-					case model.VulnLevelLow:
+					case VulnLevelLow:
 						low[vul.VulnNo] = struct{}{}
 					}
 				}
@@ -201,5 +179,5 @@ func generatePluginOutput(c context.Context) *PluginOutput {
 		p.IssuesLevelCount.High = len(high)
 		p.IssuesLevelCount.Critical = len(critical)
 	}
-	return p
+	return string(must.A(json.MarshalIndent(p, "", "  ")))
 }

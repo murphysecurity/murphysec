@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/logger"
@@ -23,24 +22,24 @@ func ideaScanCmd() *cobra.Command {
 				dir = must.A(filepath.Abs(dir))
 			}
 			if !utils.IsPathExist(dir) {
-				reportIdeaErr(IdeaScanDirInvalid, "")
+				fmt.Println(model.GenerateIdeaErrorOutput(model.IdeaScanDirInvalid))
 				SetGlobalExitCode(1)
 				return
 			}
 			if e := logger.InitLogger(); e != nil {
-				reportIdeaErr(e, "")
-				SetGlobalExitCode(10)
+				fmt.Println(model.GenerateIdeaErrorOutput(model.IdeaLogFileCreateFailed))
+				SetGlobalExitCode(1)
 				return
 			}
 			task := model.CreateScanTask(dir, model.TaskKindNormal, model.TaskTypeIdea)
 			task.ProjectId = ProjectId
 			ctx := model.WithScanTask(context.TODO(), task)
 			if e := inspector.Scan(ctx); e != nil {
-				reportIdeaErr(e, "")
-				SetGlobalExitCode(3)
+				fmt.Println(model.GenerateIdeaErrorOutput(e))
+				SetGlobalExitCode(1)
 				return
 			}
-			fmt.Println(string(must.A(json.MarshalIndent(generatePluginOutput(ctx), "", "  "))))
+			fmt.Println(model.GenerateIdeaOutput(ctx))
 		},
 	}
 	c.Flags().StringVar(&dir, "dir", "", "project base dir")
