@@ -25,9 +25,6 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Install dependencies
-        run: go install -v ./...
-
       - name: Build
         run: go build -v -ldflags '-s -w' -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
 
