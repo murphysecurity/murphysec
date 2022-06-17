@@ -35,14 +35,31 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	if e != nil {
 		return errors.Wrap(e, "PoetryInspector")
 	}
-	task.AddModule(model.Module{
+	cmap := map[string]string{}
+	for _, it := range manifest.Dependencies {
+		cmap[it.Name] = it.Version
+	}
+	poetryFile := filepath.Join(task.ScanDir, "poetry.lock.py")
+	if utils.IsFile(poetryFile) {
+		if deps, e := parsePoetryLock(poetryFile); e == nil {
+			for _, it := range deps {
+				cmap[it.Name] = it.Version
+			}
+		}
+	}
+	module := model.Module{
 		PackageManager: model.PMPoetry,
 		Language:       model.Python,
 		PackageFile:    "pyprojject.toml",
 		Name:           manifest.Name,
-		Dependencies:   manifest.Dependencies,
+		Dependencies:   []model.Dependency{},
 		UUID:           uuid.Must(uuid.NewRandom()),
-	})
+	}
+	for k, v := range cmap {
+		module.Dependencies = append(module.Dependencies, model.Dependency{Name: k, Version: v})
+	}
+
+	task.AddModule(module)
 	return nil
 }
 
@@ -83,6 +100,17 @@ func parsePoetry(input []byte) (*Manifest, error) {
 
 type tomlTree struct {
 	v any
+}
+
+func (t *tomlTree) AsArray() (rs []tomlTree) {
+	arr, ok := t.v.([]any)
+	if !ok {
+		return
+	}
+	for _, it := range arr {
+		rs = append(rs, tomlTree{v: it})
+	}
+	return
 }
 
 func (t *tomlTree) Get(path ...string) *tomlTree {

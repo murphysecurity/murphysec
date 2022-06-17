@@ -17,3 +17,13 @@ func TestParseToml(t *testing.T) {
 	fmt.Println(root.Get("tool", "poetry", "dependencies").v)
 	fmt.Println(root.Get("tool", "poetry", "name").v)
 }
+
+//go:embed poetry.lock.py
+var __lockData []byte
+
+func TestParsePoetryLock(t *testing.T) {
+	root := &tomlTree{}
+	assert.NoError(t, toml.Unmarshal(__lockData, &root.v))
+	pkgs := root.Get("package").AsArray()
+	fmt.Println(pkgs)
+}
