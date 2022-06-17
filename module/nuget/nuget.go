@@ -27,7 +27,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
-	dep, e := inspectPkgConfig(filepath.Join(task.ProjectDir, "packages.config"))
+	dep, e := inspectPkgConfig(filepath.Join(task.ScanDir, "packages.config"))
 	if e != nil {
 		return errors.Wrap(e, "NugetInspector")
 	}
