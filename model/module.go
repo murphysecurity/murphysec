@@ -16,6 +16,7 @@ const (
 	PMBundler   PackageManagerType = "bundler"
 	PMCocoaPods PackageManagerType = "cocoapods"
 	PMPoetry    PackageManagerType = "poetry"
+	PmNuget     PackageManagerType = "nuget"
 )
 
 type Language string
@@ -29,6 +30,7 @@ const (
 	Java       Language = "Java"
 	JavaScript Language = "JavaScript"
 	Python     Language = "Python"
+	DotNet     Language = "DotNet"
 )
 
 type Dependency struct {

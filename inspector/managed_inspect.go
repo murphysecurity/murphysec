@@ -14,6 +14,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/gradle"
 	"github.com/murphysecurity/murphysec/module/maven"
 	"github.com/murphysecurity/murphysec/module/npm"
+	"github.com/murphysecurity/murphysec/module/nuget"
 	"github.com/murphysecurity/murphysec/module/poetry"
 	"github.com/murphysecurity/murphysec/module/python"
 	"github.com/murphysecurity/murphysec/module/yarn"
@@ -34,6 +35,7 @@ var managedInspector = []base.Inspector{
 	bundler.New(),
 	cocoapods.New(),
 	poetry.New(),
+	nuget.New(),
 }
 
 type inspectorAcceptance struct {
