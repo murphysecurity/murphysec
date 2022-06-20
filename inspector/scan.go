@@ -89,7 +89,7 @@ func Scan(ctx context.Context) error {
 		termenv.String(totalVuln).Foreground(termenv.ANSIBrightRed),
 	)
 	if scanTask.ScanResult.InspectReportUrl != "" {
-		fmt.Printf("检测报告详见：%s\n", scanTask.ScanResult.InspectReportUrl)
+		ui.Display(display.MsgNotice, fmt.Sprintf("检测报告详见：%s", scanTask.ScanResult.InspectReportUrl))
 	}
 	ui.Display(display.MsgNotice, t)
 
