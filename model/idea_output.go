@@ -92,7 +92,7 @@ func GenerateIdeaOutput(c context.Context) string {
 	}
 	p := &PluginOutput{
 		ProjectName: ctx.ProjectName,
-		ErrCode:     0,
+		ErrCode:     IdeaSucceed,
 		IssuesCount: i.IssuesCompsCount,
 		Comps:       []PluginComp{},
 		TaskId:      i.TaskId,
