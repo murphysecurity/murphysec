@@ -37,7 +37,7 @@ type PluginComp struct {
 	CompName           string               `json:"comp_name"`
 	ShowLevel          int                  `json:"show_level"`
 	MinFixedVersion    string               `json:"min_fixed_version"`
-	MinFixed           PluginCompFixList    `json:"min_fixed"`
+	FixPlan            PluginCompFixList    `json:"fix_plan"`
 	Vulns              []VoVulnInfo         `json:"vulns"`
 	Version            string               `json:"version"`
 	License            *PluginCompLicense   `json:"license,omitempty"`
@@ -53,9 +53,11 @@ type PluginCompLicense struct {
 }
 
 type PluginCompFix struct {
-	OldVersion string `json:"old_version"`
-	NewVersion string `json:"new_version"`
-	CompName   string `json:"comp_name"`
+	OldVersion      string `json:"old_version"`
+	NewVersion      string `json:"new_version"`
+	CompName        string `json:"comp_name"`
+	UpdateSecScore  int    `json:"update_sec_score"`
+	CompatibleScore int    `json:"compatible_score"`
 }
 
 type PluginCompFixList []PluginCompFix
@@ -106,7 +108,7 @@ func GenerateIdeaOutput(c context.Context) string {
 				CompName:        comp.CompName,
 				ShowLevel:       3,
 				MinFixedVersion: comp.MinFixedVersion,
-				MinFixed:        PluginCompFixList{},
+				FixPlan:         PluginCompFixList{},
 				Vulns:           comp.Vuls,
 				Version:         comp.CompVersion,
 				License:         nil,
@@ -115,10 +117,12 @@ func GenerateIdeaOutput(c context.Context) string {
 				FixType:         comp.FixType,
 			}
 			for _, it := range comp.MinFixedInfo {
-				p.MinFixed = append(p.MinFixed, PluginCompFix{
-					OldVersion: it.OldVersion,
-					NewVersion: it.NewVersion,
-					CompName:   it.Name,
+				p.FixPlan = append(p.FixPlan, PluginCompFix{
+					OldVersion:      it.OldVersion,
+					NewVersion:      it.NewVersion,
+					CompName:        it.Name,
+					CompatibleScore: it.CompatibilityScore,
+					UpdateSecScore:  it.SecurityScore,
 				})
 			}
 			if comp.License != nil {
