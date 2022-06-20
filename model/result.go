@@ -4,6 +4,8 @@ type TaskScanResponse struct {
 	Complete          bool `json:"complete"`
 	DependenciesCount int  `json:"dependencies_count"`
 	IssuesCompsCount  int  `json:"issues_comps_count"`
+	ProjectScore      int  `json:"project_score"`
+	SurpassScore      int  `json:"surpass_score"`
 	Modules           []struct {
 		ModuleId       int    `json:"module_id"`
 		Language       string `json:"language"`

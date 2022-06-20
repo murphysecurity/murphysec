@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 )
@@ -20,6 +21,8 @@ type PluginOutput struct {
 	ErrCode          IdeaErrCode  `json:"err_code"`
 	IssuesCount      int          `json:"issues_count,omitempty"`
 	Comps            []PluginComp `json:"comps,omitempty"`
+	ProjectScore     int          `json:"project_score"`
+	SurpassScore     string       `json:"surpass_score"`
 	IssuesLevelCount struct {
 		Critical int `json:"critical,omitempty"`
 		High     int `json:"high,omitempty"`
@@ -98,6 +101,8 @@ func GenerateIdeaOutput(c context.Context) string {
 		ProjectId:         ctx.ProjectId,
 		DependenciesCount: ctx.ScanResult.DependenciesCount,
 		InspectReportUrl:  ctx.ScanResult.InspectReportUrl,
+		ProjectScore:      ctx.ScanResult.ProjectScore,
+		SurpassScore:      fmt.Sprintf("%d%", ctx.ScanResult.SurpassScore),
 	}
 	// merge module comps
 	rs := map[id]PluginComp{}
