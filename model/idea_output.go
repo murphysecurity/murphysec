@@ -102,7 +102,7 @@ func GenerateIdeaOutput(c context.Context) string {
 		DependenciesCount: ctx.ScanResult.DependenciesCount,
 		InspectReportUrl:  ctx.ScanResult.InspectReportUrl,
 		ProjectScore:      ctx.ScanResult.ProjectScore,
-		SurpassScore:      fmt.Sprintf("%d%", ctx.ScanResult.SurpassScore),
+		SurpassScore:      fmt.Sprintf("%d%%", ctx.ScanResult.SurpassScore),
 	}
 	// merge module comps
 	rs := map[id]PluginComp{}
