@@ -48,6 +48,7 @@ type PluginComp struct {
 	IsDirectDependency bool                 `json:"is_direct_dependency"`
 	Language           string               `json:"language"`
 	FixType            string               `json:"fix_type"`
+	CompSecScore       int                  `json:"comp_sec_score"`
 }
 
 type PluginCompLicense struct {
@@ -120,6 +121,7 @@ func GenerateIdeaOutput(c context.Context) string {
 				Solutions:       []PluginCompSolution{},
 				Language:        mod.Language,
 				FixType:         comp.FixType,
+				CompSecScore:    comp.CompSecScore,
 			}
 			for _, it := range comp.MinFixedInfo {
 				p.DisposePlan = append(p.DisposePlan, PluginCompFix{
