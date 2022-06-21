@@ -48,6 +48,7 @@ func createTask(ctx context.Context) error {
 		c.TaskId = res.TaskInfo
 		c.TotalContributors = res.TotalContributors
 		c.ProjectId = res.ProjectId
+		c.Username = res.Username
 		logger.Info.Println("task created, id:", res.TaskInfo)
 		return nil
 	} else {

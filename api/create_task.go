@@ -33,6 +33,7 @@ type CreateTaskResponse struct {
 	TaskInfo          string `json:"task_info"`
 	TotalContributors int    `json:"total_contributors"`
 	ProjectId         string `json:"project_id"`
+	Username          string `json:"username"`
 }
 
 func CreateTask(req *CreateTaskRequest) (*CreateTaskResponse, error) {

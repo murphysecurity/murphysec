@@ -18,6 +18,7 @@ func GenerateIdeaErrorOutput(e error) string {
 
 type PluginOutput struct {
 	ProjectName      string       `json:"project_name"`
+	Username         string       `json:"username"`
 	ErrCode          IdeaErrCode  `json:"err_code"`
 	IssuesCount      int          `json:"issues_count,omitempty"`
 	Comps            []PluginComp `json:"comps,omitempty"`
@@ -93,6 +94,7 @@ func GenerateIdeaOutput(c context.Context) string {
 	}
 	p := &PluginOutput{
 		ProjectName: ctx.ProjectName,
+		Username:    ctx.Username,
 		ErrCode:     IdeaSucceed,
 		IssuesCount: i.IssuesCompsCount,
 		Comps:       []PluginComp{},

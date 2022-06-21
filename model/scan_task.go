@@ -45,6 +45,7 @@ type ScanTask struct {
 	Kind              TaskKind
 	ProjectType       ProjectType
 	ProjectId         string
+	Username          string
 	StartTime         time.Time
 	GitInfo           *GitInfo
 	TaskType          TaskType
