@@ -17,7 +17,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.2
 	github.com/pkg/errors v0.9.1
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.7.4
 	github.com/vifraa/gopom v0.2.0
 	github.com/whilp/git-urls v1.0.0
