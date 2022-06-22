@@ -45,7 +45,14 @@ func scanCmd() *cobra.Command {
 			ctx = model.WithScanTask(ctx, task)
 
 			if e := inspector.Scan(ctx); e != nil {
+				if tt == model.TaskTypeJenkins {
+					fmt.Println(model.GenerateIdeaErrorOutput(e))
+				}
 				SetGlobalExitCode(-1)
+			} else {
+				if tt == model.TaskTypeJenkins {
+					fmt.Println(model.GenerateIdeaOutput(ctx))
+				}
 			}
 		},
 		Short: "Scan the source code of the specified project, currently supporting java, javascript, go, and python",
