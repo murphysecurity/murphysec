@@ -9,9 +9,11 @@ import (
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"io"
 	"mime"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"reflect"
@@ -32,6 +34,31 @@ var machineId = version.MachineId()
 
 var C *Client
 
+type _LoggingMiddleware struct {
+	Transport http.RoundTripper
+}
+
+func (t *_LoggingMiddleware) RoundTrip(request *http.Request) (resp *http.Response, e error) {
+	var dump []byte
+	dump, e = httputil.DumpRequestOut(request, true)
+	if e != nil {
+		logger.Logger.Desugar().Error("dump request out failed", zap.Error(e))
+	} else {
+		logger.Logger.Desugar().Debug("http request", zap.ByteString("dump", dump))
+	}
+	resp, e = t.Transport.RoundTrip(request)
+	if e != nil {
+		return
+	}
+	dump, e = httputil.DumpResponse(resp, true)
+	if e != nil {
+		logger.Logger.Desugar().Error("dump response out failed", zap.Error(e))
+	} else {
+		logger.Logger.Desugar().Debug("http response", zap.ByteString("dump", dump))
+	}
+	return
+}
+
 type Client struct {
 	client  *http.Client
 	baseUrl string
@@ -48,6 +75,9 @@ func NewClient(baseUrl string) *Client {
 		c.Timeout = time.Duration(int64(time.Second) * int64(i))
 	}
 	cl := &Client{client: c, baseUrl: baseUrl}
+	if logger.NetworkLog {
+		cl.client.Transport = &_LoggingMiddleware{Transport: http.DefaultTransport}
+	}
 	return cl
 }
 

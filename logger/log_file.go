@@ -13,6 +13,7 @@ import (
 
 var CliLogFilePathOverride string
 var DisableLogFile bool
+var NetworkLog bool
 
 var defaultLogFile = filepath.Join(must.A(homedir.Dir()), ".murphysec", "logs", fmt.Sprintf("%d.log", time.Now().UnixMilli()))
 
