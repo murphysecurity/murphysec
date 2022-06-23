@@ -7,6 +7,7 @@ import (
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/murphysecurity/murphysec/version"
 	"github.com/pkg/errors"
 	"io"
 	"mime"
@@ -24,6 +25,10 @@ var ErrTokenInvalid = model.WrapIdeaErr(errors.New("Token invalid"), model.IdeaA
 var ErrServerRequest = model.WrapIdeaErr(errors.New("Send request failed"), model.IdeaServerRequestFailed)
 var UnprocessableResponse = model.WrapIdeaErr(errors.New("Unprocessable response"), model.IdeaServerRequestFailed)
 var ErrTimeout = model.WrapIdeaErr(errors.New("API request timeout"), model.IdeaApiTimeout)
+
+const HeaderMachineId = "machine-id"
+
+var machineId = version.MachineId()
 
 var C *Client
 
@@ -48,6 +53,7 @@ func NewClient(baseUrl string) *Client {
 
 func (c *Client) POST(relUri string, body io.Reader) *http.Request {
 	u, e := http.NewRequest(http.MethodPost, c.baseUrl+relUri, body)
+	u.Header.Set(HeaderMachineId, machineId)
 	if e != nil {
 		panic(e)
 	}
@@ -57,11 +63,13 @@ func (c *Client) POST(relUri string, body io.Reader) *http.Request {
 func (c *Client) PostJson(relUri string, a interface{}) *http.Request {
 	u := c.POST(relUri, bytes.NewReader(must.A(json.Marshal(a))))
 	u.Header.Set("Content-Type", "application/json")
+	u.Header.Set(HeaderMachineId, machineId)
 	return u
 }
 
 func (c *Client) GET(relUri string) *http.Request {
 	u, e := http.NewRequest(http.MethodGet, c.baseUrl+relUri, nil)
+	u.Header.Set(HeaderMachineId, machineId)
 	if e != nil {
 		panic(e)
 	}
