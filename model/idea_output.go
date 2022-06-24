@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"sort"
 )
 
 func GenerateIdeaErrorOutput(e error) string {
@@ -67,9 +68,47 @@ type PluginCompFix struct {
 
 type PluginCompFixList []PluginCompFix
 
-func (this PluginCompFixList) MarshalJSON() ([]byte, error) {
+func (l PluginCompFixList) Less(i, j int) bool {
+	if l[i].CompName != l[j].CompName {
+		return l[i].CompName < l[j].CompName
+	}
+	if l[i].NewVersion != l[j].NewVersion {
+		return l[i].NewVersion < l[j].NewVersion
+	}
+	if l[i].OldVersion != l[j].OldVersion {
+		return l[i].OldVersion < l[j].OldVersion
+	}
+	if l[i].UpdateSecScore != l[j].UpdateSecScore {
+		return l[i].UpdateSecScore < l[j].UpdateSecScore
+	}
+	if l[i].CompatibleScore != l[j].CompatibleScore {
+		return l[i].CompatibleScore < l[j].CompatibleScore
+	}
+	return false
+}
+
+func (l PluginCompFixList) Swap(i, j int) {
+	l[i], l[j] = l[j], l[i]
+}
+
+func (l PluginCompFixList) Len() int {
+	return len(l)
+}
+
+func (l PluginCompFixList) Uniq() (rs PluginCompFixList) {
 	m := map[PluginCompFix]struct{}{}
-	for _, it := range this {
+	for _, it := range l {
+		m[it] = struct{}{}
+	}
+	for fix := range m {
+		rs = append(rs, fix)
+	}
+	return
+}
+
+func (l PluginCompFixList) MarshalJSON() ([]byte, error) {
+	m := map[PluginCompFix]struct{}{}
+	for _, it := range l {
 		m[it] = struct{}{}
 	}
 	rs := make([]PluginCompFix, 0)
@@ -92,6 +131,29 @@ func GenerateIdeaOutput(c context.Context) string {
 		name    string
 		version string
 	}
+	fixPlans := map[[2]string]PluginCompFixList{}
+	{
+		t := map[[2]string]PluginCompFixList{}
+		for _, it := range i.Modules {
+			for _, c := range it.Comps {
+				for _, it := range c.MinFixedInfo {
+					t[[2]string{c.CompName, c.CompVersion}] = append(t[[2]string{c.CompName, c.CompVersion}], PluginCompFix{
+						OldVersion:      it.OldVersion,
+						NewVersion:      it.NewVersion,
+						CompName:        it.Name,
+						CompatibleScore: it.CompatibilityScore,
+						UpdateSecScore:  it.SecurityScore,
+					})
+				}
+			}
+		}
+		for k, v := range t {
+			v = v.Uniq()
+			sort.Sort(v)
+			fixPlans[k] = v
+		}
+	}
+
 	p := &PluginOutput{
 		ProjectName: ctx.ProjectName,
 		Username:    ctx.Username,
@@ -125,14 +187,8 @@ func GenerateIdeaOutput(c context.Context) string {
 				FixType:         comp.FixType,
 				CompSecScore:    comp.CompSecScore,
 			}
-			for _, it := range comp.MinFixedInfo {
-				p.DisposePlan = append(p.DisposePlan, PluginCompFix{
-					OldVersion:      it.OldVersion,
-					NewVersion:      it.NewVersion,
-					CompName:        it.Name,
-					CompatibleScore: it.CompatibilityScore,
-					UpdateSecScore:  it.SecurityScore,
-				})
+			if t := fixPlans[[2]string{comp.CompName, comp.CompVersion}]; len(t) > 0 {
+				p.DisposePlan = append(p.DisposePlan, t...)
 			}
 			if comp.License != nil {
 				p.License = &PluginCompLicense{
