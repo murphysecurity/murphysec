@@ -123,6 +123,12 @@ type dependencyGraph struct {
 }
 
 func (d dependencyGraph) Tree() []Dependency {
+	// from -> listOf to
+	edges := map[int][]int{}
+	for _, it := range d.Dependencies {
+		edges[it.NumericFrom] = append(edges[it.NumericFrom], it.NumericTo)
+	}
+
 	root := make([]bool, len(d.Artifacts))
 	for _, it := range d.Dependencies {
 		root[it.NumericTo] = true
@@ -133,23 +139,34 @@ func (d dependencyGraph) Tree() []Dependency {
 			rootNums = append(rootNums, idx)
 		}
 	}
-
-	// from -> listOf to
-	edges := map[int][]int{}
-	for _, it := range d.Dependencies {
-		edges[it.NumericFrom] = append(edges[it.NumericFrom], it.NumericTo)
-	}
-
-	var rs []Dependency
-	visited := make([]bool, len(d.Artifacts))
-	for _, rootN := range rootNums {
-		t := d._tree(rootN, visited, edges)
-		if t == nil {
-			continue
+	if len(rootNums) == 0 {
+		logger.Warn.Println("root node not found")
+		return nil
+	} else if len(rootNums) > 1 {
+		logger.Warn.Println("found more than one root node")
+		visited := make([]bool, len(d.Artifacts))
+		var rs []Dependency
+		for _, rootN := range rootNums {
+			t := d._tree(rootN, visited, edges)
+			if t == nil {
+				continue
+			}
+			rs = append(rs, *t)
 		}
-		rs = append(rs, *t)
+		return rs
+	} else {
+		visited := make([]bool, len(d.Artifacts))
+		t := d._tree(rootNums[0], visited, edges)
+		if t != nil {
+			return t.Children
+		}
 	}
-	return rs
+	visited := make([]bool, len(d.Artifacts))
+	t := d._tree(rootNums[0], visited, edges)
+	if t != nil {
+		return t.Children
+	}
+	return nil
 }
 
 func (d dependencyGraph) _tree(id int, visitedId []bool, edges map[int][]int) *Dependency {
