@@ -129,7 +129,7 @@ func (d dependencyGraph) Tree() []Dependency {
 	}
 	var rootNums []int
 	for idx, it := range root {
-		if it {
+		if !it {
 			rootNums = append(rootNums, idx)
 		}
 	}
