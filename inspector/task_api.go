@@ -7,9 +7,9 @@ import (
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/version"
+	"go.uber.org/zap"
 	"os"
 	"strings"
 )
@@ -53,9 +53,10 @@ func submitModuleInfoApi(ctx context.Context) error {
 		})
 	}
 	if e := api.SendDetect(req); e != nil {
-		logger.Err.Println("send module info failed.", e.Error())
+		Logger.Error("Module data commit failed", zap.Error(e))
 		return e
 	}
+	Logger.Info("Module data committed", zap.Int("total_module", len(task.Modules)))
 	return nil
 }
 
@@ -91,11 +92,13 @@ func createTaskApi(ctx context.Context) (e error) {
 	var res *api.CreateTaskResponse
 	res, e = api.CreateTask(req)
 	if e != nil {
+		Logger.Error("Task create failed", zap.Error(e))
 		return e
 	}
 	scanTask.TaskId = res.TaskInfo
 	scanTask.TotalContributors = res.TotalContributors
 	scanTask.ProjectId = res.ProjectId
 	scanTask.Username = res.Username
+	Logger.Info("Task created", zap.Any("task_id", scanTask.TaskId), zap.Any("project_id", scanTask.ProjectId))
 	return
 }

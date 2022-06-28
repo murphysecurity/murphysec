@@ -7,10 +7,11 @@ import (
 	"compress/gzip"
 	"context"
 	"github.com/murphysecurity/murphysec/api"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"io"
 	"io/fs"
 	"os"
@@ -34,24 +35,24 @@ func UploadCodeFile(ctx context.Context) error {
 		e := func() error {
 			for _, p := range codeFiles {
 				info, e := os.Stat(p)
+				logger := Logger.With(zap.String("path", p))
 				if e != nil {
-					logger.Warn.Println("os.Stat file failed.", e.Error(), p)
+					logger.Warn("Stat failed", zap.Error(e))
 					continue
 				}
 				rp, e := filepath.Rel(task.ProjectDir, p)
 				if e != nil {
-					logger.Warn.Println("get relative-path failed.", e.Error(), p)
+					logger.Warn("Get relative-path failed", zap.Error(e))
 					continue
 				}
 				rp = filepath.ToSlash(rp)
 				if strings.HasPrefix("./", rp) {
-					logger.Warn.Println("bad prefix of path", rp)
+					logger.Warn("Bad prefix")
 					continue
 				}
-				logger.Debug.Println("tar append relative-path:", rp)
 				f, e := os.Open(p)
 				if e != nil {
-					logger.Warn.Println("Open file failed.", e.Error(), p)
+					logger.Warn("Open file failed", zap.Error(e))
 					continue
 				}
 				e = tarWriter.WriteHeader(&tar.Header{
@@ -60,25 +61,21 @@ func UploadCodeFile(ctx context.Context) error {
 					Mode: 0666,
 				})
 				if e != nil {
-					logger.Warn.Println("Append tar header failed.", e.Error())
+					logger.Warn("Write header failed", zap.Error(e))
 					return e
 				}
-				n, e := io.Copy(tarWriter, f)
+				_, e = io.Copy(tarWriter, f)
 				if e != nil {
-					logger.Warn.Println("Append tar content failed.", e.Error())
+					logger.Warn("Write file failed", zap.Error(e))
 					return e
 				}
-				logger.Debug.Println("Append tar", n, "bytes")
-				e = f.Close()
-				if e != nil {
-					logger.Warn.Println("Close file failed.", e.Error())
-				}
+				utils.CloseLogErrZap(f, logger)
 			}
 			return nil
 		}()
 		if e != nil {
 			failure = true
-			logger.Err.Println("Pkg files failed.", e.Error())
+			Logger.Error("Pkg files failed", zap.Error(e))
 		}
 		must.Must(tarWriter.Close())
 		must.Must(gzipWriter.Close())
@@ -103,16 +100,16 @@ func UploadCodeFile(ctx context.Context) error {
 				}
 			}
 			if n == 0 {
-				logger.Info.Println("read zero byte")
+				Logger.Info("read zero byte")
 				continue
 			}
 			e = api.UploadChunk(task.TaskId, counter, io.LimitReader(bytes.NewReader(buf), int64(n)))
 			if e != nil {
-				logger.Err.Println("Upload file failed.", e.Error())
+				Logger.Error("Upload file failed", zap.Error(e))
 				failure = true
 				return
 			} else {
-				logger.Info.Println("block sent")
+				Logger.Info("block sent")
 			}
 		}
 	}()
@@ -125,7 +122,7 @@ func UploadCodeFile(ctx context.Context) error {
 
 func ScanCodeFile(ctx context.Context) []string {
 	task := model.UseScanTask(ctx)
-	logger.Debug.Println("Start scan code files:", task.ProjectDir, "...")
+	Logger.Debug("Start scan code files", zap.String("project_dir", task.ProjectDir))
 	fileSet := map[string]struct{}{}
 	e := filepath.Walk(task.ProjectDir, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || folderNameBlackList[info.Name()]) {
@@ -148,9 +145,9 @@ func ScanCodeFile(ctx context.Context) []string {
 		}
 		return nil
 	})
-	logger.Debug.Println("Code file scan finished, total", len(fileSet))
+	Logger.Info("Code file scan finished", zap.Int("total", len(fileSet)))
 	if e != nil {
-		logger.Warn.Println("Error happened during code file scan,", e.Error())
+		Logger.Error("Error happened during code file scan", zap.Error(e))
 	}
 	var rs []string
 	for s := range fileSet {

@@ -7,7 +7,10 @@ import (
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
+
+var Logger = zap.NewNop()
 
 func createTaskC(ctx context.Context) (e error) {
 	scanTask := model.UseScanTask(ctx)

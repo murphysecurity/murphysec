@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"go.uber.org/zap"
 	"io"
 	"os"
 	"strings"
@@ -89,4 +90,10 @@ func ReadFileLimited(p string, maxRead int64) ([]byte, error) {
 	}
 	defer f.Close()
 	return io.ReadAll(io.LimitReader(f, maxRead))
+}
+
+func CloseLogErrZap(closer io.Closer, logger *zap.Logger) {
+	if e := closer.Close(); e != nil {
+		logger.Error("Close error", zap.Error(e))
+	}
 }

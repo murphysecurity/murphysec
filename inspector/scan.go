@@ -6,8 +6,8 @@ import (
 	"github.com/muesli/termenv"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
+	"go.uber.org/zap"
 	"strconv"
 )
 
@@ -22,25 +22,24 @@ func Scan(ctx context.Context) error {
 	ui.UpdateStatus(display.StatusRunning, "正在进行扫描...")
 
 	if e := managedInspect(ctx); e != nil {
-		logger.Debug.Println("Managed inspect failed.", e.Error())
-		logger.Debug.Printf("%v", e)
+		Logger.Error("Managed inspect failed", zap.Error(e))
 		return e
 	}
 
 	if env.AllowFileHash && len(scanTask.Modules) == 0 {
-		logger.Info.Println("File hash scanning...")
+		Logger.Info("File hash scanning")
 		if e := FileHashScan(ctx); e != nil {
-			logger.Err.Println("FileHash calc failed.", e.Error())
+			Logger.Error("FileHash calc failed", zap.Error(e))
 			ui.Display(display.MsgInfo, "文件哈希计算失败："+e.Error())
 		}
 	}
 
 	if env.AllowDeepScan && scanTask.EnableDeepScan {
-		logger.Info.Println("DeepScan......")
+		Logger.Info("DeepScan")
 		ui.Display(display.MsgInfo, "正在上传代码进行深度检测")
 		ui.UpdateStatus(display.StatusRunning, "代码上传中")
 		if e := UploadCodeFile(ctx); e != nil {
-			logger.Err.Println("Code upload failed.", e.Error())
+			Logger.Error("Code upload failed", zap.Error(e))
 			ui.Display(display.MsgError, "代码上传失败："+e.Error())
 		}
 	}

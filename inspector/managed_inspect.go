@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/module/bundler"
@@ -18,6 +17,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/poetry"
 	"github.com/murphysecurity/murphysec/module/python"
 	"github.com/murphysecurity/murphysec/module/yarn"
+	"go.uber.org/zap"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -50,17 +50,14 @@ func (i inspectorAcceptance) String() string {
 func managedInspect(ctx context.Context) error {
 	scanTask := model.UseScanTask(ctx)
 	baseDir := scanTask.ProjectDir
-	logger.Info.Println("Auto scan dir:", baseDir)
+	Logger.Info("Auto scan dir", zap.String("dir", baseDir))
 
 	// todo: 重构，随着检查器越来越多，这里越来越慢
 	var inspectorAcceptances []inspectorAcceptance
 	for _, inspector := range managedInspector {
 		e := filepath.WalkDir(baseDir, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				logger.Warn.Println(fmt.Sprintf("Can't walk into: %s due an error: %s", path, err.Error()))
-				return nil
-			}
 			if d == nil {
+				Logger.Warn("item is nil", zap.Error(err))
 				return nil
 			}
 			if d.IsDir() && dirIgnored(d.Name()) {
@@ -83,18 +80,14 @@ func managedInspect(ctx context.Context) error {
 			return e
 		}
 	}
-
-	logger.Info.Printf("Found %d directories, in %v", len(inspectorAcceptances), time.Now().Sub(scanTask.StartTime))
-	for _, it := range inspectorAcceptances {
-		logger.Debug.Println(it)
-	}
+	Logger.Sugar().Infof("Found %d directories, in %v", len(inspectorAcceptances), time.Now().Sub(scanTask.StartTime))
 	for _, acceptance := range inspectorAcceptances {
 		st := time.Now()
 		c := model.WithInspectorTask(ctx, acceptance.dir)
 		e := acceptance.inspector.InspectProject(c)
-		logger.Info.Printf("%v, duration: %v", acceptance, time.Now().Sub(st))
+		Logger.Sugar().Infof("%v, duration: %v", acceptance, time.Now().Sub(st))
 		if e != nil {
-			logger.Err.Println("InspectorError:", e.Error())
+			Logger.Error("InspectError", zap.Error(e))
 		}
 	}
 	return nil

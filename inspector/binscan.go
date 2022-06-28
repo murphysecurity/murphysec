@@ -10,10 +10,11 @@ import (
 	ctxio "github.com/jbenet/go-context/io"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/display"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"io/fs"
@@ -59,7 +60,7 @@ func binScanUploadFile(ctx context.Context) error {
 	g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, scanTask.ProjectDir, w) })
 	g.Go(func() error { return uploadTgzChunk(goCtx, r) })
 	if e := g.Wait(); e != nil {
-		logger.Err.Println(e)
+		Logger.Error("Upload failed", zap.Error(e))
 		ui.Display(display.MsgError, fmt.Sprint("文件上传失败：", e.Error()))
 		return e
 	}
@@ -68,11 +69,12 @@ func binScanUploadFile(ctx context.Context) error {
 }
 
 func uploadTgzChunk(goctx context.Context, r io.Reader) error {
+	logger := Logger.Named("tgz-uploader")
 	task := model.UseScanTask(goctx)
 	counter := 0
 	for {
 		if goctx.Err() != nil {
-			logger.Info.Println("context error:", goctx.Err())
+			logger.Info("context error:", zap.Error(goctx.Err()))
 			break
 		}
 		counter++
@@ -85,18 +87,20 @@ func uploadTgzChunk(goctx context.Context, r io.Reader) error {
 			return e
 		}
 		must.True(n > 0)
-		logger.Debug.Println("write", n, "bytes")
+		logger.Debug("write", zap.Int("length", n))
 		e = api.UploadChunk(task.TaskId, counter, io.LimitReader(bytes.NewReader(buf), int64(n)))
 		if e != nil {
 			return errors.Wrap(e, "文件上传失败")
 		} else {
-			logger.Info.Println("block sent", n)
+			logger.Info("block sent")
 		}
 	}
 	return nil
 }
 
 func packFileToTgzStream(ctx context.Context, fileNameCh chan string, baseDir string, w io.WriteCloser) error {
+	logger := Logger.Named("file-tgz-pack")
+	defer logger.Info("terminated")
 	defer w.Close()
 	bw := bufio.NewWriterSize(ctxio.NewWriter(ctx, w), 1024*1024*4)
 	defer bw.Flush()
@@ -107,7 +111,7 @@ func packFileToTgzStream(ctx context.Context, fileNameCh chan string, baseDir st
 	for s := range fileNameCh {
 		info, e := os.Stat(s)
 		if e != nil {
-			logger.Warn.Println("Stat file failed.", e.Error(), s)
+			logger.Warn("Stat file failed", zap.String("file", s), zap.Error(e))
 			continue
 		}
 		rp := filepath.ToSlash(must.A(filepath.Rel(baseDir, s)))
@@ -116,7 +120,7 @@ func packFileToTgzStream(ctx context.Context, fileNameCh chan string, baseDir st
 		}
 		f, e := os.Open(s)
 		if e != nil {
-			logger.Err.Println("Open file failed.", e.Error(), s)
+			logger.Warn("Open file failed", zap.Error(e))
 			continue
 		}
 		e = tarWriter.WriteHeader(&tar.Header{
@@ -125,9 +129,11 @@ func packFileToTgzStream(ctx context.Context, fileNameCh chan string, baseDir st
 			Mode: 0666,
 		})
 		if e != nil {
+			utils.CloseLogErrZap(f, logger)
 			return e
 		}
 		_, e = io.Copy(tarWriter, f)
+		utils.CloseLogErrZap(f, logger)
 		if e != nil {
 			return e
 		}
@@ -138,17 +144,23 @@ func packFileToTgzStream(ctx context.Context, fileNameCh chan string, baseDir st
 var _ErrScanBinaryWalkStop = errors.New("_ErrScanBinaryWalkStop")
 
 func scanBinaryFile(ctx context.Context, dir string, pathCh chan string) error {
+	var logger = Logger.Named("binary-file-walker")
+	logger.Info("", zap.String("dir", dir))
+	defer logger.Info("terminated")
 	defer close(pathCh)
 	info, e := os.Stat(dir)
 	if e != nil {
+		logger.Error("Stat dir failed", zap.Error(e))
 		return errors.Wrap(e, "ScanBinaryFile")
 	}
 	if !info.IsDir() {
+		logger.Warn("Not a dir")
 		pathCh <- dir
+		return nil
 	}
 	e = filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if info == nil || err != nil {
-			logger.Info.Println("Error during filepath walk:", err)
+			logger.Error("walk error", zap.Error(e))
 			return nil
 		}
 		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || binaryScanDirBlackList[info.Name()]) {
@@ -167,15 +179,15 @@ func scanBinaryFile(ctx context.Context, dir string, pathCh chan string) error {
 		}
 		return nil
 	})
-	if e == _ErrScanBinaryWalkStop {
-		logger.Info.Println("ScanBinaryFile filepath walk cancel")
+	if e == nil {
 		return nil
 	}
-	if e != nil {
-		logger.Warn.Println("Error happens during filepath walk:", e.Error())
-		return errors.Wrap(e, "ScanBinaryFile")
+	if e == _ErrScanBinaryWalkStop {
+		logger.Warn("Walk cancel")
+		return nil
 	}
-	return nil
+	logger.Error("Walk error", zap.Error(e))
+	return e
 }
 
 var binaryScanDirBlackList = map[string]bool{

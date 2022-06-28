@@ -5,10 +5,10 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"io"
 	"io/fs"
 	"os"
@@ -20,12 +20,13 @@ import (
 const _FileHashScanConcurrency = 2
 
 func FileHashScan(ctx context.Context) error {
+	logger := Logger.Named("file-hash-scan")
 	task := model.UseScanTask(ctx)
 	basePath, e := filepath.Abs(task.ProjectDir)
 	if e != nil {
 		return errors.Wrap(e, "Get absolute path fail.")
 	}
-	logger.Info.Println("FileHashScan: ", basePath)
+	logger.Info("File hash scan", zap.String("basePath", basePath))
 
 	filepathCh := make(chan string, 32)
 	go func() {
@@ -51,7 +52,7 @@ func FileHashScan(ctx context.Context) error {
 	for it := range hashChan {
 		p, e := filepath.Rel(basePath, it.Path)
 		if e != nil {
-			logger.Err.Println("Get relative-path fail, skip.", e.Error())
+			logger.Error("Get relative-path fail, skip.", zap.Error(e))
 			continue
 		}
 		it.Path = p
@@ -71,14 +72,10 @@ func mapFilepathToHash(fileCh chan string, outputCh chan model.FileHash) {
 }
 
 func findAllCxxFile(baseDir string, filepathCh chan string) {
-	logger.Info.Println("findAllCxxFile: ", baseDir)
+	Logger.Info("findAllCxxFile", zap.String("baseDir", baseDir))
 	filepath.WalkDir(baseDir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			logger.Warn.Println("WalkDir error:", err.Error())
-			return nil
-		}
-		if d == nil {
-			logger.Warn.Println("DirEntry is nil, skip")
+		if err != nil || d == nil {
+			Logger.Error("DirEntry is nil, skip", zap.Error(err))
 			return nil
 		}
 		if checkNameBlackList(d.Name()) {
