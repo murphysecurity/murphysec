@@ -20,7 +20,7 @@ func createTaskC(ctx context.Context) (e error) {
 	e = createTaskApi(ctx)
 	if errors.Is(e, api.ErrTokenInvalid) {
 		ui.Display(display.MsgError, "任务创建失败，Token 无效")
-	} else {
+	} else if e != nil {
 		ui.Display(display.MsgError, fmt.Sprintf("任务创建失败：%s", e.Error()))
 	}
 	return
