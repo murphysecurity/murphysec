@@ -1,10 +1,8 @@
 package model
 
 import (
-	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/pkg/errors"
 	giturls "github.com/whilp/git-urls"
 	"time"
@@ -25,7 +23,6 @@ type GitInfo struct {
 }
 
 func getGitInfo(dir string) (*GitInfo, error) {
-	logger.Debug.Println("Try open git:", dir)
 	repo, e := git.PlainOpen(dir)
 	if e == git.ErrRepositoryNotExists {
 		return nil, ErrNoGitRepo
@@ -42,24 +39,19 @@ func getGitInfo(dir string) (*GitInfo, error) {
 		return nil, errors.Wrap(e, "Enumeration git remotes failed")
 	}
 	var selectedRemote *git.Remote
-	logger.Debug.Println(fmt.Sprintf("Found %d remotes", len(remotes)))
 	if len(remotes) == 0 {
 		return nil, errors.New("No git remote found")
 	}
 	for _, it := range remotes {
 		if it.Config().Name == "origin" {
 			selectedRemote = it
-			logger.Debug.Println(fmt.Sprintf("Remote: origin found"))
 			break
 		}
 	}
 	if selectedRemote == nil {
 		selectedRemote = remotes[0]
-		logger.Debug.Println("No origin remote, use first one")
 	}
 	remoteUrls := selectedRemote.Config().URLs
-	logger.Debug.Println("Selected remote:", selectedRemote.String())
-	logger.Debug.Printf("Total %d urls", len(remoteUrls))
 	gitInfo := &GitInfo{
 		RemoteName:     selectedRemote.Config().Name,
 		RemoteURL:      "",
@@ -70,7 +62,6 @@ func getGitInfo(dir string) (*GitInfo, error) {
 	for _, it := range remoteUrls {
 		u, e := giturls.Parse(it)
 		if e != nil {
-			logger.Debug.Printf("Parse git url failed: %s, url: %s", e.Error(), it)
 			continue
 		}
 		u.User = nil
@@ -78,24 +69,16 @@ func getGitInfo(dir string) (*GitInfo, error) {
 		gitInfo.ProjectName = u.Path
 	}
 	head, e := repo.Head()
-	if e != nil {
-		logger.Warn.Println("Get HEAD failed.", e.Error())
-	} else {
-		if head != nil {
-			commit, e := repo.CommitObject(head.Hash())
-			if e == nil {
-				gitInfo.CommitTime = commit.Committer.When
-				gitInfo.CommitMsg = commit.Message
-				gitInfo.Committer = commit.Committer.Name
-				gitInfo.CommitterEmail = commit.Committer.Email
-			} else {
-				logger.Warn.Println("Get commit info failed.", e.Error())
-			}
-			gitInfo.HeadCommitHash = head.Hash().String()
-			gitInfo.HeadRefName = head.Name().String()
-		} else {
-			logger.Warn.Println("HEAD is null")
+	if e == nil && head != nil {
+		commit, e := repo.CommitObject(head.Hash())
+		if e == nil {
+			gitInfo.CommitTime = commit.Committer.When
+			gitInfo.CommitMsg = commit.Message
+			gitInfo.Committer = commit.Committer.Name
+			gitInfo.CommitterEmail = commit.Committer.Email
 		}
+		gitInfo.HeadCommitHash = head.Hash().String()
+		gitInfo.HeadRefName = head.Name().String()
 	}
 	return gitInfo, nil
 }
