@@ -14,49 +14,6 @@ import (
 	"strings"
 )
 
-func createTask(ctx context.Context) error {
-	c := model.UseScanTask(ctx)
-	req := &api.CreateTaskRequest{
-		CliVersion:      version.Version(),
-		TaskType:        c.TaskType,
-		UserAgent:       version.UserAgent(),
-		CmdLine:         strings.Join(os.Args, " "),
-		ApiToken:        conf.APIToken(),
-		ProjectName:     c.ProjectName,
-		TargetAbsPath:   c.ProjectDir,
-		ProjectType:     c.ProjectType,
-		ContributorList: c.ContributorList,
-		ProjectId:       c.ProjectId,
-	}
-
-	if g := c.GitInfo; g != nil {
-		v := &api.VoGitInfo{
-			Commit:        g.HeadCommitHash,
-			GitRef:        g.HeadRefName,
-			GitRemoteUrl:  g.RemoteURL,
-			CommitMessage: g.CommitMsg,
-			CommitEmail:   g.CommitterEmail,
-			CommitTime:    g.CommitTime,
-		}
-		req.GitInfo = v
-	}
-	if env.SpecificProjectName != "" {
-		// force set project dir, in order to create new project
-		req.TargetAbsPath = fmt.Sprintf(`/%s`, env.SpecificProjectName)
-	}
-	if res, e := api.CreateTask(req); e == nil {
-		c.TaskId = res.TaskInfo
-		c.TotalContributors = res.TotalContributors
-		c.ProjectId = res.ProjectId
-		c.Username = res.Username
-		logger.Info.Println("task created, id:", res.TaskInfo)
-		return nil
-	} else {
-		logger.Warn.Println("task create failed", e.Error())
-		return e
-	}
-}
-
 var CPPModuleUUID = uuid.Must(uuid.Parse("794a5c39-ce6b-458e-8f26-ff26298bab09"))
 
 func submitModuleInfo(ctx context.Context) error {
@@ -100,4 +57,45 @@ func submitModuleInfo(ctx context.Context) error {
 		return e
 	}
 	return nil
+}
+
+func createTaskApi(ctx context.Context) (e error) {
+	scanTask := model.UseScanTask(ctx)
+	req := &api.CreateTaskRequest{
+		CliVersion:      version.Version(),
+		TaskType:        scanTask.TaskType,
+		UserAgent:       version.UserAgent(),
+		CmdLine:         strings.Join(os.Args, " "),
+		ApiToken:        conf.APIToken(),
+		ProjectName:     scanTask.ProjectName,
+		TargetAbsPath:   scanTask.ProjectDir,
+		ProjectType:     scanTask.ProjectType,
+		ContributorList: scanTask.ContributorList,
+		ProjectId:       scanTask.ProjectId,
+	}
+	if g := scanTask.GitInfo; g != nil {
+		v := &api.VoGitInfo{
+			Commit:        g.HeadCommitHash,
+			GitRef:        g.HeadRefName,
+			GitRemoteUrl:  g.RemoteURL,
+			CommitMessage: g.CommitMsg,
+			CommitEmail:   g.CommitterEmail,
+			CommitTime:    g.CommitTime,
+		}
+		req.GitInfo = v
+	}
+	if env.SpecificProjectName != "" {
+		// force set project dir, in order to create new project
+		req.TargetAbsPath = fmt.Sprintf(`/%s`, env.SpecificProjectName)
+	}
+	var res *api.CreateTaskResponse
+	res, e = api.CreateTask(req)
+	if e != nil {
+		return e
+	}
+	scanTask.TaskId = res.TaskInfo
+	scanTask.TotalContributors = res.TotalContributors
+	scanTask.ProjectId = res.ProjectId
+	scanTask.Username = res.Username
+	return
 }

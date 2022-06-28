@@ -27,22 +27,9 @@ func BinScan(ctx context.Context) error {
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
 	ui.Display(display.MsgInfo, fmt.Sprint("项目名称：", scanTask.ProjectName))
-
-	ui.UpdateStatus(display.StatusRunning, "正在创建扫描任务，请稍候······")
-	if e := createTask(ctx); e != nil {
-		logger.Err.Println("Create task failed.", e.Error())
-		logger.Debug.Printf("%+v", e)
-		ui.Display(display.MsgError, fmt.Sprint("项目创建失败"))
-		if errors.Is(api.ErrTokenInvalid, e) {
-			ui.Display(display.MsgError, "当前 Token 无效")
-		} else {
-			ui.Display(display.MsgError, e.Error())
-		}
+	if e := createTaskC(ctx); e != nil {
 		return e
 	}
-
-	ui.Display(display.MsgInfo, fmt.Sprint("项目创建成功"))
-
 	if e := binScanUploadFile(ctx); e != nil {
 		return e
 	}
