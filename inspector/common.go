@@ -45,3 +45,18 @@ func startCheckC(ctx context.Context) (e error) {
 	}
 	return
 }
+
+func queryResultC(ctx context.Context) (e error) {
+	scanTask := model.UseScanTask(ctx)
+	ui := scanTask.UI()
+	ui.UpdateStatus(display.StatusRunning, "正在等待服务器返回结果")
+	defer ui.ClearStatus()
+	var resp *model.TaskScanResponse
+	resp, e = api.QueryResult(scanTask.TaskId)
+	if e != nil {
+		ui.Display(display.MsgError, fmt.Sprintf("获取扫描结果失败：%s", e.Error()))
+	} else {
+		scanTask.ScanResult = resp
+	}
+	return
+}

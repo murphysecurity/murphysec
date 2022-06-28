@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/muesli/termenv"
-	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/logger"
@@ -55,14 +54,9 @@ func Scan(ctx context.Context) error {
 	if err := startCheckC(ctx); err != nil {
 		return err
 	}
-	resp, e := api.QueryResult(scanTask.TaskId)
-	ui.ClearStatus()
-	if e != nil {
-		ui.Display(display.MsgError, "获取检测结果失败："+e.Error())
-		logger.Err.Println("query result failed.", e.Error())
+	if e := queryResultC(ctx); e != nil {
 		return e
 	}
-	scanTask.ScanResult = resp
 	totalDep := strconv.Itoa(scanTask.ScanResult.DependenciesCount)
 	totalVuln := strconv.Itoa(scanTask.ScanResult.IssuesCompsCount)
 	t := fmt.Sprint(

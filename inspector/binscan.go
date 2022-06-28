@@ -23,7 +23,6 @@ import (
 )
 
 func BinScan(ctx context.Context) error {
-	var e error
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
 	ui.Display(display.MsgInfo, fmt.Sprint("项目名称：", scanTask.ProjectName))
@@ -39,18 +38,11 @@ func BinScan(ctx context.Context) error {
 		return e
 	}
 	// 等待返回结果
-	var r *model.TaskScanResponse
-	ui.WithStatus(display.StatusRunning, "已提交，正在扫描...", func() {
-		r, e = api.QueryResult(scanTask.TaskId)
-	})
-	if e != nil {
-		logger.Err.Println("QueryResult failed.", e.Error())
-		fmt.Println("扫描失败", e.Error())
-		ui.Display(display.MsgError, fmt.Sprint("扫描失败，", e.Error()))
+	if e := queryResultC(ctx); e != nil {
 		return e
-	} else {
-		ui.Display(display.MsgNotice, fmt.Sprintf("项目扫描完成，依赖数：%d，漏洞数：%d\n", r.DependenciesCount, r.IssuesCompsCount))
 	}
+	r := scanTask.ScanResult
+	ui.Display(display.MsgNotice, fmt.Sprintf("项目扫描完成，依赖数：%d，漏洞数：%d\n", r.DependenciesCount, r.IssuesCompsCount))
 	return nil
 }
 
