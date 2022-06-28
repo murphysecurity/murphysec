@@ -43,22 +43,10 @@ func BinScan(ctx context.Context) error {
 
 	ui.Display(display.MsgInfo, fmt.Sprint("项目创建成功"))
 
-	// 上传文件
-	ui.WithStatus(display.StatusRunning, "正在上传文件...", func() {
-		pathCh := make(chan string, 10)
-		g, goCtx := errgroup.WithContext(ctx)
-		g.Go(func() error { return scanBinaryFile(goCtx, scanTask.ProjectDir, pathCh) })
-		r, w := io.Pipe()
-		g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, scanTask.ProjectDir, w) })
-		g.Go(func() error { return uploadTgzChunk(goCtx, r) })
-		e = g.Wait()
-	})
-	if e != nil {
-		logger.Err.Println(e)
-		ui.Display(display.MsgError, fmt.Sprint("文件上传失败：", e.Error()))
+	if e := binScanUploadFile(ctx); e != nil {
 		return e
 	}
-	ui.Display(display.MsgInfo, "文件上传成功")
+
 	// 开始扫描
 	if e := api.StartCheckTaskType(scanTask.TaskId, scanTask.Kind); e != nil {
 		logger.Err.Println("StartCheck failed.", e.Error())
@@ -78,6 +66,27 @@ func BinScan(ctx context.Context) error {
 	} else {
 		ui.Display(display.MsgNotice, fmt.Sprintf("项目扫描完成，依赖数：%d，漏洞数：%d\n", r.DependenciesCount, r.IssuesCompsCount))
 	}
+	return nil
+}
+
+func binScanUploadFile(ctx context.Context) error {
+	scanTask := model.UseScanTask(ctx)
+	ui := scanTask.UI()
+	ui.UpdateStatus(display.StatusRunning, "正在上传文件...")
+	defer ui.ClearStatus()
+
+	pathCh := make(chan string, 10)
+	g, goCtx := errgroup.WithContext(ctx)
+	g.Go(func() error { return scanBinaryFile(goCtx, scanTask.ProjectDir, pathCh) })
+	r, w := io.Pipe()
+	g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, scanTask.ProjectDir, w) })
+	g.Go(func() error { return uploadTgzChunk(goCtx, r) })
+	if e := g.Wait(); e != nil {
+		logger.Err.Println(e)
+		ui.Display(display.MsgError, fmt.Sprint("文件上传失败：", e.Error()))
+		return e
+	}
+	ui.Display(display.MsgInfo, "文件上传成功")
 	return nil
 }
 
