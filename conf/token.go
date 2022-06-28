@@ -2,8 +2,8 @@ package conf
 
 import (
 	"github.com/mitchellh/go-homedir"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -16,6 +16,8 @@ const tokenPath = "~/.murphysec/token"
 // APITokenCliOverride 用于覆盖API TOKEN，为空串时无效
 var APITokenCliOverride string
 
+var Logger = zap.NewNop()
+
 // _APITokenEnvOverride 用于环境变量覆盖 API TOKEN，为空串时无效
 var _APITokenEnvOverride = func() string { return os.Getenv("API_TOKEN") }()
 
@@ -27,13 +29,13 @@ var tokenReader = func() func() string {
 		o.Do(func() {
 			dir, e := homedir.Expand(tokenPath)
 			if e != nil {
-				logger.Debug.Println("Cannot get home path, ignore")
+				Logger.Debug("Cannot get home path, ignore", zap.Error(e))
 				return
 			}
-			logger.Debug.Println("Read token from:", dir)
+			Logger.Debug("Read token", zap.String("path", dir))
 			data, e := ioutil.ReadFile(dir)
 			if e != nil {
-				logger.Debug.Println("Read fail, ignore")
+				Logger.Error("Read failed", zap.Error(e))
 				return
 			}
 			t = strings.TrimSpace(string(data))
@@ -50,13 +52,13 @@ func ReadTokenFile() (t string, e error) {
 	}()
 	dir, e := homedir.Expand(tokenPath)
 	if e != nil {
-		logger.Err.Println("Expand home dir failed,", e.Error())
+		Logger.Error("Expand home dir failed", zap.Error(e))
 		return "", e
 	}
-	logger.Debug.Println("Read token file at:", dir)
+	Logger.Debug("Read token", zap.String("dir", dir))
 	data, e := ioutil.ReadFile(dir)
 	if e != nil {
-		logger.Debug.Println("Read fail failed", e.Error())
+		Logger.Error("Read failed", zap.Error(e))
 		return "", e
 	}
 	return strings.TrimSpace(string(data)), nil
@@ -65,14 +67,14 @@ func ReadTokenFile() (t string, e error) {
 // APIToken returns API token
 func APIToken() string {
 	if len(strings.TrimSpace(APITokenCliOverride)) != 0 {
-		logger.Debug.Println("Use API token from cli argument")
+		Logger.Info("Use API token from cli argument")
 		return APITokenCliOverride
 	}
 	if len(strings.TrimSpace(_APITokenEnvOverride)) != 0 {
-		logger.Debug.Println("Use API token from env")
+		Logger.Info("Use API token from env")
 		return _APITokenEnvOverride
 	}
-	logger.Debug.Println("Use API token from config file")
+	Logger.Info("Use API token from config file")
 	return tokenReader()
 }
 
