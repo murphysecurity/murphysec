@@ -33,6 +33,11 @@ func (i Inspector) CheckDir(dir string) bool {
 }
 
 func (i Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectorTask(ctx)
+	var relativeDir string
+	if s, e := filepath.Rel(task.ProjectDir, task.ScanDir); e == nil {
+		relativeDir = filepath.ToSlash(s)
+	}
 	dir := model.UseInspectorTask(ctx).ScanDir
 	componentMap := map[string]string{}
 	requirementsFiles := map[string]struct{}{}
@@ -93,7 +98,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	}
 	{
 		m := model.Module{
-			Name:           "Python",
+			Name:           relativeDir,
 			PackageManager: model.PMPip,
 			Language:       model.Python,
 			Dependencies:   []model.Dependency{},
