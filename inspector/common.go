@@ -22,3 +22,14 @@ func createTaskC(ctx context.Context) (e error) {
 	}
 	return
 }
+
+func submitModuleInfoC(ctx context.Context) (e error) {
+	ui := model.UseScanTask(ctx).UI()
+	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
+	defer ui.ClearStatus()
+	e = submitModuleInfoApi(ctx)
+	if e != nil {
+		ui.Display(display.MsgError, fmt.Sprint("信息提交失败：", e.Error()))
+	}
+	return
+}

@@ -46,12 +46,10 @@ func Scan(ctx context.Context) error {
 		}
 	}
 
-	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
-	if e := submitModuleInfo(ctx); e != nil {
-		ui.Display(display.MsgError, fmt.Sprint("信息提交失败：", e.Error()))
-		logger.Debug.Printf("%+v", e)
-		logger.Err.Println(e.Error())
-		return e
+	ui.Display(display.MsgInfo, "项目扫描完成")
+
+	if err := submitModuleInfoC(ctx); err != nil {
+		return err
 	}
 
 	if e := api.StartCheck(scanTask.TaskId); e != nil {

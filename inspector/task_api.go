@@ -14,9 +14,9 @@ import (
 	"strings"
 )
 
-var CPPModuleUUID = uuid.Must(uuid.Parse("794a5c39-ce6b-458e-8f26-ff26298bab09"))
+var _CPPModuleUUID = uuid.Must(uuid.Parse("794a5c39-ce6b-458e-8f26-ff26298bab09"))
 
-func submitModuleInfo(ctx context.Context) error {
+func submitModuleInfoApi(ctx context.Context) error {
 	task := model.UseScanTask(ctx)
 	req := new(api.SendDetectRequest)
 	req.TaskInfo = task.TaskId
@@ -49,7 +49,7 @@ func submitModuleInfo(ctx context.Context) error {
 			FileHashList: list,
 			Language:     model.Cxx,
 			ModuleType:   api.ModuleTypeFileHash,
-			ModuleUUID:   CPPModuleUUID,
+			ModuleUUID:   _CPPModuleUUID,
 		})
 	}
 	if e := api.SendDetect(req); e != nil {
