@@ -4,6 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/murphysecurity/murphysec/version"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"io"
 	"mime"
 	"net/http"
@@ -14,15 +19,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
-
-	"github.com/murphysecurity/murphysec/logger"
-	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/murphysecurity/murphysec/version"
 )
+
+var Logger = zap.NewNop()
+var NetworkLogger = zap.NewNop()
 
 var ErrTokenInvalid = model.WrapIdeaErr(errors.New("Token invalid"), model.IdeaApiTimeout)
 var ErrServerRequest = model.WrapIdeaErr(errors.New("Send request failed"), model.IdeaServerRequestFailed)
@@ -43,9 +43,9 @@ func (t *_LoggingMiddleware) RoundTrip(request *http.Request) (resp *http.Respon
 	var dump []byte
 	dump, e = httputil.DumpRequestOut(request, true)
 	if e != nil {
-		logger.Logger.Desugar().Error("dump request out failed", zap.Error(e))
+		Logger.Error("dump request out failed", zap.Error(e))
 	} else {
-		logger.Logger.Desugar().Debug("http request", zap.ByteString("dump", dump))
+		NetworkLogger.Debug("Http request", zap.ByteString("dump", dump))
 	}
 	resp, e = t.Transport.RoundTrip(request)
 	if e != nil {
@@ -53,9 +53,9 @@ func (t *_LoggingMiddleware) RoundTrip(request *http.Request) (resp *http.Respon
 	}
 	dump, e = httputil.DumpResponse(resp, true)
 	if e != nil {
-		logger.Logger.Desugar().Error("dump response out failed", zap.Error(e))
+		Logger.Error("dump response out failed", zap.Error(e))
 	} else {
-		logger.Logger.Desugar().Debug("http response", zap.ByteString("dump", dump))
+		NetworkLogger.Debug("http response", zap.ByteString("dump", dump))
 	}
 	return
 }
@@ -67,17 +67,18 @@ type Client struct {
 }
 
 func NewClient(baseUrl string) *Client {
-	c := new(http.Client)
 	baseUrl = strings.TrimRight(strings.TrimSpace(baseUrl), "/")
-	c.Timeout = time.Second * 300
-	i, e := strconv.Atoi(os.Getenv("API_TIMEOUT"))
-	if e == nil && i > 0 {
-		c.Timeout = time.Duration(int64(time.Second) * int64(i))
+	cl := &Client{
+		client: &http.Client{
+			Transport: &_LoggingMiddleware{Transport: http.DefaultTransport},
+			Timeout:   time.Second * 300,
+		},
+		baseUrl: baseUrl,
 	}
-	cl := &Client{client: c, baseUrl: baseUrl}
-	if logger.NetworkLog {
-		cl.client.Transport = &_LoggingMiddleware{Transport: http.DefaultTransport}
+	if i, e := strconv.Atoi(os.Getenv("API_TIMEOUT")); e != nil {
+		cl.client.Timeout = time.Duration(int64(time.Second) * int64(i))
 	}
+	Logger.Info("Http client created", zap.String("baseUrl", baseUrl), zap.Duration("timeout", cl.client.Timeout))
 	return cl
 }
 
@@ -115,18 +116,18 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 			panic("resBody must be a pointer")
 		}
 	}
-	logger.Logger.Info("Send request: ", req.URL.RequestURI())
+	Logger.Info("Send request", zap.String("uri", req.URL.RequestURI()))
 	res, e := c.client.Do(req)
 	if e != nil {
 		e := e.(*url.Error)
-		logger.Logger.Error("Request failed: ", e.Error())
+		Logger.Info("Request failed", zap.Error(e))
 		if e.Timeout() {
-			logger.Logger.Error("Request timeout")
+			Logger.Error("Request timeout")
 			return ErrTimeout
 		}
 		return errors.Wrap(ErrServerRequest, e.Error())
 	}
-	logger.Logger.Info("API response:", res.StatusCode)
+	Logger.Info("API response", zap.Any("status", res.StatusCode))
 	data, e := io.ReadAll(res.Body)
 	if e != nil {
 		return errors.Wrap(ErrServerRequest, "read response body failed:"+e.Error())
@@ -149,7 +150,7 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 			return errors.Wrap(UnprocessableResponse, "MIME-type: "+mimeType)
 		}
 		if e := json.Unmarshal(data, resBody); e != nil {
-			logger.Debug.Println("Server data:", string(data))
+			Logger.Error("Parse server response json failed", zap.Error(e))
 			return errors.Wrap(ErrServerRequest, "parse response body as json failed")
 		}
 		return nil
@@ -166,7 +167,7 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 		if mimeType == "application/json" {
 			var m CommonApiErr
 			if e := json.Unmarshal(data, &m); e != nil {
-				logger.Debug.Println("Server data:", string(data))
+				Logger.Error("Parse server response json failed", zap.Error(e))
 				return errors.Wrap(baseErr, httpMsg)
 			}
 			return &m
