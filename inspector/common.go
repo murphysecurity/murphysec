@@ -33,3 +33,15 @@ func submitModuleInfoC(ctx context.Context) (e error) {
 	}
 	return
 }
+
+func startCheckC(ctx context.Context) (e error) {
+	scanTask := model.UseScanTask(ctx)
+	ui := scanTask.UI()
+	ui.UpdateStatus(display.StatusRunning, "正在启动检测")
+	defer ui.ClearStatus()
+	e = api.StartCheckTaskType(scanTask.TaskId, scanTask.Kind)
+	if e != nil {
+		ui.Display(display.MsgError, "启动检测失败："+e.Error())
+	}
+	return
+}

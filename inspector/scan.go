@@ -52,12 +52,9 @@ func Scan(ctx context.Context) error {
 		return err
 	}
 
-	if e := api.StartCheck(scanTask.TaskId); e != nil {
-		ui.Display(display.MsgError, "启动检测失败："+e.Error())
-		logger.Err.Println("send start check command failed.", e.Error())
-		return e
+	if err := startCheckC(ctx); err != nil {
+		return err
 	}
-	ui.ClearStatus()
 	resp, e := api.QueryResult(scanTask.TaskId)
 	ui.ClearStatus()
 	if e != nil {

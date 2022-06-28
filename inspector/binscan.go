@@ -35,9 +35,7 @@ func BinScan(ctx context.Context) error {
 	}
 
 	// 开始扫描
-	if e := api.StartCheckTaskType(scanTask.TaskId, scanTask.Kind); e != nil {
-		logger.Err.Println("StartCheck failed.", e.Error())
-		ui.Display(display.MsgError, fmt.Sprint("开始扫描失败 ", e.Error()))
+	if e := startCheckC(ctx); e != nil {
 		return e
 	}
 	// 等待返回结果
