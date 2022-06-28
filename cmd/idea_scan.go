@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/inspector"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -26,7 +25,7 @@ func ideaScanCmd() *cobra.Command {
 				SetGlobalExitCode(1)
 				return
 			}
-			if e := logger.InitLogger(); e != nil {
+			if e := initLogger(); e != nil {
 				fmt.Println(model.GenerateIdeaErrorOutput(model.IdeaLogFileCreateFailed))
 				SetGlobalExitCode(1)
 				return

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/inspector"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -22,8 +21,8 @@ func scanCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use: "scan DIR",
 		Run: func(cmd *cobra.Command, args []string) {
+			initConsoleLoggerOrExit()
 			ctx := context.TODO()
-			logger.InitLogger()
 			projectDir := args[0]
 			var e error
 			if !filepath.IsAbs(projectDir) {
@@ -75,8 +74,8 @@ func binScanCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use: "binscan DIR",
 		Run: func(cmd *cobra.Command, args []string) {
+			initConsoleLoggerOrExit()
 			ctx := context.TODO()
-			logger.InitLogger()
 			projectDir := args[0]
 			var e error
 			if !filepath.IsAbs(projectDir) {
@@ -104,8 +103,8 @@ func iotScanCmd() *cobra.Command {
 		Use:   "iotscan DIR",
 		Short: "Scan the specified IoT device firmware, currently supporting .bin or other formats (The file will be uploaded to the server for analysis.)",
 		Run: func(cmd *cobra.Command, args []string) {
+			initConsoleLoggerOrExit()
 			ctx := context.TODO()
-			logger.InitLogger()
 			projectDir := args[0]
 			var e error
 			if !filepath.IsAbs(projectDir) {

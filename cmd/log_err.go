@@ -1,4 +1,4 @@
-package logger
+package cmd
 
 import (
 	"errors"
@@ -8,20 +8,27 @@ import (
 var ErrCreateLogFileFailed = errors.New("create log file failed")
 var ErrLogFileDisabled = errors.New("logfile disabled")
 
-type LogErr struct {
+type logErr struct {
 	Key   error
 	Cause error
 }
 
-func (e *LogErr) Is(target error) bool {
+func wrapLogErr(key error, cause error) error {
+	return &logErr{
+		Key:   key,
+		Cause: cause,
+	}
+}
+
+func (e *logErr) Is(target error) bool {
 	return e.Key == target
 }
 
-func (e *LogErr) Unwrap() error {
+func (e *logErr) Unwrap() error {
 	return e.Cause
 }
 
-func (e *LogErr) Error() string {
+func (e *logErr) Error() string {
 	var prefix string
 	var suffix string
 	if e.Key != nil {
@@ -33,6 +40,6 @@ func (e *LogErr) Error() string {
 	return prefix + suffix
 }
 
-func (e *LogErr) String() string {
+func (e *logErr) String() string {
 	return e.Error()
 }

@@ -4,7 +4,6 @@ import (
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
@@ -31,10 +30,10 @@ func rootCmd() *cobra.Command {
 		},
 	}
 	c.PersistentFlags().BoolVarP(&versionFlag, "version", "v", false, "show version and exit")
-	c.PersistentFlags().BoolVar(&logger.DisableLogFile, "no-log-file", false, "do not write log file")
-	c.PersistentFlags().StringVar(&logger.CliLogFilePathOverride, "write-log-to", "", "specify log file path")
-	c.PersistentFlags().StringVar(&logger.ConsoleLogLevelOverride, "log-level", "silent", "specify log level, must be silent|error|warn|info|debug")
-	c.PersistentFlags().BoolVar(&logger.NetworkLog, "network-log", false, "print network data")
+	c.PersistentFlags().BoolVar(&disableLogFile, "no-log-file", false, "do not write log file")
+	c.PersistentFlags().StringVar(&cliLogFilePathOverride, "write-log-to", "", "specify log file path")
+	c.PersistentFlags().StringVar(&consoleLogLevelOverride, "log-level", "silent", "specify log level, must be silent|error|warn|info|debug")
+	c.PersistentFlags().BoolVar(&enableNetworkLog, "network-log", false, "print network data")
 	c.PersistentFlags().StringVar(&conf.APITokenCliOverride, "token", "", "specify API token")
 	c.PersistentFlags().StringVar(&CliServerAddressOverride, "server", "", "specify server address")
 	c.PersistentFlags().String("ide", "", "hidden")
@@ -58,7 +57,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		version.PrintVersionInfo()
 		os.Exit(0)
 	}
-	if !utils.InStringSlice([]string{"", "warn", "error", "debug", "info", "silent"}, strings.ToLower(strings.TrimSpace(logger.ConsoleLogLevelOverride))) {
+	if !utils.InStringSlice([]string{"", "warn", "error", "debug", "info", "silent"}, strings.ToLower(strings.TrimSpace(consoleLogLevelOverride))) {
 		return errors.New("Loglevel invalid, must be silent|error|warn|info|debug")
 	}
 	if CliServerAddressOverride == "" {
@@ -67,6 +66,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if CliServerAddressOverride == "" {
 		CliServerAddressOverride = "https://www.murphysec.com"
 	}
+	logFileCleanup()
 	api.C = api.NewClient(CliServerAddressOverride)
 	api.C.Token = conf.APIToken()
 	return nil
