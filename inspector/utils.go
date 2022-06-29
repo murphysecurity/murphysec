@@ -2,6 +2,7 @@ package inspector
 
 import (
 	_ "embed"
+	"path/filepath"
 	"strings"
 )
 
@@ -24,5 +25,9 @@ func dirShouldIgnore(name string) bool {
 		return true
 	}
 	_, ok := ignoredDirMap[name]
+	if ok {
+		return true
+	}
+	_, ok = ignoredDirMap[filepath.Base(name)]
 	return ok
 }
