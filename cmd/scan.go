@@ -8,6 +8,7 @@ import (
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
 	"path/filepath"
 )
@@ -62,6 +63,7 @@ func scanCmd() *cobra.Command {
 		c.Flags().BoolVar(&DeepScan, "deep", false, "deep scan, will upload the source code")
 	}
 	c.Flags().StringVar(&ProjectId, "project-id", "", "team id")
+	must.Must(c.Flags().MarkHidden("project-id"))
 	c.Flags().StringVar(&env.SpecificProjectName, "project-name", "", "force specific project name")
 	c.Flags().BoolVar(&env.DisableGit, "skip-git", false, "force ignore git info")
 	c.Args = cobra.ExactArgs(1)
