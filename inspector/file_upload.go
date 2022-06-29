@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	_ "embed"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
@@ -22,7 +23,7 @@ import (
 
 func UploadCodeFile(ctx context.Context) error {
 	task := model.UseScanTask(ctx)
-	codeFiles := ScanCodeFile(ctx)
+	codeFiles := scanCodeFile(ctx)
 	if len(codeFiles) == 0 {
 		return nil
 	}
@@ -120,27 +121,33 @@ func UploadCodeFile(ctx context.Context) error {
 	return nil
 }
 
-func ScanCodeFile(ctx context.Context) []string {
+func scanCodeFile(ctx context.Context) []string {
 	task := model.UseScanTask(ctx)
 	Logger.Debug("Start scan code files", zap.String("project_dir", task.ProjectDir))
 	fileSet := map[string]struct{}{}
-	e := filepath.Walk(task.ProjectDir, func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || folderNameBlackList[info.Name()]) {
-			return filepath.SkipDir
-		}
-		if !info.Mode().IsRegular() {
+	e := filepath.WalkDir(task.ProjectDir, func(path string, d fs.DirEntry, err error) error {
+		if d == nil || err != nil {
+			Logger.Warn("Walk error", zap.Error(err), zap.String("path", path))
 			return nil
 		}
-		if info.IsDir() {
+		if dirShouldIgnore(path) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
 			return nil
 		}
-		if strings.HasPrefix(info.Name(), ".") {
+		if d.IsDir() || !d.Type().IsRegular() {
+			return nil
+		}
+		info, e := d.Info()
+		if e != nil {
+			Logger.Warn("Get file info failed", zap.Error(e), zap.String("path", path))
 			return nil
 		}
 		if info.Size() < 32 || info.Size() > 4*1024*1024 {
 			return nil
 		}
-		if uploadFileExt[strings.TrimPrefix(filepath.Ext(info.Name()), ".")] {
+		if codeFileShouldUpload(d.Name()) {
 			fileSet[path] = struct{}{}
 		}
 		return nil
@@ -156,19 +163,23 @@ func ScanCodeFile(ctx context.Context) []string {
 	return rs
 }
 
-var uploadFileExt = map[string]bool{
-	"c":    true,
-	"C":    true,
-	"cpp":  true,
-	"h":    true,
-	"hpp":  true,
-	"cxx":  true,
-	"c++":  true,
-	"java": true,
-	"xml":  true,
+func codeFileShouldUpload(p string) bool {
+	ext := filepath.Ext(p)
+	_, ok := __uploadFileExt[ext]
+	return ok
 }
 
-var folderNameBlackList = map[string]bool{
-	"node_modules": true,
-	"__MACOSX":     true,
+var __uploadFileExt = map[string]struct{}{}
+
+//go:embed file_upload_ext
+var __uploadFileExtList string
+
+func init() {
+	for _, s := range strings.Split(__uploadFileExtList, "\n") {
+		s = strings.TrimSpace(s)
+		if s == "" || strings.HasPrefix(s, "#") {
+			continue
+		}
+		__uploadFileExt[s] = struct{}{}
+	}
 }
