@@ -110,6 +110,9 @@ func goFindAllCxxFile(baseDir string, logger *zap.Logger) (filepathCh chan strin
 				}
 				return nil
 			}
+			if d.IsDir() || !d.Type().IsRegular() {
+				return nil
+			}
 			if _CxxExtSet[filepath.Ext(d.Name())] {
 				select {
 				case <-ctx.Done():
