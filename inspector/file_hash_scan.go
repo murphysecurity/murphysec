@@ -112,7 +112,7 @@ func goFindAllCxxFile(baseDir string, logger *zap.Logger) (filepathCh chan strin
 					return nil
 				}
 			}
-			if CxxExtSet[filepath.Ext(d.Name())] {
+			if _CxxExtSet[filepath.Ext(d.Name())] {
 				select {
 				case <-ctx.Done():
 				case filepathCh <- path:
@@ -156,7 +156,7 @@ func calcFileHash(path string) ([]string, error) {
 	return utils.DistinctStringSlice(rs), nil
 }
 
-var CxxExtSet = map[string]bool{
+var _CxxExtSet = map[string]bool{
 	".c":   true,
 	".h":   true,
 	".hpp": true,
