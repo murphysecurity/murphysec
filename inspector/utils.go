@@ -19,7 +19,7 @@ func init() {
 	}
 }
 
-func dirIgnored(name string) bool {
+func dirShouldIgnore(name string) bool {
 	if strings.HasPrefix(name, ".") {
 		return true
 	}
