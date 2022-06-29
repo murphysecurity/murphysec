@@ -107,9 +107,8 @@ func goFindAllCxxFile(baseDir string, logger *zap.Logger) (filepathCh chan strin
 			if dirShouldIgnore(path) {
 				if d.IsDir() {
 					return fs.SkipDir
-				} else {
-					return nil
 				}
+				return nil
 			}
 			if _CxxExtSet[filepath.Ext(d.Name())] {
 				select {
