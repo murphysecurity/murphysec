@@ -55,12 +55,11 @@ func goCalcFileHash(filepathInputCh chan string, concurrency int, logger *zap.Lo
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-			o:
 				for {
 					select {
 					case fp, ok := <-filepathInputCh:
 						if !ok {
-							break o
+							return
 						}
 						s, e := calcFileHash(fp)
 						if e != nil {
@@ -72,7 +71,7 @@ func goCalcFileHash(filepathInputCh chan string, concurrency int, logger *zap.Lo
 						case <-ctx.Done():
 						}
 					case <-ctx.Done():
-						break o
+						return
 					}
 				}
 			}()
@@ -97,7 +96,7 @@ func goFindAllCxxFile(baseDir string, logger *zap.Logger) (filepathCh chan strin
 		}
 		var counter int
 		logger.Debug("Start walker", zap.String("dir", baseDir))
-		e := filepath.WalkDir(baseDir, func(path string, d fs.DirEntry, err error) error {
+		walkDirFunc := func(path string, d fs.DirEntry, err error) error {
 			if ctx.Err() != nil {
 				return nil
 			}
@@ -120,7 +119,8 @@ func goFindAllCxxFile(baseDir string, logger *zap.Logger) (filepathCh chan strin
 				}
 			}
 			return nil
-		})
+		}
+		e := filepath.WalkDir(baseDir, walkDirFunc)
 		logger.Debug("Walker terminated", zap.String("dir", baseDir), zap.Int("total", counter))
 		if e != nil {
 			logger.Warn("Walker error", zap.Error(e))
