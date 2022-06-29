@@ -72,6 +72,7 @@ func scanMvnDependency(ctx context.Context, projectDir string) (map[Coordinate][
 		cmdErr.code = c.ProcessState.ExitCode()
 		cmdErr.err = e
 		logger.Err.Println("mvn exit with error")
+		return nil, cmdErr
 	}
 	logger.Info.Println("mvn exit with no errors")
 	logger.Info.Println("Walk dir collect dependency-graph.json")
