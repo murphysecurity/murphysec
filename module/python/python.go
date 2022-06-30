@@ -44,6 +44,12 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	ignoreSet := map[string]struct{}{}
 	// todo: refactor
 	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d == nil {
+			return nil
+		}
+		if d.Name() == "venv" && d.IsDir() {
+			return fs.SkipDir
+		}
 		if d.IsDir() {
 			ignoreSet[d.Name()] = struct{}{}
 			return nil
