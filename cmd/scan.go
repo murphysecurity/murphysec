@@ -39,6 +39,7 @@ func scanCmd() *cobra.Command {
 				tt = model.TaskTypeJenkins
 			}
 			task := model.CreateScanTask(projectDir, model.TaskKindNormal, tt)
+			task.ProjectId = ProjectId
 			if env.SpecificProjectName != "" {
 				task.ProjectName = env.SpecificProjectName
 			}
