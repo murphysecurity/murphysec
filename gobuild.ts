@@ -12,6 +12,7 @@ const opts = targets.map((it) => ({
     cmd: [
         "go",
         "build",
+        "-trimpath",
         "-ldflags",
         "-s -w",
         tags.length > 0 ? ["-tags", ...tags] : [],
