@@ -49,7 +49,88 @@
 
 ## 支持的语言
 
-目前支持 Java、JavaScript、Golang 语言项目的检测，后续会逐渐支持其他的开发语言。
+目前支持 Java、JavaScript、Golang、Python、PHP、C#、Ruby、Objective-C、.NET 语言项目的检测，后续会逐渐支持其他的开发语言。
+
+<table>
+ <tr>
+     <th>语言</th>
+     <th>包管理工具</th>
+     <th>所需文件</th>
+ </tr>
+ <tr >
+     <td rowspan="2">Java</td>
+     <td>Maven</td>
+      <td>pom.xml</td>
+
+ </tr>
+ <tr>
+     <td>Gradle</td>
+    <td>build.gradle, build.gradle.kts</td>
+
+ </tr>
+
+  <tr >
+     <td>Go</td>
+     <td>Go Modules</td>
+      <td>go.mod</td>
+
+ </tr>
+
+  <tr >
+     <td rowspan="2">JavaScript</td>
+     <td>NPM</td>
+    <td>package.json, package-lock.json</td>
+
+ </tr>
+ <tr>
+     <td>Yarn</td>
+    <td>yarn.lock, package.json</td>
+
+
+  <tr >
+     <td rowspan="2">Python</td>
+     <td>pip</td>
+    <td>requirements.txt</td>
+
+ </tr>
+ <tr>
+     <td>Poetry</td>
+    <td>poetry.lock</td>
+
+  <tr >
+     <td>PHP</td>
+     <td>Composer</td>
+      <td>composer.lock</td>
+
+ </tr>
+
+  <tr >
+     <td>Ruby</td>
+     <td>Bundler</td>
+      <td>Gemfile.lock, gems.locked</td>
+
+ </tr>
+   <tr >
+     <td>.NET</td>
+     <td>NuGet</td>
+      <td>packages.lock.json</td>
+
+ </tr>
+   <tr >
+     <td>C#</td>
+     <td>NuGet</td>
+      <td>packages.lock.json</td>
+
+ </tr>
+
+   <tr >
+     <td>Objective-C</td>
+     <td>Cocoapods</td>
+      <td>Podfile.lock</td>
+
+ </tr>
+
+</table>
 
 详细的支持情况可以[查看文档](https://www.murphysec.com/docs/quick-start/language-support/)
 
@@ -186,50 +267,7 @@ Powershell默认不允许从远程加载安装脚本，需要使用管理员权�
 
 **3. 为什么检测完依赖和缺陷组件数量都是0 ？**
 
-* 检查您的项目/文件是否在墨菲安全目前支持的范围内
-<table>
- <tr>
-     <th>语言</th>
-     <th>包管理工具</th>
-     <th>所需文件</th>
- </tr >
- <tr >
-     <td rowspan="2">Java</td>
-     <td>Maven</td>
-      <td>pom.xml</td>
-
- </tr>
- <tr>
-     <td>Gradle</td>
-    <td>build.gradle 或 build.gradle.kts</td>
-
- </tr>
-
-  <tr >
-     <td>Go</td>
-     <td>Go Modules</td>
-      <td>go.mod</td>
-
- </tr>
-
-  <tr >
-     <td rowspan="2">JavaScript</td>
-     <td>NPM</td>
-    <td>package.json, package-lock.json</td>
-
- </tr>
- <tr>
-     <td>Yarn</td>
-    <td>yarn.lock, package.json</td>
-
- </tr>
-   <tr >
-     <td>Python</td>
-     <td>pip</td>
-    <td>requirements.txt</td>
- </tr>
- 
-</table>
+* 检查您的项目/文件是否在目前支持的检测范围内
   
 
 
