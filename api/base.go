@@ -4,12 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/murphysecurity/murphysec/logger"
-	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/murphysecurity/murphysec/version"
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	"io"
 	"mime"
 	"net/http"
@@ -17,10 +11,17 @@ import (
 	"net/url"
 	"os"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
+
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/murphysecurity/murphysec/version"
 )
 
 var ErrTokenInvalid = model.WrapIdeaErr(errors.New("Token invalid"), model.IdeaApiTimeout)
@@ -67,8 +68,7 @@ type Client struct {
 
 func NewClient(baseUrl string) *Client {
 	c := new(http.Client)
-	p := regexp.MustCompile("/*$")
-	baseUrl = p.ReplaceAllString(strings.TrimSpace(baseUrl), "")
+	baseUrl = strings.TrimRight(strings.TrimSpace(baseUrl), "/")
 	c.Timeout = time.Second * 300
 	i, e := strconv.Atoi(os.Getenv("API_TIMEOUT"))
 	if e == nil && i > 0 {
