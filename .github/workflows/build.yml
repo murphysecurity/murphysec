@@ -4,16 +4,15 @@ on:
   push:
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [ windows, linux, darwin ]
-        goarch: [ amd64 ]
+        goos: [ linux, darwin ]
+        goarch: [ amd64, arm64 ]
         include:
-          - goos: darwin
-            goarch: arm64
+          - goos: windows
+            goarch: amd64
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
@@ -37,6 +36,7 @@ jobs:
         with:
           name: murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
           path: out/*
+
   release:
     if: startsWith(github.ref, 'refs/tags/')
     needs:
@@ -52,16 +52,17 @@ jobs:
 
       - name: Calc hash
         run: |
-          mkdir out
+          mkdir -p out
           cp ./murphysec-linux-amd64/murphysec-linux-amd64 ./out/
           cp ./murphysec-windows-amd64/murphysec-windows-amd64.exe ./out/
           cp ./murphysec-darwin-amd64/murphysec-darwin-amd64 ./out/
           cp ./murphysec-darwin-arm64/murphysec-darwin-arm64 ./out
+          cp ./murphysec-linux-arm64/murphysec-linux-arm64 ./out
           cd out
           sha256sum * > sha256sum
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: out/*
           draft: false
-          
