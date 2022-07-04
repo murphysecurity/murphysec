@@ -1,7 +1,6 @@
 package display
 
 import (
-	"fmt"
 	"github.com/muesli/termenv"
 )
 
@@ -9,16 +8,6 @@ var (
 	CLI  UI = _CLI{}
 	NONE UI = _NONE{}
 )
-
-type _CLI struct{}
-
-type _NONE struct{}
-
-func (_ _NONE) ClearStatus() {}
-
-func (_ _NONE) UpdateStatus(s Status, msg string) {}
-
-func (_ _NONE) Display(level MsgLevel, msg string) {}
 
 type Status int
 
@@ -100,41 +89,4 @@ type UI interface {
 	UpdateStatus(s Status, msg string)
 	Display(level MsgLevel, msg string)
 	ClearStatus()
-}
-
-var cliStatus = StatusIdle
-var cliStatusMsg = ""
-
-func (_ _CLI) ClearStatus() {
-	cliStatus = StatusIdle
-	cliStatusMsg = ""
-}
-
-func statusRepaint() {
-	if cliStatus == StatusIdle {
-		return
-	}
-	fmt.Print(termenv.String().Foreground(cliStatus.fColor()).Styled(cliStatus.String()))
-	if cliStatusMsg != "" {
-		fmt.Print(" - ", cliStatusMsg)
-	}
-	fmt.Print("\r")
-}
-func (_ _CLI) UpdateStatus(s Status, msg string) {
-	cliStatus = s
-	cliStatusMsg = msg
-	// todo
-	termenv.ClearLine()
-	fmt.Print("\r")
-	statusRepaint()
-}
-
-func (_ _CLI) Display(level MsgLevel, msg string) {
-	termenv.ClearLine()
-	if level == MsgError {
-		fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s] %s", level.String(), msg)))
-	} else {
-		fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg)
-	}
-	statusRepaint()
 }
