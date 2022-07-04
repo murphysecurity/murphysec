@@ -12,17 +12,7 @@ var (
 
 type _CLI struct{}
 
-func (this _CLI) WithStatus(s Status, msg string, f func()) {
-	this.UpdateStatus(s, msg)
-	defer this.ClearStatus()
-	f()
-}
-
 type _NONE struct{}
-
-func (_ _NONE) WithStatus(s Status, msg string, f func()) {
-	f()
-}
 
 func (_ _NONE) ClearStatus() {}
 
@@ -110,7 +100,6 @@ type UI interface {
 	UpdateStatus(s Status, msg string)
 	Display(level MsgLevel, msg string)
 	ClearStatus()
-	WithStatus(s Status, msg string, f func())
 }
 
 var cliStatus = StatusIdle
