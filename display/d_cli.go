@@ -29,6 +29,7 @@ func (_ _CLI) Display(level MsgLevel, msg string) {
 func (_ _CLI) ClearStatus() {
 	cliStatus = StatusIdle
 	cliStatusMsg = ""
+	termenv.ClearLine()
 }
 
 var cliStatus = StatusIdle
