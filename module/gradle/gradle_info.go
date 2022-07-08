@@ -81,14 +81,14 @@ func execWrappedGradleInfo(ctx context.Context, baseDir string) (*GradleInfo, er
 	var wrapperPath string
 	if runtime.GOOS == "windows" {
 		wrapperPath = filepath.Join(baseDir, "gradlew.bat")
-		c = exec.CommandContext(ctx, wrapperPath, "--version")
+		c = exec.CommandContext(ctx, wrapperPath, "--version", "--quiet")
 	} else {
 		wrapperPath = filepath.Join(baseDir, "gradlew")
 		d, e := exec.Command("chmod", "0755", wrapperPath).Output()
 		if e != nil {
 			logger.Warn.Println("Chmod wrapper 0755 failed.", e.Error(), string(d), wrapperPath)
 		}
-		c = exec.CommandContext(ctx, wrapperPath, "--version")
+		c = exec.CommandContext(ctx, wrapperPath, "--version", "--quiet")
 	}
 	logger.Debug.Println("Query version:", c.String())
 	c.Dir = baseDir
@@ -96,8 +96,8 @@ func execWrappedGradleInfo(ctx context.Context, baseDir string) (*GradleInfo, er
 	if e != nil {
 		// truncate output string if too long
 		s := strings.TrimSpace(string(data))
-		if len(s) > 64 {
-			s = s[:64]
+		if len(s) > 1024 {
+			s = s[:1024]
 		}
 		return nil, errors.Wrap(e, "Get version failed: "+s)
 	}
