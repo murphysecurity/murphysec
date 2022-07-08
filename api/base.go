@@ -66,6 +66,10 @@ type Client struct {
 	Token   string
 }
 
+func (c *Client) BaseURL() string {
+	return strings.TrimRight(c.baseUrl, "/")
+}
+
 func NewClient(baseUrl string) *Client {
 	baseUrl = strings.TrimRight(strings.TrimSpace(baseUrl), "/")
 	cl := &Client{

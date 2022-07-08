@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/muesli/termenv"
+	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"go.uber.org/zap"
+	"net/url"
 	"strconv"
+	"strings"
 )
 
 func Scan(ctx context.Context) error {
@@ -64,6 +67,13 @@ func Scan(ctx context.Context) error {
 		"，漏洞数：",
 		termenv.String(totalVuln).Foreground(termenv.ANSIBrightRed),
 	)
+
+	{
+		u, e := url.Parse(scanTask.ScanResult.InspectReportUrl)
+		if e != nil && u.Host == "" {
+			scanTask.ScanResult.InspectReportUrl = api.C.BaseURL() + "/" + strings.TrimLeft(scanTask.ScanResult.InspectReportUrl, "/")
+		}
+	}
 	if scanTask.ScanResult.InspectReportUrl != "" {
 		ui.Display(display.MsgNotice, fmt.Sprintf("检测报告详见：%s", scanTask.ScanResult.InspectReportUrl))
 	}
