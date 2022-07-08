@@ -92,7 +92,7 @@ func execWrappedGradleInfo(ctx context.Context, baseDir string) (*GradleInfo, er
 	}
 	logger.Debug.Println("Query version:", c.String())
 	c.Dir = baseDir
-	data, e := c.Output()
+	data, e := c.CombinedOutput()
 	if e != nil {
 		// truncate output string if too long
 		s := strings.TrimSpace(string(data))
