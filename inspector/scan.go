@@ -70,7 +70,7 @@ func Scan(ctx context.Context) error {
 
 	{
 		u, e := url.Parse(scanTask.ScanResult.InspectReportUrl)
-		if e != nil && u.Host == "" {
+		if e == nil && u.Host == "" {
 			scanTask.ScanResult.InspectReportUrl = api.C.BaseURL() + "/" + strings.TrimLeft(scanTask.ScanResult.InspectReportUrl, "/")
 		}
 	}
