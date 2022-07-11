@@ -68,7 +68,10 @@ func scanMvnDependency(ctx context.Context, projectDir string) (map[Coordinate][
 	logger.Info.Println("Command:", c.String())
 	cmdErr := &mvnCmdErr{errOutput: utils.NewSuffixBuffer(_MvnCmdErrOutputSuffixLen)}
 	c.Stderr = cmdErr.errOutput
-	if e := c.Run(); e != nil {
+	if e := c.Start(); e != nil {
+		return nil, errors.Wrap(e, "Mvn command execute failed")
+	}
+	if e := c.Wait(); e != nil {
 		cmdErr.code = c.ProcessState.ExitCode()
 		cmdErr.err = e
 		logger.Err.Println("mvn exit with error")
