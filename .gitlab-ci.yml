@@ -50,6 +50,9 @@ compose-build-saas:
     - sha256sum -c *.sha256
     - mv * ../
     - cd ..
+  only:
+    refs:
+      - /^v\d+.*/
 
 test:
   image: iseki0/go-deno:latest
