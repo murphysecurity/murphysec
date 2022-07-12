@@ -165,7 +165,7 @@ func GenerateIdeaOutput(c context.Context) string {
 		TotalContributors: ctx.TotalContributors,
 		ProjectId:         ctx.ProjectId,
 		DependenciesCount: ctx.ScanResult.DependenciesCount,
-		InspectReportUrl:  ctx.ScanResult.InspectReportUrl,
+		InspectReportUrl:  ctx.ScanResult.ReportURL(),
 		ProjectScore:      ctx.ScanResult.ProjectScore,
 		SurpassScore:      fmt.Sprintf("%d%%", ctx.ScanResult.SurpassScore),
 	}
