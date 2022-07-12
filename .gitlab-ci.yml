@@ -21,6 +21,7 @@ stages:          # List of stages for jobs, and their order of execution
 variables:
   GOPROXY: https://goproxy.cn,direct
   GOPATH: "$CI_PROJECT_DIR/.go"
+  GOBIN: "$CI_PROJECT_DIR/.go/bin"
 
 compose-build-saas:
   image: iseki0/go-deno:latest
@@ -84,4 +85,22 @@ compose-build:
     - sha256sum -c *.sha256
     - mv * ../
     - cd ..
+
+internal-cos-upload:
+  image: iseki0/go-deno:latest
+  stage: internal-pub
+  cache:
+    key: cos-upload-3838
+    paths:
+      - .go
+  before_script:
+    - mkdir -p .go
+  script:
+    - export PATH=$PATH:$GOBIN
+    - go install github.com/iseki0/cos-uploader@v1.1.0
+    - cos-uploader --local murphysec-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-linux-amd64
+    - cos-uploader --local murphysec-darwin-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-darwin-amd64
+    - cos-uploader --local murphysec-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-amd64.exe
+    - export UPLOAD_FILENAME=murphysec-windows-amd64.exe
+    - deno run --allow-all feishu-push.js
 
