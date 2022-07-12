@@ -42,6 +42,7 @@ compose-build-saas:
     - mkdir -p .go
   script:
     - export
+    - go test -v ./...
     - deno run --allow-all gobuild.ts saas
     - cd out
     - chmod 0755 *
@@ -53,18 +54,6 @@ compose-build-saas:
   only:
     refs:
       - /^v\d+.*/
-
-test:
-  image: iseki0/go-deno:latest
-  stage: build
-  cache:
-    key: cli-build-cache-0041
-    paths:
-      - .go/pkg/mod/
-  before_script:
-    - mkdir -p .go
-  script:
-    go test -v ./...
 
 compose-build:
   image: iseki0/go-deno:latest
@@ -86,6 +75,7 @@ compose-build:
     - mkdir -p .go
   script:
     - export
+    - go test -v ./...
     - deno run --allow-all gobuild.ts
     - cd out
     - chmod 0755 *
