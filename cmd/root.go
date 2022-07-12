@@ -66,8 +66,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if CliServerAddressOverride == "" {
 		CliServerAddressOverride = "https://www.murphysec.com"
 	}
+	env.ConfigureServerBaseUrl(CliServerAddressOverride)
+	api.C = api.NewClient()
 	logFileCleanup()
-	api.C = api.NewClient(CliServerAddressOverride)
 	api.C.Token = conf.APIToken()
 	return nil
 }

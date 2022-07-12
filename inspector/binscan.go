@@ -44,6 +44,10 @@ func BinScan(ctx context.Context) error {
 	}
 	r := scanTask.ScanResult
 	ui.Display(display.MsgNotice, fmt.Sprintf("项目扫描完成，依赖数：%d，漏洞数：%d\n", r.DependenciesCount, r.IssuesCompsCount))
+	if scanTask.ScanResult.ReportURL() != "" {
+		ui.Display(display.MsgNotice, fmt.Sprintf("检测报告详见：%s", scanTask.ScanResult.ReportURL()))
+	}
+
 	return nil
 }
 
@@ -65,6 +69,10 @@ func binScanUploadFile(ctx context.Context) error {
 		return e
 	}
 	ui.Display(display.MsgInfo, "文件上传成功")
+	if scanTask.ScanResult.ReportURL() != "" {
+		ui.Display(display.MsgNotice, fmt.Sprintf("检测报告详见：%s", scanTask.ScanResult.ReportURL()))
+	}
+
 	return nil
 }
 

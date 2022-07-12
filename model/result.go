@@ -1,5 +1,11 @@
 package model
 
+import (
+	"github.com/murphysecurity/murphysec/env"
+	"net/url"
+	"strings"
+)
+
 type TaskScanResponse struct {
 	Complete          bool `json:"complete"`
 	DependenciesCount int  `json:"dependencies_count"`
@@ -40,6 +46,14 @@ type TaskScanResponse struct {
 	TaskId           string `json:"task_id"`
 	Status           string `json:"status"`
 	InspectReportUrl string `json:"inspect_report_url"`
+}
+
+func (t TaskScanResponse) ReportURL() string {
+	u, e := url.Parse(t.InspectReportUrl)
+	if e == nil && u.Host == "" {
+		return env.ServerBaseUrl() + "/" + strings.TrimLeft(t.InspectReportUrl, "/")
+	}
+	return t.InspectReportUrl
 }
 
 type VoVulnInfo struct {

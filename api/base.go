@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
@@ -70,19 +71,18 @@ func (c *Client) BaseURL() string {
 	return strings.TrimRight(c.baseUrl, "/")
 }
 
-func NewClient(baseUrl string) *Client {
-	baseUrl = strings.TrimRight(strings.TrimSpace(baseUrl), "/")
+func NewClient() *Client {
 	cl := &Client{
 		client: &http.Client{
 			Transport: &_LoggingMiddleware{Transport: http.DefaultTransport},
 			Timeout:   time.Second * 300,
 		},
-		baseUrl: baseUrl,
+		baseUrl: env.ServerBaseUrl(),
 	}
 	if i, e := strconv.Atoi(os.Getenv("API_TIMEOUT")); e != nil {
 		cl.client.Timeout = time.Duration(int64(time.Second) * int64(i))
 	}
-	Logger.Info("Http client created", zap.String("baseUrl", baseUrl), zap.Duration("timeout", cl.client.Timeout))
+	Logger.Info("Http client created", zap.String("baseUrl", env.ServerBaseUrl()), zap.Duration("timeout", cl.client.Timeout))
 	return cl
 }
 
