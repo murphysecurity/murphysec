@@ -30,7 +30,7 @@ func ScanMavenProject(task *model.InspectorTask) ([]model.Module, error) {
 	var e error
 	// check maven version, skip maven scan if check fail
 	doMvnScan, mvnVer := checkMvnEnv()
-	var useBackupResolver = false
+	var useBackupResolver = !doMvnScan
 	if doMvnScan {
 		deps, e = scanMvnDependency(context.TODO(), dir)
 		if e != nil {
@@ -43,7 +43,7 @@ func ScanMavenProject(task *model.InspectorTask) ([]model.Module, error) {
 	}
 	// analyze pom file
 	if useBackupResolver {
-		deps = nil
+		deps = map[Coordinate][]Dependency{}
 		pomFiles := InspectModule(dir)
 		logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
 		resolver := NewResolver()
