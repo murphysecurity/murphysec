@@ -1,11 +1,12 @@
 const gitTag = Deno.env.get("CI_BUILD_REF_NAME")
-const fileName = Deno.env.get("UPLOAD_FILENAME")
 const larkPushKey = Deno.env.get("LARK_PUSH_KEY")
+const qCloudUrl = (fn) => `https://${Deno.env.get('QCLOUD_COS_DOMAIN')}/client/${gitTag}/${fn}`
 
 const contentText = [
-    ['File', fileName],
     ['GitTag', gitTag],
-    ['URL', `https://${Deno.env.get('QCLOUD_COS_DOMAIN')}/client/${gitTag}/${fileName}`],
+    ['Windows', qCloudUrl('murphysec-windows-amd64.exe')],
+    ['Linux', qCloudUrl('murphysec-linux-amd64')],
+    ['Apple', qCloudUrl('murphysec-darwin-amd64')],
 ].filter(it => it[1]).map(it => `**${it[0]}: **${it[1]}`).join('\n')
 
 const cardContent = {
@@ -15,7 +16,7 @@ const cardContent = {
     "header": {
         "template": "orange",
         "title": {
-            "content": `上传推送: ${fileName}(${gitTag})`,
+            "content": `上传推送: Client(${gitTag})`,
             "tag": "plain_text"
         }
     },
