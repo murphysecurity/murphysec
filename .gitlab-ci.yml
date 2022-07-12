@@ -52,9 +52,6 @@ compose-build-saas:
     - sha256sum -c *.sha256
     - mv * ../
     - cd ..
-  only:
-    refs:
-      - /^v\d+.*/
 
 compose-build:
   image: iseki0/go-deno:latest
@@ -101,6 +98,8 @@ internal-cos-upload:
     - cos-uploader --local murphysec-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-linux-amd64
     - cos-uploader --local murphysec-darwin-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-darwin-amd64
     - cos-uploader --local murphysec-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-amd64.exe
-    - export UPLOAD_FILENAME=murphysec-windows-amd64.exe
+    - cos-uploader --local murphysec-saas-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-linux-amd64
+    - cos-uploader --local murphysec-saas-darwin-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-darwin-amd64
+    - cos-uploader --local murphysec-saas-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-windows-amd64.exe
     - deno run --allow-all feishu-push.js
 
