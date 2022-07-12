@@ -69,10 +69,6 @@ func binScanUploadFile(ctx context.Context) error {
 		return e
 	}
 	ui.Display(display.MsgInfo, "文件上传成功")
-	if scanTask.ScanResult.ReportURL() != "" {
-		ui.Display(display.MsgNotice, fmt.Sprintf("检测报告详见：%s", scanTask.ScanResult.ReportURL()))
-	}
-
 	return nil
 }
 
