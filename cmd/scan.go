@@ -28,7 +28,7 @@ func scanCmd() *cobra.Command {
 			if !filepath.IsAbs(projectDir) {
 				projectDir, e = filepath.Abs(projectDir)
 				if e != nil || !utils.IsPathExist(projectDir) {
-					fmt.Println("读取路径失败", e.Error())
+					fmt.Println("读取路径失败")
 					SetGlobalExitCode(1)
 					return
 				}
@@ -81,7 +81,7 @@ func binScanCmd() *cobra.Command {
 			if !filepath.IsAbs(projectDir) {
 				projectDir, e = filepath.Abs(projectDir)
 				if e != nil || !utils.IsPathExist(projectDir) {
-					fmt.Println("读取路径失败", e.Error())
+					fmt.Println("读取路径失败")
 					SetGlobalExitCode(1)
 					return
 				}
@@ -110,7 +110,7 @@ func iotScanCmd() *cobra.Command {
 			if !filepath.IsAbs(projectDir) {
 				projectDir, e = filepath.Abs(projectDir)
 				if e != nil || !utils.IsPathExist(projectDir) {
-					fmt.Println("读取路径失败", e.Error())
+					fmt.Println("读取路径失败")
 					SetGlobalExitCode(1)
 					return
 				}
