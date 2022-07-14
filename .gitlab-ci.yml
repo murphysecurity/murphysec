@@ -1,22 +1,7 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
-
-# This is a sample GitLab CI/CD configuration file that should run without any modifications.
-# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
-# it uses echo commands to simulate the pipeline execution.
-#
-# A pipeline is composed of independent jobs that run scripts, grouped into stages.
-# Stages run in sequential order, but jobs within stages run in parallel.
-#
-# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
-
-stages:          # List of stages for jobs, and their order of execution
+stages: # List of stages for jobs, and their order of execution
   - build
   - internal-pub
-  - release
+  - notify
 
 variables:
   GOPROXY: https://goproxy.cn,direct
@@ -29,12 +14,12 @@ compose-build-saas:
   artifacts:
     expire_in: 3 day
     paths:
-      - murphysec-saas-linux-amd64
-      - murphysec-saas-windows-amd64.exe
-      - murphysec-saas-darwin-amd64
-      - murphysec-saas-linux-amd64.sha256
-      - murphysec-saas-windows-amd64.exe.sha256
-      - murphysec-saas-darwin-amd64.sha256
+      - out/murphysec-saas-linux-amd64
+      - out/murphysec-saas-windows-amd64.exe
+      - out/murphysec-saas-darwin-amd64
+      - out/murphysec-saas-linux-amd64.sha256
+      - out/murphysec-saas-windows-amd64.exe.sha256
+      - out/murphysec-saas-darwin-amd64.sha256
   cache:
     key: cli-build-cache-0041
     paths:
@@ -42,16 +27,13 @@ compose-build-saas:
   before_script:
     - mkdir -p .go
   script:
-    - export
-    - go test -v ./...
-    - deno run --allow-all gobuild.ts saas
-    - cd out
-    - chmod 0755 *
-    - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
-    - cat *.sha256
-    - sha256sum -c *.sha256
-    - mv * ../
-    - cd ..
+    - GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-linux-amd64
+    - GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-windows-amd64.exe
+    - GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-darwin-amd64
+    - sha256sum out/murphysec-saas-linux-amd64 | cut -d ' ' -f 1 > out/murphysec-saas-linux-amd64.sha256
+    - sha256sum out/murphysec-saas-darwin-amd64 | cut -d ' ' -f 1 > out/murphysec-saas-darwin-amd64.sha256
+    - sha256sum out/murphysec-saas-windows-amd64.exe | cut -d ' ' -f 1 > out/murphysec-saas-windows-amd64.exe.sha256
+    - sha256sum out/*
 
 compose-build:
   image: iseki0/go-deno:latest
@@ -59,12 +41,12 @@ compose-build:
   artifacts:
     expire_in: 1 day
     paths:
-      - murphysec-linux-amd64
-      - murphysec-windows-amd64.exe
-      - murphysec-darwin-amd64
-      - murphysec-linux-amd64.sha256
-      - murphysec-windows-amd64.exe.sha256
-      - murphysec-darwin-amd64.sha256
+      - out/murphysec-linux-amd64
+      - out/murphysec-windows-amd64.exe
+      - out/murphysec-darwin-amd64
+      - out/murphysec-linux-amd64.sha256
+      - out/murphysec-windows-amd64.exe.sha256
+      - out/murphysec-darwin-amd64.sha256
   cache:
     key: cli-build-cache-0041
     paths:
@@ -72,34 +54,33 @@ compose-build:
   before_script:
     - mkdir -p .go
   script:
-    - export
-    - go test -v ./...
-    - deno run --allow-all gobuild.ts
-    - cd out
-    - chmod 0755 *
-    - find -type f | xargs -I {} sh -c "sha256sum {} > {}.sha256"
-    - cat *.sha256
-    - sha256sum -c *.sha256
-    - mv * ../
-    - cd ..
+    - GOOS=linux GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w' -o out/murphysec-linux-amd64
+    - GOOS=windows GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w' -o out/murphysec-windows-amd64.exe
+    - GOOS=darwin GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w' -o out/murphysec-darwin-amd64
+    - sha256sum out/murphysec-linux-amd64 | cut -d ' ' -f 1 > out/murphysec-linux-amd64.sha256
+    - sha256sum out/murphysec-darwin-amd64 | cut -d ' ' -f 1 > out/murphysec-darwin-amd64.sha256
+    - sha256sum out/murphysec-windows-amd64.exe | cut -d ' ' -f 1 > out/murphysec-windows-amd64.exe.sha256
+    - sha256sum out/*
 
 internal-cos-upload:
-  image: iseki0/go-deno:latest
+  image: iseki0/cos-uploader:v1.1.2
   stage: internal-pub
-  cache:
-    key: cos-upload-3838
-    paths:
-      - .go
-  before_script:
-    - mkdir -p .go
   script:
-    - export PATH=$PATH:$GOBIN
-    - go install github.com/iseki0/cos-uploader@v1.1.0
+    - cd out
     - cos-uploader --local murphysec-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-linux-amd64
     - cos-uploader --local murphysec-darwin-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-darwin-amd64
     - cos-uploader --local murphysec-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-amd64.exe
     - cos-uploader --local murphysec-saas-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-linux-amd64
     - cos-uploader --local murphysec-saas-darwin-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-darwin-amd64
     - cos-uploader --local murphysec-saas-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-windows-amd64.exe
-    - deno run --allow-all feishu-push.js
+    - mkdir zipfiles
+    - zip zipfiles/pro.zip murphysec-linux-amd64* murphysec-darwin-amd64* murphysec-windows-amd64.exe*
+    - cos-uploader --local zipfiles/pro.zip --remote /client/$CI_BUILD_REF_NAME/pro.zip
+    - zip zipfiles/saas.zip murphysec-saas-linux-amd64* murphysec-saas-darwin-amd64* murphysec-saas-windows-amd64.exe*
+    - cos-uploader --local zipfiles/saas.zip --remote /client/$CI_BUILD_REF_NAME/saas.zip
 
+lark-notify:
+  image: denoland/deno
+  stage: notify
+  script:
+    - deno run --allow-all lark-push.js

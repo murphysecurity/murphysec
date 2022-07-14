@@ -10,6 +10,8 @@ const contentText = [
     ['SaaS-Windows', qCloudUrl('murphysec-saas-windows-amd64.exe')],
     ['SaaS-Linux', qCloudUrl('murphysec-saas-linux-amd64')],
     ['SaaS-Apple', qCloudUrl('murphysec-saas-darwin-amd64')],
+    ['saas.zip', qCloudUrl('saas.zip')],
+    ['pro.zip', qCloudUrl('pro.zip')],
 ].filter(it => it[1]).map(it => `**${it[0]}: **${it[1]}`).join('\n')
 
 const cardContent = {
