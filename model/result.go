@@ -49,6 +49,9 @@ type TaskScanResponse struct {
 }
 
 func (t TaskScanResponse) ReportURL() string {
+	if t.InspectReportUrl == "" {
+		return ""
+	}
 	u, e := url.Parse(t.InspectReportUrl)
 	if e == nil && u.Host == "" {
 		return env.ServerBaseUrl() + "/" + strings.TrimLeft(t.InspectReportUrl, "/")
