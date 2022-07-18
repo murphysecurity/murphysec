@@ -55,10 +55,6 @@ func checkMvnVersion() (*MvmCmdVersionInfo, error) {
 	}, nil
 }
 
-const _MaxMvnOutputLine = 128 * 1024
-
-const _MvnCmdErrOutputSuffixLen = 2 * 2048
-
 func scanMvnDependency(ctx context.Context, projectDir string) (map[Coordinate][]Dependency, error) {
 	if ctx == nil {
 		ctx = context.TODO()
@@ -66,8 +62,9 @@ func scanMvnDependency(ctx context.Context, projectDir string) (map[Coordinate][
 	c := exec.CommandContext(ctx, "mvn", "com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json", "--batch-mode")
 	c.Dir = projectDir
 	logger.Info.Println("Command:", c.String())
-	cmdErr := &mvnCmdErr{errOutput: utils.NewSuffixBuffer(_MvnCmdErrOutputSuffixLen)}
+	cmdErr := &mvnCmdErr{errOutput: NewMvnCmdExecution()}
 	c.Stderr = cmdErr.errOutput
+	c.Stdout = cmdErr.errOutput
 	if e := c.Start(); e != nil {
 		return nil, errors.Wrap(e, "Mvn command execute failed")
 	}
@@ -204,14 +201,14 @@ func (d dependencyGraph) _tree(id int, visitedId []bool, edges map[int][]int) *D
 type mvnCmdErr struct {
 	code      int
 	err       error
-	errOutput *utils.SuffixBuffer
+	errOutput *MvnCmdExecutionStreamHandler
 }
 
 func (e mvnCmdErr) Error() string {
 	if e.err != nil {
-		return fmt.Sprintf("Mvn command error[%d]: %s. Output[truncated=%v]: %s", e.code, e.err.Error(), e.errOutput.Truncated(), e.errOutput.String())
+		return fmt.Sprintf("Mvn command error[%d]: %s. Output: %s", e.code, e.err.Error(), e.errOutput)
 	}
-	return fmt.Sprintf("Mvn command error[%d], Output[truncated=%v]: %s", e.code, e.errOutput.Truncated(), e.errOutput.String())
+	return fmt.Sprintf("Mvn command error[%d], Output: %s", e.code, e.errOutput)
 }
 
 func (e mvnCmdErr) Unwrap() error {
