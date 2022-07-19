@@ -54,27 +54,6 @@ func DistinctStringSlice(s []string) []string {
 	return rs
 }
 
-type StringSet map[string]struct{}
-
-func NewStringSet() StringSet {
-	return map[string]struct{}{}
-}
-func (s StringSet) Put(t string) StringSet {
-	s[t] = struct{}{}
-	return s
-}
-func (s StringSet) Contains(t string) bool {
-	_, ok := s[t]
-	return ok
-}
-func (s StringSet) ToSlice() []string {
-	var r []string
-	for i := range s {
-		r = append(r, i)
-	}
-	return r
-}
-
 func base64UrlEncode(s string) string {
 	b := new(bytes.Buffer)
 	w := base64.NewEncoder(base64.URLEncoding, b)
