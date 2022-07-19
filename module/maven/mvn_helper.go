@@ -56,11 +56,29 @@ func checkMvnVersion() (*MvmCmdVersionInfo, error) {
 	}, nil
 }
 
+func listPomProfiles(ctx context.Context, pomPath string) (profiles []string) {
+	project, e := gopom.Parse(pomPath)
+	if e != nil || project == nil {
+		for _, profile := range project.Profiles {
+			profiles = append(profiles, profile.ID)
+		}
+	}
+	return
+}
+
 func scanMvnDependency(ctx context.Context, projectDir string) (map[Coordinate][]Dependency, error) {
 	if ctx == nil {
 		ctx = context.TODO()
 	}
-	c := exec.CommandContext(ctx, "mvn", "com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json", "--batch-mode")
+
+	// handle maven profiles
+	var profiles = listPomProfiles(ctx, filepath.Join(projectDir, "pom.xml"))
+	var args = []string{"com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json", "--batch-mode"}
+	if len(profiles) > 0 {
+		args = append(args, "-P")
+		args = append(args, profiles...)
+	}
+	c := exec.CommandContext(ctx, "mvn", args...)
 	c.Dir = projectDir
 	logger.Info.Println("Command:", c.String())
 	logStream := utils.NewLogPipe(logger.Info.Logger) // todo: refactor logger
