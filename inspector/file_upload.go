@@ -70,6 +70,7 @@ func UploadCodeFile(ctx context.Context) error {
 					logger.Warn("Write file failed", zap.Error(e))
 					return e
 				}
+				logger.Debug("File upload")
 				utils.CloseLogErrZap(f, logger)
 			}
 			return nil
