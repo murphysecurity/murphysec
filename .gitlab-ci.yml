@@ -7,6 +7,7 @@ variables:
   GOPROXY: https://goproxy.cn,direct
   GOPATH: "$CI_PROJECT_DIR/.go"
   GOBIN: "$CI_PROJECT_DIR/.go/bin"
+  CGO_ENABLED: '0'
 
 compose-build-saas:
   image: golang:1.18.4-buster
