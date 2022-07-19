@@ -9,6 +9,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"github.com/vifraa/gopom"
+	"io"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -62,9 +63,11 @@ func scanMvnDependency(ctx context.Context, projectDir string) (map[Coordinate][
 	c := exec.CommandContext(ctx, "mvn", "com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json", "--batch-mode")
 	c.Dir = projectDir
 	logger.Info.Println("Command:", c.String())
+	logStream := utils.NewLogPipe(logger.Info.Logger) // todo: refactor logger
+	defer logStream.Close()
 	cmdErr := &mvnCmdErr{errOutput: NewMvnCmdExecution()}
-	c.Stderr = cmdErr.errOutput
-	c.Stdout = cmdErr.errOutput
+	c.Stderr = io.MultiWriter(cmdErr.errOutput, logStream)
+	c.Stdout = io.MultiWriter(cmdErr.errOutput, logStream)
 	if e := c.Start(); e != nil {
 		return nil, errors.Wrap(e, "Mvn command execute failed")
 	}
