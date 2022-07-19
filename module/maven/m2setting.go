@@ -79,12 +79,16 @@ func locateMvnInstallPath() string {
 }
 
 func readUserHomeM2Settings() ([]byte, error) {
-	if hd, e := homedir.Dir(); e != nil {
-		return nil, e
-	} else {
-		p := filepath.Join(hd, ".m2", "settings.xml")
-		return os.ReadFile(p)
+	var baseDir = os.Getenv("M2_HOME")
+	if baseDir == "" {
+		var e error
+		baseDir, e = homedir.Dir()
+		if e != nil {
+			return nil, e
+		}
+		baseDir = filepath.Join(baseDir, ".m2")
 	}
+	return os.ReadFile(filepath.Join(baseDir, "settings.xml"))
 }
 
 func readMvnInstallPathSettingsFile() ([]byte, error) {
@@ -92,6 +96,6 @@ func readMvnInstallPathSettingsFile() ([]byte, error) {
 	if mvnBin == "" {
 		return nil, errors.New("mvn binary not found")
 	}
-	p := filepath.Join(filepath.Base(filepath.Base(mvnBin)), "conf", "settings.xml")
+	p := filepath.Join(filepath.Dir(filepath.Dir(mvnBin)), "conf", "settings.xml")
 	return os.ReadFile(p)
 }
