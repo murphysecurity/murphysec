@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -91,11 +92,16 @@ func readUserHomeM2Settings() ([]byte, error) {
 	return os.ReadFile(filepath.Join(baseDir, "settings.xml"))
 }
 
-func readMvnInstallPathSettingsFile() ([]byte, error) {
+func readMvnInstallPathSettingsFile() (data []byte, e error) {
 	mvnBin := locateMvnInstallPath()
 	if mvnBin == "" {
 		return nil, errors.New("mvn binary not found")
 	}
 	p := filepath.Join(filepath.Dir(filepath.Dir(mvnBin)), "conf", "settings.xml")
-	return os.ReadFile(p)
+	data, e = os.ReadFile(p)
+	if e != nil && runtime.GOOS == "darwin" {
+		p := filepath.Join(filepath.Dir(filepath.Dir(mvnBin)), "libexec", "conf", "settings.xml")
+		return os.ReadFile(p)
+	}
+	return
 }
