@@ -9,7 +9,7 @@ variables:
   GOBIN: "$CI_PROJECT_DIR/.go/bin"
 
 compose-build-saas:
-  image: iseki0/go-deno:latest
+  image: golang:1.18.4-buster
   stage: build
   artifacts:
     expire_in: 3 day
@@ -36,7 +36,7 @@ compose-build-saas:
     - sha256sum out/*
 
 compose-build:
-  image: iseki0/go-deno:latest
+  image: golang:1.18.4-buster
   stage: build
   artifacts:
     expire_in: 1 day
