@@ -37,14 +37,7 @@ func (r *SuffixBuffer) write(input []byte) {
 		srcPos = len(input) - len(r.data)
 	}
 	// part 1
-	// bad golang have no min(Int, Int)
-	var k1, k2, k int
-	k1 = len(r.data) - r.pos
-	k2 = len(input) - srcPos
-	k = k1
-	if k2 < k1 {
-		k = k2
-	}
+	k := MinInt(len(r.data)-r.pos, len(input)-srcPos)
 	copy(r.data[r.pos:r.pos+k], input[srcPos:srcPos+k])
 	r.pos += k
 	srcPos += k
