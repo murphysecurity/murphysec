@@ -78,6 +78,7 @@ internal-cos-upload:
     - cos-uploader --local zipfiles/pro.zip --remote /client/$CI_BUILD_REF_NAME/pro.zip
     - zip zipfiles/saas.zip murphysec-saas-linux-amd64* murphysec-saas-darwin-amd64* murphysec-saas-windows-amd64.exe*
     - cos-uploader --local zipfiles/saas.zip --remote /client/$CI_BUILD_REF_NAME/saas.zip
+    - sha256sum *
 
 lark-notify:
   image: denoland/deno
