@@ -54,7 +54,6 @@ func initLogger() error {
 		ConsoleSeparator:    " ",
 	}
 	var consoleEncoder = zapcore.NewConsoleEncoder(loggerEncoderConfig)
-	var jsonEncoder = zapcore.NewJSONEncoder(loggerEncoderConfig)
 
 	consoleCore := zapcore.NewNopCore()
 	jsonCore := zapcore.NewNopCore()
@@ -64,7 +63,7 @@ func initLogger() error {
 		return e
 	}
 	if e == nil {
-		jsonCore = zapcore.NewCore(jsonEncoder, logFile, zapcore.DebugLevel)
+		jsonCore = zapcore.NewCore(consoleEncoder, logFile, zapcore.DebugLevel)
 	}
 
 	switch strings.ToLower(strings.TrimSpace(consoleLogLevelOverride)) {
