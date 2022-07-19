@@ -12,7 +12,13 @@ import (
 	"strings"
 )
 
-var ErrParsePoetry = errors.New("Bad manifest")
+var ErrParsePoetry = poetryErr("ErrParsePoetry: Bad manifest")
+
+type poetryErr string
+
+func (p poetryErr) Error() string {
+	return string(p)
+}
 
 type Inspector struct{}
 
@@ -75,11 +81,11 @@ type Manifest struct {
 func parsePoetry(input []byte) (*Manifest, error) {
 	root := &tomlTree{}
 	if e := toml.Unmarshal(input, &root.v); e != nil {
-		return nil, errors.Wrap(ErrParsePoetry, "Parse toml failed")
+		return nil, errors.WithMessage(ErrParsePoetry, "Parse toml failed")
 	}
 	m, ok := root.Get("tool", "poetry", "dependencies").v.(map[string]string)
 	if !ok {
-		return nil, errors.Wrap(ErrParsePoetry, "bad toml")
+		return nil, errors.WithMessage(ErrParsePoetry, "bad toml")
 	}
 	var deps []model.Dependency
 	for k, v := range m {
