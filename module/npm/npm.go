@@ -8,6 +8,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -41,7 +42,9 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 
 func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	dir := model.UseInspectorTask(ctx).ScanDir
+	logger := utils.UseLogger(ctx)
 	pkgFile := filepath.Join(dir, "package-lock.json")
+	logger.Debug("Read package-lock.json", zap.String("path", pkgFile))
 	data, e := ioutil.ReadFile(pkgFile)
 	if e != nil {
 		return nil, errors.WithMessage(e, "Errors when reading package-lock.json")
@@ -77,7 +80,9 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 			}
 		}
 	}
-
+	if len(rootComp) == 0 {
+		logger.Warn("Not found root component")
+	}
 	module := model.Module{
 		PackageManager: model.PMNpm,
 		Language:       model.JavaScript,
