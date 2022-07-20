@@ -2,7 +2,7 @@ package bundler
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/logger"
+	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
@@ -26,13 +26,15 @@ func (i *Inspector) CheckDir(dir string) bool {
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
+	logger := utils.UseLogger(ctx)
 	scanDir := task.ScanDir
 	gemFile := filepath.Join(scanDir, "Gemfile")
 	gemLockFile := filepath.Join(scanDir, "Gemfile.lock")
 	if !utils.IsFile(gemFile) || !utils.IsFile(gemLockFile) {
 		return nil
 	}
-	logger.Info.Println("RubyGems inspect: ", scanDir)
+	logger.Info(fmt.Sprintf("RubyGems inspect: %s", scanDir))
+	defer logger.Info("RubyGems inspect terminated")
 	data, e := utils.ReadFileLimited(gemLockFile, 1024*1024*4)
 	if e != nil {
 		return errors.Wrap(e, "ReadRubyGemsLockFile")
