@@ -59,9 +59,10 @@ func checkMvnVersion() (*MvmCmdVersionInfo, error) {
 func listPomProfiles(ctx context.Context, pomPath string) (profiles []string) {
 	project, e := gopom.Parse(pomPath)
 	if e != nil || project == nil {
-		for _, profile := range project.Profiles {
-			profiles = append(profiles, profile.ID)
-		}
+		return
+	}
+	for _, profile := range project.Profiles {
+		profiles = append(profiles, profile.ID)
 	}
 	return
 }
