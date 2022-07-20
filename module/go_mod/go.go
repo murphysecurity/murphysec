@@ -25,11 +25,11 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	modFilePath := filepath.Join(task.ScanDir, "go.mod")
 	data, e := utils.ReadFileLimited(modFilePath, 1024*1024*4)
 	if e != nil {
-		return errors.Wrap(e, "GoModFileParse: open")
+		return errors.WithMessage(e, "Open GoMod file")
 	}
 	f, e := modfile.ParseLax(filepath.Base(modFilePath), data, nil)
 	if e != nil {
-		return errors.Wrap(e, "Parse go mod failed")
+		return errors.WithMessage(e, "Parse go mod failed")
 	}
 	m := model.Module{
 		PackageManager: model.PMGoMod,
