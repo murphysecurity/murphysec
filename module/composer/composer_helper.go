@@ -17,7 +17,7 @@ type composerInstallFail struct {
 }
 
 func doComposerInstall(ctx context.Context, projectDir string) error {
-	c := exec.CommandContext(ctx, "composer", "--ignore-platform-reqs", "--no-progress", "--no-dev", "--no-autoloader", "--no-scripts", "--no-interaction", "--quiet")
+	c := exec.CommandContext(ctx, "composer", "install", "--ignore-platform-reqs", "--no-progress", "--no-dev", "--no-autoloader", "--no-scripts", "--no-interaction", "--quiet")
 	c.Dir = projectDir
 	logger.Info.Println("Command:", c.String())
 	cif := &composerInstallFail{}
