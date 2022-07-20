@@ -22,6 +22,10 @@ func (l *LogPipe) Close() error {
 }
 
 func NewLogPipe(logger *zap.Logger) *LogPipe {
+	if logger == nil {
+		logger = zap.NewNop()
+	}
+	logger = logger.WithOptions(zap.WithCaller(false))
 	r, w := io.Pipe()
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanLines)
