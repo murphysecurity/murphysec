@@ -37,11 +37,11 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	defer logger.Info("RubyGems inspect terminated")
 	data, e := utils.ReadFileLimited(gemLockFile, 1024*1024*4)
 	if e != nil {
-		return errors.Wrap(e, "ReadRubyGemsLockFile")
+		return errors.WithMessage(e, "ReadRubyGemsLockFile")
 	}
 	tree, e := getDepGraph(string(data))
 	if e != nil {
-		return errors.Wrap(e, "ParseGemLockFile")
+		return errors.WithMessage(e, "ParseGemLockFile")
 	}
 	task.AddModule(model.Module{
 		PackageManager: model.PMBundler,
