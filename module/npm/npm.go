@@ -54,7 +54,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 		return nil, e
 	}
 	logger.Sugar().Debugf("lockfileVersion: %d", lockfile.LockfileVersion)
-	if lockfile.LockfileVersion > 2 {
+	if lockfile.LockfileVersion > 2 || lockfile.LockfileVersion < 1 {
 		return nil, errors.New(fmt.Sprintf("unsupported lockfileVersion: %d", lockfile.LockfileVersion))
 	}
 	for s := range lockfile.Dependencies {
