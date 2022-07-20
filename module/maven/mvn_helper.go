@@ -77,7 +77,7 @@ func scanMvnDependency(ctx context.Context, projectDir string) (map[Coordinate][
 	var args = []string{"com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json", "--batch-mode"}
 	if len(profiles) > 0 {
 		args = append(args, "-P")
-		args = append(args, profiles...)
+		args = append(args, strings.Join(profiles, ","))
 	}
 	c := exec.CommandContext(ctx, "mvn", args...)
 	c.Dir = projectDir
