@@ -1,10 +1,12 @@
 package composer
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simplejson"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 func readComposerLockFile(path string) ([]Package, error) {
@@ -40,7 +42,9 @@ func parseComposerLock(data []byte) ([]Package, error) {
 	return pkgList, nil
 }
 
-func readManifest(path string) (*Manifest, error) {
+func readManifest(ctx context.Context, path string) (*Manifest, error) {
+	logger := utils.UseLogger(ctx)
+	logger.Debug("readManifest", zap.String("path", path))
 	composerFileData, e := utils.ReadFileLimited(path, _ComposerManifestFileSizeLimit)
 	if e != nil {
 		return nil, wrapErr(ErrReadComposerManifest, e)

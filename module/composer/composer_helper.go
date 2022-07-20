@@ -3,7 +3,7 @@ package composer
 import (
 	"context"
 	"fmt"
-	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/utils"
 	"os/exec"
 	"strconv"
 )
@@ -17,9 +17,11 @@ type composerInstallFail struct {
 }
 
 func doComposerInstall(ctx context.Context, projectDir string) error {
+	logger := utils.UseLogger(ctx)
 	c := exec.CommandContext(ctx, "composer", "install", "--ignore-platform-reqs", "--no-progress", "--no-dev", "--no-autoloader", "--no-scripts", "--no-interaction", "--quiet")
 	c.Dir = projectDir
-	logger.Info.Println("Command:", c.String())
+	logger.Sugar().Infof("Command: %s", c.String())
+	defer logger.Info("doComposerInstall terminated")
 	cif := &composerInstallFail{}
 	c.Stderr = cif
 	if e := c.Run(); e != nil {

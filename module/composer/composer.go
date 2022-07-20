@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
+	"go.uber.org/zap"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -28,7 +29,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	logger := utils.UseLogger(ctx)
 	task := model.UseInspectorTask(ctx)
 	dir := task.ScanDir
-	manifest, e := readManifest(filepath.Join(dir, "composer.json"))
+	manifest, e := readManifest(ctx, filepath.Join(dir, "composer.json"))
 	if e != nil {
 		return e
 	}
@@ -54,11 +55,13 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 				logger.Sugar().Info("Do composer install succeeded")
 			}
 		}
-		pkgs, e := readComposerLockFile(filepath.Join(dir, "composer.lock"))
+		composerLockFilePath := filepath.Join(dir, "composer.lock")
+		logger.Debug("Reading composer.lock", zap.String("path", composerLockFilePath))
+		pkgs, e := readComposerLockFile(composerLockFilePath)
 		if e != nil {
 			logger.Sugar().Infof("Read composer lock file failed: %s", e.Error())
 		}
-		pkgs = append(pkgs, vendorScan(filepath.Join(dir, "vendor"))...)
+		pkgs = append(pkgs, vendorScan(ctx, filepath.Join(dir, "vendor"))...)
 		for _, it := range pkgs {
 			lockfilePkgs[it.Name] = it
 		}
@@ -120,14 +123,17 @@ type Manifest struct {
 	Require []Element
 }
 
-func vendorScan(dir string) []Package {
+func vendorScan(ctx context.Context, dir string) []Package {
+	logger := utils.UseLogger(ctx)
+	logger.Debug("vendorScan", zap.String("dir", dir))
+	defer logger.Debug("vendorScan terminated")
 	var rs []Package
 	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if info == nil {
 			return nil
 		}
 		if info.Name() == "composer.json" {
-			m, e := readManifest(path)
+			m, e := readManifest(ctx, path)
 			if e != nil {
 				return nil
 			}
