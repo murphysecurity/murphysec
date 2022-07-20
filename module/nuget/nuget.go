@@ -29,7 +29,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
 	dep, e := inspectPkgConfig(filepath.Join(task.ScanDir, "packages.config"))
 	if e != nil {
-		return errors.Wrap(e, "NugetInspector")
+		return e
 	}
 	m := model.Module{
 		PackageManager: model.PmNuget,
@@ -79,11 +79,11 @@ func (this *PkgConfig) Deps() []model.Dependency {
 func inspectPkgConfig(filePath string) ([]model.Dependency, error) {
 	data, e := utils.ReadFileLimited(filePath, 4*1024*1024)
 	if e != nil {
-		return nil, errors.Wrap(e, "Read packages.config failed.")
+		return nil, errors.WithMessage(e, "Read packages.config failed")
 	}
 	var pkg PkgConfig
 	if e := xml.Unmarshal(data, &pkg); e != nil {
-		return nil, errors.Wrap(e, "Parse packages.config failed.")
+		return nil, errors.WithMessage(e, "Parse packages.config failed")
 	}
 	return pkg.Deps(), nil
 }
