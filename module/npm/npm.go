@@ -41,19 +41,15 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 
 func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	dir := model.UseInspectorTask(ctx).ScanDir
-	logger := utils.UseLogger(ctx)
-	logger.Sugar().Infof("CheckDir: %s", dir)
 	pkgFile := filepath.Join(dir, "package-lock.json")
-	logger.Sugar().Infof("Read package-lock file: %s", pkgFile)
 	data, e := ioutil.ReadFile(pkgFile)
 	if e != nil {
-		return nil, e
+		return nil, errors.WithMessage(e, "Errors when reading package-lock.json")
 	}
 	var lockfile NpmPkgLock
 	if e := json.Unmarshal(data, &lockfile); e != nil {
 		return nil, e
 	}
-	logger.Sugar().Debugf("lockfileVersion: %d", lockfile.LockfileVersion)
 	if lockfile.LockfileVersion > 2 || lockfile.LockfileVersion < 1 {
 		return nil, errors.New(fmt.Sprintf("unsupported lockfileVersion: %d", lockfile.LockfileVersion))
 	}
