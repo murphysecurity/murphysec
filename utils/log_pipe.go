@@ -31,10 +31,14 @@ func NewLogPipe(logger *zap.Logger) *LogPipe {
 			if scanner.Err() != nil {
 				break
 			}
-			logger.Info(fmt.Sprintf("Maven output: %s", scanner.Text()))
+			logger.Debug(fmt.Sprintf("Maven output: %s", scanner.Text()))
 		}
 		// drain
-		_, _ = r.Read(make([]byte, 128))
+		for {
+			if _, e := r.Read(make([]byte, 128)); e != nil {
+				break
+			}
+		}
 	}()
 	return lp
 }
