@@ -1,17 +1,21 @@
 package python
 
 import (
+	"context"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simpletoml"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"golang.org/x/mod/semver"
 	"regexp"
 )
 
 var ErrParseToml = errors.New("Parse toml failed")
 
-func tomlBuildSysFile(path string) ([]model.Dependency, error) {
+func tomlBuildSysFile(ctx context.Context, path string) ([]model.Dependency, error) {
+	logger := utils.UseLogger(ctx)
+	logger.Debug("Process toml buildSys file", zap.String("path", path))
 	data, e := utils.ReadFileLimited(path, 4*1024*1024)
 	if e != nil {
 		return nil, e

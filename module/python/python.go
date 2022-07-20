@@ -3,10 +3,10 @@ package python
 import (
 	"bufio"
 	"context"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
+	"go.uber.org/zap"
 	"io"
 	"io/fs"
 	"os"
@@ -34,6 +34,7 @@ func (i Inspector) CheckDir(dir string) bool {
 
 func (i Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
+	logger := utils.UseLogger(ctx)
 	var relativeDir string
 	if s, e := filepath.Rel(task.ProjectDir, task.ScanDir); e == nil {
 		relativeDir = filepath.ToSlash(s)
@@ -42,12 +43,14 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	componentMap := map[string]string{}
 	requirementsFiles := map[string]struct{}{}
 	ignoreSet := map[string]struct{}{}
-	// todo: refactor
+
+	logger.Debug("Start walk python project dir", zap.String("dir", dir))
 	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d == nil {
 			return nil
 		}
 		if d.Name() == "venv" && d.IsDir() {
+			logger.Debug("Found venv dir, skip", zap.String("dir", path))
 			return fs.SkipDir
 		}
 		if d.IsDir() {
@@ -63,6 +66,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		}
 		f, e := os.Open(path)
 		if e != nil {
+			logger.Sugar().Warnf("Open python file failed: %s, path: %s", e.Error(), path)
 			return e
 		}
 		defer f.Close()
@@ -71,6 +75,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		scanner.Buffer(make([]byte, 16*1024), 16*1024)
 		for scanner.Scan() {
 			if scanner.Err() != nil {
+				logger.Sugar().Warnf("Scan python file failed, path: %s, error: %s", path, e.Error())
 				return nil
 			}
 			t := strings.TrimSpace(scanner.Text())
@@ -84,14 +89,16 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		return nil
 	})
 	for fp := range requirementsFiles {
-		mergeComponentInto(componentMap, parsePythonRequirements(fp))
+		logger.Debug("Merge requirements file", zap.String("path", fp))
+		mergeComponentInto(componentMap, parsePythonRequirements(ctx, fp))
 	}
 
 	tomlPath := filepath.Join(dir, "pyproject.toml")
 	if utils.IsFile(tomlPath) {
-		if list, e := tomlBuildSysFile(tomlPath); e != nil {
-			logger.Warn.Println("Analyze pyproject.toml failed", e.Error())
+		if list, e := tomlBuildSysFile(ctx, tomlPath); e != nil {
+			logger.Sugar().Warnf("Analyze pyproject.toml failed: %s", e.Error())
 		} else {
+			logger.Sugar().Debug("Merge components from toml build file, total: %d", len(list))
 			mergeComponentInto(componentMap, list)
 		}
 	}
@@ -100,6 +107,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		delete(componentMap, s)
 	}
 	if len(componentMap) == 0 {
+		logger.Warn("No components valid, omit module")
 		return nil
 	}
 	{

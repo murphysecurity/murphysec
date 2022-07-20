@@ -2,8 +2,9 @@ package python
 
 import (
 	"bufio"
-	"github.com/murphysecurity/murphysec/logger"
+	"context"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os"
 	"regexp"
@@ -13,18 +14,20 @@ import (
 var pyImportPattern1 = regexp.MustCompile("import\\s+(?:[A-Za-z_-][\\w.-]*)(?:\\s*,\\s*(?:[A-Za-z_-][\\w.-]*))")
 var pyImportPattern2 = regexp.MustCompile("from\\s+([A-Za-z_-][\\w-]*)")
 
-func parsePythonRequirements(p string) (rs []model.Dependency) {
+func parsePythonRequirements(ctx context.Context, p string) (rs []model.Dependency) {
+	logger := utils.UseLogger(ctx)
+	logger.Sugar().Debugf("Parsing python requirements: %s", p)
 	var pyRequirementsPattern = regexp.MustCompile("^([\\w-]+) *.?= *([^= \\n\\r]+)$")
 	f, e := os.Open(p)
 	if e != nil {
-		logger.Warn.Println("Open file failed.", e.Error(), p)
+		logger.Sugar().Warnf("Open file failed: %s", e.Error())
 		return
 	}
 	defer f.Close()
 	scanner := bufio.NewScanner(io.LimitReader(f, 4*1024*1024))
 	for scanner.Scan() {
 		if scanner.Err() != nil {
-			logger.Warn.Println("read file failed.", e.Error(), p)
+			logger.Sugar().Warnf("Scan requirements failed: %s", e.Error())
 			return
 		}
 		t := strings.TrimSpace(scanner.Text())
