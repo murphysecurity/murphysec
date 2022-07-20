@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"os"
 	"path/filepath"
 )
@@ -26,14 +27,17 @@ func (i *Inspector) CheckDir(dir string) bool {
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
+	logger := utils.UseLogger(ctx)
 	projectDir := task.ScanDir
+	podLockPath := filepath.Join(projectDir, "Podfile.lock")
+	logger.Debug("Reading Podfile.lock", zap.String("path", podLockPath))
 	data, e := os.ReadFile(filepath.Join(projectDir, "Podfile.lock"))
 	if e != nil {
 		return errors.WithMessage(e, "ReadPodLock")
 	}
 	tree, e := getDepFromLock(string(data))
 	if e != nil {
-		return errors.WithMessage(e, "ParsePodLock")
+		return errors.WithMessage(e, "Parse Podfile.lock failed")
 	}
 	task.AddModule(model.Module{
 		PackageManager: model.PMCocoaPods,
