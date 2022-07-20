@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
@@ -30,7 +29,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	m, e := ScanNpmProject(model.UseInspectorTask(ctx).ScanDir)
+	m, e := ScanNpmProject(ctx)
 	if e != nil {
 		return e
 	}
@@ -40,10 +39,12 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func ScanNpmProject(dir string) ([]model.Module, error) {
-	logger.Info.Println("Scan dir, npm.", dir)
+func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
+	dir := model.UseInspectorTask(ctx).ScanDir
+	logger := utils.UseLogger(ctx)
+	logger.Sugar().Infof("CheckDir: %s", dir)
 	pkgFile := filepath.Join(dir, "package-lock.json")
-	logger.Debug.Println("Read package-lock file:", pkgFile)
+	logger.Sugar().Infof("Read package-lock file: %s", pkgFile)
 	data, e := ioutil.ReadFile(pkgFile)
 	if e != nil {
 		return nil, e
@@ -52,7 +53,7 @@ func ScanNpmProject(dir string) ([]model.Module, error) {
 	if e := json.Unmarshal(data, &lockfile); e != nil {
 		return nil, e
 	}
-	logger.Debug.Println("lockfileVersion:", lockfile.LockfileVersion)
+	logger.Sugar().Debugf("lockfileVersion: %d", lockfile.LockfileVersion)
 	if lockfile.LockfileVersion > 2 {
 		return nil, errors.New(fmt.Sprintf("unsupported lockfileVersion: %d", lockfile.LockfileVersion))
 	}
