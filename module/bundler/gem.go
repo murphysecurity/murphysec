@@ -2,11 +2,11 @@ package bundler
 
 import (
 	"context"
-	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"path/filepath"
 )
 
@@ -33,15 +33,14 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	if !utils.IsFile(gemFile) || !utils.IsFile(gemLockFile) {
 		return nil
 	}
-	logger.Info(fmt.Sprintf("RubyGems inspect: %s", scanDir))
-	defer logger.Info("RubyGems inspect terminated")
+	logger.Debug("Reading Gemfile.lock", zap.String("path", gemLockFile))
 	data, e := utils.ReadFileLimited(gemLockFile, 1024*1024*4)
 	if e != nil {
-		return errors.WithMessage(e, "ReadRubyGemsLockFile")
+		return errors.WithMessage(e, "Read Gemfile.lock failed")
 	}
 	tree, e := getDepGraph(string(data))
 	if e != nil {
-		return errors.WithMessage(e, "ParseGemLockFile")
+		return errors.WithMessage(e, "Parse Gemfile.lock failed")
 	}
 	task.AddModule(model.Module{
 		PackageManager: model.PMBundler,

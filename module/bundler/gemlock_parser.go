@@ -30,7 +30,7 @@ o:
 	return &cur
 }
 
-var ErrBadIndent = errors.New("Bad indent in gemfile.lock")
+var ErrBadIndent = errors.New("Bad indent")
 var ErrParseFail = errors.New("ParseFail")
 
 type symbol int
