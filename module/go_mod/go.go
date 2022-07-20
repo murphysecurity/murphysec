@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"golang.org/x/mod/modfile"
 	"path/filepath"
 )
@@ -22,11 +23,14 @@ func (i *Inspector) CheckDir(dir string) bool {
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
+	logger := utils.UseLogger(ctx)
 	modFilePath := filepath.Join(task.ScanDir, "go.mod")
+	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
 	data, e := utils.ReadFileLimited(modFilePath, 1024*1024*4)
 	if e != nil {
 		return errors.WithMessage(e, "Open GoMod file")
 	}
+	logger.Debug("Parsing go.mod")
 	f, e := modfile.ParseLax(filepath.Base(modFilePath), data, nil)
 	if e != nil {
 		return errors.WithMessage(e, "Parse go mod failed")
