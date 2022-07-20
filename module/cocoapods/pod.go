@@ -29,11 +29,11 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	projectDir := task.ScanDir
 	data, e := os.ReadFile(filepath.Join(projectDir, "Podfile.lock"))
 	if e != nil {
-		return errors.Wrap(e, "ReadPodLock")
+		return errors.WithMessage(e, "ReadPodLock")
 	}
 	tree, e := getDepFromLock(string(data))
 	if e != nil {
-		return errors.Wrap(e, "ParsePodLock")
+		return errors.WithMessage(e, "ParsePodLock")
 	}
 	task.AddModule(model.Module{
 		PackageManager: model.PMCocoaPods,
