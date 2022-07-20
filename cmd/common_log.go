@@ -81,7 +81,7 @@ func initLogger() error {
 	_logger := zap.New(loggerCore, zap.AddCaller())
 
 	if enableNetworkLog {
-		api.NetworkLogger = _logger
+		api.NetworkLogger = _logger.Named("Net").WithOptions(zap.WithCaller(false))
 	}
 	api.Logger = _logger
 	inspector.Logger = _logger
