@@ -2,56 +2,23 @@ package composer
 
 import (
 	"context"
-	"fmt"
 	"github.com/murphysecurity/murphysec/utils"
+	"github.com/pkg/errors"
 	"os/exec"
-	"strconv"
 )
-
-const _ComposerInstallFailMaxPrefix = 1024
-
-type composerInstallFail struct {
-	exitCode     int
-	stdErrPrefix []byte
-	execError    error
-}
 
 func doComposerInstall(ctx context.Context, projectDir string) error {
 	logger := utils.UseLogger(ctx)
-	c := exec.CommandContext(ctx, "composer", "install", "--ignore-platform-reqs", "--no-progress", "--no-dev", "--no-autoloader", "--no-scripts", "--no-interaction", "--quiet")
+	c := exec.CommandContext(ctx, "composer", "install", "--ignore-platform-reqs", "--no-progress", "--no-dev", "--no-autoloader", "--no-scripts", "--no-interaction")
 	c.Dir = projectDir
 	logger.Sugar().Infof("Command: %s", c.String())
 	defer logger.Info("doComposerInstall terminated")
-	cif := &composerInstallFail{}
-	c.Stderr = cif
+	lp := utils.NewLogPipe(logger)
+	defer lp.Close()
+	c.Stderr = lp
+	c.Stdout = lp
 	if e := c.Run(); e != nil {
-		cif.execError = e
-		cif.exitCode = c.ProcessState.ExitCode()
-		if cif.exitCode == 2 {
-			return wrapErr(ErrComposerResolveFail, cif)
-		}
-		return cif
+		return errors.WithMessage(e, "composer install command execute failed")
 	}
 	return nil
-}
-
-func (c *composerInstallFail) Write(data []byte) (int, error) {
-	const maxPrefix = _ComposerInstallFailMaxPrefix
-	c.stdErrPrefix = append(c.stdErrPrefix, data[:maxPrefix-len(c.stdErrPrefix)]...)
-	return len(data), nil
-}
-
-func (c composerInstallFail) Unwrap() error {
-	return c.execError
-}
-
-func (c composerInstallFail) Error() string {
-	if c.execError == nil {
-		return fmt.Sprintf("Composer exit with error: %s", strconv.Quote(string(c.stdErrPrefix)))
-	}
-	return fmt.Sprintf("Composer: %s %s", c.execError.Error(), strconv.Quote(string(c.stdErrPrefix)))
-}
-
-func (c composerInstallFail) Is(target error) bool {
-	return target == ErrComposerResolveFail
 }

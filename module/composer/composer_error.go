@@ -7,7 +7,7 @@ import (
 
 var ErrReadComposerManifest = errors.New("Read composer.json failed")
 var ErrParseComposerManifest = errors.New("Parsing composer.json failed")
-var ErrComposerResolveFail = errors.New("PHP composer resolve failed")
+var ErrComposerInstallFail = errors.New("PHP composer install command execute failed")
 
 type ce struct {
 	key    error
