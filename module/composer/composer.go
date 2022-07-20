@@ -3,7 +3,6 @@ package composer
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
@@ -26,6 +25,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
+	logger := utils.UseLogger(ctx)
 	task := model.UseInspectorTask(ctx)
 	dir := task.ScanDir
 	manifest, e := readManifest(filepath.Join(dir, "composer.json"))
@@ -47,16 +47,16 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 
 	{
 		if !utils.IsPathExist(filepath.Join(dir, "composer.lock")) {
-			logger.Info.Println("composer.lock doesn't exists. Try generate it")
+			logger.Info("composer.lock doesn't exists. Try to generate it")
 			if e := doComposerInstall(context.TODO(), dir); e != nil {
-				logger.Err.Println("Do composer install fail.", e.Error())
+				logger.Sugar().Warnf("Do composer install fail. %s", e.Error())
 			} else {
-				logger.Info.Println("Do composer install succeeded")
+				logger.Sugar().Info("Do composer install succeeded")
 			}
 		}
 		pkgs, e := readComposerLockFile(filepath.Join(dir, "composer.lock"))
 		if e != nil {
-			logger.Info.Println("Composer:", e.Error())
+			logger.Sugar().Infof("Read composer lock file failed: %s", e.Error())
 		}
 		pkgs = append(pkgs, vendorScan(filepath.Join(dir, "vendor"))...)
 		for _, it := range pkgs {
