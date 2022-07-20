@@ -17,6 +17,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/poetry"
 	"github.com/murphysecurity/murphysec/module/python"
 	"github.com/murphysecurity/murphysec/module/yarn"
+	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"io/fs"
 	"path/filepath"
@@ -81,9 +82,10 @@ func managedInspect(ctx context.Context) error {
 		}
 	}
 	Logger.Sugar().Infof("Found %d directories, in %v", len(inspectorAcceptances), time.Now().Sub(scanTask.StartTime))
-	for _, acceptance := range inspectorAcceptances {
+	for idx, acceptance := range inspectorAcceptances {
 		st := time.Now()
 		c := model.WithInspectorTask(ctx, acceptance.dir)
+		c = utils.WithLogger(c, Logger.Named(fmt.Sprintf("%s-%d", acceptance.inspector.String(), idx)))
 		e := acceptance.inspector.InspectProject(c)
 		Logger.Sugar().Infof("%v, duration: %v", acceptance, time.Now().Sub(st))
 		if e != nil {
