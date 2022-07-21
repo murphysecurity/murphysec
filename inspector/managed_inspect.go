@@ -65,7 +65,7 @@ func managedInspect(ctx context.Context) error {
 				return filepath.SkipDir
 			}
 			if relDir, e := filepath.Rel(baseDir, path); e == nil {
-				if strings.Count(filepath.ToSlash(relDir), "/") > 3 {
+				if strings.Count(filepath.ToSlash(relDir), "/") > 5 {
 					return filepath.SkipDir
 				}
 			} else {
