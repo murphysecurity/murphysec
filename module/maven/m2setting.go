@@ -55,7 +55,9 @@ func ReadMvnOption() MvnOption {
 		}
 		opt.Remote = append(opt.Remote, url.InnerText())
 	}
-	opt.Remote = append(opt.Remote, "https://repo1.maven.org/maven2/")
+	if os.Getenv("SKIP_MAVEN_CENTRAL") == "" {
+		opt.Remote = append(opt.Remote, "https://repo1.maven.org/maven2/")
+	}
 	if n := xmlquery.FindOne(node, "/settings/localRepository"); n != nil {
 		opt.LocalRepoPath = strings.ReplaceAll(n.InnerText(), "${user.home}", must.A(homedir.Dir()))
 	}
