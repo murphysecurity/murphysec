@@ -82,7 +82,7 @@ func scanMvnDependency(ctx context.Context, projectDir string) (map[Coordinate][
 	c := exec.CommandContext(ctx, "mvn", args...)
 	c.Dir = projectDir
 	logger.Info.Println("Command:", c.String())
-	logStream := utils.NewLogPipe(logger.Info.Logger) // todo: refactor logger
+	logStream := utils.NewLogPipe(logger.Info.Logger, "mvn") // todo: refactor logger
 	defer logStream.Close()
 	cmdErr := &mvnCmdErr{errOutput: NewMvnCmdExecution()}
 	c.Stderr = io.MultiWriter(cmdErr.errOutput, logStream)

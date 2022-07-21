@@ -13,7 +13,7 @@ func doComposerInstall(ctx context.Context, projectDir string) error {
 	c.Dir = projectDir
 	logger.Sugar().Infof("Command: %s", c.String())
 	defer logger.Info("doComposerInstall terminated")
-	lp := utils.NewLogPipe(logger)
+	lp := utils.NewLogPipe(logger, "composer")
 	defer lp.Close()
 	c.Stderr = lp
 	c.Stdout = lp

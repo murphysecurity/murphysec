@@ -21,7 +21,7 @@ func (l *LogPipe) Close() error {
 	return l.w.Close()
 }
 
-func NewLogPipe(logger *zap.Logger) *LogPipe {
+func NewLogPipe(logger *zap.Logger, prefix string) *LogPipe {
 	if logger == nil {
 		logger = zap.NewNop()
 	}
@@ -35,7 +35,7 @@ func NewLogPipe(logger *zap.Logger) *LogPipe {
 			if scanner.Err() != nil {
 				break
 			}
-			logger.Debug(fmt.Sprintf("Maven output: %s", scanner.Text()))
+			logger.Debug(fmt.Sprintf("%s: %s", prefix, scanner.Text()))
 		}
 		// drain
 		for {
