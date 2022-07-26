@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"path/filepath"
 	"sort"
 	"sync"
@@ -22,24 +23,32 @@ func (d Dependency) String() string {
 
 var MvnSkipped = model.NewInspectError(model.Java, "Mvn inspect is skipped, please check you maven environment.")
 
-func ScanMavenProject(task *model.InspectorTask) ([]model.Module, error) {
+func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.Module, error) {
+	log := utils.UseLogger(ctx)
 	dir := task.ScanDir
 	var modules []model.Module
 	var deps map[Coordinate][]Dependency
 	moduleFileMapping := map[Coordinate]string{}
 	var e error
+	var doMvnScan bool
 	// check maven version, skip maven scan if check fail
-	doMvnScan, mvnVer := checkMvnEnv()
+	mvnCmdInfo, e := CheckMvnCommand()
+	if e != nil {
+		log.Sugar().Warnf("Mvn command not found %v", e)
+		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+	} else {
+		log.Sugar().Infof("Mvn command found: %s", mvnCmdInfo)
+		doMvnScan = true
+	}
+
 	var useBackupResolver = !doMvnScan
 	if doMvnScan {
-		deps, e = scanMvnDependency(context.TODO(), dir)
+		deps, e = ScanMvnDeps(ctx, mvnCmdInfo)
 		if e != nil {
 			task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 			logger.Err.Printf("mvn scan failed: %+v\n", e)
 			useBackupResolver = true
 		}
-	} else {
-		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 	}
 	// analyze pom file
 	if useBackupResolver {
@@ -89,7 +98,7 @@ func ScanMavenProject(task *model.InspectorTask) ([]model.Module, error) {
 			Version:        coordinate.Version,
 			FilePath:       filepath.Join(moduleFileMapping[coordinate], "pom.xml"),
 			Dependencies:   convDeps(dependencies),
-			RuntimeInfo:    mvnVer,
+			RuntimeInfo:    mvnCmdInfo,
 		})
 	}
 	if len(modules) == 0 && !doMvnScan {

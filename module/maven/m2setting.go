@@ -2,108 +2,117 @@ package maven
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"github.com/antchfx/xmlquery"
 	"github.com/mitchellh/go-homedir"
-	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 )
 
-type MvnOption struct {
-	LocalRepoPath string
-	Remote        []string
+type UserConfig struct {
+	Remotes []string
+	Repo    string
 }
 
-func (o MvnOption) String() string {
-	return fmt.Sprintf("LocalRepo: %s, remotes: %s", o.LocalRepoPath, strings.Join(o.Remote, ","))
+func (u UserConfig) String() string {
+	return fmt.Sprintf("[Repo=%s, Mirrors=%s]", u.Repo, strings.Join(u.Remotes, ","))
 }
 
-func DefaultMvnOption() MvnOption {
-	return MvnOption{
-		LocalRepoPath: filepath.Join(must.A(homedir.Dir()), ".m2", "repository"),
-		Remote:        []string{"https://repo1.maven.org/maven2/"},
+func defaultUserConfig() *UserConfig {
+	p, _ := homedir.Expand(".m2/repository")
+	u := &UserConfig{
+		Remotes: nil,
+		Repo:    p,
 	}
+	if env.MavenCentral != "" {
+		u.Remotes = append(u.Remotes, env.MavenCentral)
+	}
+	return u
 }
 
-func ReadMvnOption() MvnOption {
-	var data []byte
-	var e error
-	data, e = readUserHomeM2Settings()
-	if e != nil {
-		logger.Info.Println("Read user home maven settings.xml failed.", e.Error())
-		data, e = readMvnInstallPathSettingsFile()
-		if e != nil {
-			logger.Info.Println("Read maven install settings.xml failed.", e.Error())
+func GetMvnConfig(ctx context.Context) (*UserConfig, error) {
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	logger := utils.UseLogger(ctx)
+	var node *xmlquery.Node
+	for _, p := range mavenSettingsPaths() {
+		logger.Debug("Reading maven settings", zap.String("path", p))
+		if !utils.IsFile(p) {
+			logger.Debug("not a file, skip")
+			continue
 		}
+		data, e := os.ReadFile(p)
+		if e != nil {
+			logger.Warn("Read failed", zap.Error(e))
+			continue
+		}
+		node, e = xmlquery.Parse(bytes.NewReader(data))
+		if e != nil {
+			logger.Warn("Parse failed", zap.Error(e))
+			continue
+		}
+		break
 	}
-	node, e := xmlquery.Parse(bytes.NewReader(data))
-	if e != nil {
-		logger.Info.Println("Parse m2 settings failed.", e.Error())
-		return DefaultMvnOption()
+	if node == nil {
+		logger.Info("No maven settings found, use default config")
+		return defaultUserConfig(), nil
 	}
-	opt := DefaultMvnOption()
-	opt.Remote = nil
+
+	var uc = &UserConfig{}
 	for _, it := range xmlquery.Find(node, "/settings/mirrors/mirror") {
 		url := xmlquery.FindOne(it, "url")
 		if url == nil {
 			continue
 		}
-		opt.Remote = append(opt.Remote, url.InnerText())
-	}
-	if os.Getenv("SKIP_MAVEN_CENTRAL") == "" {
-		opt.Remote = append(opt.Remote, "https://repo1.maven.org/maven2/")
+		uc.Remotes = append(uc.Remotes, url.InnerText())
 	}
 	if n := xmlquery.FindOne(node, "/settings/localRepository"); n != nil {
-		opt.LocalRepoPath = strings.ReplaceAll(n.InnerText(), "${user.home}", must.A(homedir.Dir()))
+		uc.Repo = strings.ReplaceAll(n.InnerText(), "${user.home}", must.A(homedir.Dir()))
 	}
-	logger.Info.Println("maven option", opt)
-	return opt
-}
-
-type M2Setting struct {
-	Mirrors  []string
-	RepoPath string
+	if env.MavenCentral != "" {
+		uc.Remotes = append(uc.Remotes, env.MavenCentral)
+	}
+	return uc, nil
 }
 
 func locateMvnInstallPath() string {
-	for _, it := range strings.Split(os.Getenv("PATH"), string(os.PathListSeparator)) {
-		fp, e := filepath.EvalSymlinks(filepath.Join(it, "mvn"))
-		if e != nil {
-			continue
-		}
-		return fp
+	info, e := CheckMvnCommand()
+	if e != nil {
+		return ""
+	}
+	fp, e := filepath.EvalSymlinks(info.Path)
+	if e == nil {
+		return filepath.Dir(filepath.Dir(fp))
 	}
 	return ""
 }
 
-func readUserHomeM2Settings() ([]byte, error) {
+func mavenSettingsPaths() (paths []string) {
+	// user path
 	var baseDir = os.Getenv("M2_HOME")
 	if baseDir == "" {
-		var e error
-		baseDir, e = homedir.Dir()
-		if e != nil {
-			return nil, e
+		if b, e := homedir.Dir(); e == nil {
+			baseDir = filepath.Join(b, ".m2")
 		}
-		baseDir = filepath.Join(baseDir, ".m2")
 	}
-	return os.ReadFile(filepath.Join(baseDir, "settings.xml"))
-}
+	paths = append(paths, baseDir)
 
-func readMvnInstallPathSettingsFile() (data []byte, e error) {
-	mvnBin := locateMvnInstallPath()
-	if mvnBin == "" {
-		return nil, errors.New("mvn binary not found")
+	// install path
+	base := locateMvnInstallPath()
+	var candidate = []string{"conf/settings.xml"}
+	if runtime.GOOS == "darwin" {
+		candidate = append(candidate, "libexec/conf/settings.xml")
 	}
-	p := filepath.Join(filepath.Dir(filepath.Dir(mvnBin)), "conf", "settings.xml")
-	data, e = os.ReadFile(p)
-	if e != nil && runtime.GOOS == "darwin" {
-		p := filepath.Join(filepath.Dir(filepath.Dir(mvnBin)), "libexec", "conf", "settings.xml")
-		return os.ReadFile(p)
+	for _, s := range candidate {
+		paths = append(paths, filepath.Join(base, s))
 	}
 	return
 }

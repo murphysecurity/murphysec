@@ -6,7 +6,6 @@ import (
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
 	"github.com/vifraa/gopom"
-	"net/url"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -22,23 +21,24 @@ type Resolver struct {
 }
 
 func NewResolver() *Resolver {
-	r := &Resolver{
-		repos:         nil,
-		baseDir:       "",
-		pomCache:      map[Coordinate]*gopom.Project{},
-		sy:            sync.Mutex{},
-		resolvedCache: map[Coordinate]*PomFile{},
-	}
-	op := ReadMvnOption()
-	r.repos = append(r.repos, NewLocalRepo(op.LocalRepoPath))
-	for _, s := range op.Remote {
-		u, e := url.Parse(s)
-		if e != nil {
-			continue
-		}
-		r.repos = append(r.repos, NewHttpRepo(*u))
-	}
-	return r
+	panic("todo")
+	//r := &Resolver{
+	//	repos:         nil,
+	//	baseDir:       "",
+	//	pomCache:      map[Coordinate]*gopom.Project{},
+	//	sy:            sync.Mutex{},
+	//	resolvedCache: map[Coordinate]*PomFile{},
+	//}
+	//op := ReadMvnOption()
+	//r.repos = append(r.repos, NewLocalRepo(op.LocalRepoPath))
+	//for _, s := range op.Remote {
+	//	u, e := url.Parse(s)
+	//	if e != nil {
+	//		continue
+	//	}
+	//	r.repos = append(r.repos, NewHttpRepo(*u))
+	//}
+	//return r
 }
 
 var ErrCouldNotResolve = errors.New("ErrCouldNotResolve")

@@ -1,4 +1,14 @@
-{
+package maven
+
+import (
+	"github.com/murphysecurity/murphysec/utils/must"
+	"os"
+	"testing"
+)
+
+func TestDependencyGraph_ReadFromFile(t *testing.T) {
+	// language=json
+	var a = `{
   "graphName" : "mall",
   "artifacts" : [ {
     "id" : "org.springframework.boot:spring-boot-starter:jar",
@@ -956,4 +966,15 @@
     "numericTo" : 63,
     "resolution" : "INCLUDED"
   } ]
+}
+`
+	f := must.A(os.CreateTemp("", ""))
+	defer func() {
+		must.Must(os.Remove(f.Name()))
+	}()
+	must.A(f.Write([]byte(a)))
+	must.Must(f.Close())
+	var d dependencyGraph
+	must.Must(d.ReadFromFile(f.Name()))
+	must.A(d.Tree())
 }

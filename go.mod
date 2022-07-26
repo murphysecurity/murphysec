@@ -25,6 +25,7 @@ require (
 	go.uber.org/zap v1.21.0
 	golang.org/x/mod v0.5.1
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
+	golang.org/x/text v0.3.7
 )
 
 require (
@@ -60,7 +61,6 @@ require (
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
-	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
