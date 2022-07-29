@@ -2,7 +2,6 @@ package bundler
 
 import (
 	_ "embed"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -13,5 +12,6 @@ var testGemLock string
 func TestParseGemLock(t *testing.T) {
 	tree, e := parseGemLock(testGemLock)
 	assert.NoError(t, e)
-	fmt.Println(tree.get("GIT"))
+	assert.EqualValues(t, 3, len(tree.get("GIT").children))
+	assert.EqualValues(t, "GIT", tree.get("GIT").line)
 }
