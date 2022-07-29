@@ -10,6 +10,7 @@ type PomResolver struct {
 	logger   *zap.Logger
 	repos    []PomRepo
 	pomCache *pomCache
+	stats    *resolverStats
 }
 
 func NewPomResolver(ctx context.Context) *PomResolver {
@@ -17,6 +18,7 @@ func NewPomResolver(ctx context.Context) *PomResolver {
 		logger:   utils.UseLogger(ctx),
 		repos:    nil,
 		pomCache: newPomCache(),
+		stats:    newResolverStats(),
 	}
 }
 
@@ -25,7 +27,9 @@ func (r *PomResolver) AddRepo(repo PomRepo) {
 }
 
 func (r *PomResolver) fetchPom(coordinate Coordinate) (*UnresolvedPom, error) {
+	r.stats.totalReq++
 	if pom, e := r.pomCache.fetch(coordinate); pom != nil || e != nil {
+		r.stats.cacheHit++
 		return pom, e
 	}
 	logger := r.logger
