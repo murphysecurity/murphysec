@@ -14,8 +14,8 @@ var data []byte
 func TestParseToml(t *testing.T) {
 	root := &tomlTree{}
 	assert.NoError(t, toml.Unmarshal(data, &root.v))
-	fmt.Println(root.Get("tool", "poetry", "dependencies").v)
-	fmt.Println(root.Get("tool", "poetry", "name").v)
+	assert.Equal(t, "map[python:*]", fmt.Sprint(root.Get("tool", "poetry", "dependencies").v))
+	assert.Equal(t, "poetry-demo", root.Get("tool", "poetry", "name").v)
 }
 
 //go:embed poetry.lock.py
@@ -24,6 +24,6 @@ var __lockData []byte
 func TestParsePoetryLock(t *testing.T) {
 	root := &tomlTree{}
 	assert.NoError(t, toml.Unmarshal(__lockData, &root.v))
-	pkgs := root.Get("package").AsArray()
-	fmt.Println(pkgs)
+	assert.Equal(t, 13, len(root.Get("package").AsArray()))
+	assert.Equal(t, "main", root.Get("package").AsArray()[0].Get("category").v)
 }
