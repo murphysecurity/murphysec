@@ -19,10 +19,10 @@ func TestReadLocalProject(t *testing.T) {
 }
 
 func TestResolve(t *testing.T) {
-	logger := must.A(zap.NewDevelopment())
+	logger := must.A(zap.NewDevelopment(zap.AddStacktrace(zap.ErrorLevel)))
 	ctx := utils.WithLogger(context.TODO(), logger)
 
-	modules := must.A(ReadLocalProject(ctx, "./__test/multi_module"))
+	modules := must.A(ReadLocalProject(ctx, "C:\\Users\\iseki\\Desktop\\aaaa\\mall"))
 	resolver := NewPomResolver(ctx)
 	//resolver.AddRepo(NewHttpRepo(ctx, *must.A(url.Parse("https://repo1.maven.org/maven2/"))))
 	resolver.AddRepo(NewHttpRepo(ctx, *must.A(url.Parse("https://maven.aliyun.com/repository/public"))))

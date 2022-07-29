@@ -131,7 +131,6 @@ func (r *PomResolver) resolveParent(p *UnresolvedPom) (*Pom, error) {
 		for _, profile := range project.Profiles {
 			depSet.mergeDepsSlice(profile.Dependencies)
 		}
-
 	}
 	coor := resolved.Coordinate()
 	if !coor.Complete() {
@@ -144,6 +143,13 @@ func (r *PomResolver) resolveParent(p *UnresolvedPom) (*Pom, error) {
 		resolved.properties.PutIfAbsent("project.groupId", coor.GroupId)
 		resolved.properties.PutIfAbsent(fmt.Sprintf("%s.groupId", coor.ArtifactId), coor.GroupId)
 		resolved.properties.PutIfAbsent(fmt.Sprintf("%s.version", coor.ArtifactId), coor.Version)
+	}
+	// merge ${project.parent.*}
+	if len(poms) > 1 {
+		c := poms[len(poms)-2].Coordinate()
+		resolved.properties.PutIfAbsent("project.parent.version", c.Version)
+		resolved.properties.PutIfAbsent("project.parent.artifactId", c.ArtifactId)
+		resolved.properties.PutIfAbsent("project.parent.groupId", c.GroupId)
 	}
 	depSet.mergeProperty(resolved.properties)
 	depmSet.mergeProperty(resolved.properties)

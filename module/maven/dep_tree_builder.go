@@ -93,7 +93,7 @@ func (d *depAnalyzer) _tree(coordinate Coordinate) *Dependency {
 			Version:    dependency.Version,
 		}
 		if !depCoor.Complete() {
-			logger.Warn("Incomplete coordinate, skip", zap.Any("coordinate", coordinate))
+			logger.Warn("Incomplete coordinate, skip", zap.Any("coordinate", depCoor), zap.Any("in", coordinate))
 			continue
 		}
 		d.addExclusionSlice(dependency.Exclusions)
