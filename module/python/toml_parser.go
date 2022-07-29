@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simpletoml"
 	"github.com/pkg/errors"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 	"go.uber.org/zap"
 	"golang.org/x/mod/semver"
 	"regexp"
@@ -30,7 +31,7 @@ func tomlBuildSys(data []byte) ([]model.Dependency, error) {
 	if e != nil {
 		return nil, errors.Wrap(ErrParseToml, e.Error())
 	}
-	rsm := map[string]string{}
+	rsm := orderedmap.New[string, string]()
 	for _, it := range t.Get("build-system", "requires").TOMLArray() {
 		m := pa.FindStringSubmatch(it.String(""))
 		if m == nil {
@@ -38,23 +39,23 @@ func tomlBuildSys(data []byte) ([]model.Dependency, error) {
 		}
 		name := m[1]
 		version := m[2]
-		if oldVer, ok := rsm[name]; ok && oldVer != "" {
+		if oldVer, ok := rsm.Get(name); ok && oldVer != "" {
 			if version == "" {
 				continue
 			}
 			if semver.IsValid(version) && semver.Compare(oldVer, version) < 0 {
-				rsm[name] = version
+				rsm.Set(name, version)
 			}
 		} else {
-			rsm[name] = version
+			rsm.Set(name, version)
 		}
 	}
 
 	r := make([]model.Dependency, 0)
-	for name, version := range rsm {
+	for pair := rsm.Oldest(); pair != nil; pair = pair.Next() {
 		r = append(r, model.Dependency{
-			Name:    name,
-			Version: version,
+			Name:    pair.Key,
+			Version: pair.Value,
 		})
 	}
 	return r, nil

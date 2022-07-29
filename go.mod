@@ -21,6 +21,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/vifraa/gopom v0.2.0
 	github.com/whilp/git-urls v1.0.0
+	github.com/wk8/go-ordered-map/v2 v2.0.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/mod v0.5.1
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
@@ -31,6 +32,7 @@ require (
 	github.com/ProtonMail/go-crypto v0.0.0-20220714114130-e85cedf506cd // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/antchfx/xpath v1.2.1 // indirect
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
