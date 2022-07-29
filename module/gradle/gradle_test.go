@@ -3,7 +3,6 @@ package gradle
 import (
 	_ "embed"
 	"encoding/json"
-	"fmt"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"strings"
 	"testing"
@@ -17,5 +16,5 @@ func TestGradleDep(t *testing.T) {
 	for i := range lines {
 		lines[i] = strings.Trim(lines[i], "\r")
 	}
-	fmt.Println(string(must.A(json.Marshal(parseGradleDependencies(lines)))))
+	must.A(json.Marshal(parseGradleDependencies(lines)))
 }
