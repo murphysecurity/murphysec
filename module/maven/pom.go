@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/murphysecurity/murphysec/utils/inlineproperty"
 	"github.com/vifraa/gopom"
 	"golang.org/x/text/encoding/ianaindex"
 	"io"
@@ -45,13 +44,13 @@ func (u UnresolvedPom) ParentCoordinate() *Coordinate {
 }
 
 type Pom struct {
-	dir        string
-	properties *inlineproperty.Properties
-	project    *gopom.Project
+	dir     string
+	project *gopom.Project
 	// dependencies
 	depSet *pomDependencySet
 	// dependencyManagement
 	depmSet *pomDependencySet
+	Coordinate
 }
 
 func (p *Pom) ListDeps() []gopom.Dependency {
@@ -68,27 +67,6 @@ func (p Pom) ParentCoordinate() *Coordinate {
 		return nil
 	}
 	return &c
-}
-
-func (p Pom) Coordinate() Coordinate {
-	pf := p.project
-	g := pf.GroupID
-	if g == "" {
-		g = pf.Parent.GroupID
-	}
-	a := pf.ArtifactID
-	if a == "" {
-		a = pf.Parent.ArtifactID
-	}
-	v := pf.Version
-	if v == "" {
-		v = pf.Parent.Version
-	}
-	return Coordinate{
-		GroupId:    p.properties.Resolve(g),
-		ArtifactId: p.properties.Resolve(a),
-		Version:    p.properties.Resolve(v),
-	}
 }
 
 func readPomFile(ctx context.Context, path string) (*gopom.Project, error) {

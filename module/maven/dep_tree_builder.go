@@ -10,6 +10,7 @@ import (
 
 func BuildDepTree(ctx context.Context, resolver *PomResolver, coordinate Coordinate) *Dependency {
 	analyzer := &depAnalyzer{
+		Context:           ctx,
 		visitedCoordinate: map[Coordinate]bool{},
 		exclusionName:     map[string]int{},
 		resolver:          resolver,
@@ -19,6 +20,7 @@ func BuildDepTree(ctx context.Context, resolver *PomResolver, coordinate Coordin
 }
 
 type depAnalyzer struct {
+	context.Context
 	visitedCoordinate map[Coordinate]bool
 	exclusionName     map[string]int
 	resolver          *PomResolver
@@ -72,17 +74,17 @@ func (d *depAnalyzer) _tree(coordinate Coordinate) *Dependency {
 	if d.shouldSkip(coordinate) {
 		return nil
 	}
-	pom, e := d.resolver.ResolvePom(coordinate)
+	pom, e := d.resolver.ResolvePom(d, coordinate)
 	if e != nil {
 		logger.Warn(fmt.Sprintf("Resolve %s failed", coordinate), zap.Error(e))
 		return nil
 	}
 	current := &Dependency{
-		Coordinate: pom.Coordinate(),
+		Coordinate: pom.Coordinate,
 		Children:   []Dependency{},
 	}
-	d.visitEnter(pom.Coordinate())
-	defer d.visitExit(pom.Coordinate())
+	d.visitEnter(pom.Coordinate)
+	defer d.visitExit(pom.Coordinate)
 	for _, dependency := range pom.ListDeps() {
 		if !(dependency.Scope == "" || dependency.Scope == "compile" || dependency.Scope == "runtime") {
 			continue

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/pkg/errors"
 	"github.com/vifraa/gopom"
 	"path/filepath"
 	"regexp"
@@ -40,8 +39,6 @@ func NewResolver() *Resolver {
 	//}
 	//return r
 }
-
-var ErrCouldNotResolve = errors.New("ErrCouldNotResolve")
 
 func (r *Resolver) fetchLocalPom(coordinate Coordinate, dir string) *gopom.Project {
 	if !coordinate.Complete() {

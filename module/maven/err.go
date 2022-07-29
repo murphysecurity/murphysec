@@ -13,6 +13,7 @@ const (
 	ErrOpenProject          = mvnError("open project failed")
 	ErrPomCircularDependent = mvnError("pom file circular dependent")
 	ErrBadCoordinate        = mvnError("bad coordinate")
+	ErrCouldNotResolve      = mvnError("couldn't resolve")
 )
 
 type mvnError string

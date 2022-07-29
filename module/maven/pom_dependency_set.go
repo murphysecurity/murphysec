@@ -2,7 +2,6 @@ package maven
 
 import (
 	"fmt"
-	"github.com/murphysecurity/murphysec/utils/inlineproperty"
 	"github.com/vifraa/gopom"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 	"sort"
@@ -33,7 +32,7 @@ func (p *pomDependencySet) listDeps() []gopom.Dependency {
 	return rs
 }
 
-func (p *pomDependencySet) mergeProperty(property *inlineproperty.Properties) {
+func (p *pomDependencySet) mergeProperty(property *properties) {
 	for pair := p.m.Oldest(); pair != nil; pair = pair.Next() {
 		pair.Value.ArtifactID = property.Resolve(pair.Value.ArtifactID)
 		pair.Value.GroupID = property.Resolve(pair.Value.GroupID)

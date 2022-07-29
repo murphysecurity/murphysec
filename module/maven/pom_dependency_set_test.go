@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/murphysecurity/murphysec/utils/inlineproperty"
 	"github.com/stretchr/testify/assert"
 	"github.com/vifraa/gopom"
 	"testing"
@@ -164,7 +163,7 @@ func TestDependencySet(t *testing.T) {
 	var dp = newPomDependencySet()
 	dp.mergeDepsSlice(x1.Dependencies)
 	dp.mergeDepsSlice(x2.Dependencies)
-	var ip = inlineproperty.New()
+	var ip = newProperties()
 	ip.PutMap(x1.Properties.Entries)
 	ip.PutMap(x2.Properties.Entries)
 	dp.mergeProperty(ip)
