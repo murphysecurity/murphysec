@@ -11,9 +11,6 @@ import (
 	"time"
 )
 
-var ErrMvnExitErr = mvnError("mvn command exit with non-zero code")
-var ErrMvnCmd = mvnError("error during mvn execution")
-
 // PluginGraphCmd helper to com.github.ferstl:depgraph-maven-plugin:4.0.1:graph
 type PluginGraphCmd struct {
 	Path     string
