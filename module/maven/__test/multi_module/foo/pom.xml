@@ -13,6 +13,10 @@
         <version>${revision}</version>
     </parent>
     <packaging>pom</packaging>
+    <dependencyManagement>
+        <dependencies>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
         <dependency>

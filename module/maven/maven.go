@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/display"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
-	"path/filepath"
+	"go.uber.org/zap"
 	"sync"
 )
 
@@ -20,52 +19,52 @@ func (d Dependency) String() string {
 	return fmt.Sprintf("%v: %v", d.Coordinate, d.Children)
 }
 
-var MvnSkipped = model.NewInspectError(model.Java, "Mvn inspect is skipped, please check you maven environment.")
-
 func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.Module, error) {
 	log := utils.UseLogger(ctx)
 	dir := task.ScanDir
 	var modules []model.Module
-	var deps map[Coordinate][]Dependency
-	moduleFileMapping := map[Coordinate]string{}
 	var e error
-	var doMvnScan bool
+	var useBackupResolver = false
+	var deps *DepsMap
 	// check maven version, skip maven scan if check fail
 	mvnCmdInfo, e := CheckMvnCommand()
 	if e != nil {
+		useBackupResolver = true
 		log.Sugar().Warnf("Mvn command not found %v", e)
 		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 	} else {
 		log.Sugar().Infof("Mvn command found: %s", mvnCmdInfo)
-		doMvnScan = true
-	}
-
-	var useBackupResolver = !doMvnScan
-	if doMvnScan {
-		deps, e = ScanMvnDeps(ctx, mvnCmdInfo)
+		var e error
+		deps, e = ScanDepsByPluginCommand(ctx, dir, mvnCmdInfo)
 		if e != nil {
-			task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
-			logger.Err.Printf("mvn scan failed: %+v\n", e)
+			log.Error("Scan maven dependencies failed", zap.Error(e))
 			useBackupResolver = true
+			task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		}
 	}
+
 	// analyze pom file
 	if useBackupResolver {
+		var e error
+		deps, e = BackupResolve(ctx, dir)
+		if e != nil {
+			log.Error("Use backup resolver failed", zap.Error(e))
+		}
 	}
-	for coordinate, dependencies := range deps {
+	if deps == nil {
+		return nil, ErrInspection
+	}
+	for _, entry := range deps.ListAllEntries() {
 		modules = append(modules, model.Module{
 			PackageManager: model.PMMaven,
 			Language:       model.Java,
 			PackageFile:    "pom.xml",
-			Name:           coordinate.Name(),
-			Version:        coordinate.Version,
-			FilePath:       filepath.Join(moduleFileMapping[coordinate], "pom.xml"),
-			Dependencies:   convDeps(dependencies),
+			Name:           entry.coordinate.Name(),
+			Version:        entry.coordinate.Version,
+			FilePath:       entry.relativePath,
+			Dependencies:   convDeps(entry.children),
 			RuntimeInfo:    mvnCmdInfo,
 		})
-	}
-	if len(modules) == 0 && !doMvnScan {
-		return nil, MvnSkipped
 	}
 	return modules, nil
 }

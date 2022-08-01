@@ -58,7 +58,7 @@ func ReadLocalProject(ctx context.Context, dir string) ([]*UnresolvedPom, error)
 			moduleQ.PushBack(filepath.Join(current, module))
 		}
 
-		projectPomList = append(projectPomList, &UnresolvedPom{pom})
+		projectPomList = append(projectPomList, &UnresolvedPom{pom, pomPath})
 	}
 
 	return projectPomList, nil

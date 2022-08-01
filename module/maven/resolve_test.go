@@ -29,8 +29,8 @@ func TestResolve(t *testing.T) {
 	for _, module := range modules {
 		resolver.pomCache.add(module)
 	}
-	for _, module := range modules {
-		_ = must.A(resolver.ResolvePom(ctx, module.Coordinate()))
-	}
+	//for _, module := range modules {
+	//	_ = must.A(resolver.ResolvePom(ctx, module.Coordinate()))
+	//}
 	BuildDepTree(ctx, resolver, modules[1].Coordinate())
 }

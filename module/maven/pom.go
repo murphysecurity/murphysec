@@ -14,6 +14,7 @@ import (
 
 type UnresolvedPom struct {
 	Project *gopom.Project
+	Path    string
 }
 
 func (u UnresolvedPom) Coordinate() Coordinate {

@@ -43,7 +43,7 @@ func GetMvnConfig(ctx context.Context) (*UserConfig, error) {
 	}
 	logger := utils.UseLogger(ctx)
 	var node *xmlquery.Node
-	for _, p := range mavenSettingsPaths() {
+	for _, p := range mavenSettingsPaths(ctx) {
 		logger.Debug("Reading maven settings", zap.String("path", p))
 		if !utils.IsFile(p) {
 			logger.Debug("not a file, skip")
@@ -83,30 +83,36 @@ func GetMvnConfig(ctx context.Context) (*UserConfig, error) {
 	return uc, nil
 }
 
-func locateMvnInstallPath() string {
+func locateMvnInstallPath(ctx context.Context) string {
+	logger := utils.UseLogger(ctx)
 	info, e := CheckMvnCommand()
 	if e != nil {
 		return ""
 	}
 	fp, e := filepath.EvalSymlinks(info.Path)
-	if e == nil {
-		return filepath.Dir(filepath.Dir(fp))
+	if e != nil {
+		return ""
+
 	}
-	return ""
+	p := filepath.Dir(filepath.Dir(fp))
+	logger.Sugar().Debugf("Maven install at: %s", p)
+	return p
 }
 
-func mavenSettingsPaths() (paths []string) {
+func mavenSettingsPaths(ctx context.Context) (paths []string) {
 	// user path
-	var baseDir = os.Getenv("M2_HOME")
-	if baseDir == "" {
+	var homeDir = os.Getenv("M2_HOME")
+	if homeDir == "" {
 		if b, e := homedir.Dir(); e == nil {
-			baseDir = filepath.Join(b, ".m2")
+			homeDir = filepath.Join(b, ".m2")
 		}
 	}
-	paths = append(paths, baseDir)
+	if homeDir != "" {
+		paths = append(paths, filepath.Join(homeDir, "settings.xml"))
+	}
 
 	// install path
-	base := locateMvnInstallPath()
+	base := locateMvnInstallPath(ctx)
 	var candidate = []string{"conf/settings.xml"}
 	if runtime.GOOS == "darwin" {
 		candidate = append(candidate, "libexec/conf/settings.xml")

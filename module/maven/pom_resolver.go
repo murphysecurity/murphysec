@@ -3,6 +3,7 @@ package maven
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/utils"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -39,6 +40,9 @@ func (r *PomResolver) fetchPom(coordinate Coordinate) (*UnresolvedPom, error) {
 		if e == nil {
 			r.pomCache.write(coordinate, p, nil)
 			return p, nil
+		}
+		if errors.Is(e, ErrArtifactNotFound) {
+			continue
 		}
 		logger.Sugar().Infof("Fetch %s from repo[%s] failed: %s", coordinate, repo, e)
 	}

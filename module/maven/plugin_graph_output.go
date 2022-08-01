@@ -36,7 +36,7 @@ func (d *PluginGraphOutput) ReadFromFile(path string) error {
 	return nil
 }
 
-func (d PluginGraphOutput) Tree() ([]Dependency, error) {
+func (d PluginGraphOutput) Tree() (*Dependency, error) {
 	// from -> listOf to
 	edges := d.edgesMap()
 	root, e := d.findRootNode()
@@ -46,7 +46,7 @@ func (d PluginGraphOutput) Tree() ([]Dependency, error) {
 	visited := make([]bool, len(d.Artifacts))
 	t := d._tree(root, visited, edges)
 	if t != nil {
-		return t.Children, nil
+		return t, nil
 	}
 	return nil, ErrBadDepsGraph.Detailed("empty graph")
 }

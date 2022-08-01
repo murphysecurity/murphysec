@@ -46,7 +46,7 @@ func (r *HttpRepo) Fetch(coordinate Coordinate) (*UnresolvedPom, error) {
 		u.Path = path.Join(u.Path, coordinate.ArtifactId, coordinate.Version, fmt.Sprintf("%s-%s.pom", coordinate.ArtifactId, coordinate.Version))
 	}
 	pom, e := fetchPom(u.String())
-	return &UnresolvedPom{pom}, e
+	return &UnresolvedPom{pom, ""}, e
 }
 
 func fetchPom(url string) (*gopom.Project, error) {

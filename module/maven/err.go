@@ -16,6 +16,7 @@ const (
 	ErrCouldNotResolve      = mvnError("couldn't resolve")
 	ErrMvnExitErr           = mvnError("mvn command exit with non-zero code")
 	ErrMvnCmd               = mvnError("error during mvn execution")
+	ErrInspection           = mvnError("can't inspect the maven project")
 )
 
 type mvnError string

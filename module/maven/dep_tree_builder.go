@@ -15,8 +15,12 @@ func BuildDepTree(ctx context.Context, resolver *PomResolver, coordinate Coordin
 		exclusionName:     map[string]int{},
 		resolver:          resolver,
 		logger:            utils.UseLogger(ctx),
+		versionResolved:   map[string]string{},
+		//resolved:          map[Coordinate]struct{}{},
 	}
-	return analyzer._tree(coordinate)
+	tree := analyzer._tree(coordinate)
+	VersionReconciling(ctx, tree)
+	return tree
 }
 
 type depAnalyzer struct {
@@ -25,6 +29,8 @@ type depAnalyzer struct {
 	exclusionName     map[string]int
 	resolver          *PomResolver
 	logger            *zap.Logger
+	depth             int
+	versionResolved   map[string]string
 }
 
 func (d *depAnalyzer) shouldSkip(coordinate Coordinate) bool {
@@ -70,8 +76,15 @@ func (d *depAnalyzer) removeExclusion(exclusion gopom.Exclusion) {
 }
 
 func (d *depAnalyzer) _tree(coordinate Coordinate) *Dependency {
+	d.depth++
+	defer func() {
+		d.depth--
+	}()
 	var logger = d.logger
 	if d.shouldSkip(coordinate) {
+		return nil
+	}
+	if v := d.versionResolved[coordinate.GroupId+coordinate.ArtifactId]; v != "" {
 		return nil
 	}
 	pom, e := d.resolver.ResolvePom(d, coordinate)
@@ -83,10 +96,11 @@ func (d *depAnalyzer) _tree(coordinate Coordinate) *Dependency {
 		Coordinate: pom.Coordinate,
 		Children:   []Dependency{},
 	}
+	d.versionResolved[coordinate.GroupId+coordinate.ArtifactId] = pom.Coordinate.Version
 	d.visitEnter(pom.Coordinate)
 	defer d.visitExit(pom.Coordinate)
 	for _, dependency := range pom.ListDeps() {
-		if !(dependency.Scope == "" || dependency.Scope == "compile" || dependency.Scope == "runtime") {
+		if !(dependency.Scope == "" || dependency.Scope == "compile" || dependency.Scope == "runtime") || dependency.Optional == "true" {
 			continue
 		}
 		depCoor := Coordinate{

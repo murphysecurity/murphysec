@@ -57,3 +57,16 @@ func (c Coordinate) Complete() bool {
 	c = c.Normalize()
 	return c.GroupId != "" && c.ArtifactId != "" && c.Version != "" && !c.IsBad()
 }
+
+func (c Coordinate) Compare(o Coordinate) int {
+	if n := strings.Compare(c.GroupId, o.GroupId); n != 0 {
+		return n
+	}
+	if n := strings.Compare(c.ArtifactId, o.ArtifactId); n != 0 {
+		return n
+	}
+	if n := strings.Compare(c.Version, o.Version); n != 0 {
+		return n
+	}
+	return 0
+}

@@ -6,10 +6,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func VersionReconciling(ctx context.Context, root *Dependency) Dependency {
+func VersionReconciling(ctx context.Context, root *Dependency) {
 	c := newReconcilingCtx(ctx)
-	c._visit(*root)
-	return c._assign(*root)
+	c._visit(root)
+	c._assign(root)
 }
 
 type reconcilingCtx struct {
@@ -24,21 +24,20 @@ func newReconcilingCtx(ctx context.Context) *reconcilingCtx {
 	}
 }
 
-func (r *reconcilingCtx) _visit(root Dependency) {
+func (r *reconcilingCtx) _visit(root *Dependency) {
 	k := root.GroupId + ":" + root.ArtifactId
 	if r.versionMap[k] == "" && root.Version != "" {
 		r.versionMap[k] = root.Version
 	}
 	for idx := range root.Children {
-		r._visit(root.Children[idx])
+		r._visit(&root.Children[idx])
 	}
 }
 
-func (r *reconcilingCtx) _assign(root Dependency) Dependency {
+func (r *reconcilingCtx) _assign(root *Dependency) {
 	k := root.GroupId + ":" + root.ArtifactId
 	root.Version = r.versionMap[k]
 	for i := range root.Children {
-		root.Children[i] = r._assign(root.Children[i])
+		r._assign(&root.Children[i])
 	}
-	return root
 }
