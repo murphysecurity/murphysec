@@ -974,7 +974,7 @@ func TestDependencyGraph_ReadFromFile(t *testing.T) {
 	}()
 	must.A(f.Write([]byte(a)))
 	must.Must(f.Close())
-	var d dependencyGraph
+	var d PluginGraphOutput
 	must.Must(d.ReadFromFile(f.Name()))
 	must.A(d.Tree())
 }

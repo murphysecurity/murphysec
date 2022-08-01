@@ -6,7 +6,8 @@ import (
 	"io/ioutil"
 )
 
-type dependencyGraph struct {
+// PluginGraphOutput maven dependency-graph.json file
+type PluginGraphOutput struct {
 	GraphName string `json:"graphName"`
 	Artifacts []struct {
 		GroupId    string   `json:"groupId"`
@@ -21,12 +22,13 @@ type dependencyGraph struct {
 	} `json:"dependencies"`
 }
 
-func (d *dependencyGraph) ReadFromFile(path string) error {
+// ReadFromFile dependency-graph.json
+func (d *PluginGraphOutput) ReadFromFile(path string) error {
 	data, e := ioutil.ReadFile(path)
 	if e != nil {
 		return ErrBadDepsGraph.DetailedWrap("read graph file", e)
 	}
-	g := dependencyGraph{}
+	g := PluginGraphOutput{}
 	if e := json.Unmarshal(data, &g); e != nil {
 		return ErrBadDepsGraph.Wrap(e)
 	}
@@ -34,7 +36,7 @@ func (d *dependencyGraph) ReadFromFile(path string) error {
 	return nil
 }
 
-func (d dependencyGraph) Tree() ([]Dependency, error) {
+func (d PluginGraphOutput) Tree() ([]Dependency, error) {
 	// from -> listOf to
 	edges := d.edgesMap()
 	root, e := d.findRootNode()
@@ -49,7 +51,7 @@ func (d dependencyGraph) Tree() ([]Dependency, error) {
 	return nil, ErrBadDepsGraph.Detailed("empty graph")
 }
 
-func (d dependencyGraph) _tree(id int, visitedId []bool, edges map[int][]int) *Dependency {
+func (d PluginGraphOutput) _tree(id int, visitedId []bool, edges map[int][]int) *Dependency {
 	if visitedId[id] {
 		return nil
 	}
@@ -77,7 +79,7 @@ func (d dependencyGraph) _tree(id int, visitedId []bool, edges map[int][]int) *D
 	return r
 }
 
-func (d dependencyGraph) edgesMap() (m map[int][]int) {
+func (d PluginGraphOutput) edgesMap() (m map[int][]int) {
 	m = map[int][]int{}
 	distinctM := map[int64]struct{}{}
 	for _, it := range d.Dependencies {
@@ -91,7 +93,7 @@ func (d dependencyGraph) edgesMap() (m map[int][]int) {
 	return
 }
 
-func (d dependencyGraph) findRootNode() (int, error) {
+func (d PluginGraphOutput) findRootNode() (int, error) {
 	candidate := make([]bool, len(d.Artifacts))
 	for _, it := range d.Dependencies {
 		if it.NumericTo > len(candidate) {
