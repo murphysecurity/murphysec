@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/vifraa/gopom"
-	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -15,19 +14,13 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
 )
 
 type PomRepo interface {
 	Fetch(coordinate Coordinate) (*UnresolvedPom, error)
 }
 type HttpRepo struct {
-	baseUrl  url.URL
-	m        map[Coordinate]chan struct{}
-	l        sync.Mutex
-	cache    map[Coordinate]*gopom.Project
-	cacheErr map[Coordinate]error
-	logger   *zap.Logger
+	baseUrl url.URL
 }
 
 func (r *HttpRepo) String() string {
@@ -36,35 +29,14 @@ func (r *HttpRepo) String() string {
 
 func NewHttpRepo(ctx context.Context, baseUrl url.URL) *HttpRepo {
 	return &HttpRepo{
-		m:        map[Coordinate]chan struct{}{},
-		l:        sync.Mutex{},
-		cache:    map[Coordinate]*gopom.Project{},
-		cacheErr: map[Coordinate]error{},
-		baseUrl:  baseUrl,
-		logger:   utils.UseLogger(ctx),
+		baseUrl: baseUrl,
 	}
 }
 
 func (r *HttpRepo) Fetch(coordinate Coordinate) (*UnresolvedPom, error) {
-	logger := r.logger
 	if !coordinate.Complete() {
 		return nil, ErrInvalidCoordinate
 	}
-	r.l.Lock()
-	if ch, ok := r.m[coordinate]; ok {
-		r.l.Unlock()
-		<-ch
-		r.l.Lock()
-		cp, ce := r.cache[coordinate], r.cacheErr[coordinate]
-		r.l.Unlock()
-		return &UnresolvedPom{cp}, ce
-	}
-	ch := make(chan struct{})
-	r.m[coordinate] = ch
-	r.l.Unlock()
-	defer func() { close(ch) }()
-	//url := r.baseDir
-
 	var u url.URL
 	{
 		u = r.baseUrl
@@ -73,12 +45,7 @@ func (r *HttpRepo) Fetch(coordinate Coordinate) (*UnresolvedPom, error) {
 		}
 		u.Path = path.Join(u.Path, coordinate.ArtifactId, coordinate.Version, fmt.Sprintf("%s-%s.pom", coordinate.ArtifactId, coordinate.Version))
 	}
-	logger.Sugar().Debugf("Request pom: %s", u.String())
 	pom, e := fetchPom(u.String())
-	r.l.Lock()
-	r.cache[coordinate] = pom
-	r.cacheErr[coordinate] = e
-	r.l.Unlock()
 	return &UnresolvedPom{pom}, e
 }
 
