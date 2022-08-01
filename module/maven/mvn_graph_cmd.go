@@ -14,14 +14,15 @@ import (
 var ErrMvnExitErr = mvnError("mvn command exit with non-zero code")
 var ErrMvnCmd = mvnError("error during mvn execution")
 
-type MvnGraphCmdArgs struct {
+// PluginGraphCmd helper to com.github.ferstl:depgraph-maven-plugin:4.0.1:graph
+type PluginGraphCmd struct {
 	Path     string
 	Profiles []string
 	Timeout  time.Duration
 	ScanDir  string
 }
 
-func (m MvnGraphCmdArgs) Execute(ctx context.Context) error {
+func (m PluginGraphCmd) RunC(ctx context.Context) error {
 	logger := utils.UseLogger(ctx)
 	if ctx == nil {
 		ctx = context.TODO()
