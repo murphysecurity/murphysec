@@ -8,7 +8,6 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"path/filepath"
-	"sort"
 	"sync"
 )
 
@@ -52,42 +51,6 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 	}
 	// analyze pom file
 	if useBackupResolver {
-		deps = map[Coordinate][]Dependency{}
-		pomFiles := InspectModule(dir)
-		logger.Info.Printf("scanned pom modules: %d", len(pomFiles))
-		resolver := NewResolver()
-		var builders []*PomBuilder
-		for _, it := range pomFiles {
-			builders = append(builders, it)
-		}
-		sort.Slice(builders, func(i, j int) bool {
-			return builders[i].Path < builders[j].Path
-		})
-		for _, builder := range builders {
-			{
-				pf := resolver.ResolveLocally(builder, nil)
-				if pf == nil {
-					continue
-				}
-				moduleFileMapping[pf.coordinate] = pf.path
-				if len(deps[pf.coordinate]) > 0 {
-					continue
-				}
-			}
-			pf := resolver.Resolve(builder, nil)
-			if pf == nil {
-				continue
-			}
-			if !pf.coordinate.Complete() {
-				logger.Info.Println("local pom coordinate can't be resolve", pf.coordinate)
-				continue
-			}
-			analyzer := NewDepTreeAnalyzer(resolver)
-			graph := analyzer.Resolve(pf)
-			logger.Info.Println("dep graph")
-			logger.Info.Println(graph.DOT())
-			deps[pf.coordinate] = graph.Tree(pf.coordinate)
-		}
 	}
 	for coordinate, dependencies := range deps {
 		modules = append(modules, model.Module{
