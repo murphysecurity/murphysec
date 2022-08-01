@@ -3,7 +3,7 @@ package maven
 import "fmt"
 
 const (
-	ErrMvnDisabled          = mvnError("mvn command disabled, by environment variable NO_MVN")
+	ErrMvnDisabled          = mvnError("mvn command disabled")
 	ErrMvnNotFound          = mvnError("mvn command not found")
 	ErrCheckMvnVersion      = mvnError("eval mvn version failed")
 	ErrBadDepsGraph         = mvnError("bad dependency graph")

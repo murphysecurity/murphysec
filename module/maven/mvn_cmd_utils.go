@@ -40,7 +40,7 @@ func CheckMvnCommand() (info *MvnCommandInfo, err error) {
 		}
 	}()
 	if env.DisableMvnCommand {
-		return nil, ErrMvnDisabled
+		return nil, ErrMvnDisabled.Detailed("environment variable NO_MVN set")
 	}
 	mvnPath := getMvnCommandPath()
 	if mvnPath == "" {
