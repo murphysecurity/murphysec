@@ -5,7 +5,6 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/vifraa/gopom"
 	"path/filepath"
 )
 
@@ -33,8 +32,4 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		task.AddModule(it)
 	}
 	return nil
-}
-
-type Repo interface {
-	Fetch(coordinate Coordinate) (*gopom.Project, error)
 }

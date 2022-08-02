@@ -7,7 +7,6 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
-	"sync"
 )
 
 type Dependency struct {
@@ -98,20 +97,4 @@ func _convDep(dep Dependency) *model.Dependency {
 		d.Dependencies = append(d.Dependencies, *dd)
 	}
 	return d
-}
-
-type DepTreeCacheMap struct {
-	m sync.Map
-}
-
-func (d *DepTreeCacheMap) Get(coor Coordinate) *Dependency {
-	v, _ := d.m.Load(coor)
-	if vv, ok := v.(*Dependency); ok {
-		return vv
-	}
-	return nil
-}
-
-func (d *DepTreeCacheMap) Put(coor Coordinate, tree *Dependency) {
-	d.m.Store(coor, tree)
 }
