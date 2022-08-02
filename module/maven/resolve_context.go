@@ -124,21 +124,12 @@ func (r *resolveContext) resolveInheritance(builder *pomBuilder) {
 
 		// merge property
 		builder.properties.PutMap(project.Properties.Entries)
-		//for _, profile := range project.Profiles {
-		//	builder.properties.PutMap(profile.Properties.Entries)
-		//}
 
 		// merge dependency management
 		builder.depms.mergeDepsSlice(project.DependencyManagement.Dependencies)
-		//for _, profile := range project.Profiles {
-		//	builder.depms.mergeDepsSlice(profile.DependencyManagement.Dependencies)
-		//}
 
 		// merge dependencies
 		builder.deps.mergeDepsSlice(project.Dependencies)
-		//for _, profile := range project.Profiles {
-		//	builder.deps.mergeDepsSlice(profile.Dependencies)
-		//}
 	}
 
 	// merge ${project.parent.*}
