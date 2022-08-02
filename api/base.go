@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
 	"github.com/pkg/errors"
@@ -24,11 +23,6 @@ import (
 
 var Logger = zap.NewNop()
 var NetworkLogger = zap.NewNop()
-
-var ErrTokenInvalid = model.WrapIdeaErr(errors.New("Token invalid"), model.IdeaTokenInvalid)
-var ErrServerRequest = model.WrapIdeaErr(errors.New("Send request failed"), model.IdeaServerRequestFailed)
-var UnprocessableResponse = model.WrapIdeaErr(errors.New("Unprocessable response"), model.IdeaServerRequestFailed)
-var ErrTimeout = model.WrapIdeaErr(errors.New("API request timeout"), model.IdeaApiTimeout)
 
 const HeaderMachineId = "machine-id"
 
