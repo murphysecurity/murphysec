@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     env:
       CGO_ENABLED: '0'
@@ -15,4 +15,9 @@ jobs:
         with:
           go-version: 1.18
       - name: Test
-        run: go test -v ./...
+        run: go test -json ./... > test.json
+      - name: Annotate tests
+        if: always()
+        uses: guyarb/golang-test-annotations@v0.5.1
+        with:
+          test-results: test.json
