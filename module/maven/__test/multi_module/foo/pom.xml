@@ -17,10 +17,10 @@
     </dependencyManagement>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
-<!--        <dependency>-->
-<!--            <groupId>io.vertx</groupId>-->
-<!--            <artifactId>vertx-core</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>

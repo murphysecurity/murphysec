@@ -25,11 +25,11 @@
                 <scope>import</scope>
             </dependency>
             <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
-<!--            <dependency>-->
-<!--                <groupId>io.vertx</groupId>-->
-<!--                <artifactId>vertx-core</artifactId>-->
-<!--                <version>4.3.2</version>-->
-<!--            </dependency>-->
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-core</artifactId>
+                <version>4.3.2</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-core</artifactId>
