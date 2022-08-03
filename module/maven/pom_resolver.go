@@ -8,18 +8,20 @@ import (
 )
 
 type PomResolver struct {
-	logger   *zap.Logger
-	repos    []PomRepo
-	pomCache *pomCache
-	stats    *resolverStats
+	logger        *zap.Logger
+	repos         []PomRepo
+	pomCache      *pomCache
+	stats         *resolverStats
+	resolvedCache *resolvedPomCache
 }
 
 func NewPomResolver(ctx context.Context) *PomResolver {
 	return &PomResolver{
-		logger:   utils.UseLogger(ctx),
-		repos:    nil,
-		pomCache: newPomCache(),
-		stats:    newResolverStats(),
+		logger:        utils.UseLogger(ctx),
+		repos:         nil,
+		pomCache:      newPomCache(),
+		stats:         newResolverStats(),
+		resolvedCache: newResolvedPomCache(),
 	}
 }
 
@@ -51,7 +53,16 @@ func (r *PomResolver) fetchPom(coordinate Coordinate) (*UnresolvedPom, error) {
 }
 
 func (r *PomResolver) ResolvePom(ctx context.Context, coordinate Coordinate) (*Pom, error) {
+	if pom, e := r.resolvedCache.get(coordinate); pom != nil || e != nil {
+		return pom, e
+	}
 	c := newResolveContext(ctx)
 	c.resolver = r
-	return c._resolve(coordinate)
+	pom, err := c._resolve(coordinate)
+	if err != nil {
+		r.resolvedCache.storeErr(coordinate, err)
+	} else {
+		r.resolvedCache.storePom(coordinate, pom)
+	}
+	return pom, err
 }

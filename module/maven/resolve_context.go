@@ -106,14 +106,13 @@ func (r *resolveContext) _resolve(coordinate Coordinate) (*Pom, error) {
 }
 
 func (r *resolveContext) resolveDependencyManagementImport(builder *pomBuilder) {
-	var logger = r.logger
 	for _, dependency := range builder.listDependencyManagements() {
 		if dependency.Scope != "import" {
 			continue
 		}
-		np, e := r._resolve(Coordinate{dependency.GroupID, dependency.ArtifactID, dependency.Version})
+		coordinate := Coordinate{dependency.GroupID, dependency.ArtifactID, dependency.Version}
+		np, e := r._resolve(coordinate)
 		if e != nil {
-			logger.Warn("Resolve dependencyManagement failed", zap.Error(e))
 			continue
 		}
 		builder.depms.mergeAll(np.ListDependencyManagements(), false, false)
@@ -192,4 +191,34 @@ func (r *resolveContext) resolveCoordinate(builder *pomBuilder) error {
 	builder.properties.PutIfAbsent(fmt.Sprintf("%s.groupId", coordinate.ArtifactId), coordinate.GroupId)
 	builder.properties.PutIfAbsent(fmt.Sprintf("%s.version", coordinate.ArtifactId), coordinate.Version)
 	return nil
+}
+
+type resolvedPomCache struct {
+	m  map[Coordinate]*Pom
+	em map[Coordinate]error
+}
+
+func newResolvedPomCache() *resolvedPomCache {
+	return &resolvedPomCache{
+		m:  map[Coordinate]*Pom{},
+		em: map[Coordinate]error{},
+	}
+}
+
+func (r *resolvedPomCache) storeErr(coordinate Coordinate, err error) {
+	r.em[coordinate] = err
+}
+
+func (r *resolvedPomCache) storePom(coordinate Coordinate, pom *Pom) {
+	r.m[coordinate] = pom
+}
+
+func (r *resolvedPomCache) get(coordinate Coordinate) (*Pom, error) {
+	if e, ok := r.em[coordinate]; ok {
+		return nil, e
+	}
+	if p, ok := r.m[coordinate]; ok {
+		return p, nil
+	}
+	return nil, nil
 }
