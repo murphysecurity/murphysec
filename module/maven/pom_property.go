@@ -44,7 +44,7 @@ type propertiesCtx struct {
 func (ctx *propertiesCtx) _resolve(input string) string {
 	var raw = inlineProperties.Split(input, -1)
 	var refs = make([]string, 0, len(raw))
-	var rs = make([]string, len(raw)+len(refs))
+	var rs = make([]string, 0, len(raw)+len(refs))
 	rs = append(rs, raw[0])
 	for idx, g := range inlineProperties.FindAllStringSubmatch(input, -1) {
 		_, visited := ctx.p[g[1]]
