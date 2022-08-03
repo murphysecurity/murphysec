@@ -37,6 +37,7 @@ func (d *depAnalyzer) analyze(coordinate Coordinate) *Dependency {
 		Children             []*item
 		Exclusion            *exclusionMap
 		DependencyManagement *dependencyManagementMap
+		Parent               *item
 	}
 
 	var _convToTree func(it *item) *Dependency
@@ -65,9 +66,25 @@ func (d *depAnalyzer) analyze(coordinate Coordinate) *Dependency {
 	r := &item{Coordinate: coordinate}
 	q.PushBack(r)
 
+outer:
 	for q.Len() > 0 {
 		cur := q.Front().Value
 		q.Remove(q.Front())
+
+		if cur.Exclusion.Has(cur.GroupId, cur.ArtifactId) {
+			continue
+		}
+		// circular
+		{
+			var p = cur.Parent
+			for p != nil {
+				if p.Coordinate == cur.Coordinate {
+					continue outer
+				}
+				p = p.Parent
+			}
+		}
+
 		pom, e := d.resolver.ResolvePom(d.Context, cur.Coordinate)
 		if e != nil {
 			logger.Warn("Resolve dependency failed", zap.Error(e), zap.Any("coordinate", cur.Coordinate))
@@ -76,14 +93,15 @@ func (d *depAnalyzer) analyze(coordinate Coordinate) *Dependency {
 		dm := newDependencyManagementMap(cur.DependencyManagement, pom.ListDependencyManagements())
 		for _, dep := range pom.ListDependencies() {
 			depCoordinate := Coordinate{GroupId: dep.GroupID, ArtifactId: dep.ArtifactID}
-			if v := d.versionChosen[dep.GroupID+dep.ArtifactID]; v != "" {
+			verKey := dep.GroupID + dep.ArtifactID
+			if v := d.versionChosen[verKey]; v != "" {
 				depCoordinate.Version = v
 			} else if v := dm.GetVersionOf(dep.GroupID, dep.ArtifactID); v != "" {
 				depCoordinate.Version = v
-				d.versionChosen[dep.GroupID+dep.ArtifactID] = v
+				d.versionChosen[verKey] = v
 			} else if dep.Version != "" {
 				depCoordinate.Version = dep.Version
-				d.versionChosen[dep.GroupID+dep.ArtifactID] = dep.Version
+				d.versionChosen[verKey] = dep.Version
 			} else {
 				logger.Warn("Resolution version failed", zap.Any("in", coordinate), zap.String("dep", dep.GroupID+":"+dep.ArtifactID))
 				continue
@@ -92,6 +110,7 @@ func (d *depAnalyzer) analyze(coordinate Coordinate) *Dependency {
 				Coordinate:           depCoordinate,
 				Exclusion:            newExclusionMap(cur.Exclusion, dep.Exclusions),
 				DependencyManagement: dm,
+				Parent:               cur,
 			}
 			cur.Children = append(cur.Children, child)
 			q.PushBack(child)

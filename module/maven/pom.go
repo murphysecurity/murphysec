@@ -59,9 +59,13 @@ type Pom struct {
 func (p *Pom) ListDependencies() (rs []gopom.Dependency) {
 	for _, dep := range p.depSet.listAll() {
 		r := p.resolveDependencyProperty(dep)
-		if r.Scope == "" || r.Scope == "runtime" || r.Scope == "compile" {
-			rs = append(rs, r)
+		if r.Optional == "true" {
+			continue
 		}
+		if !(r.Scope == "" || r.Scope == "runtime" || r.Scope == "compile") {
+			continue
+		}
+		rs = append(rs, r)
 	}
 	return
 }
@@ -70,9 +74,13 @@ func (p *Pom) ListDependencies() (rs []gopom.Dependency) {
 func (p *Pom) ListDependencyManagements() (rs []gopom.Dependency) {
 	for _, dep := range p.depmSet.listAll() {
 		r := p.resolveDependencyProperty(dep)
-		if r.Scope == "" || r.Scope == "runtime" || r.Scope == "compile" {
-			rs = append(rs, r)
+		if r.Optional == "true" {
+			continue
 		}
+		if !(r.Scope == "" || r.Scope == "runtime" || r.Scope == "compile") {
+			continue
+		}
+		rs = append(rs, r)
 	}
 	return
 }
