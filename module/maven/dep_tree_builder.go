@@ -71,9 +71,6 @@ outer:
 		cur := q.Front().Value
 		q.Remove(q.Front())
 
-		if cur.Exclusion.Has(cur.GroupId, cur.ArtifactId) {
-			continue
-		}
 		// circular
 		{
 			var p = cur.Parent
@@ -92,6 +89,9 @@ outer:
 		}
 		dm := newDependencyManagementMap(cur.DependencyManagement, pom.ListDependencyManagements())
 		for _, dep := range pom.ListDependencies() {
+			if cur.Exclusion.Has(dep.GroupID, dep.ArtifactID) {
+				continue
+			}
 			depCoordinate := Coordinate{GroupId: dep.GroupID, ArtifactId: dep.ArtifactID}
 			verKey := dep.GroupID + dep.ArtifactID
 			if v := d.versionChosen[verKey]; v != "" {
