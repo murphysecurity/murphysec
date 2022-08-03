@@ -2,6 +2,7 @@ package maven
 
 import (
 	"context"
+	"fmt"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/stretchr/testify/assert"
@@ -32,5 +33,7 @@ func TestResolve(t *testing.T) {
 	//for _, module := range modules {
 	//	_ = must.A(resolver.ResolvePom(ctx, module.Coordinate()))
 	//}
-	BuildDepTree(ctx, resolver, modules[1].Coordinate())
+	rp := must.A(resolver.ResolvePom(ctx, modules[1].Coordinate()))
+	r := BuildDepTree(ctx, resolver, modules[1].Coordinate())
+	fmt.Println(r, rp)
 }

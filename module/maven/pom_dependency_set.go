@@ -24,7 +24,7 @@ func (p *pomDependencySet) String() string {
 	return strings.Join(rs, "\n")
 }
 
-func (p *pomDependencySet) listDeps() []gopom.Dependency {
+func (p *pomDependencySet) listAll() []gopom.Dependency {
 	var rs []gopom.Dependency
 	for pair := p.m.Oldest(); pair != nil; pair = pair.Next() {
 		rs = append(rs, *pair.Value)
@@ -40,44 +40,26 @@ func (p *pomDependencySet) mergeProperty(property *properties) {
 	}
 }
 
-func (p *pomDependencySet) mergeDependencyManagement(dm *pomDependencySet) {
-	if dm.m == nil {
-		return
-	}
-	for pair := p.m.Oldest(); pair != nil; pair = pair.Next() {
-		b, ok := dm.m.Get(pair.Key)
-		if !ok {
-			continue
-		}
-		a := pair.Value
-		if a.Version == "" {
-			a.Version = b.Version
-		}
-		if a.Scope == "" {
-			a.Scope = b.Scope
-		}
-		a.Exclusions = _mergeExclusions(a.Exclusions, b.Exclusions)
+func (p *pomDependencySet) mergeAll(b []gopom.Dependency, override bool, ignoreIfNotExists bool) {
+	for _, dependency := range b {
+		p.mergeItem(dependency, override, ignoreIfNotExists)
 	}
 }
 
-func (p *pomDependencySet) mergeDepsSlice(b []gopom.Dependency) {
-	for _, dependency := range b {
-		p.mergeDeps(dependency)
-	}
-}
-func (p *pomDependencySet) mergeDeps(b gopom.Dependency) {
+func (p *pomDependencySet) mergeItem(b gopom.Dependency, override bool, ignoreIfNotExists bool) {
 	k := b.GroupID + ":" + b.ArtifactID
 	var a, ok = p.m.Get(k)
+	if !ok && ignoreIfNotExists {
+		return
+	}
 	if !ok {
 		p.m.Set(k, &b)
 		return
 	}
-	a.GroupID = b.GroupID
-	a.ArtifactID = b.ArtifactID
-	if b.Version != "" {
+	if (b.Version != "" && override) || a.Version == "" {
 		a.Version = b.Version
 	}
-	if b.Scope != "" {
+	if (b.Scope != "" && override) || a.Scope == "" {
 		a.Scope = b.Scope
 	}
 	a.Exclusions = _mergeExclusions(a.Exclusions, b.Exclusions)

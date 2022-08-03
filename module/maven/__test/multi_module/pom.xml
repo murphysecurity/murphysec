@@ -5,6 +5,8 @@
         <poi.version>4.1.2</poi.version>
         <jackson.version>2.13.0</jackson.version>
         <revision>1.0.0-SNAPSHOT</revision>
+        <org-apache-logging.version>2.15.0</org-apache-logging.version>
+        <spring.boot.version>2.6.4</spring.boot.version>
     </properties>
     <groupId>com.example</groupId>
     <artifactId>parent</artifactId>
@@ -15,11 +17,23 @@
     </modules>
     <dependencyManagement>
         <dependencies>
-            <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
             <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-core</artifactId>
-                <version>4.3.2</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
+<!--            <dependency>-->
+<!--                <groupId>io.vertx</groupId>-->
+<!--                <artifactId>vertx-core</artifactId>-->
+<!--                <version>4.3.2</version>-->
+<!--            </dependency>-->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${org-apache-logging.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

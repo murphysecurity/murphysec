@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/utils"
+	"github.com/vifraa/gopom"
 	"go.uber.org/zap"
 )
 
@@ -24,6 +25,26 @@ func newPomBuilder() *pomBuilder {
 	}
 }
 
+// listDependencyManagements 返回已解析属性的依赖管理列表
+func (p *pomBuilder) listDependencyManagements() []gopom.Dependency {
+	var rs []gopom.Dependency
+	for _, dep := range p.depms.listAll() {
+		d := gopom.Dependency{
+			GroupID:    p.properties.Resolve(dep.GroupID),
+			ArtifactID: p.properties.Resolve(dep.ArtifactID),
+			Version:    p.properties.Resolve(dep.Version),
+			Type:       p.properties.Resolve(dep.Type),
+			Classifier: p.properties.Resolve(dep.Classifier),
+			Scope:      p.properties.Resolve(dep.Scope),
+			SystemPath: p.properties.Resolve(dep.SystemPath),
+			Exclusions: dep.Exclusions,
+			Optional:   dep.Optional,
+		}
+		rs = append(rs, d)
+	}
+	return rs
+}
+
 func (p *pomBuilder) build() *Pom {
 	return &Pom{
 		dir:        "",
@@ -31,6 +52,7 @@ func (p *pomBuilder) build() *Pom {
 		depSet:     p.deps,
 		depmSet:    p.depms,
 		Coordinate: p.coordinate,
+		properties: p.properties,
 	}
 }
 
@@ -76,16 +98,16 @@ func (r *resolveContext) _resolve(coordinate Coordinate) (*Pom, error) {
 	if e := r.resolveCoordinate(builder); e != nil {
 		return nil, e
 	}
-	builder.depms.mergeProperty(builder.properties)
-	builder.deps.mergeProperty(builder.properties)
+	// resolve & merge dependencyManagement.type==import
 	r.resolveDependencyManagementImport(builder)
-	builder.deps.mergeDependencyManagement(builder.depms)
+	// merge dependencyManagement into dependencies
+	builder.deps.mergeAll(builder.depms.listAll(), false, true)
 	return builder.build(), nil
 }
 
 func (r *resolveContext) resolveDependencyManagementImport(builder *pomBuilder) {
 	var logger = r.logger
-	for _, dependency := range builder.depms.listDeps() {
+	for _, dependency := range builder.listDependencyManagements() {
 		if dependency.Scope != "import" {
 			continue
 		}
@@ -94,7 +116,7 @@ func (r *resolveContext) resolveDependencyManagementImport(builder *pomBuilder) 
 			logger.Warn("Resolve dependencyManagement failed", zap.Error(e))
 			continue
 		}
-		builder.depms.mergeDepsSlice(np.depmSet.listDeps())
+		builder.depms.mergeAll(np.ListDependencyManagements(), false, false)
 	}
 }
 
@@ -126,10 +148,10 @@ func (r *resolveContext) resolveInheritance(builder *pomBuilder) {
 		builder.properties.PutMap(project.Properties.Entries)
 
 		// merge dependency management
-		builder.depms.mergeDepsSlice(project.DependencyManagement.Dependencies)
+		builder.depms.mergeAll(project.DependencyManagement.Dependencies, false, false)
 
 		// merge dependencies
-		builder.deps.mergeDepsSlice(project.Dependencies)
+		builder.deps.mergeAll(project.Dependencies, true, false)
 	}
 
 	// merge ${project.parent.*}

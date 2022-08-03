@@ -52,13 +52,43 @@ type Pom struct {
 	// dependencyManagement
 	depmSet *pomDependencySet
 	Coordinate
+	properties *properties
 }
 
-func (p *Pom) ListDeps() []gopom.Dependency {
-	if p.depSet == nil {
-		return nil
+// ListDependencies 返回全部已解析属性的依赖
+func (p *Pom) ListDependencies() (rs []gopom.Dependency) {
+	for _, dep := range p.depSet.listAll() {
+		r := p.resolveDependencyProperty(dep)
+		if r.Scope == "" || r.Scope == "runtime" || r.Scope == "compile" {
+			rs = append(rs, r)
+		}
 	}
-	return p.depSet.listDeps()
+	return
+}
+
+// ListDependencyManagements 返回全部已解析属性的依赖管理
+func (p *Pom) ListDependencyManagements() (rs []gopom.Dependency) {
+	for _, dep := range p.depmSet.listAll() {
+		r := p.resolveDependencyProperty(dep)
+		if r.Scope == "" || r.Scope == "runtime" || r.Scope == "compile" {
+			rs = append(rs, r)
+		}
+	}
+	return
+}
+
+func (p Pom) resolveDependencyProperty(dep gopom.Dependency) gopom.Dependency {
+	return gopom.Dependency{
+		GroupID:    p.properties.Resolve(dep.GroupID),
+		ArtifactID: p.properties.Resolve(dep.ArtifactID),
+		Version:    p.properties.Resolve(dep.Version),
+		Type:       p.properties.Resolve(dep.Type),
+		Classifier: p.properties.Resolve(dep.Classifier),
+		Scope:      p.properties.Resolve(dep.Scope),
+		SystemPath: p.properties.Resolve(dep.SystemPath),
+		Exclusions: dep.Exclusions,
+		Optional:   dep.Optional,
+	}
 }
 
 func (p Pom) ParentCoordinate() *Coordinate {
