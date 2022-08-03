@@ -5,7 +5,7 @@
         <poi.version>4.1.2</poi.version>
         <jackson.version>2.13.0</jackson.version>
         <revision>1.0.0-SNAPSHOT</revision>
-        <org-apache-logging.version>2.15.0</org-apache-logging.version>
+        <org-apache-logging.version>2.17.1</org-apache-logging.version>
         <spring.boot.version>2.6.4</spring.boot.version>
     </properties>
     <groupId>com.example</groupId>
