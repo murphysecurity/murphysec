@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.5
 	github.com/antchfx/xmlquery v1.3.12
+	github.com/bahlo/generic-list-go v0.2.0
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/uuid v1.3.0
@@ -16,7 +17,6 @@ require (
 	github.com/muesli/termenv v0.12.0
 	github.com/pelletier/go-toml/v2 v2.0.2
 	github.com/pkg/errors v0.9.1
-	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
 	github.com/vifraa/gopom v0.2.0
@@ -33,7 +33,6 @@ require (
 	github.com/ProtonMail/go-crypto v0.0.0-20220714114130-e85cedf506cd // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/antchfx/xpath v1.2.1 // indirect
-	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
