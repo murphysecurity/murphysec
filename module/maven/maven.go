@@ -7,6 +7,7 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
+	"path/filepath"
 )
 
 type Dependency struct {
@@ -60,7 +61,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 			PackageFile:    "pom.xml",
 			Name:           entry.coordinate.Name(),
 			Version:        entry.coordinate.Version,
-			FilePath:       entry.relativePath,
+			FilePath:       filepath.Join(dir, entry.relativePath),
 			Dependencies:   convDeps(entry.children),
 			RuntimeInfo:    mvnCmdInfo,
 		})
