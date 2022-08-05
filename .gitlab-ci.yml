@@ -67,23 +67,7 @@ internal-cos-upload:
   image: iseki0/cos-uploader:v1.1.2
   stage: internal-pub
   script:
-    - cd out
-    - cos-uploader --local murphysec-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-linux-amd64
-    - cos-uploader --local murphysec-darwin-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-darwin-amd64
-    - cos-uploader --local murphysec-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-amd64.exe
-    - cos-uploader --local murphysec-linux-amd64 --remote /client/-/murphysec-linux-amd64
-    - cos-uploader --local murphysec-darwin-amd64 --remote /client/-/murphysec-darwin-amd64
-    - cos-uploader --local murphysec-windows-amd64.exe --remote /client/-/murphysec-windows-amd64.exe
-    - cos-uploader --local murphysec-saas-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-linux-amd64
-    - cos-uploader --local murphysec-saas-darwin-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-darwin-amd64
-    - cos-uploader --local murphysec-saas-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-saas-windows-amd64.exe
-    - zip pro.zip murphysec-linux-amd64* murphysec-darwin-amd64* murphysec-windows-amd64.exe*
-    - cos-uploader --local pro.zip --remote /client/$CI_BUILD_REF_NAME/pro.zip
-    - cos-uploader --local pro.zip --remote /client/-/pro.zip
-    - zip saas.zip murphysec-saas-linux-amd64* murphysec-saas-darwin-amd64* murphysec-saas-windows-amd64.exe*
-    - cos-uploader --local saas.zip --remote /client/$CI_BUILD_REF_NAME/saas.zip
-    - cos-uploader --local saas.zip --remote /client/-/saas.zip
-    - sha256sum *
+    - chmod 755 ./ci/pack.sh && ./ci/pack.sh
 
 lark-notify:
   image: denoland/deno
