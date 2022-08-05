@@ -212,7 +212,7 @@ func (j *JSON) Del(key string) {
 // within a nested JSON and returns a new JSON pointer
 // the pointer is always a valid JSON, allowing for chained operations
 //
-//   newJs := js.Get("top_level", "entries", 3, "dict")
+//	newJs := js.Get("top_level", "entries", 3, "dict")
 func (j *JSON) Get(branch ...interface{}) *JSON {
 	jin, ok := j.CheckGet(branch...)
 	if ok {
@@ -290,9 +290,10 @@ func (j *JSON) JSONArray(args ...[]*JSON) []*JSON {
 // Map guarantees the return of a `map[string]interface{}` (with optional default)
 //
 // useful when you want to interate over map values in a succinct manner:
-//		for k, v := range js.Get("dictionary").Map() {
-//			fmt.Println(k, v)
-//		}
+//
+//	for k, v := range js.Get("dictionary").Map() {
+//		fmt.Println(k, v)
+//	}
 func (j *JSON) Map(args ...map[string]interface{}) map[string]interface{} {
 	var def map[string]interface{}
 
@@ -315,9 +316,10 @@ func (j *JSON) Map(args ...map[string]interface{}) map[string]interface{} {
 // Array guarantees the return of a `[]interface{}` (with optional default)
 //
 // useful when you want to iterate over array values in a succinct manner:
-//		for i, v := range js.Get("results").Array() {
-//			fmt.Println(i, v)
-//		}
+//
+//	for i, v := range js.Get("results").Array() {
+//		fmt.Println(i, v)
+//	}
 func (j *JSON) Array(args ...[]interface{}) []interface{} {
 	var def []interface{}
 
@@ -340,7 +342,8 @@ func (j *JSON) Array(args ...[]interface{}) []interface{} {
 // Bool guarantees the return of a `bool` (with optional default)
 //
 // useful when you explicitly want a `bool` in a single value return context:
-//     myFunc(js.Get("param1").Bool(), js.Get("optional_param").Bool(true))
+//
+//	myFunc(js.Get("param1").Bool(), js.Get("optional_param").Bool(true))
 func (j *JSON) Bool(args ...bool) bool {
 	var def bool
 
@@ -372,7 +375,8 @@ func (j *JSON) StringOrNil(args ...string) *string {
 // String guarantees the return of a `string` (with optional default)
 //
 // useful when you explicitly want a `string` in a single value return context:
-//     myFunc(js.Get("param1").String(), js.Get("optional_param").String("my_default"))
+//
+//	myFunc(js.Get("param1").String(), js.Get("optional_param").String("my_default"))
 func (j *JSON) String(args ...string) string {
 	var def string
 
@@ -395,7 +399,8 @@ func (j *JSON) String(args ...string) string {
 // Int guarantees the return of an `int` (with optional default)
 //
 // useful when you explicitly want an `int` in a single value return context:
-//     myFunc(js.Get("param1").Int(), js.Get("optional_param").Int(5150))
+//
+//	myFunc(js.Get("param1").Int(), js.Get("optional_param").Int(5150))
 func (j *JSON) Int(args ...int) int {
 	var def int
 
@@ -418,7 +423,8 @@ func (j *JSON) Int(args ...int) int {
 // Int64 guarantees the return of an `int64` (with optional default)
 //
 // useful when you explicitly want an `int64` in a single value return context:
-//     myFunc(js.Get("param1").Int64(), js.Get("optional_param").Int64(5150))
+//
+//	myFunc(js.Get("param1").Int64(), js.Get("optional_param").Int64(5150))
 func (j *JSON) Int64(args ...int64) int64 {
 	var def int64
 
@@ -441,7 +447,8 @@ func (j *JSON) Int64(args ...int64) int64 {
 // Uint64 guarantees the return of an `uint64` (with optional default)
 //
 // useful when you explicitly want an `uint64` in a single value return context:
-//     myFunc(js.Get("param1").Uint64(), js.Get("optional_param").Uint64(5150))
+//
+//	myFunc(js.Get("param1").Uint64(), js.Get("optional_param").Uint64(5150))
 func (j *JSON) Uint64(args ...uint64) uint64 {
 	var def uint64
 
@@ -464,7 +471,8 @@ func (j *JSON) Uint64(args ...uint64) uint64 {
 // Float64 guarantees the return of a `float64` (with optional default)
 //
 // useful when you explicitly want a `float64` in a single value return context:
-//     myFunc(js.Get("param1").Float64(), js.Get("optional_param").Float64(5.150))
+//
+//	myFunc(js.Get("param1").Float64(), js.Get("optional_param").Float64(5.150))
 func (j *JSON) Float64(args ...float64) float64 {
 	var def float64
 
@@ -488,7 +496,7 @@ func (j *JSON) Float64(args ...float64) float64 {
 // indicating whenever the branch was found or not
 // the JSON pointer mai be nil
 //
-//   newJs, ok := js.Get("top_level", "entries", 3, "dict")
+//	newJs, ok := js.Get("top_level", "entries", 3, "dict")
 func (j *JSON) CheckGet(branch ...interface{}) (*JSON, bool) {
 	jin := j
 	var ok bool
