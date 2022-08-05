@@ -4,18 +4,6 @@ import (
 	goerr "errors"
 )
 
-func New(s string) error {
-	return &E{s}
-}
-
-type E struct {
-	s string
-}
-
-func (e *E) Error() string {
-	return e.s
-}
-
 type detailedError struct {
 	detail string
 	e      error
@@ -29,6 +17,7 @@ func (e *detailedError) Error() string {
 	return e.e.Error() + ": " + e.detail
 }
 
+// WithDetail returns an error with detailed text
 func WithDetail(e error, detail string) error {
 	return &detailedError{
 		detail: detail,
@@ -58,6 +47,7 @@ func (e *causeErr) Error() string {
 	return a + ": " + b
 }
 
+// WithCause returns an error wrap a cause
 func WithCause(err error, cause error) error {
 	if err == nil {
 		panic("err mustn't be nil")
@@ -72,8 +62,8 @@ func WithCause(err error, cause error) error {
 }
 
 type wrapped struct {
-	m string
-	e error
+	prefix string
+	e      error
 }
 
 func (e *wrapped) Unwrap() error {
@@ -81,31 +71,19 @@ func (e *wrapped) Unwrap() error {
 }
 
 func (e *wrapped) Error() string {
-	if e.m == "" {
+	if e.prefix == "" {
 		return e.e.Error()
 	}
-	return e.m + ": " + e.e.Error()
+	return e.prefix + ": " + e.e.Error()
 }
 
-func Wrap(e error, m string) error {
+// Wrap returns an error with prefix
+func Wrap(e error, prefix string) error {
 	if e == nil {
 		panic("e mustn't be nil")
 	}
 	return &wrapped{
-		m: m,
-		e: e,
+		prefix: prefix,
+		e:      e,
 	}
-}
-
-func Is(err, target error) bool {
-	return goerr.Is(err, target)
-}
-
-func As(err error, target any) bool {
-	//goland:noinspection GoErrorsAs
-	return goerr.As(err, target)
-}
-
-func Unwrap(err error) error {
-	return goerr.Unwrap(err)
 }
