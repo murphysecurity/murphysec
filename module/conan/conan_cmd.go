@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
+	"io"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -61,8 +62,10 @@ func ExecuteConanInfoCmd(ctx context.Context, conanPath string, dir string) (str
 	c.Env = getEnvForConan()
 	c.Dir = dir
 	sb := utils.MkSuffixBuffer(1024)
-	c.Stdout = sb
-	c.Stderr = sb
+	logPipe := utils.NewLogPipe(logger, "conan")
+	defer logPipe.Close()
+	c.Stdout = io.MultiWriter(sb, logPipe)
+	c.Stderr = io.MultiWriter(sb, logPipe)
 	if e := c.Run(); e != nil {
 		logger.Warn("Conan command exit with error", zap.Error(e))
 		conanErr := conanError(sb.Bytes())

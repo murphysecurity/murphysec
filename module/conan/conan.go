@@ -3,6 +3,8 @@ package conan
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/murphysecurity/murphysec/display"
+	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
@@ -28,6 +30,14 @@ func (*Inspector) InspectProject(ctx context.Context) error {
 		return e
 	}
 	jsonFilePath, e := ExecuteConanInfoCmd(ctx, cmdInfo.Path, task.ScanDir)
+	var conanErr conanError
+	if errors.As(e, &conanErr) {
+		task.UI().Display(display.MsgWarn, "Conan 运行中发生异常，可能导致扫描结果不完整")
+		for _, it := range conanErr.ErrorMultiLine() {
+			task.UI().Display(display.MsgWarn, it)
+		}
+		return e
+	}
 	if e != nil {
 		return e
 	}

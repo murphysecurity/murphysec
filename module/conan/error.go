@@ -32,6 +32,10 @@ func (e conanError) Error() string {
 	return strings.Join(rs, "\n")
 }
 
+func (e conanError) ErrorMultiLine() []string {
+	return strings.Split(e.Error(), "\n")
+}
+
 func (e conanError) Is(target error) bool {
 	return e == target || errors.Is(target, ErrConanReport)
 }
