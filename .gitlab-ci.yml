@@ -10,7 +10,7 @@ variables:
   CGO_ENABLED: '0'
 
 compose-build-saas:
-  image: golang:1.18.4-buster
+  image: golang:1.19-buster
   stage: build
   artifacts:
     expire_in: 3 day
@@ -37,7 +37,7 @@ compose-build-saas:
     - sha256sum out/*
 
 compose-build:
-  image: golang:1.18.4-buster
+  image: golang:1.19-buster
   stage: build
   artifacts:
     expire_in: 1 day
