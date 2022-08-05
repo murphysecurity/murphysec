@@ -2,6 +2,7 @@ package conan
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/errors"
@@ -27,12 +28,14 @@ func (*Inspector) InspectProject(ctx context.Context) error {
 	logger := utils.UseLogger(ctx)
 	cmdInfo, e := getConanInfo(ctx)
 	if e != nil {
+		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 conan 获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", task.ScanDir))
 		return e
 	}
 	jsonFilePath, e := ExecuteConanInfoCmd(ctx, cmdInfo.Path, task.ScanDir)
+
 	var conanErr conanError
 	if errors.As(e, &conanErr) {
-		task.UI().Display(display.MsgWarn, "Conan 运行中发生异常，可能导致扫描结果不完整")
+		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 conan 无法正常运行，可能会导致检测结果不完整或失败，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", task.ScanDir))
 		for _, it := range conanErr.ErrorMultiLine() {
 			task.UI().Display(display.MsgWarn, it)
 		}
