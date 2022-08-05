@@ -15,9 +15,9 @@ jobs:
         with:
           go-version: 1.19
       - name: Test
-        run: go test -json ./... > test.json
-      - name: Annotate tests
-        if: always()
-        uses: guyarb/golang-test-annotations@v0.6.0
-        with:
-          test-results: test.json
+        run: go test -v -json ./...
+#      - name: Annotate tests
+#        if: always()
+#        uses: guyarb/golang-test-annotations@v0.6.0
+#        with:
+#          test-results: test.json
