@@ -4,7 +4,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,7 +32,7 @@ var tokenReader = func() func() string {
 				return
 			}
 			Logger.Debug("Read token", zap.String("path", dir))
-			data, e := ioutil.ReadFile(dir)
+			data, e := os.ReadFile(dir)
 			if e != nil {
 				Logger.Error("Read failed", zap.Error(e))
 				return
@@ -56,7 +55,7 @@ func ReadTokenFile() (t string, e error) {
 		return "", e
 	}
 	Logger.Debug("Read token", zap.String("dir", dir))
-	data, e := ioutil.ReadFile(dir)
+	data, e := os.ReadFile(dir)
 	if e != nil {
 		Logger.Error("Read failed", zap.Error(e))
 		return "", e
@@ -87,7 +86,7 @@ func StoreToken(token string) error {
 	if e := os.MkdirAll(filepath.Dir(path), 0777); e != nil {
 		return errors.Wrap(e, "Create config dir failed.")
 	}
-	if e := ioutil.WriteFile(path, []byte(token), 0600); e != nil {
+	if e := os.WriteFile(path, []byte(token), 0600); e != nil {
 		return errors.Wrap(e, "Write token file failed.")
 	}
 	return nil
