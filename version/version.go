@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-const version = "v1.8.1"
+const version = "v1.8.2"
 
 // PrintVersionInfo print version info to stdout
 func PrintVersionInfo() {
