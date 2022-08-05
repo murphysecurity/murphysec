@@ -31,7 +31,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 	if e != nil {
 		useBackupResolver = true
 		log.Sugar().Warnf("Mvn command not found %v", e)
-		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 	} else {
 		log.Sugar().Infof("Mvn command found: %s", mvnCmdInfo)
 		var e error
@@ -39,7 +39,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 		if e != nil {
 			log.Error("Scan maven dependencies failed", zap.Error(e))
 			useBackupResolver = true
-			task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+			task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		}
 	}
 
