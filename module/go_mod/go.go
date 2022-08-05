@@ -13,6 +13,14 @@ import (
 
 type Inspector struct{}
 
+func (i *Inspector) SupportFeature(feature base.Feature) bool {
+	switch feature {
+	case base.FeatureAllowNested:
+		return true
+	}
+	return false
+}
+
 func (i *Inspector) String() string {
 	return "GoModInspector"
 }

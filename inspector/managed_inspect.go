@@ -75,7 +75,10 @@ func managedInspect(ctx context.Context) error {
 			}
 			if inspector.CheckDir(path) {
 				inspectorAcceptances = append(inspectorAcceptances, inspectorAcceptance{inspector, path})
-				return filepath.SkipDir
+				if !inspector.SupportFeature(base.FeatureAllowNested) {
+					return filepath.SkipDir
+				}
+				return nil
 			}
 			return nil
 		})

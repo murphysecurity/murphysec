@@ -22,6 +22,10 @@ func (p poetryErr) Error() string {
 
 type Inspector struct{}
 
+func (i *Inspector) SupportFeature(feature base.Feature) bool {
+	return false
+}
+
 func (i *Inspector) String() string {
 	return "PoetryInspector"
 }

@@ -16,6 +16,10 @@ import (
 
 type Inspector struct{}
 
+func (i *Inspector) SupportFeature(feature base.Feature) bool {
+	return false
+}
+
 func (*Inspector) String() string {
 	return "ConanInspector"
 }

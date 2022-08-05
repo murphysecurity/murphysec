@@ -13,6 +13,10 @@ import (
 
 type Inspector struct{}
 
+func (i *Inspector) SupportFeature(feature base.Feature) bool {
+	return false
+}
+
 func New() base.Inspector {
 	return &Inspector{}
 }
