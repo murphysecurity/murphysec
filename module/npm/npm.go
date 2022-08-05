@@ -9,7 +9,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -45,7 +45,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	logger := utils.UseLogger(ctx)
 	pkgFile := filepath.Join(dir, "package-lock.json")
 	logger.Debug("Read package-lock.json", zap.String("path", pkgFile))
-	data, e := ioutil.ReadFile(pkgFile)
+	data, e := os.ReadFile(pkgFile)
 	if e != nil {
 		return nil, errors.WithMessage(e, "Errors when reading package-lock.json")
 	}

@@ -3,7 +3,7 @@ package maven
 import (
 	"encoding/json"
 	"github.com/murphysecurity/murphysec/utils"
-	"io/ioutil"
+	"os"
 )
 
 // PluginGraphOutput maven dependency-graph.json file
@@ -24,7 +24,7 @@ type PluginGraphOutput struct {
 
 // ReadFromFile dependency-graph.json
 func (d *PluginGraphOutput) ReadFromFile(path string) error {
-	data, e := ioutil.ReadFile(path)
+	data, e := os.ReadFile(path)
 	if e != nil {
 		return ErrBadDepsGraph.DetailedWrap("read graph file", e)
 	}

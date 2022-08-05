@@ -8,9 +8,9 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/vifraa/gopom"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -91,7 +91,7 @@ func (l *LocalRepo) Fetch(coordinate Coordinate) (*UnresolvedPom, error) {
 	if !utils.IsFile(p) {
 		return nil, ErrArtifactNotFound
 	}
-	data, e := ioutil.ReadFile(p)
+	data, e := os.ReadFile(p)
 	if e != nil {
 		return nil, ErrParsePomFailed.DetailedWrap("open pom", e)
 	}
