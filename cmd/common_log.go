@@ -7,6 +7,7 @@ import (
 	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -86,6 +87,7 @@ func initLogger() error {
 	api.Logger = _logger
 	inspector.Logger = _logger
 	conf.Logger = _logger
+	model.Logger = _logger
 	logger.InitLegacyLogger(_logger)
 	return nil
 }
