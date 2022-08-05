@@ -47,7 +47,7 @@ func CheckMvnCommand() (info *MvnCommandInfo, err error) {
 		return nil, ErrMvnNotFound
 	}
 	// check version
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*3)
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*8)
 	defer cancel()
 	output, err := exec.CommandContext(ctx, mvnPath, "--version").Output()
 	if err != nil {
