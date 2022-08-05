@@ -3,12 +3,13 @@ package model
 import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/pkg/errors"
+	"github.com/murphysecurity/murphysec/errors"
 	giturls "github.com/whilp/git-urls"
 	"time"
 )
 
 var ErrNoGitRepo = errors.New("No git repo found")
+var ErrNoGitRemoteFound = errors.New("No git remote found")
 
 type GitInfo struct {
 	RemoteName     string    `json:"remote_name"`
@@ -40,7 +41,7 @@ func getGitInfo(dir string) (*GitInfo, error) {
 	}
 	var selectedRemote *git.Remote
 	if len(remotes) == 0 {
-		return nil, errors.New("No git remote found")
+		return nil, ErrNoGitRemoteFound
 	}
 	for _, it := range remotes {
 		if it.Config().Name == "origin" {
@@ -111,7 +112,7 @@ func collectContributor(dir string) ([]Contributor, error) {
 		return nil
 	})
 	if e != nil {
-		return nil, errors.Wrap(e, "iterate failed.")
+		return nil, errors.Wrap(e, "iterate failed")
 	}
 	var rs []Contributor
 	for contributor := range contributorSet {
