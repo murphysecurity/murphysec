@@ -9,6 +9,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/bundler"
 	"github.com/murphysecurity/murphysec/module/cocoapods"
 	"github.com/murphysecurity/murphysec/module/composer"
+	"github.com/murphysecurity/murphysec/module/conan"
 	"github.com/murphysecurity/murphysec/module/go_mod"
 	"github.com/murphysecurity/murphysec/module/gradle"
 	"github.com/murphysecurity/murphysec/module/maven"
@@ -37,6 +38,7 @@ var managedInspector = []base.Inspector{
 	cocoapods.New(),
 	poetry.New(),
 	nuget.New(),
+	conan.New(),
 }
 
 type inspectorAcceptance struct {

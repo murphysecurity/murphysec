@@ -17,6 +17,7 @@ const (
 	PMCocoaPods PackageManagerType = "cocoapods"
 	PMPoetry    PackageManagerType = "poetry"
 	PmNuget     PackageManagerType = "nuget"
+	PmConan     PackageManagerType = "conan"
 )
 
 type Language string
