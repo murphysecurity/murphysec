@@ -112,6 +112,12 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		}
 	}
 
+	if pipListDeps, e := executePipList(ctx, dir); e != nil {
+		logger.Warn("pip list execution failed", zap.Error(e))
+	} else {
+		mergeComponentVersionOnly(componentMap, pipListDeps)
+	}
+
 	for s := range ignoreSet {
 		delete(componentMap, s)
 	}
@@ -135,6 +141,15 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		}
 		model.UseInspectorTask(ctx).AddModule(m)
 		return nil
+	}
+}
+
+func mergeComponentVersionOnly(target map[string]string, deps []model.Dependency) {
+	for _, it := range deps {
+		v, ok := target[it.Name]
+		if v == "" && ok && it.Version != "" {
+			target[it.Name] = it.Version
+		}
 	}
 }
 
