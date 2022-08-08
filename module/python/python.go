@@ -94,7 +94,12 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	})
 	for fp := range requirementsFiles {
 		logger.Debug("Merge requirements file", zap.String("path", fp))
-		mergeComponentInto(componentMap, parsePythonRequirements(ctx, fp))
+		deps, e := readRequirements(fp)
+		if e != nil {
+			logger.Error("Read requirements failed", zap.Error(e))
+			continue
+		}
+		mergeComponentInto(componentMap, deps)
 	}
 
 	tomlPath := filepath.Join(dir, "pyproject.toml")

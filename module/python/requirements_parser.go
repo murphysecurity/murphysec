@@ -1,41 +1,38 @@
 package python
 
 import (
-	"bufio"
-	"context"
+	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils"
-	"io"
 	"os"
-	"regexp"
 	"strings"
 )
 
-func parsePythonRequirements(ctx context.Context, p string) (rs []model.Dependency) {
-	logger := utils.UseLogger(ctx)
-	logger.Sugar().Debugf("Parsing python requirements: %s", p)
-	var pyRequirementsPattern = regexp.MustCompile("^([\\w-]+) *.?= *([^= \\n\\r]+)$")
-	f, e := os.Open(p)
+func readRequirements(path string) ([]model.Dependency, error) {
+	data, e := os.ReadFile(path)
 	if e != nil {
-		logger.Sugar().Warnf("Open file failed: %s", e.Error())
-		return
+		return nil, errors.Wrap(e, "read requirements failed")
 	}
-	defer f.Close()
-	scanner := bufio.NewScanner(io.LimitReader(f, 4*1024*1024))
-	for scanner.Scan() {
-		if scanner.Err() != nil {
-			logger.Sugar().Warnf("Scan requirements failed: %s", e.Error())
-			return
-		}
-		t := strings.TrimSpace(scanner.Text())
-		m := pyRequirementsPattern.FindStringSubmatch(t)
-		if m == nil {
+	return parseRequirements(string(data)), nil
+}
+
+func parseRequirements(data string) []model.Dependency {
+	var deps []model.Dependency
+	lines := strings.Split(data, "\n")
+	for _, it := range lines {
+		it = strings.TrimSpace(it)
+		if it == "" {
 			continue
 		}
-		rs = append(rs, model.Dependency{
-			Name:    m[1],
-			Version: m[2],
+		rs := strings.SplitN(it, "=", 2)
+		rs[0] = strings.TrimSpace(strings.TrimRight(rs[0], ">=<"))
+		if len(rs) > 1 {
+			rs[1] = strings.TrimSpace(strings.TrimLeft(rs[1], ">=<"))
+		}
+		deps = append(deps, model.Dependency{
+			Name:         rs[0],
+			Version:      rs[1],
+			Dependencies: nil,
 		})
 	}
-	return
+	return deps
 }
