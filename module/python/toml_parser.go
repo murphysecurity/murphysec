@@ -2,10 +2,10 @@ package python
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simpletoml"
-	"github.com/pkg/errors"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 	"go.uber.org/zap"
 	"golang.org/x/mod/semver"
@@ -29,7 +29,7 @@ func tomlBuildSys(data []byte) ([]model.Dependency, error) {
 	pa := regexp.MustCompile("([\\w.-]+)(?:[>=]?=([\\w.-]+))?")
 	t, e := simpletoml.UnmarshalTOML(data)
 	if e != nil {
-		return nil, errors.Wrap(ErrParseToml, e.Error())
+		return nil, errors.WithCause(ErrParseToml, e)
 	}
 	rsm := orderedmap.New[string, string]()
 	for _, it := range t.Get("build-system", "requires").TOMLArray() {
