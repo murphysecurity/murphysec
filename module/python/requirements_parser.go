@@ -11,9 +11,6 @@ import (
 	"strings"
 )
 
-var pyImportPattern1 = regexp.MustCompile("import\\s+(?:[A-Za-z_-][\\w.-]*)(?:\\s*,\\s*(?:[A-Za-z_-][\\w.-]*))")
-var pyImportPattern2 = regexp.MustCompile("from\\s+([A-Za-z_-][\\w-]*)")
-
 func parsePythonRequirements(ctx context.Context, p string) (rs []model.Dependency) {
 	logger := utils.UseLogger(ctx)
 	logger.Sugar().Debugf("Parsing python requirements: %s", p)
