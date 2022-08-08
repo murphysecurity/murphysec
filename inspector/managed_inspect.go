@@ -63,6 +63,9 @@ func managedInspect(ctx context.Context) error {
 				Logger.Warn("item is nil", zap.Error(err))
 				return nil
 			}
+			if !d.IsDir() {
+				return nil
+			}
 			if d.IsDir() && dirShouldIgnore(d.Name()) {
 				return filepath.SkipDir
 			}
