@@ -2,7 +2,8 @@ name: Test
 
 on:
   push:
-
+env:
+  DEFAULT_MAVEN_REPO: https://repo1.maven.org/maven2/
 jobs:
   test:
     runs-on: ubuntu-latest
