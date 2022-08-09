@@ -69,12 +69,16 @@ func (d PluginGraphOutput) _tree(id int, visitedId []bool, edges map[int][]int) 
 	defer func() { visitedId[id] = false }()
 
 	if len(d.Artifacts[id].Scopes) > 0 {
+		var scopeAllow bool
 		for _, scope := range d.Artifacts[id].Scopes {
 			if scopeSet().Has(scope) {
+				scopeAllow = true
 				break
 			}
 		}
-		return nil
+		if !scopeAllow {
+			return nil
+		}
 	}
 	if !utils.InStringSlice(d.Artifacts[id].Scopes, "compile") && !utils.InStringSlice(d.Artifacts[id].Scopes, "runtime") {
 		return nil
