@@ -77,9 +77,6 @@ func (p *Pom) ListDependencyManagements() (rs []gopom.Dependency) {
 		if r.Optional == "true" {
 			continue
 		}
-		if !(r.Scope == "" || r.Scope == "runtime" || r.Scope == "compile") {
-			continue
-		}
 		rs = append(rs, r)
 	}
 	return
