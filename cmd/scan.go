@@ -66,6 +66,7 @@ func scanCmd() *cobra.Command {
 	must.Must(c.Flags().MarkHidden("project-id"))
 	c.Flags().StringVar(&env.SpecificProjectName, "project-name", "", "force specific project name")
 	c.Flags().BoolVar(&env.DisableGit, "skip-git", false, "force ignore git info")
+	c.Flags().StringVar(&env.Scope, "scope", "", "")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }

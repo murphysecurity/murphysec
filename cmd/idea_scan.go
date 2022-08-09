@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
@@ -42,6 +43,7 @@ func ideaScanCmd() *cobra.Command {
 		},
 	}
 	c.Flags().StringVar(&dir, "dir", "", "project base dir")
+	c.Flags().StringVar(&env.Scope, "scope", "", "")
 	c.Args = cobra.NoArgs
 	must.Must(c.MarkFlagRequired("dir"))
 	must.Must(c.MarkFlagDirname("dir"))

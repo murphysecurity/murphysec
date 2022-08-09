@@ -2,6 +2,7 @@ package maven
 
 import (
 	"encoding/json"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/utils"
 	"os"
 )
@@ -20,6 +21,15 @@ type PluginGraphOutput struct {
 		NumericFrom int `json:"numericFrom"`
 		NumericTo   int `json:"numericTo"`
 	} `json:"dependencies"`
+}
+
+var __cachedScopeSet env.ScopeSet
+
+func scopeSet() env.ScopeSet {
+	if __cachedScopeSet == nil {
+		__cachedScopeSet = env.GetScanScopes()
+	}
+	return __cachedScopeSet
 }
 
 // ReadFromFile dependency-graph.json
@@ -58,6 +68,14 @@ func (d PluginGraphOutput) _tree(id int, visitedId []bool, edges map[int][]int) 
 	visitedId[id] = true
 	defer func() { visitedId[id] = false }()
 
+	if len(d.Artifacts[id].Scopes) > 0 {
+		for _, scope := range d.Artifacts[id].Scopes {
+			if scopeSet().Has(scope) {
+				break
+			}
+		}
+		return nil
+	}
 	if !utils.InStringSlice(d.Artifacts[id].Scopes, "compile") && !utils.InStringSlice(d.Artifacts[id].Scopes, "runtime") {
 		return nil
 	}

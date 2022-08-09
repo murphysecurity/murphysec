@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/vifraa/gopom"
 	"golang.org/x/text/encoding/ianaindex"
@@ -57,12 +58,13 @@ type Pom struct {
 
 // ListDependencies 返回全部已解析属性的依赖
 func (p *Pom) ListDependencies() (rs []gopom.Dependency) {
+	scopes := env.GetScanScopes()
 	for _, dep := range p.depSet.listAll() {
 		r := p.resolveDependencyProperty(dep)
 		if r.Optional == "true" {
 			continue
 		}
-		if !(r.Scope == "" || r.Scope == "runtime" || r.Scope == "compile") {
+		if !scopes.Has(dep.Scope) {
 			continue
 		}
 		rs = append(rs, r)
