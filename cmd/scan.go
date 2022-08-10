@@ -66,7 +66,7 @@ func scanCmd() *cobra.Command {
 	must.Must(c.Flags().MarkHidden("project-id"))
 	c.Flags().StringVar(&env.SpecificProjectName, "project-name", "", "force specific project name")
 	c.Flags().BoolVar(&env.DisableGit, "skip-git", false, "force ignore git info")
-	c.Flags().StringVar(&env.Scope, "scope", "", "")
+	c.Flags().StringVar(&env.Scope, "scope", "", "specify the scope type (only for maven)\ndefault \"compile,runtime\"\nto specify all scopes, use \"all\"\ncan be multiple, but need to be separated by commas")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
