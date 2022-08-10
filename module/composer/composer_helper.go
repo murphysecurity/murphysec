@@ -7,8 +7,6 @@ import (
 	"os/exec"
 )
 
-var ErrNoComposerFound = errors.New("no composer found")
-
 func doComposerInstall(ctx context.Context, projectDir string) error {
 	composerPath, e := exec.LookPath("composer")
 	if e != nil {

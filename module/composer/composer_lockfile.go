@@ -3,20 +3,20 @@ package composer
 import (
 	"context"
 	"encoding/json"
+	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simplejson"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 func readComposerLockFile(path string) ([]Package, error) {
 	lockFileData, e := utils.ReadFileLimited(path, _ComposerLockFileSizeLimit)
 	if e != nil {
-		return nil, errors.WithMessage(e, "Read composer.lock failed")
+		return nil, errors.Wrap(e, "Read composer.lock failed")
 	}
 	pkgs, e := parseComposerLock(lockFileData)
 	if e != nil {
-		return nil, errors.WithMessage(e, "Parse composer.lock failed")
+		return nil, errors.Wrap(e, "Parse composer.lock failed")
 	}
 	return pkgs, nil
 }
@@ -24,7 +24,7 @@ func readComposerLockFile(path string) ([]Package, error) {
 func parseComposerLock(data []byte) ([]Package, error) {
 	var j simplejson.JSON
 	if e := json.Unmarshal(data, &j); e != nil {
-		return nil, errors.WithMessage(e, "ParseComposerLock")
+		return nil, errors.Wrap(e, "ParseComposerLock")
 	}
 	pkgList := make([]Package, 0)
 	for _, pkg := range j.Get("packages").JSONArray() {
