@@ -26,7 +26,7 @@ func Scan(ctx context.Context) error {
 		return e
 	}
 
-	if env.AllowFileHash {
+	if env.AllowFileHash && len(scanTask.Modules) == 0 {
 		Logger.Info("File hash scanning")
 		if e := FileHashScan(ctx); e != nil {
 			Logger.Error("FileHash calc failed", zap.Error(e))
