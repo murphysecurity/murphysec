@@ -15,7 +15,7 @@ require (
 	github.com/magiconair/properties v1.8.6
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.12.0
-	github.com/pelletier/go-toml/v2 v2.0.2
+	github.com/pelletier/go-toml/v2 v2.0.3
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
