@@ -10,3 +10,5 @@
 .cxx
 .c++
 .jar
+.so
+.dll
