@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"io"
@@ -140,22 +141,13 @@ func calcFileHash(path string) ([]string, error) {
 	defer f.Close()
 
 	h1 := md5.New()
-	h2 := md5.New()
-	h3 := md5.New()
-	w1 := h1
-	w2 := utils.Dos2UnixWriter(h2)
-	w3 := utils.Unix2DosWriter(h3)
-	w := io.MultiWriter(w1, w2, w3)
-	if _, e := io.Copy(w, f); e != nil {
+	w1 := utils.NewNoCrlfWriter(h1)
+	must.Must(w1.Close())
+	if _, e := io.Copy(w1, f); e != nil {
 		return nil, e
 	}
-	_ = w2.Close()
-	_ = w3.Close()
 	rs = append(rs, hex.EncodeToString(h1.Sum(make([]byte, 0, 16))))
-	rs = append(rs, hex.EncodeToString(h2.Sum(make([]byte, 0, 16))))
-	rs = append(rs, hex.EncodeToString(h3.Sum(make([]byte, 0, 16))))
-
-	return utils.DistinctStringSlice(rs), nil
+	return rs, nil
 }
 
 var _CxxExtSet = map[string]bool{
