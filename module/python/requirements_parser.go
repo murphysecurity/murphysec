@@ -4,6 +4,7 @@ import (
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/model"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -16,22 +17,17 @@ func readRequirements(path string) ([]model.Dependency, error) {
 }
 
 func parseRequirements(data string) []model.Dependency {
+	var pattern = regexp.MustCompile("^([\\w_-]+)[>=<]+([\\w.]+)$")
 	var deps []model.Dependency
-	lines := strings.Split(data, "\n")
-	for _, it := range lines {
-		it = strings.TrimSpace(it)
-		if it == "" {
+	for _, s := range strings.Split(data, "\n") {
+		s = strings.TrimSpace(s)
+		m := pattern.FindStringSubmatch(s)
+		if m == nil {
 			continue
 		}
-		rs := strings.SplitN(it, "=", 2)
-		rs[0] = strings.TrimSpace(strings.TrimRight(rs[0], ">=<"))
-		if len(rs) > 1 {
-			rs[1] = strings.TrimSpace(strings.TrimLeft(rs[1], ">=<"))
-		}
 		deps = append(deps, model.Dependency{
-			Name:         rs[0],
-			Version:      rs[1],
-			Dependencies: nil,
+			Name:    m[1],
+			Version: m[2],
 		})
 	}
 	return deps
