@@ -133,6 +133,9 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 			Dependencies:   []model.Dependency{},
 			FilePath:       filepath.Join(dir),
 		}
+		if m.Name == "." {
+			m.Name = "Python"
+		}
 		for k, v := range componentMap {
 			m.Dependencies = append(m.Dependencies, model.Dependency{
 				Name:    k,
