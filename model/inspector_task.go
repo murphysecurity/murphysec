@@ -18,6 +18,9 @@ func (i *InspectorTask) AddModule(module Module) {
 		}
 	}
 	module.FilePath = filepath.ToSlash(module.FilePath)
+	if module.FilePath == "." {
+		module.FilePath = "./"
+	}
 	i.Modules = append(i.Modules, module)
 }
 
