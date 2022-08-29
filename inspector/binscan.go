@@ -173,9 +173,6 @@ func scanBinaryFile(ctx context.Context, dir string, pathCh chan string) error {
 		if info.IsDir() || strings.HasPrefix(info.Name(), ".") || !info.Mode().IsRegular() {
 			return nil
 		}
-		if info.Size() > 1*1024*1024*1024 {
-			return nil
-		}
 		select {
 		case pathCh <- path:
 		case <-ctx.Done():
