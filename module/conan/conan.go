@@ -25,7 +25,10 @@ func (*Inspector) String() string {
 }
 
 func (*Inspector) CheckDir(dir string) bool {
-	return utils.IsFile(filepath.Join(dir, "conanfile.txt"))
+	return utils.IsFile(filepath.Join(dir, "conanfile.txt")) ||
+		utils.IsFile(filepath.Join(dir, "conanfile.py")) ||
+		utils.IsFile(filepath.Join(dir, "conan.txt")) ||
+		utils.IsFile(filepath.Join(dir, "conan.py"))
 }
 func (*Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
