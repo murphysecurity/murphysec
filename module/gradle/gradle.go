@@ -210,7 +210,7 @@ func parseGradleDependencies(lines []string) *GradleDependencyInfo {
 		Dependencies: []DepElement{},
 	}
 	taskPattern := regexp.MustCompile("^\\w+$|^\\w+\\s-")
-	projectPattern := regexp.MustCompile("(?:Root project|project) '([A-Za-z0-9._-]+)'")
+	projectPattern := regexp.MustCompile("(?:Root project|[Pp]roject) ([':A-Za-z0-9._-]+)")
 	type task struct {
 		name  string
 		lines []string
@@ -221,7 +221,7 @@ func parseGradleDependencies(lines []string) *GradleDependencyInfo {
 		var currTaskLines []string
 		for _, it := range lines {
 			if m := projectPattern.FindStringSubmatch(it); len(m) > 0 && info.ProjectName == "" {
-				info.ProjectName = strings.TrimSpace(strings.TrimPrefix(m[1], "Project"))
+				info.ProjectName = strings.TrimSpace(strings.Trim(m[1], "'"))
 				continue
 			}
 			if it == "" {

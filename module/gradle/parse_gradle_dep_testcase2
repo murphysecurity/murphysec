@@ -1,0 +1,36 @@
+> Task :blah-ssp-blah:dependencies
+
+------------------------------------------------------------
+Project :blah-ssp-blah
+------------------------------------------------------------
+
+annotationProcessor - Annotation processors and their dependencies for source set 'main'.
+\--- org.projectlombok:lombok:1.18.10
+
+apiElements - API elements for main. (n)
+No dependencies
+
+archives - Configuration for archive artifacts.
+No dependencies
+
+checkstyle - The Checkstyle libraries to be used for this project.
+\--- com.puppycrawl.tools:checkstyle:8.17
+     +--- info.picocli:picocli:3.9.0
+     +--- antlr:antlr:2.7.7
+     +--- org.antlr:antlr4-runtime:4.7.2
+     +--- commons-beanutils:commons-beanutils:1.9.3
+     |    \--- commons-collections:commons-collections:3.2.2
+     +--- com.google.guava:guava:27.0.1-jre
+     |    +--- com.google.guava:failureaccess:1.0.1
+     |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+     |    +--- com.google.code.findbugs:jsr305:3.0.2
+     |    +--- org.checkerframework:checker-qual:2.5.2
+     |    +--- com.google.errorprone:error_prone_annotations:2.2.0
+     |    +--- com.google.j2objc:j2objc-annotations:1.1
+     |    \--- org.codehaus.mojo:animal-sniffer-annotations:1.17
+     \--- net.sf.saxon:Saxon-HE:9.9.0-2
+
+compile - Dependencies for source set 'main' (deprecated, use 'implementation' instead).
++--- org.slf4j:slf4j-api:1.7.25 -> 1.7.35
++--- org.projectlombok:lombok:1.18.10 -> 1.18.16
++--- org.hibernate.validator:hibernate-validator:6.1.0.Final
