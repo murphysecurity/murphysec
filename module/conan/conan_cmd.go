@@ -12,7 +12,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 type CmdInfo struct {
@@ -88,9 +87,6 @@ func LocateConan(ctx context.Context) (string, error) {
 }
 
 func GetConanVersion(ctx context.Context, conanPath string) (string, error) {
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(ctx, time.Second*3)
-	defer cancel()
 	c := exec.CommandContext(ctx, conanPath, "-v")
 	c.Env = getEnvForConan()
 	if data, e := c.Output(); e != nil {
