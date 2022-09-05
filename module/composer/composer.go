@@ -77,6 +77,9 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 			module.Dependencies = append(module.Dependencies, *node)
 		}
 	}
+	if module.Name == "" && module.Version == "" && len(module.Dependencies) == 0 {
+		return nil
+	}
 	task.AddModule(*module)
 	return nil
 }
