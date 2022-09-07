@@ -34,6 +34,13 @@ const (
 	DotNet     Language = "DotNet"
 )
 
+type ScanStrategy string
+
+const (
+	ScanStrategyNormal ScanStrategy = "Normal"
+	ScanStrategyBackup ScanStrategy = "Backup"
+)
+
 type Dependency struct {
 	Name         string       `json:"name"`
 	Version      string       `json:"version"`
@@ -50,4 +57,5 @@ type Module struct {
 	Dependencies   []Dependency       `json:"dependencies,omitempty"`
 	RuntimeInfo    interface{}        `json:"runtime_info,omitempty"`
 	UUID           uuid.UUID          `json:"uuid"`
+	ScanStrategy   ScanStrategy       `json:"scan_strategy"`
 }

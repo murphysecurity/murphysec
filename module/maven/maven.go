@@ -54,6 +54,11 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 	if deps == nil {
 		return nil, ErrInspection
 	}
+
+	var strategy = model.ScanStrategyNormal
+	if useBackupResolver {
+		strategy = model.ScanStrategyBackup
+	}
 	for _, entry := range deps.ListAllEntries() {
 		modules = append(modules, model.Module{
 			PackageManager: model.PMMaven,
@@ -64,6 +69,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 			FilePath:       filepath.Join(dir, entry.relativePath),
 			Dependencies:   convDeps(entry.children),
 			RuntimeInfo:    mvnCmdInfo,
+			ScanStrategy:   strategy,
 		})
 	}
 	return modules, nil

@@ -21,6 +21,9 @@ func (i *InspectorTask) AddModule(module Module) {
 	if module.FilePath == "." {
 		module.FilePath = "./"
 	}
+	if module.ScanStrategy == "" {
+		module.ScanStrategy = ScanStrategyNormal
+	}
 	i.Modules = append(i.Modules, module)
 }
 

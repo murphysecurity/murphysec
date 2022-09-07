@@ -39,6 +39,7 @@ type VoModule struct {
 	Version        string                   `json:"version,omitempty"`
 	ModuleUUID     uuid.UUID                `json:"module_uuid,omitempty"`
 	ModuleType     ModuleType               `json:"module_type"`
+	ScanStrategy   string                   `json:"scan_strategy"`
 }
 
 type SendDetectRequest struct {

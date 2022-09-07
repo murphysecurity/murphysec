@@ -33,6 +33,7 @@ func submitModuleInfoApi(ctx context.Context) error {
 			Version:        it.Version,
 			ModuleUUID:     it.UUID,
 			ModuleType:     api.ModuleTypeVersion,
+			ScanStrategy:   string(it.ScanStrategy),
 		})
 	}
 	if len(task.FileHashes) != 0 && env.AllowFileHash {
