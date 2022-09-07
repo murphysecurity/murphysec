@@ -96,12 +96,12 @@ outer:
 			verKey := dep.GroupID + dep.ArtifactID
 			if v := d.versionChosen[verKey]; v != "" {
 				depCoordinate.Version = v
-			} else if v := dm.GetVersionOf(dep.GroupID, dep.ArtifactID); v != "" {
-				depCoordinate.Version = v
-				d.versionChosen[verKey] = v
 			} else if dep.Version != "" {
 				depCoordinate.Version = dep.Version
 				d.versionChosen[verKey] = dep.Version
+			} else if v := dm.GetVersionOf(dep.GroupID, dep.ArtifactID); v != "" {
+				depCoordinate.Version = v
+				d.versionChosen[verKey] = v
 			} else {
 				logger.Warn("Resolution version failed", zap.Any("in", coordinate), zap.String("dep", dep.GroupID+":"+dep.ArtifactID))
 				continue
