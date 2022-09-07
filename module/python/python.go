@@ -28,7 +28,7 @@ func (i Inspector) CheckDir(dir string) bool {
 	r, e := os.ReadDir(dir)
 	if e == nil {
 		for _, it := range r {
-			if filepath.Ext(it.Name()) == ".py" || strings.HasPrefix(it.Name(), "requirements") || it.Name() == "pyproject.toml" {
+			if (it.Name() != "conanfile.py" && filepath.Ext(it.Name()) == ".py") || strings.HasPrefix(it.Name(), "requirements") || it.Name() == "pyproject.toml" {
 				return true
 			}
 		}
@@ -63,6 +63,9 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		}
 		if (filepath.Ext(path) == ".txt" || filepath.Ext(path) == "") && strings.HasPrefix(d.Name(), "requirements") {
 			requirementsFiles[path] = struct{}{}
+			return nil
+		}
+		if filepath.Base(path) == "conanfile.py" {
 			return nil
 		}
 		if filepath.Ext(path) != ".py" {
