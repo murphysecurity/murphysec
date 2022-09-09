@@ -63,6 +63,7 @@ func submitModuleInfoApi(ctx context.Context) error {
 
 func createTaskApi(ctx context.Context) (e error) {
 	scanTask := model.UseScanTask(ctx)
+	ui := scanTask.UI()
 	req := &api.CreateTaskRequest{
 		CliVersion:      version.Version(),
 		TaskType:        scanTask.TaskType,
@@ -101,5 +102,8 @@ func createTaskApi(ctx context.Context) (e error) {
 	scanTask.ProjectId = res.ProjectId
 	scanTask.Username = res.Username
 	Logger.Info("Task created", zap.Any("task_id", scanTask.TaskId), zap.Any("project_id", scanTask.ProjectId))
+	if res.AlertMessage != "" {
+		ui.Display(res.AlertLevel, res.AlertMessage)
+	}
 	return
 }

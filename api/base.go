@@ -106,6 +106,7 @@ func (c *Client) GET(relUri string) *http.Request {
 }
 
 func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
+	req.Header.Set("User-Agent", version.UserAgent())
 	var noBody bool
 	if t := reflect.TypeOf(resBody); t == nil {
 		noBody = true

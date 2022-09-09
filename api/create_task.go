@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/model"
 )
 
@@ -30,10 +31,12 @@ type CreateTaskGitInfo struct {
 }
 
 type CreateTaskResponse struct {
-	TaskInfo          string `json:"task_info"`
-	TotalContributors int    `json:"total_contributors"`
-	ProjectId         string `json:"project_id"`
-	Username          string `json:"username"`
+	TaskInfo          string           `json:"task_info"`
+	TotalContributors int              `json:"total_contributors"`
+	ProjectId         string           `json:"project_id"`
+	Username          string           `json:"username"`
+	AlertMessage      string           `json:"alert_message"`
+	AlertLevel        display.MsgLevel `json:"alert_level"`
 }
 
 func CreateTask(req *CreateTaskRequest) (*CreateTaskResponse, error) {

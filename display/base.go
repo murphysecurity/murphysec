@@ -2,6 +2,7 @@ package display
 
 import (
 	"github.com/muesli/termenv"
+	"strings"
 )
 
 var (
@@ -49,6 +50,23 @@ func (s Status) fColor() termenv.ANSIColor {
 }
 
 type MsgLevel int
+
+func (m *MsgLevel) UnmarshalText(text []byte) error {
+	t := strings.ToLower(string(text))
+	switch t {
+	case "info":
+		*m = MsgInfo
+	case "notice":
+		*m = MsgNotice
+	case "warn":
+		*m = MsgWarn
+	case "error":
+		*m = MsgError
+	default:
+		*m = MsgNotice
+	}
+	return nil
+}
 
 const (
 	MsgInfo MsgLevel = iota
