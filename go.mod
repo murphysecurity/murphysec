@@ -3,7 +3,7 @@ module github.com/murphysecurity/murphysec
 go 1.19
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.5
+	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/antchfx/xmlquery v1.3.12
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/denisbrodbeck/machineid v1.0.1
