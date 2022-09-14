@@ -67,15 +67,16 @@ func initLogger() error {
 		jsonCore = zapcore.NewCore(consoleEncoder, logFile, zapcore.DebugLevel)
 	}
 
+	var stderr = zapcore.Lock(os.Stderr)
 	switch strings.ToLower(strings.TrimSpace(consoleLogLevelOverride)) {
 	case "error":
-		consoleCore = zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stderr), zapcore.ErrorLevel)
+		consoleCore = zapcore.NewCore(consoleEncoder, stderr, zapcore.ErrorLevel)
 	case "warn":
-		consoleCore = zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stderr), zapcore.WarnLevel)
+		consoleCore = zapcore.NewCore(consoleEncoder, stderr, zapcore.WarnLevel)
 	case "info":
-		consoleCore = zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stderr), zapcore.InfoLevel)
+		consoleCore = zapcore.NewCore(consoleEncoder, stderr, zapcore.InfoLevel)
 	case "debug":
-		consoleCore = zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stderr), zapcore.DebugLevel)
+		consoleCore = zapcore.NewCore(consoleEncoder, stderr, zapcore.DebugLevel)
 	}
 
 	loggerCore := zapcore.NewTee(consoleCore, jsonCore)
