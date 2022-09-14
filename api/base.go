@@ -115,11 +115,11 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 			panic("resBody must be a pointer")
 		}
 	}
-	Logger.Info("Send request", zap.String("uri", req.URL.RequestURI()))
+	Logger.Debug("Send request", zap.String("uri", req.URL.RequestURI()))
 	res, e := c.client.Do(req)
 	if e != nil {
 		e := e.(*url.Error)
-		Logger.Info("Request failed", zap.Error(e))
+		Logger.Debug("Request failed", zap.Error(e))
 		if e.Timeout() {
 			Logger.Error("Request timeout")
 			return ErrTimeout
