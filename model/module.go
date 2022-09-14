@@ -18,6 +18,7 @@ const (
 	PMPoetry    PackageManagerType = "poetry"
 	PmNuget     PackageManagerType = "nuget"
 	PmConan     PackageManagerType = "conan"
+	PmRebar3    PackageManagerType = "rebar3"
 )
 
 type Language string
@@ -32,6 +33,7 @@ const (
 	JavaScript Language = "JavaScript"
 	Python     Language = "Python"
 	DotNet     Language = "DotNet"
+	Erlang     Language = "Erlang"
 )
 
 type ScanStrategy string

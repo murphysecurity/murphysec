@@ -17,6 +17,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/nuget"
 	"github.com/murphysecurity/murphysec/module/poetry"
 	"github.com/murphysecurity/murphysec/module/python"
+	"github.com/murphysecurity/murphysec/module/rebar3"
 	"github.com/murphysecurity/murphysec/module/yarn"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
@@ -39,6 +40,7 @@ var managedInspector = []base.Inspector{
 	poetry.New(),
 	nuget.New(),
 	conan.New(),
+	rebar3.New(),
 }
 
 type inspectorAcceptance struct {
