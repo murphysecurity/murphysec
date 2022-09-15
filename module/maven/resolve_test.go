@@ -7,12 +7,34 @@ import (
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"io/fs"
 	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
+var _prepared = false
+
+func prepareTest() {
+	if _prepared {
+		return
+	}
+	e := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
+		if filepath.Ext(path) == ".noext" {
+			must.Must(os.Link(path, strings.TrimSuffix(path, ".noext")))
+		}
+		return nil
+	})
+	if e != nil {
+		panic(e)
+	}
+	_prepared = true
+}
+
 func TestReadLocalProject(t *testing.T) {
+	prepareTest()
 	modules, e := ReadLocalProject(context.TODO(), "./__test/multi_module")
 	assert.NoError(t, e)
 	assert.EqualValues(t, "1.0.0-SNAPSHOT", modules[1].ParentCoordinate().Version)
@@ -21,6 +43,7 @@ func TestReadLocalProject(t *testing.T) {
 }
 
 func TestResolve(t *testing.T) {
+	prepareTest()
 	mavenRepo := os.Getenv("DEFAULT_MAVEN_REPO")
 	if mavenRepo == "" && os.Getenv("CI") != "" {
 		t.Skip("Currently in CI environment, the environment variable DEFAULT_MAVEN_REPO not set, skip test")
