@@ -57,7 +57,13 @@ func rootCmd() *cobra.Command {
 
 func preRun(cmd *cobra.Command, args []string) error {
 	if versionFlag {
-		fmt.Printf("%s %s\n", filepath.Base(must.A(filepath.EvalSymlinks(must.A(os.Executable())))), version.Version())
+		fmt.Printf("%s %s\n\n", filepath.Base(must.A(filepath.EvalSymlinks(must.A(os.Executable())))), version.Version())
+		var suffix string
+		if version.GetGitModified() == "true" {
+			suffix = "(modified)"
+		}
+		fmt.Printf("Git hash: %s%s\n", version.GetGitHash(), suffix)
+		fmt.Printf("Git time: %s\n", version.GetGitTime())
 		fmt.Printf("Supported modules: %s\n", strings.Join(module.GetSupportedModuleList(), ", "))
 		os.Exit(0)
 	}
