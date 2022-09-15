@@ -1,15 +1,18 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/module"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -54,7 +57,8 @@ func rootCmd() *cobra.Command {
 
 func preRun(cmd *cobra.Command, args []string) error {
 	if versionFlag {
-		version.PrintVersionInfo()
+		fmt.Printf("%s %s\n", filepath.Base(must.A(filepath.EvalSymlinks(must.A(os.Executable())))), version.Version())
+		fmt.Printf("Supported modules: %s\n", strings.Join(module.GetSupportedModuleList(), ", "))
 		os.Exit(0)
 	}
 	if !utils.InStringSlice([]string{"", "warn", "error", "debug", "info", "silent"}, strings.ToLower(strings.TrimSpace(consoleLogLevelOverride))) {
