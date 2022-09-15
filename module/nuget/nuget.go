@@ -13,15 +13,14 @@ import (
 
 type Inspector struct{}
 
+var Instance = &Inspector{}
+
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
-func New() base.Inspector {
-	return &Inspector{}
-}
 func (i *Inspector) String() string {
-	return "NugetInspector"
+	return "Nuget"
 }
 func (i *Inspector) CheckDir(dir string) bool {
 	if utils.IsFile(filepath.Join(dir, "packages.config")) {

@@ -13,6 +13,8 @@ import (
 
 type Inspector struct{}
 
+var Instance = &Inspector{}
+
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
 	switch feature {
 	case base.FeatureAllowNested:
@@ -22,7 +24,7 @@ func (i *Inspector) SupportFeature(feature base.Feature) bool {
 }
 
 func (i *Inspector) String() string {
-	return "GoModInspector"
+	return "GoMod"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {
@@ -66,8 +68,4 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	}
 	task.AddModule(m)
 	return nil
-}
-
-func New() base.Inspector {
-	return &Inspector{}
 }

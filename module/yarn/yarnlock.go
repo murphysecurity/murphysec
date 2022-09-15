@@ -17,12 +17,14 @@ import (
 
 type Inspector struct{}
 
+var Instance = &Inspector{}
+
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
 func (i *Inspector) String() string {
-	return "YarnInspector"
+	return "Yarn"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {
@@ -57,10 +59,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	}
 	task.AddModule(m)
 	return nil
-}
-
-func New() base.Inspector {
-	return &Inspector{}
 }
 
 type pkgFile struct {

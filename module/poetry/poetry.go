@@ -22,12 +22,14 @@ func (p poetryErr) Error() string {
 
 type Inspector struct{}
 
+var Instance = &Inspector{}
+
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
 func (i *Inspector) String() string {
-	return "PoetryInspector"
+	return "Poetry"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {
@@ -71,10 +73,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 
 	task.AddModule(module)
 	return nil
-}
-
-func New() base.Inspector {
-	return &Inspector{}
 }
 
 type Manifest struct {

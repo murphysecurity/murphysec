@@ -16,12 +16,14 @@ import (
 
 type Inspector struct{}
 
+var Instance = &Inspector{}
+
 func (i Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
 func (i Inspector) String() string {
-	return "PythonInspector"
+	return "Python"
 }
 
 func (i Inspector) CheckDir(dir string) bool {
@@ -167,8 +169,4 @@ func mergeComponentInto(source map[string]string, append []model.Dependency) {
 		}
 		source[name] = version
 	}
-}
-
-func New() base.Inspector {
-	return &Inspector{}
 }

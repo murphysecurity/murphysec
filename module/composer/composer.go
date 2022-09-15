@@ -17,12 +17,14 @@ const _ComposerLockFileSizeLimit = _ComposerManifestFileSizeLimit
 
 type Inspector struct{}
 
+var Instance = &Inspector{}
+
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
 func (i *Inspector) String() string {
-	return "ComposerInspector"
+	return "Composer"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {
@@ -109,10 +111,6 @@ func _buildDepTree(lockfile map[string]Package, visitedDep map[string]struct{}, 
 		}
 	}
 	return rs
-}
-
-func New() base.Inspector {
-	return &Inspector{}
 }
 
 type Element struct {

@@ -5,20 +5,8 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module"
 	"github.com/murphysecurity/murphysec/module/base"
-	"github.com/murphysecurity/murphysec/module/bundler"
-	"github.com/murphysecurity/murphysec/module/cocoapods"
-	"github.com/murphysecurity/murphysec/module/composer"
-	"github.com/murphysecurity/murphysec/module/conan"
-	"github.com/murphysecurity/murphysec/module/go_mod"
-	"github.com/murphysecurity/murphysec/module/gradle"
-	"github.com/murphysecurity/murphysec/module/maven"
-	"github.com/murphysecurity/murphysec/module/npm"
-	"github.com/murphysecurity/murphysec/module/nuget"
-	"github.com/murphysecurity/murphysec/module/poetry"
-	"github.com/murphysecurity/murphysec/module/python"
-	"github.com/murphysecurity/murphysec/module/rebar3"
-	"github.com/murphysecurity/murphysec/module/yarn"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"io/fs"
@@ -26,22 +14,6 @@ import (
 	"strings"
 	"time"
 )
-
-var managedInspector = []base.Inspector{
-	go_mod.New(),
-	maven.New(),
-	npm.New(),
-	gradle.New(),
-	yarn.New(),
-	python.New(),
-	composer.New(),
-	bundler.New(),
-	cocoapods.New(),
-	poetry.New(),
-	nuget.New(),
-	conan.New(),
-	rebar3.New(),
-}
 
 type inspectorAcceptance struct {
 	inspector base.Inspector
@@ -59,7 +31,7 @@ func managedInspect(ctx context.Context) error {
 
 	// todo: 重构，随着检查器越来越多，这里越来越慢
 	var inspectorAcceptances []inspectorAcceptance
-	for _, inspector := range managedInspector {
+	for _, inspector := range module.Inspectors {
 		e := filepath.WalkDir(baseDir, func(path string, d fs.DirEntry, err error) error {
 			if d == nil {
 				Logger.Warn("item is nil", zap.Error(err))

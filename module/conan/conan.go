@@ -16,12 +16,14 @@ import (
 
 type Inspector struct{}
 
+var Instance = &Inspector{}
+
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
 func (*Inspector) String() string {
-	return "ConanInspector"
+	return "Conan"
 }
 
 func (*Inspector) CheckDir(dir string) bool {
@@ -76,8 +78,4 @@ func (*Inspector) InspectProject(ctx context.Context) error {
 		UUID:           uuid.UUID{},
 	})
 	return nil
-}
-
-func New() base.Inspector {
-	return &Inspector{}
 }

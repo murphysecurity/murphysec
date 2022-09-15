@@ -16,16 +16,14 @@ import (
 
 type Inspector struct{}
 
+var Instance = &Inspector{}
+
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
-func New() base.Inspector {
-	return &Inspector{}
-}
-
 func (i *Inspector) String() string {
-	return "NpmInspector"
+	return "Npm"
 }
 
 func (i *Inspector) CheckDir(dir string) bool {
