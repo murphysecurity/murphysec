@@ -40,7 +40,7 @@ const (
 	_SExit
 )
 
-type _GemLockTokens []interface{}
+type _GemLockTokens []any
 
 func (t _GemLockTokens) String() string {
 	b := new(bytes.Buffer)
@@ -67,7 +67,7 @@ func (t _GemLockTokens) String() string {
 }
 
 func lexGemLock(input string) (_GemLockTokens, error) {
-	var rs []interface{}
+	var rs []any
 	q := list.New()
 	q.PushBack(0)
 	for lineNum, line := range strings.Split(input, "\n") {

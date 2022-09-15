@@ -16,7 +16,7 @@ const (
 	_SExit
 )
 
-type pdTokens []interface{}
+type pdTokens []any
 
 type intStack []int
 
