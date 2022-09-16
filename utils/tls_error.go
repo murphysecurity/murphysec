@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-var __x509Pattern = regexp.MustCompile("x509 .+ certificate is not standards compliant")
+var __x509Pattern = regexp.MustCompile("x509: .+ certificate is not standards compliant")
 
 func IsTlsCertError(e error) bool {
 	var a0 x509.HostnameError
