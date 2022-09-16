@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
 	"go.uber.org/zap"
 	"io"
-	"mime"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"os"
 	"reflect"
 	"strconv"
@@ -105,74 +104,55 @@ func (c *Client) GET(relUri string) *http.Request {
 	return u
 }
 
-func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
+func (c *Client) DoJson(req *http.Request, resBody interface{}) (err error) {
+	if t := reflect.TypeOf(resBody); t != nil && t.Kind() != reflect.Ptr {
+		panic("resBody must be a pointer or nil")
+	}
+
 	req.Header.Set("User-Agent", version.UserAgent())
-	var noBody bool
-	if t := reflect.TypeOf(resBody); t == nil {
-		noBody = true
-	} else {
-		if t.Kind() != reflect.Ptr {
-			panic("resBody must be a pointer")
-		}
-	}
 	Logger.Debug("Send request", zap.String("uri", req.URL.RequestURI()))
-	res, e := c.client.Do(req)
-	if e != nil {
-		e := e.(*url.Error)
-		Logger.Debug("Request failed", zap.Error(e))
-		if e.Timeout() {
-			Logger.Error("Request timeout")
-			return ErrTimeout
-		}
-		return errors.WithCause(ErrServerRequest, e)
+
+	var httpResponse *http.Response
+	httpResponse, err = c.client.Do(req)
+	if utils.IsHttpTimeout(err) {
+		return ErrTimeout
 	}
-	Logger.Info("API response", zap.Any("status", res.StatusCode))
-	data, e := io.ReadAll(res.Body)
-	if e != nil {
-		return errors.Wrap(ErrServerRequest, "read response body failed:"+e.Error())
+	if err != nil {
+		return errors.WithCause(ErrServerRequest, err)
 	}
-	defer res.Body.Close()
-	var mimeType string
-	contentType := res.Header.Get("content-type")
-	if contentType != "" {
-		var err error
-		mimeType, _, err = mime.ParseMediaType(contentType)
-		if err != nil {
-			return errors.Wrap(ErrServerRequest, "parse content-type failed: "+e.Error())
-		}
+	Logger.Info("API response", zap.Any("status", httpResponse.StatusCode))
+	var data []byte
+	data, err = io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return errors.WithCause(ErrServerRequest, err)
 	}
-	if res.StatusCode >= 200 && res.StatusCode < 300 {
-		if noBody {
+	defer httpResponse.Body.Close()
+
+	var statusCode = httpResponse.StatusCode
+
+	// Normal code
+	if statusCode >= 200 && statusCode < 300 {
+		if resBody == nil {
 			return nil
 		}
-		if mimeType != "application/json" {
-			return errors.Wrap(UnprocessableResponse, "MIME-type: "+mimeType)
-		}
 		if e := json.Unmarshal(data, resBody); e != nil {
-			Logger.Error("Parse server response json failed", zap.Error(e))
-			return errors.Wrap(ErrServerRequest, "parse response body as json failed")
+			return errors.WithCause(UnprocessableResponse, e)
 		}
 		return nil
 	}
-	if res.StatusCode >= 400 {
-		baseErr := ErrServerRequest
-		httpMsg := fmt.Sprintf("http status %d - %s", res.StatusCode, res.Status)
-		if res.StatusCode == 401 {
-			return ErrTokenInvalid
-		}
-		if mimeType == "" {
-			return errors.Wrap(baseErr, httpMsg)
-		}
-		if mimeType == "application/json" {
-			var m CommonApiErr
-			if e := json.Unmarshal(data, &m); e != nil {
-				Logger.Error("Parse server response json failed", zap.Error(e))
-				return errors.Wrap(baseErr, httpMsg)
-			}
-			return &m
-		}
+
+	// Error
+	httpMsg := fmt.Sprintf("HTTP status %d - %s", statusCode, httpResponse.Status)
+	if statusCode == 401 {
+		return ErrTokenInvalid
 	}
-	return errors.Wrap(ErrServerRequest, fmt.Sprintf("http code %d - %s", res.StatusCode, res.Status))
+	var m CommonApiErr
+	if e := json.Unmarshal(data, &m); e != nil {
+		Logger.Error("Server error response can't be parsed, suppressed", zap.Error(e))
+	} else {
+		return &m
+	}
+	return errors.WithDetail(ErrServerRequest, httpMsg)
 }
 
 type CommonApiErr struct {
