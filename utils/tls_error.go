@@ -3,9 +3,12 @@ package utils
 import (
 	"crypto/x509"
 	"github.com/pkg/errors"
+	"regexp"
+	"runtime"
 )
 
-// IsTlsCertError doesn't work on macOS because of: https://github.com/golang/go/issues/51991
+var __x509Pattern = regexp.MustCompile("x509 .+ certificate is not standards compliant")
+
 func IsTlsCertError(e error) bool {
 	var a0 x509.HostnameError
 	if errors.As(e, &a0) {
@@ -29,6 +32,10 @@ func IsTlsCertError(e error) bool {
 	}
 	var a5 x509.ConstraintViolationError
 	if errors.As(e, &a5) {
+		return true
+	}
+	// Workaround for macOS because of: https://github.com/golang/go/issues/51991
+	if runtime.GOOS == "darwin" && e != nil && __x509Pattern.MatchString(e.Error()) {
 		return true
 	}
 	return false
