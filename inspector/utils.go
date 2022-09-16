@@ -31,3 +31,5 @@ func dirShouldIgnore(name string) bool {
 	_, ok = ignoredDirMap[filepath.Base(name)]
 	return ok
 }
+
+type unit = struct{}
