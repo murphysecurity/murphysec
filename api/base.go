@@ -109,6 +109,11 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (err error) {
 		panic("resBody must be a pointer or nil")
 	}
 
+	defer func() {
+		if err != nil {
+			Logger.Error("API request failed", zap.Error(err))
+		}
+	}()
 	req.Header.Set("User-Agent", version.UserAgent())
 	Logger.Debug("Send request", zap.String("uri", req.URL.RequestURI()))
 
