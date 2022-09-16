@@ -19,7 +19,7 @@ func createTaskC(ctx context.Context) (e error) {
 	defer ui.ClearStatus()
 	e = createTaskApi(ctx)
 	if errors.Is(e, api.ErrTlsRequest) {
-		ui.Display(display.MsgError, "当前网络不安全，通讯可能受到监听，您可以通过 -x 或 --allow-insecure 选项忽略这个错误")
+		ui.Display(display.MsgError, "当前建立的网络连接不安全，您可以通过 -x 或 --allow-insecure 选项忽略这个错误")
 		ui.Display(display.MsgError, e.Error())
 		return
 	}
