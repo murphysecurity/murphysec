@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// IsTlsCertError doesn't work on macOS because of: https://github.com/golang/go/issues/51991
 func IsTlsCertError(e error) bool {
 	var a0 x509.HostnameError
 	if errors.As(e, &a0) {
