@@ -2,9 +2,7 @@ package utils
 
 import (
 	"crypto/x509"
-	"fmt"
 	"github.com/pkg/errors"
-	"reflect"
 )
 
 func IsTlsCertError(e error) bool {
@@ -12,7 +10,6 @@ func IsTlsCertError(e error) bool {
 	if errors.As(e, &a0) {
 		return true
 	}
-	fmt.Println(reflect.TypeOf(e), reflect.TypeOf(errors.Unwrap(e)), reflect.TypeOf(errors.Unwrap(errors.Unwrap(e))), errors.As(e, &a0))
 	var a1 x509.CertificateInvalidError
 	if errors.As(e, &a1) {
 		return true
