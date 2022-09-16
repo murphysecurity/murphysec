@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -18,6 +19,9 @@ func createTaskC(ctx context.Context) (e error) {
 	ui.UpdateStatus(display.StatusRunning, "正在创建扫描任务，请稍候······")
 	defer ui.ClearStatus()
 	e = createTaskApi(ctx)
+	if utils.IsTlsCertError(e) {
+		ui.Display(display.MsgError, "当前网络不安全，通讯可能受到监听，您可以通过 -x 或 --allow-insecure 选项忽略这个错误")
+	}
 	if errors.Is(e, api.ErrTokenInvalid) {
 		ui.Display(display.MsgError, "任务创建失败，Token 无效")
 	} else if e != nil {

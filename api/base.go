@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"io"
 	"mime"
@@ -124,7 +124,7 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) error {
 			Logger.Error("Request timeout")
 			return ErrTimeout
 		}
-		return errors.Wrap(ErrServerRequest, e.Error())
+		return errors.WithCause(ErrServerRequest, e)
 	}
 	Logger.Info("API response", zap.Any("status", res.StatusCode))
 	data, e := io.ReadAll(res.Body)

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"fmt"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/conf"
@@ -11,6 +12,7 @@ import (
 	"github.com/murphysecurity/murphysec/version"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,6 +20,7 @@ import (
 
 var versionFlag bool
 var CliServerAddressOverride string
+var allowInsecure bool
 
 func rootCmd() *cobra.Command {
 	argsMap := map[string]bool{}
@@ -39,6 +42,7 @@ func rootCmd() *cobra.Command {
 	c.PersistentFlags().BoolVar(&enableNetworkLog, "network-log", false, "print network data")
 	c.PersistentFlags().StringVar(&conf.APITokenCliOverride, "token", "", "specify API token")
 	c.PersistentFlags().StringVar(&CliServerAddressOverride, "server", "", "specify server address")
+	c.PersistentFlags().BoolVarP(&allowInsecure, "allow-insecure", "x", false, "Allow insecure TLS connection")
 	c.PersistentFlags().String("ide", "", "hidden")
 	must.Must(c.PersistentFlags().MarkHidden("ide"))
 	c.AddCommand(authCmd())
@@ -75,6 +79,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 	if CliServerAddressOverride == "" {
 		CliServerAddressOverride = "https://www.murphysec.com"
+	}
+	if allowInsecure {
+		// config default http transport allow insecure
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
 	}
 	env.ConfigureServerBaseUrl(CliServerAddressOverride)
 	api.C = api.NewClient()
