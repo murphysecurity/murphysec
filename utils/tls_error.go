@@ -30,7 +30,7 @@ func IsTlsCertError(e error) bool {
 	if errors.As(e, &a4) {
 		return true
 	}
-	var a5 x509.ConstraintViolationError
+	var a5 x509.InsecureAlgorithmError
 	if errors.As(e, &a5) {
 		return true
 	}
