@@ -12,3 +12,4 @@ var ErrTokenInvalid = model.WrapIdeaErr(err("Token invalid"), model.IdeaTokenInv
 var ErrServerRequest = model.WrapIdeaErr(err("Send request failed"), model.IdeaServerRequestFailed)
 var UnprocessableResponse = model.WrapIdeaErr(err("Unprocessable response"), model.IdeaServerRequestFailed)
 var ErrTimeout = model.WrapIdeaErr(err("API request timeout"), model.IdeaApiTimeout)
+var ErrTlsRequest = model.WrapIdeaErr(err("TLS communication error"), model.IdeaServerRequestFailed)

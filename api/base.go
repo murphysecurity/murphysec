@@ -117,6 +117,9 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (err error) {
 	if utils.IsHttpTimeout(err) {
 		return ErrTimeout
 	}
+	if utils.IsTlsCertError(err) {
+		return errors.WithCause(ErrTlsRequest, err)
+	}
 	if err != nil {
 		return errors.WithCause(ErrServerRequest, err)
 	}
