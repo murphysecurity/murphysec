@@ -29,9 +29,6 @@ func (i *Inspector) String() string {
 
 func (i *Inspector) CheckDir(dir string) bool {
 	info, e := os.Stat(filepath.Join(dir, "yarn.lock"))
-	if e != nil {
-		info, e = os.Stat(filepath.Join(dir, "package.json"))
-	}
 	return e == nil && !info.IsDir()
 }
 
