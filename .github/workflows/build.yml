@@ -73,4 +73,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: out/*
-          draft: false
+          draft: true
