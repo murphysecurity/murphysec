@@ -33,6 +33,10 @@ func scanCmd() *cobra.Command {
 					return
 				}
 			}
+			if !utils.IsDir(projectDir) {
+				fmt.Println("正在为您检测该文件所在的目录")
+				projectDir = filepath.Dir(projectDir)
+			}
 			tt := model.TaskTypeCli
 			if CliJsonOutput {
 				tt = model.TaskTypeJenkins
