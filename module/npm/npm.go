@@ -27,8 +27,7 @@ func (i *Inspector) String() string {
 }
 
 func (i *Inspector) CheckDir(dir string) bool {
-	return utils.IsFile(filepath.Join(dir, "package.json")) &&
-		utils.IsFile(filepath.Join(dir, "package-lock.json"))
+	return utils.IsFile(filepath.Join(dir, "package-lock.json"))
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
