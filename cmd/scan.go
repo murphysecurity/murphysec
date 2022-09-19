@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
@@ -33,13 +34,13 @@ func scanCmd() *cobra.Command {
 					return
 				}
 			}
-			if !utils.IsDir(projectDir) {
-				fmt.Println("正在为您检测该文件所在的目录")
-				projectDir = filepath.Dir(projectDir)
-			}
 			tt := model.TaskTypeCli
 			if CliJsonOutput {
 				tt = model.TaskTypeJenkins
+			}
+			if !utils.IsDir(projectDir) {
+				tt.UI().Display(display.MsgInfo, "正在为您检测该文件所在的目录")
+				projectDir = filepath.Dir(projectDir)
 			}
 			task := model.CreateScanTask(projectDir, model.TaskKindNormal, tt)
 			task.ProjectId = ProjectId
