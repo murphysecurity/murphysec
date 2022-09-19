@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/murphysecurity/murphysec/errors"
@@ -25,19 +26,17 @@ type GitInfo struct {
 
 func getGitInfo(dir string) (*GitInfo, error) {
 	repo, e := git.PlainOpen(dir)
-	if e == git.ErrRepositoryNotExists {
+	if errors.Is(e, git.ErrRepositoryNotExists) ||
+		errors.Is(e, git.ErrRepositoryIncomplete) {
 		return nil, ErrNoGitRepo
 	}
-	if e == git.ErrRepositoryIncomplete {
-		return nil, errors.Wrap(ErrNoGitRepo, "Git repo incomplete")
-	}
 	if e != nil {
-		return nil, errors.Wrap(ErrNoGitRepo, e.Error())
+		return nil, fmt.Errorf("open git repo failed: %w", e)
 	}
 	// get remote
 	remotes, e := repo.Remotes()
 	if e != nil {
-		return nil, errors.Wrap(e, "Enumeration git remotes failed")
+		return nil, fmt.Errorf("enumeration git remotes failed: %w", e)
 	}
 	var selectedRemote *git.Remote
 	if len(remotes) == 0 {
@@ -86,12 +85,12 @@ func getGitInfo(dir string) (*GitInfo, error) {
 func collectContributor(dir string) ([]Contributor, error) {
 	repo, e := git.PlainOpen(dir)
 	if e != nil {
-		return nil, errors.Wrap(e, "open repo failed")
+		return nil, fmt.Errorf("open repo failed: %w", e)
 	}
 	contributorSet := map[Contributor]struct{}{}
 	commitIter, e := repo.CommitObjects()
 	if e != nil {
-		return nil, errors.Wrap(e, "list commit failed")
+		return nil, fmt.Errorf("list commit failed: %w", e)
 	}
 	e = commitIter.ForEach(func(commit *object.Commit) error {
 		if commit.Hash.IsZero() {
@@ -112,7 +111,7 @@ func collectContributor(dir string) ([]Contributor, error) {
 		return nil
 	})
 	if e != nil {
-		return nil, errors.Wrap(e, "iterate failed")
+		return nil, fmt.Errorf("iterate contributors failed: %w", e)
 	}
 	var rs []Contributor
 	for contributor := range contributorSet {
