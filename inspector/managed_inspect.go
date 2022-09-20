@@ -30,8 +30,9 @@ func managedInspect(ctx context.Context) error {
 		st := time.Now()
 		c := model.WithInspectorTask(ctx, it.path)
 		c = utils.WithLogger(c, Logger.Named(fmt.Sprintf("%s-%d", it.inspector.String(), idx)))
+		Logger.Sugar().Infof("Begin: %s, duration: %v", it.String(), time.Now().Sub(st))
 		e := it.inspector.InspectProject(c)
-		Logger.Sugar().Infof("%v, duration: %v", it, time.Now().Sub(st))
+		Logger.Sugar().Infof("End: %s, duration: %v", it.String(), time.Now().Sub(st))
 		if e != nil {
 			Logger.Error("InspectError", zap.Error(e))
 		}
@@ -48,6 +49,10 @@ type dirScanner struct {
 type dirScanItem struct {
 	path      string
 	inspector base.Inspector
+}
+
+func (d *dirScanItem) String() string {
+	return fmt.Sprintf("%s - %s", d.inspector, d.path)
 }
 
 func (d *dirScanner) scan() {
