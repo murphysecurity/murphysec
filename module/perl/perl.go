@@ -48,7 +48,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		FilePath:       metaFile,
 		Dependencies:   deps.deps(),
 	})
-	panic("implement me")
+	return nil
 }
 
 func (i Inspector) SupportFeature(feature base.Feature) bool {
