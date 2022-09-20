@@ -19,6 +19,7 @@ const (
 	PmNuget     PackageManagerType = "nuget"
 	PmConan     PackageManagerType = "conan"
 	PmRebar3    PackageManagerType = "rebar3"
+	PmCargo     PackageManagerType = "cargo"
 )
 
 type Language string
@@ -34,6 +35,7 @@ const (
 	Python     Language = "Python"
 	DotNet     Language = "DotNet"
 	Erlang     Language = "Erlang"
+	Rust       Language = "Rust"
 )
 
 type ScanStrategy string
