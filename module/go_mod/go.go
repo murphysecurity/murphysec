@@ -16,11 +16,7 @@ type Inspector struct{}
 var Instance = &Inspector{}
 
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
-	switch feature {
-	case base.FeatureAllowNested:
-		return true
-	}
-	return false
+	return base.FeatureAllowNested&feature > 0
 }
 
 func (i *Inspector) String() string {

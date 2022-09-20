@@ -22,11 +22,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 }
 
 func (i Inspector) SupportFeature(feature base.Feature) bool {
-	switch feature {
-	case base.FeatureAllowNested:
-		return true
-	}
-	return false
+	return base.FeatureAllowNested&feature > 0
 }
 
 var Instance base.Inspector = &Inspector{}
