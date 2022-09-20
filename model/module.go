@@ -54,7 +54,6 @@ type Dependency struct {
 type Module struct {
 	PackageManager PackageManagerType `json:"package_manager"`
 	Language       Language           `json:"language"`
-	PackageFile    string             `json:"package_file"`
 	Name           string             `json:"name"`
 	Version        string             `json:"version"`
 	FilePath       string             `json:"relative_path"`

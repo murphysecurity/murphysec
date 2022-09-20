@@ -44,9 +44,9 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	task.AddModule(model.Module{
 		PackageManager: model.PMCocoaPods,
 		Language:       model.ObjectiveC,
-		PackageFile:    "Podfile.lock",
 		Name:           tree[0].Name,
 		Dependencies:   tree,
+		FilePath:       podLockPath,
 	})
 	return nil
 }

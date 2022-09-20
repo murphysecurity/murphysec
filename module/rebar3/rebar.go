@@ -43,7 +43,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	task.AddModule(model.Module{
 		PackageManager: model.PmRebar3,
 		Language:       model.Erlang,
-		PackageFile:    "rebar.config",
 		Name:           tree[0].Name,
 		Version:        tree[0].Version,
 		FilePath:       filepath.Join(task.ScanDir, "rebar.config"),

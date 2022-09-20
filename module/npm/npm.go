@@ -87,7 +87,6 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	module := model.Module{
 		PackageManager: model.PMNpm,
 		Language:       model.JavaScript,
-		PackageFile:    "package-lock.json",
 		Name:           lockfile.Name,
 		Version:        lockfile.Version,
 		FilePath:       filepath.Join(dir, "package-lock.json"),

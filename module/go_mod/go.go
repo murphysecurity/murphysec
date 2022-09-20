@@ -44,7 +44,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	m := model.Module{
 		PackageManager: model.PMGoMod,
 		Language:       model.Go,
-		PackageFile:    "go.mod",
 		FilePath:       modFilePath,
 		Name:           "<NoNameModule>",
 	}

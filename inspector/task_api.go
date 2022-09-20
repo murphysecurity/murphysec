@@ -26,7 +26,6 @@ func submitModuleInfoApi(ctx context.Context) error {
 			FileHashList:   nil,
 			Language:       it.Language,
 			Name:           it.Name,
-			PackageFile:    it.PackageFile,
 			PackageManager: it.PackageManager,
 			RelativePath:   it.FilePath,
 			RuntimeInfo:    it.RuntimeInfo,

@@ -62,10 +62,10 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	module := model.Module{
 		PackageManager: model.PMPoetry,
 		Language:       model.Python,
-		PackageFile:    "pyprojject.toml",
 		Name:           manifest.Name,
 		Dependencies:   []model.Dependency{},
 		UUID:           uuid.Must(uuid.NewRandom()),
+		FilePath:       task.ScanDir,
 	}
 	for k, v := range cmap {
 		module.Dependencies = append(module.Dependencies, model.Dependency{Name: k, Version: v})

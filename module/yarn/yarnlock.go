@@ -44,7 +44,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	m := model.Module{
 		PackageManager: model.PMYarn,
 		Language:       model.JavaScript,
-		PackageFile:    "yarn.lock",
 		Name:           filepath.Base(dir),
 		Version:        "",
 		FilePath:       filepath.Join(dir, "yarn.lock"),

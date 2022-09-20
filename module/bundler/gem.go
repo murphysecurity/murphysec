@@ -47,9 +47,9 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	task.AddModule(model.Module{
 		PackageManager: model.PMBundler,
 		Language:       model.Ruby,
-		PackageFile:    "Gemfile.lock",
 		Name:           tree[0].Name,
 		Dependencies:   tree,
+		FilePath:       scanDir,
 	})
 	return nil
 }

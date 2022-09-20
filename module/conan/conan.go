@@ -69,7 +69,6 @@ func (*Inspector) InspectProject(ctx context.Context) error {
 	task.AddModule(model.Module{
 		PackageManager: model.PmConan,
 		Language:       model.Cxx,
-		PackageFile:    "conanfile.txt",
 		Name:           "conanfile.txt",
 		Version:        "",
 		FilePath:       filepath.Join(task.ScanDir, "conanfile.txt"),

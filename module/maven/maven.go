@@ -63,7 +63,6 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 		modules = append(modules, model.Module{
 			PackageManager: model.PMMaven,
 			Language:       model.Java,
-			PackageFile:    "pom.xml",
 			Name:           entry.coordinate.Name(),
 			Version:        entry.coordinate.Version,
 			FilePath:       filepath.Join(dir, entry.relativePath),

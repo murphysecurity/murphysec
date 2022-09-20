@@ -42,7 +42,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	module := &model.Module{
 		PackageManager: model.PMComposer,
 		Language:       model.PHP,
-		PackageFile:    "composer.json",
 		Name:           manifest.Name,
 		Version:        manifest.Version,
 		FilePath:       filepath.Join(dir, "composer.json"),

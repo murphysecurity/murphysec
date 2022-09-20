@@ -51,7 +51,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	inspectTask.AddModule(model.Module{
 		PackageManager: "",
 		Language:       "R",
-		PackageFile:    "renv.lock",
 		Name:           "RProject",
 		Version:        "",
 		FilePath:       filepath.Join(inspectTask.ScanDir, "renv.lock"),

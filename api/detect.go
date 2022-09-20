@@ -32,7 +32,6 @@ type VoModule struct {
 	FileHashList   []VoFileHash             `json:"file_hash_list,omitempty"`
 	Language       model.Language           `json:"language,omitempty"`
 	Name           string                   `json:"name,omitempty"`
-	PackageFile    string                   `json:"package_file,omitempty"`
 	PackageManager model.PackageManagerType `json:"package_manager,omitempty"`
 	RelativePath   string                   `json:"relative_path,omitempty"`
 	RuntimeInfo    interface{}              `json:"runtime_info,omitempty"`

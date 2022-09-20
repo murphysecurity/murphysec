@@ -42,7 +42,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	task.AddModule(model.Module{
 		PackageManager: "PerlEnv",
 		Language:       "Perl",
-		PackageFile:    filepath.Base(metaFile),
 		Name:           deps.Name,
 		Version:        deps.Version,
 		FilePath:       metaFile,

@@ -37,7 +37,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	m := model.Module{
 		PackageManager: model.PmNuget,
 		Language:       model.DotNet,
-		PackageFile:    "",
 		Name:           "packages.config",
 		Version:        "",
 		FilePath:       filepath.Join(task.ProjectDir, "packages.config"),

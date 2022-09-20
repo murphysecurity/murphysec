@@ -40,7 +40,6 @@ func (i Inspector) InspectProject(ctx context.Context) (err error) {
 	task.AddModule(model.Module{
 		PackageManager: model.PmCargo,
 		Language:       model.Rust,
-		PackageFile:    "cargo.lock",
 		Name:           tree.Name,
 		Version:        tree.Version,
 		FilePath:       cargoLockPath,
