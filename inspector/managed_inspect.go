@@ -34,7 +34,7 @@ func managedInspect(ctx context.Context) error {
 		e := it.inspector.InspectProject(c)
 		Logger.Sugar().Infof("End: %s, duration: %v", it.String(), time.Now().Sub(st))
 		if e != nil {
-			Logger.Error("InspectError", zap.Error(e))
+			Logger.Error("InspectError", zap.Error(e), zap.Any("inspector", it))
 		}
 	}
 	return nil
