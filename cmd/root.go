@@ -23,10 +23,6 @@ var CliServerAddressOverride string
 var allowInsecure bool
 
 func rootCmd() *cobra.Command {
-	argsMap := map[string]bool{}
-	for _, it := range os.Args {
-		argsMap[it] = true
-	}
 	c := &cobra.Command{
 		Use:               "murphysec",
 		PersistentPreRunE: preRun,
@@ -56,6 +52,7 @@ func rootCmd() *cobra.Command {
 		c.AddCommand(scannerCmd())
 	}
 	c.AddCommand(machineCmd())
+	c.AddCommand(dockerScanCmd())
 	return c
 }
 

@@ -21,9 +21,10 @@ const (
 type TaskKind string
 
 const (
-	TaskKindNormal  TaskKind = "Normal"
-	TaskKindBinary  TaskKind = "Binary"
-	TaskKindIotScan TaskKind = "IotScan"
+	TaskKindNormal     TaskKind = "Normal"
+	TaskKindBinary     TaskKind = "Binary"
+	TaskKindIotScan    TaskKind = "IotScan"
+	TaskKindDockerfile TaskKind = "Dockerfile"
 )
 
 type ProjectType string
