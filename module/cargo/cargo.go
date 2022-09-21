@@ -12,15 +12,15 @@ import (
 
 type Inspector struct{}
 
-func (i Inspector) String() string {
+func (Inspector) String() string {
 	return "Cargo"
 }
 
-func (i Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "cargo.lock"))
 }
 
-func (i Inspector) InspectProject(ctx context.Context) (err error) {
+func (Inspector) InspectProject(ctx context.Context) (err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("CargoInspector: %w", err)
@@ -48,7 +48,7 @@ func (i Inspector) InspectProject(ctx context.Context) (err error) {
 	return nil
 }
 
-func (i Inspector) SupportFeature(feature base.Feature) bool {
+func (Inspector) SupportFeature(feature base.Feature) bool {
 	return base.FeatureAllowNested&feature > 0
 }
 
