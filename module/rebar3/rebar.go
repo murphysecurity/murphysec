@@ -13,20 +13,20 @@ type Inspector struct{}
 
 var Instance = &Inspector{}
 
-func (i *Inspector) SupportFeature(feature base.Feature) bool {
+func (Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
-func (i *Inspector) String() string {
+func (Inspector) String() string {
 	return "Rebar3"
 }
-func (i *Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	if utils.IsFile(filepath.Join(dir, "rebar.config")) {
 		return true
 	}
 	return false
 }
-func (i *Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
 	ver, e := GetRebar3Version(ctx)
 	if e != nil {
@@ -53,7 +53,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func (i *Inspector) PackageManagerType() model.PackageManagerType {
+func (Inspector) PackageManagerType() model.PackageManagerType {
 	return model.PmRebar3
 }
 
