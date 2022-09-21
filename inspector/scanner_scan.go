@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"go.uber.org/zap"
@@ -16,8 +17,36 @@ func ScannerScan(dir string) {
 	if e := managedInspect(ctx); e != nil {
 		Logger.Error("Managed inspect error", zap.Error(e))
 	}
-	if task.Modules == nil {
-		task.Modules = []model.Module{}
+	voModules := make([]api.VoModule, 0)
+	for _, it := range task.Modules {
+		voModules = append(voModules, api.VoModule{
+			Dependencies:   it.Dependencies,
+			FileHashList:   nil,
+			Language:       it.Language,
+			Name:           it.Name,
+			PackageManager: it.PackageManager,
+			RelativePath:   it.RelativePath,
+			RuntimeInfo:    it.RuntimeInfo,
+			Version:        it.Version,
+			ModuleUUID:     it.UUID,
+			ModuleType:     api.ModuleTypeVersion,
+			ScanStrategy:   string(it.ScanStrategy),
+		})
 	}
-	fmt.Println(string(must.A(json.Marshal(task.Modules))))
+	list := make([]api.VoFileHash, 0)
+	for _, it := range task.FileHashes {
+		for _, hash := range it.Hash {
+			list = append(list, api.VoFileHash{
+				Path: it.Path,
+				Hash: hash,
+			})
+		}
+	}
+	voModules = append(voModules, api.VoModule{
+		FileHashList: list,
+		Language:     model.Cxx,
+		ModuleType:   api.ModuleTypeFileHash,
+		ModuleUUID:   _CPPModuleUUID,
+	})
+	fmt.Println(string(must.A(json.Marshal(voModules))))
 }
