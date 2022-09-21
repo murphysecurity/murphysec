@@ -3,5 +3,5 @@ package module
 import "github.com/murphysecurity/murphysec/module/conan"
 
 func init() {
-	Inspectors = append(Inspectors, conan.Instance)
+	Inspectors = append(Inspectors, &conan.Inspector{})
 }

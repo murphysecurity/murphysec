@@ -16,8 +16,6 @@ import (
 
 type Inspector struct{}
 
-var Instance = &Inspector{}
-
 func (i *Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }

@@ -51,5 +51,3 @@ func (Inspector) InspectProject(ctx context.Context) (err error) {
 func (Inspector) SupportFeature(feature base.Feature) bool {
 	return base.FeatureAllowNested&feature > 0
 }
-
-var Instance base.Inspector = &Inspector{}

@@ -70,5 +70,3 @@ func (Inspector) InspectProject(ctx context.Context) error {
 func (Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
-
-var Instance base.Inspector = &Inspector{}
