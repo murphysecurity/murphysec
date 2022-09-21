@@ -17,6 +17,10 @@ func ScannerScan(dir string) {
 	if e := managedInspect(ctx); e != nil {
 		Logger.Error("Managed inspect error", zap.Error(e))
 	}
+	Logger.Info("File hash scanning")
+	if e := FileHashScan(ctx); e != nil {
+		Logger.Error("FileHash calc failed", zap.Error(e))
+	}
 	voModules := make([]api.VoModule, 0)
 	for _, it := range task.Modules {
 		voModules = append(voModules, api.VoModule{
