@@ -14,7 +14,7 @@ import (
 
 func sbtDependencyTree(ctx context.Context, dir string) ([]model.Dependency, error) {
 	var logger = utils.UseLogger(ctx)
-	c := exec.CommandContext(ctx, "sbt", "-Dsbt.ci=true", "-Dsbt.color=never", "-Dsbt.progress=never", "-Dsbt.log.noformat=true", "-Dsbt.supershell=false")
+	c := exec.CommandContext(ctx, "sbt", "-Dsbt.ci=true", "-Dsbt.color=never", "-Dsbt.progress=never", "-Dsbt.log.noformat=true", "-Dsbt.supershell=false", "dependencyTree")
 	logger.Sugar().Infof("Execute command: %s", c)
 	c.Dir = dir
 	parser := newSbtDependencyTreeOutputParser()
