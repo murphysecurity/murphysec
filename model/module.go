@@ -20,6 +20,7 @@ const (
 	PmConan     PackageManagerType = "conan"
 	PmRebar3    PackageManagerType = "rebar3"
 	PmCargo     PackageManagerType = "cargo"
+	PmIvy       PackageManagerType = "ivy"
 )
 
 type Language string
