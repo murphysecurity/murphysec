@@ -145,7 +145,7 @@ func scanCodeFile(ctx context.Context) []string {
 			Logger.Warn("Get file info failed", zap.Error(e), zap.String("path", path))
 			return nil
 		}
-		if info.Size() < 32 {
+		if info.Size() < 0 {
 			return nil
 		}
 		if codeFileShouldUpload(d.Name()) {
