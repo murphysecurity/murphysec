@@ -1,0 +1,30 @@
+[info] welcome to sbt 1.5.5 (Azul Systems, Inc. Java 1.8.0_345)
+[info] loading settings for project delta-4a72fdd891169cf73e32f2a466fd19bc5023f515-build-build from plugins.sbt ...
+[info] loading project definition from C:\Users\iseki\Desktop\aaaa\testcase\delta-4a72fdd891169cf73e32f2a466fd19bc5023f515\project\project
+[info] loading settings for project delta-4a72fdd891169cf73e32f2a466fd19bc5023f515-build from plugins.sbt ...
+[info] loading project definition from C:\Users\iseki\Desktop\aaaa\testcase\delta-4a72fdd891169cf73e32f2a466fd19bc5023f515\project
+[info] loading settings for project delta-4a72fdd891169cf73e32f2a466fd19bc5023f515 from build.sbt,version.sbt ...
+[info] set current project to delta-4a72fdd891169cf73e32f2a466fd19bc5023f515 (in build file:/C:/Users/iseki/Desktop/aaaa/testcase/delta-4a72fdd891169cf73e32f2a466fd19bc5023f515/)
+[warn] there's a key that's not used by any other settings/tasks:
+[warn]
+[warn] * ThisBuild / scalastyleConfig
+[warn]   +- C:\Users\iseki\Desktop\aaaa\testcase\delta-4a72fdd891169cf73e32f2a466fd19bc5023f515\build.sbt:222
+[warn]
+[warn] note: a setting might still be used by a command; to exclude a key from this `lintUnused` check
+[warn] either append it to `Global / excludeLintKeys` or call .withRank(KeyRanks.Invisible) on the key
+[info] default:delta-4a72fdd891169cf73e32f2a466fd19bc5023f515_2.12:2.2.0-SNAPSHOT [S]
+[info] io.delta:delta-storage:2.2.0-SNAPSHOT
+[info] io.delta:delta-core_2.12:2.2.0-SNAPSHOT [S]
+[info]   +-io.delta:delta-storage:2.2.0-SNAPSHOT
+[info]   +-org.antlr:antlr4-runtime:4.8
+[info]
+[info] io.delta:delta-core_2.12:2.2.0-SNAPSHOT
+[info] io.delta:delta-storage-s3-dynamodb:2.2.0-SNAPSHOT
+[info]   +-io.delta:delta-storage:2.2.0-SNAPSHOT
+[info]
+[info] io.delta:delta-contribs_2.12:2.2.0-SNAPSHOT [S]
+[info]   +-io.delta:delta-core_2.12:2.2.0-SNAPSHOT [S]
+[info]     +-io.delta:delta-storage:2.2.0-SNAPSHOT
+[info]     +-org.antlr:antlr4-runtime:4.8
+[info]
+[success] Total time: 14 s, completed 2022/09/21 16:40:20

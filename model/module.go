@@ -21,6 +21,7 @@ const (
 	PmRebar3    PackageManagerType = "rebar3"
 	PmCargo     PackageManagerType = "cargo"
 	PmIvy       PackageManagerType = "ivy"
+	PmSbt       PackageManagerType = "sbt"
 )
 
 type Language string
@@ -37,6 +38,7 @@ const (
 	DotNet     Language = "DotNet"
 	Erlang     Language = "Erlang"
 	Rust       Language = "Rust"
+	Scala      Language = "Scala"
 )
 
 type ScanStrategy string
