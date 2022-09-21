@@ -56,7 +56,7 @@ type Module struct {
 	Language       Language           `json:"language"`
 	Name           string             `json:"name"`
 	Version        string             `json:"version"`
-	FilePath       string             `json:"relative_path"`
+	RelativePath   string             `json:"relative_path"`
 	Dependencies   []Dependency       `json:"dependencies,omitempty"`
 	RuntimeInfo    interface{}        `json:"runtime_info,omitempty"`
 	UUID           uuid.UUID          `json:"uuid"`

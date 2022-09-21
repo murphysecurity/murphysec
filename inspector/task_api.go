@@ -27,7 +27,7 @@ func submitModuleInfoApi(ctx context.Context) error {
 			Language:       it.Language,
 			Name:           it.Name,
 			PackageManager: it.PackageManager,
-			RelativePath:   it.FilePath,
+			RelativePath:   it.RelativePath,
 			RuntimeInfo:    it.RuntimeInfo,
 			Version:        it.Version,
 			ModuleUUID:     it.UUID,

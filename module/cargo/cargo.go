@@ -42,7 +42,7 @@ func (i Inspector) InspectProject(ctx context.Context) (err error) {
 		Language:       model.Rust,
 		Name:           tree.Name,
 		Version:        tree.Version,
-		FilePath:       cargoLockPath,
+		RelativePath:   cargoLockPath,
 		Dependencies:   deps,
 	})
 	return nil

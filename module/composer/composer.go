@@ -44,7 +44,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		Language:       model.PHP,
 		Name:           manifest.Name,
 		Version:        manifest.Version,
-		FilePath:       filepath.Join(dir, "composer.json"),
+		RelativePath:   filepath.Join(dir, "composer.json"),
 		Dependencies:   []model.Dependency{},
 		RuntimeInfo:    nil,
 		UUID:           uuid.UUID{},

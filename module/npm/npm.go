@@ -89,7 +89,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 		Language:       model.JavaScript,
 		Name:           lockfile.Name,
 		Version:        lockfile.Version,
-		FilePath:       filepath.Join(dir, "package-lock.json"),
+		RelativePath:   filepath.Join(dir, "package-lock.json"),
 		Dependencies:   []model.Dependency{},
 		RuntimeInfo:    nil,
 	}

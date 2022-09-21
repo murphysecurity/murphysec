@@ -71,7 +71,7 @@ func (*Inspector) InspectProject(ctx context.Context) error {
 		Language:       model.Cxx,
 		Name:           "conanfile.txt",
 		Version:        "",
-		FilePath:       filepath.Join(task.ScanDir, "conanfile.txt"),
+		RelativePath:   filepath.Join(task.ScanDir, "conanfile.txt"),
 		Dependencies:   t.Dependencies,
 		RuntimeInfo:    cmdInfo,
 		UUID:           uuid.UUID{},

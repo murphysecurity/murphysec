@@ -65,7 +65,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		Name:           manifest.Name,
 		Dependencies:   []model.Dependency{},
 		UUID:           uuid.Must(uuid.NewRandom()),
-		FilePath:       task.ScanDir,
+		RelativePath:   task.ScanDir,
 	}
 	for k, v := range cmap {
 		module.Dependencies = append(module.Dependencies, model.Dependency{Name: k, Version: v})

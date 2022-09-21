@@ -53,7 +53,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		Language:       "R",
 		Name:           "RProject",
 		Version:        "",
-		FilePath:       filepath.Join(inspectTask.ScanDir, "renv.lock"),
+		RelativePath:   filepath.Join(inspectTask.ScanDir, "renv.lock"),
 		Dependencies:   deps,
 		RuntimeInfo:    nil,
 		ScanStrategy:   "",

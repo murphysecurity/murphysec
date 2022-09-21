@@ -46,7 +46,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		Language:       model.JavaScript,
 		Name:           filepath.Base(dir),
 		Version:        "",
-		FilePath:       filepath.Join(dir, "yarn.lock"),
+		RelativePath:   filepath.Join(dir, "yarn.lock"),
 		Dependencies:   rs,
 	}
 	if n, v := readModuleName(dir); n != "" {

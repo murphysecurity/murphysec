@@ -49,7 +49,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		Language:       model.Ruby,
 		Name:           tree[0].Name,
 		Dependencies:   tree,
-		FilePath:       scanDir,
+		RelativePath:   scanDir,
 	})
 	return nil
 }

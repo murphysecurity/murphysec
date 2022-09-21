@@ -136,7 +136,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 			PackageManager: model.PMPip,
 			Language:       model.Python,
 			Dependencies:   []model.Dependency{},
-			FilePath:       filepath.Join(dir),
+			RelativePath:   filepath.Join(dir),
 		}
 		if m.Name == "." {
 			m.Name = "Python"

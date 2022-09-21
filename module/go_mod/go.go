@@ -44,7 +44,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	m := model.Module{
 		PackageManager: model.PMGoMod,
 		Language:       model.Go,
-		FilePath:       modFilePath,
+		RelativePath:   modFilePath,
 		Name:           "<NoNameModule>",
 	}
 	if f.Module != nil {

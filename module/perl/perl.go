@@ -44,7 +44,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		Language:       "Perl",
 		Name:           deps.Name,
 		Version:        deps.Version,
-		FilePath:       metaFile,
+		RelativePath:   metaFile,
 		Dependencies:   deps.deps(),
 	})
 	return nil

@@ -39,7 +39,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		Language:       model.DotNet,
 		Name:           "packages.config",
 		Version:        "",
-		FilePath:       filepath.Join(task.ProjectDir, "packages.config"),
+		RelativePath:   filepath.Join(task.ProjectDir, "packages.config"),
 		Dependencies:   dep,
 		RuntimeInfo:    nil,
 	}

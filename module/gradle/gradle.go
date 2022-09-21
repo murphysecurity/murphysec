@@ -186,7 +186,7 @@ func (g *GradleDependencyInfo) BaseModule(path string) model.Module {
 		Language:       model.Java,
 		Name:           g.ProjectName,
 		Dependencies:   _convDep(g.Dependencies),
-		FilePath:       path,
+		RelativePath:   path,
 	}
 }
 

@@ -45,7 +45,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		Language:       model.Erlang,
 		Name:           tree[0].Name,
 		Version:        tree[0].Version,
-		FilePath:       filepath.Join(task.ScanDir, "rebar.config"),
+		RelativePath:   filepath.Join(task.ScanDir, "rebar.config"),
 		Dependencies:   _mapDepNodes(tree),
 		RuntimeInfo:    ver,
 		UUID:           uuid.New(),

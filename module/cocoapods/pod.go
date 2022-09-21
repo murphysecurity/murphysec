@@ -46,7 +46,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		Language:       model.ObjectiveC,
 		Name:           tree[0].Name,
 		Dependencies:   tree,
-		FilePath:       podLockPath,
+		RelativePath:   podLockPath,
 	})
 	return nil
 }

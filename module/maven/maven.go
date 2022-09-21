@@ -65,7 +65,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 			Language:       model.Java,
 			Name:           entry.coordinate.Name(),
 			Version:        entry.coordinate.Version,
-			FilePath:       filepath.Join(dir, entry.relativePath),
+			RelativePath:   filepath.Join(dir, entry.relativePath),
 			Dependencies:   convDeps(entry.children),
 			RuntimeInfo:    mvnCmdInfo,
 			ScanStrategy:   strategy,
