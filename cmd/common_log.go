@@ -9,6 +9,7 @@ import (
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/murphysecurity/murphysec/version"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -90,6 +91,10 @@ func initLogger() error {
 	conf.Logger = _logger
 	model.Logger = _logger
 	logger.InitLegacyLogger(_logger)
+
+	_logger.Sugar().Infof("Log start: %s, %s", time.Now().Format(time.RFC3339), version.UserAgent())
+	_logger.Sugar().Infof("Args: %s", os.Args)
+	_logger.Sugar().Infof("Machine id: %s", version.MachineId())
 	return nil
 }
 
