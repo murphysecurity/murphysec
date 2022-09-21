@@ -13,15 +13,15 @@ import (
 
 type Inspector struct{}
 
-func (i Inspector) String() string {
+func (Inspector) String() string {
 	return "REnv"
 }
 
-func (i Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "renv.lock"))
 }
 
-func (i Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	inspectTask := model.UseInspectorTask(ctx)
 	logger := utils.UseLogger(ctx)
 	data, e := os.ReadFile(filepath.Join(inspectTask.ScanDir, "renv.lock"))
@@ -61,7 +61,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func (i Inspector) SupportFeature(feature base.Feature) bool {
+func (Inspector) SupportFeature(feature base.Feature) bool {
 	return false
 }
 
