@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
+	"path/filepath"
 )
 
 func dockerScanCmd() *cobra.Command {
@@ -13,7 +15,7 @@ func dockerScanCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			initConsoleLoggerOrExit()
 			ctx := context.TODO()
-			task := model.CreateScanTask(args[0], model.TaskKindDockerfile, model.TaskTypeCli)
+			task := model.CreateScanTask(must.A(filepath.Abs(args[0])), model.TaskKindDockerfile, model.TaskTypeCli)
 			ctx = model.WithScanTask(ctx, task)
 			inspector.InspectDockerfile(ctx)
 		},
