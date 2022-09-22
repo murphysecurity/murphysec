@@ -53,6 +53,9 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	xmlquery.FindEach(root, "//ivy-module/dependencies/dependency", func(i int, node *xmlquery.Node) {
 		//var org, name, version string
 		org := node.SelectAttr("organisation")
+		if org == "" {
+			org = node.SelectAttr("org")
+		}
 		name := node.SelectAttr("name")
 		version := node.SelectAttr("version")
 		if org == "" || name == "" {
