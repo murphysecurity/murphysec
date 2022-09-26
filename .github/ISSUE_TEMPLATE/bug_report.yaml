@@ -1,7 +1,8 @@
 name: Bug Report
 description: Report a bug of Murphysec
 title: ":bomb: `Bug`: "
-labels: bug
+labels:
+  - bug
 body:
   - type: textarea
     id: problem
