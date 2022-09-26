@@ -122,18 +122,26 @@ func checkMvnVersion(ctx context.Context, mvnPath string, javaHome string) (stri
 			return "", err
 		}
 	}
+	ver := parseMvnVersion(output)
+	if ver == "" {
+		return "", ErrCheckMvnVersion
+	}
+	return ver, nil
+}
+
+func parseMvnVersion(input string) string {
 	versionPattern := regexp.MustCompile("Apache Maven (\\d+(?:\\.[\\dA-Za-z_-]+)+)")
-	lines := strings.Split(output, "\n")
+	lines := strings.Split(input, "\n")
 	for i := range lines {
 		lines[i] = strings.TrimSpace(lines[i])
 	}
 	for _, it := range lines {
 		line := strings.TrimSpace(it)
 		if m := versionPattern.FindStringSubmatch(line); m != nil {
-			return m[1], nil
+			return m[1]
 		}
 	}
-	return "", ErrCheckMvnVersion
+	return ""
 }
 
 func getMvnCommandOs() string {
