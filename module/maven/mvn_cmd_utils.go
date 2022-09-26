@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -102,7 +103,15 @@ func checkMvnVersion(ctx context.Context, mvnPath string, javaHome string) (stri
 	output, err := cmd.Output()
 	if err != nil {
 		logger.Error("Check maven version failed", zap.Error(err))
-		return "", ErrCheckMvnVersion.Wrap(err)
+		if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
+			logger.Warn("System is linux or darwin, try to grant executable permission")
+			_ = os.Chmod(mvnPath, 0755)
+			logger.Warn("Retry...")
+			output, err = cmd.Output()
+		}
+		if err != nil {
+			return "", ErrCheckMvnVersion.Wrap(err)
+		}
 	}
 	versionPattern := regexp.MustCompile("Apache Maven (\\d+(?:\\.[\\dA-Za-z_-]+)+)")
 	lines := strings.Split(string(output), "\n")
