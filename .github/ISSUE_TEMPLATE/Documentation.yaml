@@ -1,0 +1,19 @@
+name: Documentation Issue
+description: Help to improve our documentation
+title: ":open_book: `Docs`: "
+labels: docs
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What should be changed?
+      description: Please provide as much info as possible.
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Please read the documents below.
+      options:
+        - label: I've read the document [Creating a Documentation for Murphysec](https://www.murphysec.com/docs/quick-start/setup/)
+          required: false
