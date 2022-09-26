@@ -90,7 +90,7 @@ func CheckMvnCommand(ctx context.Context) (info *MvnCommandInfo, err error) {
 	return
 }
 
-func checkMvnVersion(ctx context.Context, mvnPath string, javaHome string) (string, error) {
+func executeMvnVersion(ctx context.Context, mvnPath string, javaHome string) (string, error) {
 	var logger = utils.UseLogger(ctx)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*8)
 	defer cancel()
@@ -103,18 +103,27 @@ func checkMvnVersion(ctx context.Context, mvnPath string, javaHome string) (stri
 	output, err := cmd.Output()
 	if err != nil {
 		logger.Error("Check maven version failed", zap.Error(err))
+		return "", ErrCheckMvnVersion.Wrap(err)
+	}
+	return string(output), nil
+}
+
+func checkMvnVersion(ctx context.Context, mvnPath string, javaHome string) (string, error) {
+	var logger = utils.UseLogger(ctx)
+	output, err := executeMvnVersion(ctx, mvnPath, javaHome)
+	if err != nil {
 		if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
 			logger.Warn("System is linux or darwin, try to grant executable permission")
 			_ = os.Chmod(mvnPath, 0755)
 			logger.Warn("Retry...")
-			output, err = cmd.Output()
+			output, err = executeMvnVersion(ctx, mvnPath, javaHome)
 		}
 		if err != nil {
-			return "", ErrCheckMvnVersion.Wrap(err)
+			return "", err
 		}
 	}
 	versionPattern := regexp.MustCompile("Apache Maven (\\d+(?:\\.[\\dA-Za-z_-]+)+)")
-	lines := strings.Split(string(output), "\n")
+	lines := strings.Split(output, "\n")
 	for i := range lines {
 		lines[i] = strings.TrimSpace(lines[i])
 	}
