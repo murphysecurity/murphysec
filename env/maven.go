@@ -16,7 +16,7 @@ var MvnCommandTimeout = envi("MVN_COMMAND_TIMEOUT", 0)
 func init() {
 	var s string
 	s = strings.TrimSpace(os.Getenv("IDEA_MAVEN_CONF"))
-	if s != "" && utils.IsFile(s) && strings.ToLower(filepath.Ext(IdeaMavenConf)) == ".xml" {
+	if s != "" && utils.IsFile(s) && strings.ToLower(filepath.Ext(s)) == ".xml" {
 		IdeaMavenConf = s
 	}
 
