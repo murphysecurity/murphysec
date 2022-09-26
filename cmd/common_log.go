@@ -94,6 +94,9 @@ func initLogger() error {
 
 	_logger.Sugar().Infof("Log start: %s, %s", time.Now().Format(time.RFC3339), version.UserAgent())
 	_logger.Sugar().Infof("Args: %s", os.Args)
+	for _, s := range os.Environ() {
+		_logger.Sugar().Debugf("Env: %s", s)
+	}
 	_logger.Sugar().Infof("Machine id: %s", version.MachineId())
 	return nil
 }
