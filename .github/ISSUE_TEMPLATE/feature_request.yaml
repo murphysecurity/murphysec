@@ -8,7 +8,7 @@ body:
       value: |
         Thank you very much for your good ideas and suggestions for Murphysec
 
-        Please help sync to the [Dev Mail List](mailto:chenshuang@murphysec.com). You will get FASTER help！[How to subscribe](mailto:chenshuang@murphysec.com)
+        Please help sync to the [Dev Mail List](mailto:dev@murphysec.com). You will get FASTER help！[How to subscribe](mailto:support@murphysec.com)
 
   - type: checkboxes
     attributes:
@@ -18,7 +18,7 @@ body:
         whether the same issue was reported already.
       options:
         - label: >
-            I had searched in the [issues](https://github.com/apache/incubator-doris/issues?q=is%3Aissue) and found no similar
+            I had searched in the [issues](https://github.com/murphysecurity/murphysec/issues) and found no similar
             issues.
           required: true
 
