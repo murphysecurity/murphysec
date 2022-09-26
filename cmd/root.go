@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/module"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -74,6 +75,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Supported modules: %s\n", strings.Join(module.GetSupportedModuleList(), ", "))
 		os.Exit(0)
 	}
+
+	logger.LogFileCleanup()
+
 	if !utils.InStringSlice([]string{"", "warn", "error", "debug", "info", "silent"}, strings.ToLower(strings.TrimSpace(consoleLogLevelOverride))) {
 		return errors.New("Loglevel invalid, must be silent|error|warn|info|debug")
 	}
@@ -89,9 +93,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 			InsecureSkipVerify: true,
 		}
 	}
+
 	env.ConfigureServerBaseUrl(CliServerAddressOverride)
 	api.C = api.NewClient()
-	logFileCleanup()
 	api.C.Token = conf.APIToken()
 	return nil
 }
