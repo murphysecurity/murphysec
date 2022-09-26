@@ -1,0 +1,35 @@
+name: Bug Report
+description: Report a bug of Murphysec
+title: ":bomb: `Bug`: "
+labels: bug
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What Happened?
+      description: Please provide as much information as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to Reproduce?
+    validations:
+      required: false
+  - type: textarea
+    id: else
+    attributes:
+      label: Anything else
+    validations:
+      required: false
+  - type: dropdown
+    id: version
+    attributes:
+      label: 'Murphysec Version'
+      description: "To find out the version run: `dtm version`"
+      options:
+        - < v1.11.0
+        - v1.11.0
+        - latest
+    validations:
+      required: true
