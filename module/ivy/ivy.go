@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/antchfx/xmlquery"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"os"
 	"path/filepath"
@@ -70,6 +69,6 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func (Inspector) SupportFeature(feature base.Feature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }

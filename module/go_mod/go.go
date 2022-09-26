@@ -3,7 +3,6 @@ package go_mod
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -13,8 +12,8 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.Feature) bool {
-	return base.FeatureAllowNested&feature > 0
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+	return model.InspectorFeatureAllowNested&feature > 0
 }
 
 func (i *Inspector) String() string {

@@ -1,11 +1,11 @@
 package module
 
 import (
-	"github.com/murphysecurity/murphysec/module/base"
+	"github.com/murphysecurity/murphysec/model"
 	"sort"
 )
 
-var Inspectors []base.Inspector
+var Inspectors []model.Inspector
 
 func GetSupportedModuleList() []string {
 	var r []string

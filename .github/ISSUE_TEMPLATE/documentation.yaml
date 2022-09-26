@@ -1,7 +1,7 @@
 name: Documentation Issue
 description: Help to improve our documentation
 title: ":open_book: `Docs`: "
-labels: docs
+labels: [ "docs" ]
 body:
   - type: textarea
     id: problem

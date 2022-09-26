@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"os"
 	"path/filepath"
@@ -48,6 +47,6 @@ func (Inspector) InspectProject(ctx context.Context) (err error) {
 	return nil
 }
 
-func (Inspector) SupportFeature(feature base.Feature) bool {
-	return base.FeatureAllowNested&feature > 0
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
+	return model.InspectorFeatureAllowNested&feature > 0
 }

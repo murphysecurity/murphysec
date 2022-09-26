@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"os"
 	"path/filepath"
@@ -50,6 +49,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func (i Inspector) SupportFeature(feature base.Feature) bool {
+func (i Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }

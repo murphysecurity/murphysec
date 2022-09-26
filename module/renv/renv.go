@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simplejson"
 	"os"
@@ -61,6 +60,6 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func (Inspector) SupportFeature(feature base.Feature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
