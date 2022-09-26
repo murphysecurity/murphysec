@@ -23,14 +23,9 @@ body:
       label: Anything else
     validations:
       required: false
-  - type: dropdown
+  - type: textarea
     id: version
     attributes:
-      label: 'Murphysec Version'
-      description: "To find out the version run: `dtm version`"
-      options:
-        - < v1.11.0
-        - v1.11.0
-        - latest
+      label: 'Murphysec Version / Ide Plugin Version'
     validations:
-      required: true
+      required: false
