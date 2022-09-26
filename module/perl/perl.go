@@ -50,6 +50,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func (i Inspector) SupportFeature(feature base.Feature) bool {
+func (i Inspector) SupportFeature(feature base.InspectorFeature) bool {
 	return false
 }

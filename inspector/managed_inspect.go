@@ -71,7 +71,7 @@ func (d *dirScanner) _r(depth int, p string, usedInspector map[base.Inspector]un
 	for _, it := range d.inspectors {
 		_, used := usedInspector[it]
 		if used {
-			if !it.SupportFeature(base.FeatureAllowNested) {
+			if !it.SupportFeature(base.InspectorFeatureAllowNested) {
 				continue
 			}
 			if it.CheckDir(p) {

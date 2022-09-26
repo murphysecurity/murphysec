@@ -10,7 +10,7 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.Feature) bool {
+func (i *Inspector) SupportFeature(feature base.InspectorFeature) bool {
 	return false
 }
 

@@ -21,6 +21,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	panic("implement me")
 }
 
-func (i Inspector) SupportFeature(feature base.Feature) bool {
-	return base.FeatureAllowNested&feature > 0
+func (i Inspector) SupportFeature(feature base.InspectorFeature) bool {
+	return base.InspectorFeatureAllowNested&feature > 0
 }
