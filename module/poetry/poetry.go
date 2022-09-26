@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/pkg/errors"
@@ -22,7 +21,7 @@ func (p poetryErr) Error() string {
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.InspectorFeature) bool {
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 

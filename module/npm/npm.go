@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -16,7 +15,7 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.InspectorFeature) bool {
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 

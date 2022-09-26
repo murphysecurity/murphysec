@@ -3,14 +3,13 @@ package maven
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"path/filepath"
 )
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.InspectorFeature) bool {
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 

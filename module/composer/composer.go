@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"io/fs"
@@ -17,7 +16,7 @@ const _ComposerLockFileSizeLimit = _ComposerManifestFileSizeLimit
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.InspectorFeature) bool {
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 

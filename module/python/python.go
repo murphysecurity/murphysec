@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"io"
@@ -16,7 +15,7 @@ import (
 
 type Inspector struct{}
 
-func (i Inspector) SupportFeature(feature base.InspectorFeature) bool {
+func (i Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 

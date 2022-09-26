@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"os"
@@ -41,14 +40,14 @@ func managedInspect(ctx context.Context) error {
 }
 
 type dirScanner struct {
-	inspectors  []base.Inspector
+	inspectors  []model.Inspector
 	scannedDirs []dirScanItem
 	root        string
 }
 
 type dirScanItem struct {
 	path      string
-	inspector base.Inspector
+	inspector model.Inspector
 }
 
 func (d *dirScanItem) String() string {
@@ -56,10 +55,10 @@ func (d *dirScanItem) String() string {
 }
 
 func (d *dirScanner) scan() {
-	d._r(0, d.root, map[base.Inspector]unit{})
+	d._r(0, d.root, map[model.Inspector]unit{})
 }
 
-func (d *dirScanner) _r(depth int, p string, usedInspector map[base.Inspector]unit) {
+func (d *dirScanner) _r(depth int, p string, usedInspector map[model.Inspector]unit) {
 	if depth > 6 {
 		return
 	}
@@ -71,7 +70,7 @@ func (d *dirScanner) _r(depth int, p string, usedInspector map[base.Inspector]un
 	for _, it := range d.inspectors {
 		_, used := usedInspector[it]
 		if used {
-			if !it.SupportFeature(base.InspectorFeatureAllowNested) {
+			if !it.SupportFeature(model.InspectorFeatureAllowNested) {
 				continue
 			}
 			if it.CheckDir(p) {

@@ -4,14 +4,13 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"path/filepath"
 )
 
 type Inspector struct{}
 
-func (Inspector) SupportFeature(feature base.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 

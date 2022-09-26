@@ -7,7 +7,6 @@ import (
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/pkg/errors"
 	"io/fs"
 	"os"
@@ -20,7 +19,7 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.InspectorFeature) bool {
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 

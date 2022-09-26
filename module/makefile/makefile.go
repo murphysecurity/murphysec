@@ -2,7 +2,7 @@ package makefile
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/module/base"
+	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 )
 
@@ -21,6 +21,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	panic("implement me")
 }
 
-func (i Inspector) SupportFeature(feature base.InspectorFeature) bool {
-	return base.InspectorFeatureAllowNested&feature > 0
+func (i Inspector) SupportFeature(feature model.InspectorFeature) bool {
+	return model.InspectorFeatureAllowNested&feature > 0
 }

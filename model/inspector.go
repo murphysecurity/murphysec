@@ -1,9 +1,11 @@
-package base
+package model
 
 import (
 	"context"
 	"fmt"
 )
+
+type InspectorFeature int
 
 type Inspector interface {
 	fmt.Stringer
@@ -11,8 +13,6 @@ type Inspector interface {
 	InspectProject(ctx context.Context) error
 	SupportFeature(feature InspectorFeature) bool
 }
-
-type InspectorFeature int
 
 const (
 	InspectorFeatureAllowNested InspectorFeature = 1 << iota
