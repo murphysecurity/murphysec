@@ -1,19 +1,19 @@
-package base
+package model
 
 import (
 	"context"
 	"fmt"
 )
 
+type InspectorFeature int
+
 type Inspector interface {
 	fmt.Stringer
 	CheckDir(dir string) bool
 	InspectProject(ctx context.Context) error
-	SupportFeature(feature Feature) bool
+	SupportFeature(feature InspectorFeature) bool
 }
 
-type Feature int
-
 const (
-	FeatureAllowNested Feature = 1 << iota
+	InspectorFeatureAllowNested InspectorFeature = 1 << iota
 )

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/xml"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"path/filepath"
@@ -13,7 +12,7 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.Feature) bool {
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 

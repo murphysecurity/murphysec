@@ -6,7 +6,6 @@ import (
 	"github.com/iseki0/go-yarnlock"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/base"
 	"github.com/murphysecurity/murphysec/utils/simplejson"
 	"github.com/pkg/errors"
 	"io"
@@ -17,7 +16,7 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature base.Feature) bool {
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
