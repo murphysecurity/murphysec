@@ -9,45 +9,13 @@ variables:
   GOBIN: "$CI_PROJECT_DIR/.go/bin"
   CGO_ENABLED: '0'
 
-compose-build-saas:
-  image: golang:1.19-bullseye
-  stage: build
-  artifacts:
-    expire_in: 3 day
-    paths:
-      - out/murphysec-saas-linux-amd64
-      - out/murphysec-saas-windows-amd64.exe
-      - out/murphysec-saas-darwin-amd64
-      - out/murphysec-saas-linux-amd64.sha256
-      - out/murphysec-saas-windows-amd64.exe.sha256
-      - out/murphysec-saas-darwin-amd64.sha256
-  cache:
-    key: cli-build-cache-1223
-    paths:
-      - .go/pkg/mod/
-  before_script:
-    - mkdir -p .go
-  script:
-    - GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-linux-amd64
-    - GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-windows-amd64.exe
-    - GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-darwin-amd64
-    - sha256sum out/murphysec-saas-linux-amd64 | cut -d ' ' -f 1 > out/murphysec-saas-linux-amd64.sha256
-    - sha256sum out/murphysec-saas-darwin-amd64 | cut -d ' ' -f 1 > out/murphysec-saas-darwin-amd64.sha256
-    - sha256sum out/murphysec-saas-windows-amd64.exe | cut -d ' ' -f 1 > out/murphysec-saas-windows-amd64.exe.sha256
-    - sha256sum out/*
-
 compose-build:
   image: golang:1.19-bullseye
   stage: build
   artifacts:
     expire_in: 1 day
     paths:
-      - out/murphysec-linux-amd64
-      - out/murphysec-windows-amd64.exe
-      - out/murphysec-darwin-amd64
-      - out/murphysec-linux-amd64.sha256
-      - out/murphysec-windows-amd64.exe.sha256
-      - out/murphysec-darwin-amd64.sha256
+      - out/*
   cache:
     key: cli-build-cache-1223
     paths:
@@ -61,6 +29,12 @@ compose-build:
     - sha256sum out/murphysec-linux-amd64 | cut -d ' ' -f 1 > out/murphysec-linux-amd64.sha256
     - sha256sum out/murphysec-darwin-amd64 | cut -d ' ' -f 1 > out/murphysec-darwin-amd64.sha256
     - sha256sum out/murphysec-windows-amd64.exe | cut -d ' ' -f 1 > out/murphysec-windows-amd64.exe.sha256
+    - GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-linux-amd64
+    - GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-windows-amd64.exe
+    - GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-darwin-amd64
+    - sha256sum out/murphysec-saas-linux-amd64 | cut -d ' ' -f 1 > out/murphysec-saas-linux-amd64.sha256
+    - sha256sum out/murphysec-saas-darwin-amd64 | cut -d ' ' -f 1 > out/murphysec-saas-darwin-amd64.sha256
+    - sha256sum out/murphysec-saas-windows-amd64.exe | cut -d ' ' -f 1 > out/murphysec-saas-windows-amd64.exe.sha256
     - sha256sum out/*
 
 internal-cos-upload:
