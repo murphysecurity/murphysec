@@ -19,6 +19,7 @@ import (
 )
 
 var versionFlag bool
+var version2Flag bool
 var CliServerAddressOverride string
 var allowInsecure bool
 
@@ -32,6 +33,8 @@ func rootCmd() *cobra.Command {
 		},
 	}
 	c.PersistentFlags().BoolVarP(&versionFlag, "version", "v", false, "show version and exit")
+	c.PersistentFlags().BoolVar(&version2Flag, "version-only", false, "show version and exit")
+	must.Must(c.PersistentFlags().MarkHidden("version-only"))
 	c.PersistentFlags().BoolVar(&disableLogFile, "no-log-file", false, "do not write log file")
 	c.PersistentFlags().StringVar(&cliLogFilePathOverride, "write-log-to", "", "specify log file path")
 	c.PersistentFlags().StringVar(&consoleLogLevelOverride, "log-level", "silent", "specify log level, must be silent|error|warn|info|debug")
@@ -57,8 +60,11 @@ func rootCmd() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if versionFlag {
+	if versionFlag || version2Flag {
 		fmt.Printf("%s %s\n\n", filepath.Base(must.A(filepath.EvalSymlinks(must.A(os.Executable())))), version.Version())
+		if version2Flag {
+			os.Exit(0)
+		}
 		var suffix string
 		if version.GetGitModified() == "true" {
 			suffix = "(modified)"
