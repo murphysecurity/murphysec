@@ -85,7 +85,7 @@ func GetMvnConfig(ctx context.Context) (*UserConfig, error) {
 
 func locateMvnInstallPath(ctx context.Context) string {
 	logger := utils.UseLogger(ctx)
-	info, e := CheckMvnCommand()
+	info, e := CheckMvnCommand(ctx)
 	if e != nil {
 		return ""
 	}
@@ -100,6 +100,10 @@ func locateMvnInstallPath(ctx context.Context) string {
 }
 
 func mavenSettingsPaths(ctx context.Context) (paths []string) {
+	// IDEA specified path
+	if env.IdeaMavenConf != "" {
+		paths = append(paths, env.IdeaMavenConf)
+	}
 	// user path
 	var homeDir = os.Getenv("M2_HOME")
 	if homeDir == "" {

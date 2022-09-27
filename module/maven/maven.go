@@ -27,7 +27,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 	var useBackupResolver = false
 	var deps *DepsMap
 	// check maven version, skip maven scan if check fail
-	mvnCmdInfo, e := CheckMvnCommand()
+	mvnCmdInfo, e := CheckMvnCommand(ctx)
 	if e != nil {
 		useBackupResolver = true
 		log.Sugar().Warnf("Mvn command not found %v", e)

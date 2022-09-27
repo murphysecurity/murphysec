@@ -20,10 +20,10 @@ func ScanDepsByPluginCommand(ctx context.Context, projectDir string, mvnCmdInfo 
 		logger.Sugar().Infof("Found %d profiles", len(profiles))
 	}
 	c := PluginGraphCmd{
-		Path:     mvnCmdInfo.Path,
-		Profiles: profiles,
-		Timeout:  time.Duration(env.MvnCommandTimeout) * time.Second,
-		ScanDir:  projectDir,
+		MavenCmdInfo: mvnCmdInfo,
+		Profiles:     profiles,
+		Timeout:      time.Duration(env.MvnCommandTimeout) * time.Second,
+		ScanDir:      projectDir,
 	}
 	if e := c.RunC(ctx); e != nil {
 		logger.Sugar().Error("Maven graph command execution failed", zap.Error(e))

@@ -6,17 +6,16 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"os/exec"
 	"strings"
 	"time"
 )
 
 // PluginGraphCmd helper to com.github.ferstl:depgraph-maven-plugin:4.0.1:graph
 type PluginGraphCmd struct {
-	Path     string
-	Profiles []string
-	Timeout  time.Duration
-	ScanDir  string
+	Profiles     []string
+	Timeout      time.Duration
+	ScanDir      string
+	MavenCmdInfo *MvnCommandInfo
 }
 
 func (m PluginGraphCmd) RunC(ctx context.Context) error {
@@ -29,12 +28,12 @@ func (m PluginGraphCmd) RunC(ctx context.Context) error {
 		ctx, cancel = context.WithTimeout(ctx, m.Timeout)
 		defer cancel()
 	}
-	var args = []string{"com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json", "--batch-mode"}
+	var args = []string{"com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json"}
 	if len(m.Profiles) > 0 {
 		args = append(args, "-P")
 		args = append(args, strings.Join(m.Profiles, ","))
 	}
-	c := exec.CommandContext(ctx, m.Path, args...)
+	c := m.MavenCmdInfo.Command(ctx, args...)
 	c.Dir = m.ScanDir
 	logStream := utils.NewLogPipe(logger, "mvn")
 	defer logStream.Close()

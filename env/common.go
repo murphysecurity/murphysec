@@ -21,8 +21,6 @@ var DisableGit = false
 var _ServerBaseURL = "https://www.murphysec.com"
 
 var DisableMvnCommand = strings.TrimSpace(os.Getenv("NO_MVN")) != ""
-var IdeaInstallPath = os.Getenv("IDEA_INSTALL")
-var MvnCommandTimeout = envi("MVN_COMMAND_TIMEOUT", 0)
 var MavenCentral string
 
 func init() {
