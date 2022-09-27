@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/murphysecurity/murphysec/conf"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/spf13/cobra"
 	"strings"
 )
@@ -36,7 +35,7 @@ func authLogoutCmd() *cobra.Command {
 func authLoginRun(cmd *cobra.Command, args []string) {
 	var token string
 	if len(args) == 1 {
-		logger.Debug.Println("Read token from args")
+		SLOG.Debug("Read token from args")
 		token = args[0]
 	} else {
 		fmt.Println("Tips: You can generate a Personal Access Token here https://www.murphysec.com/control/set")
@@ -71,8 +70,7 @@ func authLoginRun(cmd *cobra.Command, args []string) {
 	}
 	e := conf.StoreToken(token)
 	if e != nil {
-		logger.Err.Println("token setup failed")
-		logger.Err.Println(e.Error())
+		SLOG.Error("token setup failed: %s", e.Error())
 		fmt.Println("Sorry, token setup failed")
 		fmt.Println(e.Error())
 		SetGlobalExitCode(-1)
@@ -82,12 +80,12 @@ func authLoginRun(cmd *cobra.Command, args []string) {
 func authLogoutRun(cmd *cobra.Command, args []string) {
 	e := conf.RemoveToken()
 	if e == conf.TokenFileNotFound {
-		logger.Warn.Println("Token file is not exists")
+		SLOG.Warn("Token file is not exists")
 		SetGlobalExitCode(0)
 		return
 	}
 	if e != nil {
-		logger.Err.Println("auth logout failed.", e.Error())
+		SLOG.Errorf("auth logout failed: %s", e.Error())
 		fmt.Println("Sorry, clear token failed.")
 		fmt.Println(e.Error())
 		SetGlobalExitCode(-1)

@@ -21,6 +21,9 @@ var disableLogFile bool
 var consoleLogLevelOverride string
 var enableNetworkLog bool
 
+var LOG = zap.NewNop()
+var SLOG = zap.NewNop().Sugar()
+
 func initConsoleLoggerOrExit() {
 	e := initLogger()
 	if e == nil {
@@ -60,6 +63,8 @@ func initLogger() error {
 	if enableNetworkLog {
 		api.NetworkLogger = _logger.Named("Net").WithOptions(zap.WithCaller(false))
 	}
+	LOG = _logger
+	SLOG = LOG.Sugar()
 	api.Logger = _logger
 	inspector.Logger = _logger
 	conf.Logger = _logger
