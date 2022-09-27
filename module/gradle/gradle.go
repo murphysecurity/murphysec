@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"io/fs"
 	"os"
@@ -28,32 +28,33 @@ func (i *Inspector) String() string {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
+	var logger = utils.UseLogger(ctx).Sugar()
 	var rs []model.Module
 	task := model.UseInspectorTask(ctx)
 	dir := task.ScanDir
-	logger.Debug.Println("gradle inspect dir:", dir)
+	logger.Debugf("gradle inspect dir: %s", dir)
 	useGradle := true
 	ctx, cf := context.WithTimeout(context.TODO(), time.Second*time.Duration(env.GradleExecutionTimeoutSecond))
 	defer cf()
 	info, e := evalGradleInfo(ctx, dir)
 	if e != nil {
 		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
-		logger.Info.Println("check gradle failed", e.Error())
-		logger.Warn.Println("Gradle disabled")
+		logger.Infof("check gradle failed: %s", e.Error())
+		logger.Warnf("Gradle disabled")
 		useGradle = false
 	}
 	if useGradle {
-		logger.Info.Println(info)
+		logger.Info(info.String())
 		projects, e := fetchGradleProjects(ctx, dir, info)
 		if e != nil {
-			logger.Info.Println("fetch gradle projects failed.", e.Error())
+			logger.Infof("fetch gradle projects failed: %s", e.Error())
 		}
-		logger.Debug.Println("Gradle projects:", strings.Join(projects, ", "))
+		logger.Debugf("Gradle projects: %s", strings.Join(projects, ", "))
 
 		{
 			depInfo, e := evalGradleDependencies(ctx, dir, "", info)
 			if e != nil {
-				logger.Info.Println("evalGradleDependencies failed. <root>", e.Error())
+				logger.Info("evalGradleDependencies failed. <root> ", e.Error())
 			} else {
 				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
 			}
@@ -62,7 +63,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 			depInfo, e := evalGradleDependencies(ctx, dir, projectId, info)
 			if e != nil {
 				task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
-				logger.Info.Println("evalGradleDependencies failed.", projectId, e.Error())
+				logger.Infof("evalGradleDependencies failed: %s - %s", projectId, e.Error())
 			} else {
 				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
 			}
@@ -70,7 +71,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	}
 	if len(rs) == 0 {
 		// if no module find, use backup solution
-		if m := backupParser(dir); m != nil {
+		if m := backupParser(ctx, dir); m != nil {
 			rs = append(rs, m.BaseModule(dir))
 		}
 	}
@@ -80,7 +81,8 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func backupParser(dir string) *GradleDependencyInfo {
+func backupParser(ctx context.Context, dir string) *GradleDependencyInfo {
+	var logger = utils.UseLogger(ctx).Sugar()
 	var dep []DepElement
 	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d == nil || !d.Type().IsRegular() || !strings.HasPrefix(d.Name(), "build.gradle") {
@@ -89,7 +91,7 @@ func backupParser(dir string) *GradleDependencyInfo {
 		if d.Name() == "build.gradle.kts" {
 			data, e := os.ReadFile(path)
 			if e != nil {
-				logger.Err.Println("Read gradle file failed.", e.Error())
+				logger.Errorf("Read gradle file failed: %s", e.Error())
 				return nil
 			}
 			dep = append(dep, parseGradleKts(string(data))...)
@@ -98,7 +100,7 @@ func backupParser(dir string) *GradleDependencyInfo {
 		if d.Name() == "build.gradle" {
 			data, e := os.ReadFile(path)
 			if e != nil {
-				logger.Err.Println("Read gradle file failed.", e.Error())
+				logger.Errorf("Read gradle file failed: %s", e.Error())
 				return nil
 			}
 			dep = append(dep, parseGradleGroovy(string(data))...)
@@ -151,13 +153,14 @@ func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleInf
 }
 
 func evalGradleDependencies(ctx context.Context, projectDir string, projectName string, info *GradleInfo) (*GradleDependencyInfo, error) {
+	var logger = utils.UseLogger(ctx).Sugar()
 	c := info.CallCmd(ctx, fmt.Sprintf("%s:dependencies", projectName), "--console", "plain", "-q", "--configuration=runtimeClasspath")
-	logger.Debug.Println("Execute:", c.String())
+	logger.Infof("Execute: %s", c.String())
 	c.Dir = projectDir
 	data, e := c.Output()
-	logger.Debug.Println("GradleOutput:", string(data))
+	logger.Debugf("GradleOutput: %s", string(data))
 	if e != nil {
-		logger.Debug.Println("Gradle output", string(e.(*exec.ExitError).Stderr))
+		logger.Errorf("Gradle output: %s", string(e.(*exec.ExitError).Stderr))
 		return nil, e
 	}
 	var lines []string
