@@ -152,3 +152,4 @@ gradle-app.setting
 hs_err_pid*
 
 *.pom
+pom.xml
