@@ -8,6 +8,7 @@ import (
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
 	"github.com/pkg/errors"
@@ -93,7 +94,7 @@ func initLogger() error {
 	logger.InitLegacyLogger(_logger)
 
 	_logger.Sugar().Infof("Log start: %s, %s", time.Now().Format(time.RFC3339), version.UserAgent())
-	_logger.Sugar().Infof("Args: %s", os.Args)
+	_logger.Sugar().Infof("Args: %s", utils.DesensitizedArgs)
 	for _, s := range os.Environ() {
 		_logger.Sugar().Debugf("Env: %s", s)
 	}
