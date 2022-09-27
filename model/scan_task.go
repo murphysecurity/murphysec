@@ -5,7 +5,6 @@ import (
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"path/filepath"
 	"time"
@@ -81,10 +80,6 @@ func fillScanTaskGitInfo(task *ScanTask) {
 	}
 	Logger.Debug("Check git repo", zap.String("dir", task.ProjectDir))
 	gitInfo, e := getGitInfo(task.ProjectDir)
-	if errors.Is(e, ErrNoGitRepo) {
-		Logger.Debug("No git repo", zap.Error(e))
-		return
-	}
 	if e != nil {
 		Logger.Warn("Read git info failed", zap.Error(e))
 		return

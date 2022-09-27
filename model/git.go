@@ -9,9 +9,6 @@ import (
 	"time"
 )
 
-var ErrNoGitRepo = errors.New("No git repo found")
-var ErrNoGitRemoteFound = errors.New("No git remote found")
-
 type GitInfo struct {
 	RemoteName     string    `json:"remote_name"`
 	RemoteURL      string    `json:"remote_url"`
