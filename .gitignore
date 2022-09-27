@@ -10,3 +10,6 @@ murphysec
 *.bak
 .run
 tt
+
+/out
+/.go
