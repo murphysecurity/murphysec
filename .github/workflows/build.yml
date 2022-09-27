@@ -33,7 +33,7 @@ jobs:
       - name: Build
         run: |
           go generate ./...
-          go build -v -ldflags '-s -w -buildid=' -trim-path -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
+          go build -v -ldflags '-s -w -buildid=' -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
 
       - name: Rename for Windows
         if: matrix.goos == 'windows'
