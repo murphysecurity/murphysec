@@ -10,7 +10,7 @@ variables:
   CGO_ENABLED: '0'
 
 compose-build:
-  image: golang:1.19-bullseye
+  image: golang:1.19.1-bullseye
   stage: build
   artifacts:
     expire_in: 1 day
