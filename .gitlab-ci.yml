@@ -23,15 +23,15 @@ compose-build:
   before_script:
     - mkdir -p .go
   script:
-    - GOOS=linux GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w' -o out/murphysec-linux-amd64
-    - GOOS=windows GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w' -o out/murphysec-windows-amd64.exe
-    - GOOS=darwin GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w' -o out/murphysec-darwin-amd64
+    - GOOS=linux GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/murphysec-linux-amd64
+    - GOOS=windows GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/murphysec-windows-amd64.exe
+    - GOOS=darwin GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/murphysec-darwin-amd64
     - sha256sum out/murphysec-linux-amd64 | cut -d ' ' -f 1 > out/murphysec-linux-amd64.sha256
     - sha256sum out/murphysec-darwin-amd64 | cut -d ' ' -f 1 > out/murphysec-darwin-amd64.sha256
     - sha256sum out/murphysec-windows-amd64.exe | cut -d ' ' -f 1 > out/murphysec-windows-amd64.exe.sha256
-    - GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-linux-amd64
-    - GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-windows-amd64.exe
-    - GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '-s -w' -o out/murphysec-saas-darwin-amd64
+    - GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/murphysec-saas-linux-amd64
+    - GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/murphysec-saas-windows-amd64.exe
+    - GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/murphysec-saas-darwin-amd64
     - sha256sum out/murphysec-saas-linux-amd64 | cut -d ' ' -f 1 > out/murphysec-saas-linux-amd64.sha256
     - sha256sum out/murphysec-saas-darwin-amd64 | cut -d ' ' -f 1 > out/murphysec-saas-darwin-amd64.sha256
     - sha256sum out/murphysec-saas-windows-amd64.exe | cut -d ' ' -f 1 > out/murphysec-saas-windows-amd64.exe.sha256
