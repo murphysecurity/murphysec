@@ -7,8 +7,10 @@ import (
 	"github.com/murphysecurity/murphysec/utils/must"
 	"go.uber.org/zap"
 	"io"
+	"math"
 	"os"
 	"strings"
+	"time"
 )
 
 func InStringSlice(slice []string, s string) bool {
@@ -81,4 +83,9 @@ func Reverse[S ~[]E, E any](s S) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
 	}
+}
+
+func SubtractTime(timeO, timeN time.Time) float64 {
+	diff := timeN.Sub(timeO).Seconds()
+	return math.Floor(diff)
 }
