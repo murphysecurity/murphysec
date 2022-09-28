@@ -17,6 +17,7 @@ WebTest>=1.3.4
 django-webtest>=1.5.3
 factory-boy==2.1.1
 httpretty==0.6.3
+ruamel.yaml=1.0.0
 
 # documentation
 Sphinx==1.2b3
@@ -31,8 +32,10 @@ coveralls>=0.1.1,<0.2
 # Others
 Whoosh>=2.4.1
 `
-	//language=json
-	var rs = `[
+
+	var rs =
+	// language=json
+	`[
   {
   "name": "Werkzeug",
   "version": "0.6.2"
@@ -56,6 +59,10 @@ Whoosh>=2.4.1
   {
   "name": "httpretty",
   "version": "0.6.3"
+  },
+  {
+  "name": "ruamel.yaml",
+  "version": "1.0.0"
   },
   {
   "name": "Sphinx",

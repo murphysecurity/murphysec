@@ -17,7 +17,7 @@ func readRequirements(path string) ([]model.Dependency, error) {
 }
 
 func parseRequirements(data string) []model.Dependency {
-	var pattern = regexp.MustCompile("^([\\w_-]+)[>=<]+([\\w.]+)$")
+	var pattern = regexp.MustCompile("^([\\w_.-]+)[>=<]+([\\w.]+)$")
 	var deps []model.Dependency
 	for _, s := range strings.Split(data, "\n") {
 		s = strings.TrimSpace(s)
