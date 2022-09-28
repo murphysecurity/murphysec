@@ -36,6 +36,8 @@ jobs:
 
       - name: Build
         run: |
+          export
+          echo Test======
           go generate ./...
           go build -v -ldflags '-s -w -buildid=' -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
 
