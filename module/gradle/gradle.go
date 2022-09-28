@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/display"
-	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
@@ -14,7 +13,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 )
 
 type Inspector struct{}
@@ -34,8 +32,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	dir := task.ScanDir
 	logger.Debugf("gradle inspect dir: %s", dir)
 	useGradle := true
-	ctx, cf := context.WithTimeout(ctx, time.Second*time.Duration(env.GradleExecutionTimeoutSecond))
-	defer cf()
 	gradleEnv, e := DetectGradleEnv(ctx, dir)
 	if e != nil {
 		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
