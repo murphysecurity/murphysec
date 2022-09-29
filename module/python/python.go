@@ -3,6 +3,7 @@ package python
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
@@ -35,6 +36,62 @@ func (i Inspector) CheckDir(dir string) bool {
 	return false
 }
 
+func scanDepFile(ctx context.Context, dir string) (bool, error) {
+	var logger = utils.UseLogger(ctx)
+	var found = false
+	var task = model.UseInspectorTask(ctx)
+
+	var tomlFile = filepath.Join(dir, "pyproject.toml")
+	if utils.IsFile(tomlFile) {
+		list, e := tomlBuildSysFile(ctx, tomlFile)
+		if e != nil {
+			logger.Sugar().Warnf("Analyze pyproject.toml failed: %s", e.Error())
+		} else if len(list) > 0 {
+			task.AddModule(model.Module{
+				Name:           "Python-pyprojects.toml",
+				RelativePath:   tomlFile,
+				PackageManager: model.PMPip,
+				Language:       model.Python,
+				Dependencies:   list,
+			})
+		}
+	}
+
+	entries, e := os.ReadDir(dir)
+	if e != nil {
+		return false, e
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		var entryName = entry.Name()
+		if !strings.HasPrefix(entryName, "requirements") {
+			continue
+		}
+
+		fp := filepath.Join(dir, entryName)
+		deps, e := readRequirements(fp)
+		if e != nil {
+			logger.Sugar().Errorf("Parse requirements file failed[%s]: %s", fp, e.Error())
+			continue
+		}
+		if len(deps) == 0 {
+			continue
+		}
+		found = true
+		m := model.Module{
+			Name:           fmt.Sprintf("Python-%s", entryName),
+			PackageManager: model.PMPip,
+			Language:       model.Python,
+			Dependencies:   deps,
+			RelativePath:   fp,
+		}
+		task.AddModule(m)
+	}
+	return found, nil
+}
+
 func (i Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
 	logger := utils.UseLogger(ctx)
@@ -43,10 +100,17 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		relativeDir = filepath.ToSlash(s)
 	}
 	dir := model.UseInspectorTask(ctx).ScanDir
-	componentMap := map[string]string{}
-	requirementsFiles := map[string]struct{}{}
-	ignoreSet := map[string]struct{}{}
 
+	foundDepFiles, e := scanDepFile(ctx, dir)
+	if e != nil {
+		logger.Sugar().Warnf("Scan deps failed: %s", e.Error())
+	}
+	if foundDepFiles {
+		return nil
+	}
+
+	componentMap := map[string]string{}
+	ignoreSet := map[string]struct{}{}
 	logger.Debug("Start walk python project dir", zap.String("dir", dir))
 	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d == nil {
@@ -58,13 +122,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		}
 		if d.IsDir() {
 			ignoreSet[d.Name()] = struct{}{}
-			return nil
-		}
-		if (filepath.Ext(path) == ".txt" || filepath.Ext(path) == "") && strings.HasPrefix(d.Name(), "requirements") {
-			requirementsFiles[path] = struct{}{}
-			return nil
-		}
-		if filepath.Base(path) == "conanfile.py" {
 			return nil
 		}
 		if filepath.Ext(path) != ".py" {
@@ -94,25 +151,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		}
 		return nil
 	})
-	for fp := range requirementsFiles {
-		logger.Debug("Merge requirements file", zap.String("path", fp))
-		deps, e := readRequirements(fp)
-		if e != nil {
-			logger.Error("Read requirements failed", zap.Error(e))
-			continue
-		}
-		mergeComponentInto(componentMap, deps)
-	}
-
-	tomlPath := filepath.Join(dir, "pyproject.toml")
-	if utils.IsFile(tomlPath) {
-		if list, e := tomlBuildSysFile(ctx, tomlPath); e != nil {
-			logger.Sugar().Warnf("Analyze pyproject.toml failed: %s", e.Error())
-		} else {
-			logger.Sugar().Debug("Merge components from toml build file, total: %d", len(list))
-			mergeComponentInto(componentMap, list)
-		}
-	}
 
 	if pipListDeps, e := executePipList(ctx, dir); e != nil {
 		logger.Warn("pip list execution failed", zap.Error(e))
