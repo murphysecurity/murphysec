@@ -1,17 +1,15 @@
+import { Sha256 } from "https://deno.land/std@0.159.0/hash/sha256.ts"
+
 const gitTag = Deno.env.get("CI_BUILD_REF_NAME")
 const larkPushKey = Deno.env.get("LARK_PUSH_KEY")
 const qCloudUrl = (fn) => `https://${Deno.env.get('QCLOUD_COS_DOMAIN')}/client/${gitTag}/${fn}`
 
 const contentText = [
     ['GitTag', gitTag],
-    ['Windows', qCloudUrl('murphysec-windows-amd64.exe')],
-    ['Linux', qCloudUrl('murphysec-linux-amd64')],
-    ['Apple', qCloudUrl('murphysec-darwin-amd64')],
-    ['SaaS-Windows', qCloudUrl('murphysec-saas-windows-amd64.exe')],
-    ['SaaS-Linux', qCloudUrl('murphysec-saas-linux-amd64')],
-    ['SaaS-Apple', qCloudUrl('murphysec-saas-darwin-amd64')],
     ['saas.zip', qCloudUrl('saas.zip')],
+    ['SHA-256', new Sha256().update(await Deno.readFileSync('out/zip/saas.zip')).hex()],
     ['pro.zip', qCloudUrl('pro.zip')],
+    ['SHA-256', new Sha256().update(await Deno.readFileSync('out/zip/pro.zip')).hex()],
 ].filter(it => it[1]).map(it => `**${it[0]}: **${it[1]}`).join('\n')
 
 const cardContent = {
