@@ -23,9 +23,9 @@ require (
 	github.com/whilp/git-urls v1.0.0
 	github.com/wk8/go-ordered-map/v2 v2.0.0
 	go.uber.org/zap v1.23.0
-	golang.org/x/mod v0.5.1
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
-	golang.org/x/text v0.3.7
+	golang.org/x/text v0.3.8
 )
 
 require (
@@ -62,7 +62,6 @@ require (
 	golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48 // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035 // indirect
-	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
