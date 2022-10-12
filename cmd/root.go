@@ -95,9 +95,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	env.ConfigureServerBaseUrl(CliServerAddressOverride)
-	if cmd.Parent().Use == "auth" && strings.Contains(cmd.Use, "log") {
-		return nil
-	}
 	api.C = api.NewClient()
 	api.C.Token = conf.APIToken()
 	return nil
