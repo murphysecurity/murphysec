@@ -2,10 +2,9 @@ package inspector
 
 import (
 	"context"
-	"fmt"
 	"github.com/murphysecurity/murphysec/api"
-	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/view"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -15,31 +14,29 @@ var Logger = zap.NewNop()
 func createTaskC(ctx context.Context) (e error) {
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
-	ui.UpdateStatus(display.StatusRunning, "正在创建扫描任务，请稍候······")
-	defer ui.ClearStatus()
+	defer view.TaskCreating(ui)()
+
 	e = createTaskApi(ctx)
 	if errors.Is(e, api.ErrTlsRequest) {
-		ui.Display(display.MsgError, "当前建立的网络连接不安全，您可以通过 -x 或 --allow-insecure 选项忽略这个错误")
-		ui.Display(display.MsgError, e.Error())
+		view.TLSAlert(ui, e)
 		return
 	}
 	if errors.Is(e, api.ErrTokenInvalid) {
-		ui.Display(display.MsgError, "任务创建失败，Token 无效")
+		view.TokenInvalid(ui)
 		return
 	}
 	if e != nil {
-		ui.Display(display.MsgError, fmt.Sprintf("任务创建失败：%s", e.Error()))
+		view.TaskCreateFailed(ui, e)
 	}
 	return
 }
 
 func submitModuleInfoC(ctx context.Context) (e error) {
 	ui := model.UseScanTask(ctx).UI()
-	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
-	defer ui.ClearStatus()
+	defer view.ScanCompleteSubmitting(ui)()
 	e = submitModuleInfoApi(ctx)
 	if e != nil {
-		ui.Display(display.MsgError, fmt.Sprint("信息提交失败：", e.Error()))
+		view.SubmitError(ui, e)
 	}
 	return
 }
@@ -47,11 +44,10 @@ func submitModuleInfoC(ctx context.Context) (e error) {
 func startCheckC(ctx context.Context) (e error) {
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
-	ui.UpdateStatus(display.StatusRunning, "正在启动检测")
-	defer ui.ClearStatus()
+	defer view.StartingInspection(ui)()
 	e = api.StartCheckTaskType(scanTask.TaskId, scanTask.Kind)
 	if e != nil {
-		ui.Display(display.MsgError, "启动检测失败："+e.Error())
+		view.StartingInspectionFailed(ui, e)
 	}
 	return
 }
@@ -59,12 +55,11 @@ func startCheckC(ctx context.Context) (e error) {
 func queryResultC(ctx context.Context) (e error) {
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
-	ui.UpdateStatus(display.StatusRunning, "正在等待服务器返回结果")
-	defer ui.ClearStatus()
+	view.WaitingServerResponse(ui)()
 	var resp *model.TaskScanResponse
 	resp, e = api.QueryResult(scanTask.TaskId)
 	if e != nil {
-		ui.Display(display.MsgError, fmt.Sprintf("获取扫描结果失败：%s", e.Error()))
+		view.GetScanResultFailed(ui, e)
 	} else {
 		scanTask.ScanResult = resp
 	}

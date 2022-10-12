@@ -6,13 +6,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"fmt"
 	ctxio "github.com/jbenet/go-context/io"
 	"github.com/murphysecurity/murphysec/api"
-	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/murphysecurity/murphysec/view"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -26,7 +25,7 @@ import (
 func BinScan(ctx context.Context) error {
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
-	ui.Display(display.MsgInfo, fmt.Sprint("项目名称：", scanTask.ProjectName))
+	view.ProjectName(ui, scanTask.ProjectName)
 	if e := createTaskC(ctx); e != nil {
 		return e
 	}
@@ -43,10 +42,8 @@ func BinScan(ctx context.Context) error {
 		return e
 	}
 	r := scanTask.ScanResult
-	ui.Display(display.MsgNotice, fmt.Sprintf("项目扫描完成，依赖数：%d，漏洞数：%d\n", r.DependenciesCount, r.IssuesCompsCount))
-	if scanTask.ScanResult.ReportURL() != "" {
-		ui.Display(display.MsgNotice, fmt.Sprintf("检测报告详见：%s", scanTask.ScanResult.ReportURL()))
-	}
+	view.DisplayScanResultSummary(ui, r.DependenciesCount, r.IssuesCompsCount)
+	view.DisplayScanResultReport(ui, scanTask.ScanResult.ReportURL())
 
 	return nil
 }
@@ -54,9 +51,7 @@ func BinScan(ctx context.Context) error {
 func binScanUploadFile(ctx context.Context) error {
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
-	ui.UpdateStatus(display.StatusRunning, "正在上传文件...")
-	defer ui.ClearStatus()
-
+	defer view.FileUploading(ui)()
 	pathCh := make(chan string, 10)
 	g, goCtx := errgroup.WithContext(ctx)
 	g.Go(func() error { return scanBinaryFile(goCtx, scanTask.ProjectDir, pathCh) })
@@ -65,10 +60,10 @@ func binScanUploadFile(ctx context.Context) error {
 	g.Go(func() error { return uploadTgzChunk(goCtx, r) })
 	if e := g.Wait(); e != nil {
 		Logger.Error("Upload failed", zap.Error(e))
-		ui.Display(display.MsgError, fmt.Sprint("文件上传失败：", e.Error()))
+		view.FileUploadFailed(ui, e)
 		return e
 	}
-	ui.Display(display.MsgInfo, "文件上传成功")
+	view.FileUploadSucceeded(ui)
 	return nil
 }
 
