@@ -59,7 +59,7 @@ func (d *dirScanner) scan() {
 }
 
 func (d *dirScanner) _r(depth int, p string, usedInspector map[model.Inspector]unit) {
-	if depth > 6 {
+	if depth > 16 {
 		return
 	}
 	entries, e := os.ReadDir(p)
