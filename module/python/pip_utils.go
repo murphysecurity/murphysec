@@ -2,6 +2,7 @@ package python
 
 import (
 	"context"
+	"fmt"
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
@@ -12,23 +13,18 @@ var ErrPipListFailed = errors.New("pip list execution failed")
 var ErrNoPipCommand = errors.New("pip command not found")
 
 func locatePipCommand(ctx context.Context) string {
-	var logger = utils.UseLogger(ctx)
+	var (
+		logger     = utils.UseLogger(ctx)
+		pipVerList = []string{"pip", "pip3", "pip2"}
+	)
 	logger.Debug("Trying to locate pip command...")
-	path, e := exec.LookPath("pip")
-	if e == nil {
-		return path
+	for _, pipVer := range pipVerList {
+		path, e := exec.LookPath(pipVer)
+		if e == nil {
+			return path
+		}
+		logger.Debug(fmt.Sprintf("%v not found", pipVer))
 	}
-	logger.Debug("pip not found")
-	path, e = exec.LookPath("pip3")
-	if e == nil {
-		return path
-	}
-	logger.Debug("pip3 not found")
-	path, e = exec.LookPath("pip2")
-	if e == nil {
-		return path
-	}
-	logger.Debug("pip2 not found")
 	return ""
 }
 
