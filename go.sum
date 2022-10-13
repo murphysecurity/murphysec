@@ -71,8 +71,6 @@ github.com/inconshreveable/mousetrap v1.0.1 h1:U3uMjPSQEBMNp1lFxmllqCPM6P5u/Xq7P
 github.com/inconshreveable/mousetrap v1.0.1/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/iseki0/go-yarnlock v0.0.1 h1:p9xkiL9DIx0ZP7kioW+6Mydydvlf9m65HbSlBTZ3ubU=
 github.com/iseki0/go-yarnlock v0.0.1/go.mod h1:qYLyGua0xN8X0JvimGj13UBVgNBK/weoP76HHJHFnKA=
-github.com/iseki0/machineid v0.0.0-20221013085010-5552166865ef h1:hk1YflFybhZ7BobEHWxMnRkj0hWN8gXJaAkspLXVDNc=
-github.com/iseki0/machineid v0.0.0-20221013085010-5552166865ef/go.mod h1:iZSZgGYWCZHoX4ATqhJEUPMrQUjdNPqREJK/iMXa5EI=
 github.com/iseki0/osname v0.0.0-20220802070850-5def7ee59aab h1:i7De2YqOY/ndu9B01jVPO+EmBxEpaWSTSg7Rpvjg5Zc=
 github.com/iseki0/osname v0.0.0-20220802070850-5def7ee59aab/go.mod h1:dfJpXG/NgYezSQxiUPwOiDeTKm8YeJzMc7ROJ1mj9v4=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=

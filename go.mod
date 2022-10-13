@@ -6,6 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/antchfx/xmlquery v1.3.12
 	github.com/bahlo/generic-list-go v0.2.0
+	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/uuid v1.3.0
 	github.com/iseki0/go-yarnlock v0.0.1
@@ -42,7 +43,6 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
-	github.com/iseki0/machineid v0.0.0-20221013085010-5552166865ef // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
