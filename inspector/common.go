@@ -55,7 +55,7 @@ func startCheckC(ctx context.Context) (e error) {
 func queryResultC(ctx context.Context) (e error) {
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
-	view.WaitingServerResponse(ui)()
+	defer view.WaitingServerResponse(ui)()
 	var resp *model.TaskScanResponse
 	resp, e = api.QueryResult(scanTask.TaskId)
 	if e != nil {
