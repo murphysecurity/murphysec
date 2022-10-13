@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 )
 
-const version = "v1.12.2"
+const version = "v1.13.0"
 
 var userAgent string
 
