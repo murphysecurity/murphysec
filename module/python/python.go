@@ -189,7 +189,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 
 func mergeComponentVersionOnly(target map[string]string, deps []model.Dependency) {
 	for _, it := range deps {
-		v, ok := target[it.Name]
+		v, ok := target[strings.ToLower(it.Name)]
 		if v == "" && ok && it.Version != "" {
 			target[it.Name] = it.Version
 		}
