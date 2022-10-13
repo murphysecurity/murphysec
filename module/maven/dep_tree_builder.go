@@ -49,6 +49,9 @@ func (d *depAnalyzer) analyze(coordinate Coordinate) *Dependency {
 			Coordinate: it.Coordinate,
 			Children:   []Dependency{},
 		}
+		if d.Coordinate.IsBad() {
+			d.Coordinate.Version = ""
+		}
 		for _, it := range it.Children {
 			if it == nil {
 				continue
