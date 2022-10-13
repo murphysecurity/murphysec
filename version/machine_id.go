@@ -1,7 +1,7 @@
 package version
 
 import (
-	"github.com/denisbrodbeck/machineid"
+	"github.com/iseki0/machineid"
 	"github.com/murphysecurity/murphysec/utils/must"
 )
 
