@@ -57,6 +57,7 @@ func rootCmd() *cobra.Command {
 	}
 	c.AddCommand(machineCmd())
 	c.AddCommand(dockerScanCmd())
+	c.AddCommand(envScanCmd())
 	return c
 }
 

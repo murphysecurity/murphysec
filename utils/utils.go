@@ -7,6 +7,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils/must"
 	"go.uber.org/zap"
 	"io"
+	"net"
 	"os"
 	"strings"
 )
@@ -81,4 +82,16 @@ func Reverse[S ~[]E, E any](s S) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
 	}
+}
+
+func GetOutBoundIP() string {
+	conn, err := net.Dial("udp", "8.8.8.8:53")
+	if err != nil {
+		return ""
+	}
+	localAddr, ok := conn.LocalAddr().(*net.UDPAddr)
+	if !ok{
+		return ""
+	}
+	return localAddr.IP.String()
 }

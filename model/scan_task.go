@@ -24,6 +24,7 @@ const (
 	TaskKindBinary     TaskKind = "Binary"
 	TaskKindIotScan    TaskKind = "IotScan"
 	TaskKindDockerfile TaskKind = "Dockerfile"
+	TaskKindHostEnv    TaskKind = "HostEnvironment"
 )
 
 type ProjectType string
@@ -58,7 +59,7 @@ type ScanTask struct {
 }
 
 func CreateScanTask(projectDir string, taskKind TaskKind, taskType TaskType) *ScanTask {
-	must.True(filepath.IsAbs(projectDir))
+	must.True(projectDir == "" || filepath.IsAbs(projectDir))
 	t := &ScanTask{
 		ProjectDir:  projectDir,
 		ProjectName: filepath.Base(projectDir),
