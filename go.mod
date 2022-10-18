@@ -25,7 +25,7 @@ require (
 	go.uber.org/zap v1.23.0
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
-	golang.org/x/text v0.3.8
+	golang.org/x/text v0.4.0
 )
 
 replace github.com/denisbrodbeck/machineid v1.0.1 => github.com/iseki0/machineid v0.0.0-20221013085010-5552166865ef
