@@ -196,12 +196,3 @@ func mergeComponentVersionOnly(target map[string]string, deps []model.Dependency
 	}
 }
 
-func mergeComponentInto(source map[string]string, append []model.Dependency) {
-	for _, it := range append {
-		name, version := it.Name, it.Version
-		if version == "" && source[name] != "" {
-			continue
-		}
-		source[name] = version
-	}
-}
