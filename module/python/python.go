@@ -28,7 +28,20 @@ func (i Inspector) CheckDir(dir string) bool {
 	r, e := os.ReadDir(dir)
 	if e == nil {
 		for _, it := range r {
-			if (it.Name() != "conanfile.py" && filepath.Ext(it.Name()) == ".py") || strings.HasPrefix(it.Name(), "requirements") || it.Name() == "pyproject.toml" {
+			if it.IsDir() {
+				continue
+			}
+			name := it.Name()
+			if name == "conanfile.py" {
+				continue
+			}
+			if name == "pyproject.toml" {
+				return true
+			}
+			if strings.HasPrefix(name, "requirements") {
+				return true
+			}
+			if filepath.Ext(name) == ".py" {
 				return true
 			}
 		}
