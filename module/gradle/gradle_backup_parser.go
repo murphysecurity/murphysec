@@ -5,20 +5,17 @@ import (
 	"strings"
 )
 
-// (?:implementation|runtimeOnly)\(\"([\w.-]+):([\w.-]+):(\$\w+|[\w.-]+)\"\)
-// catch group: groupId, artifactId, version/variable
-var ktsImplPattern = regexp.MustCompile("(?:implementation|runtimeOnly)\\(\\\"([\\w.-]+):([\\w.-]+):(\\$\\w+|[\\w.-]+)\\\"\\)")
+//  catch group: groupId, artifactId, version/variable
+var ktsImplPattern = regexp.MustCompile(`(?:implementation|runtimeOnly)\("([\w.-]+):([\w.-]+):(\$\w+|[\w.-]+)"\)`)
 
-// (?:implementation|runtimeOnly|compile)['"]([\w.-]+):([\w.-]+):([\w.-]+)['"]
-// catch group: groupId, artifactId, version
-var groovyImplPattern = regexp.MustCompile("(?:implementation|runtimeOnly|compile)['\"]([\\w.-]+):([\\w.-]+):([\\w.-]+)['\"]")
+//  catch group: groupId, artifactId, version
+var groovyImplPattern = regexp.MustCompile(`(?:implementation|runtimeOnly|compile)['"]([\w.-]+):([\w.-]+):([\w.-]+)['"]`)
 
-// va[lr]\s+(\w)\s*=\s\"(.+?)\"
-// catch group: variableIdentifier, string literal value
-var ktsVariablePattern = regexp.MustCompile("va[lr]\\s+(\\w)\\s*=\\s\\\"(.+?)\\\"")
+//  catch group: variableIdentifier, string literal value
+var ktsVariablePattern = regexp.MustCompile(`va[lr]\s+(\w)\s*=\s"(.+?)"`)
 
-var replacePattern = regexp.MustCompile("[\\r\\s]+")
-var commentPattern = regexp.MustCompile("//.+$")
+var replacePattern = regexp.MustCompile(`[\r\s]+`)
+var commentPattern = regexp.MustCompile(`//.+$`)
 
 func parseGradleGroovy(input string) []DepElement {
 	var rs []DepElement
