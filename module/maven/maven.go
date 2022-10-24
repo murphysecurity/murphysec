@@ -60,7 +60,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 		strategy = model.ScanStrategyBackup
 	}
 	for _, entry := range deps.ListAllEntries() {
-		modules = append(modules, model.Module{
+		task.AddModule(model.Module{
 			PackageManager: model.PMMaven,
 			Language:       model.Java,
 			Name:           entry.coordinate.Name(),
