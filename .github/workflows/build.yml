@@ -35,7 +35,7 @@ jobs:
           go mod tidy
           go fmt ./...
           go vet
-          git diff --staged --exit-code .
+          git diff --exit-code .
 
       - name: Build
         run: |
