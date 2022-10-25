@@ -37,7 +37,7 @@ jobs:
           git diff --color --exit-code .
 
       - name: Set up gotestfmt
-        run: go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
+        run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
 
       - name: Run tests
         run: |
