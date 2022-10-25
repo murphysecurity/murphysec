@@ -51,7 +51,7 @@ func parseOsRelease(p string) (map[string]string, error) {
 			continue
 		}
 		var key, value = line[0], line[1]
-		if v, e:=strconv.Unquote(key);e==nil{
+		if v, e := strconv.Unquote(key); e == nil {
 			key = v
 		}
 		if value != "" && value[0] == '"' {

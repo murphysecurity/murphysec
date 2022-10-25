@@ -90,7 +90,7 @@ func GetOutBoundIP() string {
 		return ""
 	}
 	localAddr, ok := conn.LocalAddr().(*net.UDPAddr)
-	if !ok{
+	if !ok {
 		return ""
 	}
 	return localAddr.IP.String()

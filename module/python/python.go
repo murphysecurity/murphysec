@@ -208,4 +208,3 @@ func mergeComponentVersionOnly(target map[string]string, deps []model.Dependency
 		}
 	}
 }
-
