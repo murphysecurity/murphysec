@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-//  catch group: groupId, artifactId, version/variable
+// catch group: groupId, artifactId, version/variable
 var ktsImplPattern = regexp.MustCompile(`(?:implementation|runtimeOnly)\("([\w.-]+):([\w.-]+):(\$\w+|[\w.-]+)"\)`)
 
-//  catch group: groupId, artifactId, version
+// catch group: groupId, artifactId, version
 var groovyImplPattern = regexp.MustCompile(`(?:implementation|runtimeOnly|compile)['"]([\w.-]+):([\w.-]+):([\w.-]+)['"]`)
 
-//  catch group: variableIdentifier, string literal value
+// catch group: variableIdentifier, string literal value
 var ktsVariablePattern = regexp.MustCompile(`va[lr]\s+(\w)\s*=\s"(.+?)"`)
 
 var replacePattern = regexp.MustCompile(`[\r\s]+`)
