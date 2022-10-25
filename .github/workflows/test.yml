@@ -29,6 +29,13 @@ jobs:
         with:
           deno-version: v1.x
 
+      - name: Check
+        run: |
+          go mod tidy
+          go fmt ./...
+          go vet
+          git diff --color --exit-code .
+
       - name: Set up gotestfmt
         run: go install github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@latest
 
