@@ -115,7 +115,7 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 			continue
 		}
 	}
-	logger.Info(fmt.Sprintf("total found pipManagerFiles:%d", len(waitingScanPipManagerFiles)))
+	logger.Info(fmt.Sprintf("total found pipManagerFiles: %d", len(waitingScanPipManagerFiles)))
 	for entryName, fp := range waitingScanPipManagerFiles {
 		logger.Info("start readRequirements...", zap.String("name", entryName), zap.String("relativePath", fp))
 		deps, e := readRequirements(fp)
