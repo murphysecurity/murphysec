@@ -52,7 +52,7 @@ func (i Inspector) CheckDir(dir string) bool {
 
 func parseDockerFile(dir, path string, m map[string]string) {
 	// find all PipManagerFiles from dockerfile
-	var regexpToFindPipManagerFiles = `.*?pip.*?install.*?-r[ ]*(.*?)\s+`
+	var regexpToFindPipManagerFiles = `pip\d?\s+install.*?\s-r\s+([^\s&|;"']+)`
 
 	data, err := os.ReadFile(path)
 	if err != nil {
