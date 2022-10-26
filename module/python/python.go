@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -49,12 +50,30 @@ func (i Inspector) CheckDir(dir string) bool {
 	return false
 }
 
+func parseDockerFile(dir, path string, m map[string]string) {
+	// find all PipManagerFiles from dockerfile
+	var regexpToFindPipManagerFiles = `pip\d?\s+install.*?\s-r\s+([^\s&|;"']+)`
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return
+	}
+	result := regexp.MustCompile(regexpToFindPipManagerFiles).FindAllStringSubmatch(string(data), -1)
+	for _, item := range result {
+		if len(item) != 2 {
+			continue
+		}
+		m[item[1]] = filepath.Join(dir, item[1])
+	}
+}
+
 func scanDepFile(ctx context.Context, dir string) (bool, error) {
 	var logger = utils.UseLogger(ctx)
 	var found = false
 	var task = model.UseInspectorTask(ctx)
 
 	var tomlFile = filepath.Join(dir, "pyproject.toml")
+	var waitingScanPipManagerFiles = make(map[string]string)
 	if utils.IsFile(tomlFile) {
 		list, e := tomlBuildSysFile(ctx, tomlFile)
 		if e != nil {
@@ -75,15 +94,31 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 		return false, e
 	}
 	for _, entry := range entries {
-		if entry.IsDir() {
+		if strings.HasPrefix(entry.Name(), ".") {
+			continue //ignore hide file/folder
+		}
+		err := filepath.Walk(filepath.Join(dir, entry.Name()), func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			if strings.Contains(info.Name(), "requirement") {
+				waitingScanPipManagerFiles[info.Name()] = path
+			}
+			if info.Name() == "Dockerfile" {
+				parseDockerFile(dir, path, waitingScanPipManagerFiles)
+			}
+			return nil
+		})
+		if err != nil {
 			continue
 		}
-		var entryName = entry.Name()
-		if !strings.HasPrefix(entryName, "requirements") {
-			continue
-		}
-
-		fp := filepath.Join(dir, entryName)
+	}
+	logger.Sugar().Infof("total found pipManagerFiles: %d", len(waitingScanPipManagerFiles))
+	for entryName, fp := range waitingScanPipManagerFiles {
+		logger.Info("start readRequirements...", zap.String("name", entryName), zap.String("relativePath", fp))
 		deps, e := readRequirements(fp)
 		if e != nil {
 			logger.Sugar().Errorf("Parse requirements file failed[%s]: %s", fp, e.Error())
