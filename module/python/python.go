@@ -101,13 +101,14 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 			if err != nil {
 				return err
 			}
-			if !info.IsDir() {
-				if strings.Contains(info.Name(), "requirement") {
-					waitingScanPipManagerFiles[info.Name()] = path
-				}
-				if info.Name() == "Dockerfile" {
-					parseDockerFile(dir, path, waitingScanPipManagerFiles)
-				}
+			if info.IsDir() {
+				return nil
+			}
+			if strings.Contains(info.Name(), "requirement") {
+				waitingScanPipManagerFiles[info.Name()] = path
+			}
+			if info.Name() == "Dockerfile" {
+				parseDockerFile(dir, path, waitingScanPipManagerFiles)
 			}
 			return nil
 		})
