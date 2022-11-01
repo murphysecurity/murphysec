@@ -47,6 +47,7 @@ func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 		return nil, e
 	}
 	r.Version = *gv
+	r.Path = "gradle"
 	return r, nil
 }
 
