@@ -1,7 +1,12 @@
 name: Build
 
 on:
-  push:
+#  push:
+#    paths:
+#      - "**/*.go"
+#      - "go.mod"
+#      - "go.sum"
+#      - ".github/workflows/*.yml"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,6 +35,9 @@ jobs:
         with:
           deno-version: v1.x
 
+      - name: Download dependencies
+        run: go mod download
+
       - name: Install Go tools
         run: |
           cd /tmp
@@ -37,8 +45,7 @@ jobs:
 
       - name: Check
         run: |
-          export
-          which stringer || true
+          export PATH=$GOPATH/bin:$PATH
           go mod tidy
           go generate ./...
           go fmt ./...
@@ -47,7 +54,6 @@ jobs:
 
       - name: Build
         run: |
-          go generate ./...
           go build -v -ldflags '-s -w -buildid=' -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
 
       - name: Rename for Windows

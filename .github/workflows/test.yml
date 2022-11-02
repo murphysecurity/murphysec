@@ -29,6 +29,9 @@ jobs:
         with:
           deno-version: v1.x
 
+      - name: Download dependencies
+        run: go mod download
+
       - name: Install Go tools
         run: |
           cd /tmp
