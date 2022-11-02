@@ -37,13 +37,20 @@ jobs:
           cd /tmp
           go install golang.org/x/tools/cmd/stringer@v0.2.0
 
-      - name: Check
-        run: |
-          go mod tidy
-          go generate ./...
-          go fmt ./...
-          go vet
-          git diff --color --exit-code .
+      - name: Go mod tidy
+        run: go mod tidy
+
+      - name: Regenerate code
+        run: go generate ./...
+
+      - name: Reformat code
+        run: go fmt ./...
+
+      - name: Check difference
+        run: git diff --color --exit-code .
+
+      - name: Go vet
+        run: go vet
 
       - name: Set up gotestfmt
         run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest

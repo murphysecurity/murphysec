@@ -1,12 +1,12 @@
 name: Build
 
 on:
-#  push:
-#    paths:
-#      - "**/*.go"
-#      - "go.mod"
-#      - "go.sum"
-#      - ".github/workflows/*.yml"
+  push:
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,23 +38,8 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Install Go tools
-        run: |
-          cd /tmp
-          go install golang.org/x/tools/cmd/stringer@v0.2.0
-
-      - name: Check
-        run: |
-          export PATH=$GOPATH/bin:$PATH
-          go mod tidy
-          go generate ./...
-          go fmt ./...
-          go vet
-          git diff --color --exit-code .
-
       - name: Build
-        run: |
-          go build -v -ldflags '-s -w -buildid=' -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
+        run: go build -v -ldflags '-s -w -buildid=' -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
 
       - name: Rename for Windows
         if: matrix.goos == 'windows'
