@@ -3,24 +3,26 @@ package maven
 import "fmt"
 
 const (
-	ErrMvnDisabled          = mvnError("mvn command disabled")
-	ErrMvnNotFound          = mvnError("mvn command not found")
-	ErrCheckMvnVersion      = mvnError("eval mvn version failed")
-	ErrBadDepsGraph         = mvnError("bad dependency graph")
-	ErrInvalidCoordinate    = mvnError("invalid coordinate")
-	ErrArtifactNotFound     = mvnError("artifact not found")
-	ErrGetArtifactFailed    = mvnError("get artifact failed")
-	ErrParsePomFailed       = mvnError("parse pom failed")
-	ErrOpenProject          = mvnError("open project failed")
-	ErrPomCircularDependent = mvnError("pom file circular dependent")
-	ErrBadCoordinate        = mvnError("bad coordinate")
-	ErrCouldNotResolve      = mvnError("couldn't resolve")
-	ErrMvnExitErr           = mvnError("mvn command exit with non-zero code")
-	ErrMvnCmd               = mvnError("error during mvn execution")
-	ErrInspection           = mvnError("can't inspect the maven project")
+	_                       mvnError = iota
+	ErrMvnDisabled                   // maven: mvn command disabled
+	ErrMvnNotFound                   // maven: mvn command not found
+	ErrCheckMvnVersion               // maven: eval mvn version failed
+	ErrBadDepsGraph                  // maven: bad dependency graph
+	ErrInvalidCoordinate             // maven: invalid coordinate
+	ErrArtifactNotFound              // maven: artifact not found
+	ErrGetArtifactFailed             // maven: get artifact failed
+	ErrParsePomFailed                // maven: parse pom failed
+	ErrOpenProject                   // maven: open project failed
+	ErrPomCircularDependent          // maven: pom file circular dependent
+	ErrBadCoordinate                 // maven: bad coordinate
+	ErrCouldNotResolve               // maven: couldn't resolve
+	ErrMvnExitErr                    // maven: mvn command exit with non-zero code
+	ErrMvnCmd                        // maven: error during mvn execution
+	ErrInspection                    // maven: can't inspect the maven project
 )
 
-type mvnError string
+//go:generate stringer -linecomment -type mvnError -output err_string.go
+type mvnError int
 
 func (m mvnError) DetailedWrap(detail string, cause error) error {
 	return &wrappedMvnErr{
@@ -47,7 +49,7 @@ func (m mvnError) Wrap(cause error) error {
 }
 
 func (m mvnError) Error() string {
-	return string(m)
+	return m.String()
 }
 
 type wrappedMvnErr struct {

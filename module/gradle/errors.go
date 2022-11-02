@@ -1,12 +1,14 @@
 package gradle
 
-type _e string
+//go:generate stringer -type _e -linecomment -output errors_string.go
+type _e int
 
 func (e _e) Error() string {
-	return string(e)
+	return e.String()
 }
 
 const (
-	ErrNoGradle          _e = "No gradle found"
-	ErrEvalGradleVersion _e = "Eval gradle version failed"
+	_                    _e = iota
+	ErrNoGradle             // gradle: No gradle found
+	ErrEvalGradleVersion    // gradle: Eval gradle version failed
 )
