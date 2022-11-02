@@ -115,6 +115,10 @@ func createTaskApi(task *model.ScanTask) error {
 		view.TokenInvalid(ui)
 		return e
 	}
+	if e != nil {
+		view.GetScanResultFailed(ui, e)
+		return e
+	}
 	task.TaskId = r.TaskInfo
 	return nil
 }
