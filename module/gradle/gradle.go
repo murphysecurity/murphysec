@@ -68,7 +68,9 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	if len(rs) == 0 {
 		// if no module find, use backup solution
 		if m := backupParser(ctx, dir); m != nil {
-			rs = append(rs, m.BaseModule(dir))
+			tm := m.BaseModule(dir)
+			tm.ScanStrategy = model.ScanStrategyBackup
+			rs = append(rs, tm)
 		}
 	}
 	for _, it := range rs {
