@@ -37,6 +37,8 @@ jobs:
 
       - name: Check
         run: |
+          export
+          which stringer || true
           go mod tidy
           go generate ./...
           go fmt ./...
