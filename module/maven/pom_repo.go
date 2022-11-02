@@ -58,7 +58,7 @@ func fetchPom(url string) (*gopom.Project, error) {
 		return nil, ErrArtifactNotFound
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, ErrArtifactNotFound.Detailed(fmt.Sprintf("HTTP %d - %s", resp.StatusCode, resp.Status))
+		return nil, ErrGetArtifactFailed.Detailed(fmt.Sprintf("HTTP %d - %s", resp.StatusCode, resp.Status))
 	}
 	data, e := io.ReadAll(resp.Body)
 	if e != nil {

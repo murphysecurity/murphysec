@@ -9,6 +9,7 @@ const (
 	ErrBadDepsGraph         = mvnError("bad dependency graph")
 	ErrInvalidCoordinate    = mvnError("invalid coordinate")
 	ErrArtifactNotFound     = mvnError("artifact not found")
+	ErrGetArtifactFailed    = mvnError("get artifact failed")
 	ErrParsePomFailed       = mvnError("parse pom failed")
 	ErrOpenProject          = mvnError("open project failed")
 	ErrPomCircularDependent = mvnError("pom file circular dependent")
