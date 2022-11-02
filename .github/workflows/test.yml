@@ -29,9 +29,15 @@ jobs:
         with:
           deno-version: v1.x
 
+      - name: Install Go tools
+        run: |
+          cd /tmp
+          go install golang.org/x/tools/cmd/stringer@v0.2.0
+
       - name: Check
         run: |
           go mod tidy
+          go generate ./...
           go fmt ./...
           go vet
           git diff --color --exit-code .
