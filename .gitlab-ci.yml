@@ -24,7 +24,6 @@ compose-build:
   before_script:
     - mkdir -p .go
   script:
-    - sh -c "cd /tmp; go install golang.org/x/tools/cmd/stringer@v0.2.0"
     - GOOS=linux GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-linux-amd64
     - GOOS=windows GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-windows-amd64.exe
     - GOOS=darwin GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-darwin-amd64
