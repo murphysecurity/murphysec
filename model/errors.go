@@ -1,12 +1,14 @@
 package model
 
-type _err string
+//go:generate stringer -linecomment -type _e -output errors_string.go
+type _e int
 
 const (
-	ErrNoGitRemoteFound _err = "No git remote found"
-	ErrNoGitRepo        _err = "No git repo found"
+	_ _e = iota
+	ErrNoGitRemoteFound // no git remote found
+	ErrNoGitRepo        // no git repo found
 )
 
-func (e _err) Error() string {
-	return string(e)
+func (e _e) Error() string {
+	return e.String()
 }
