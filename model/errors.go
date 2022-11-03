@@ -4,9 +4,9 @@ package model
 type _e int
 
 const (
-	_ _e = iota
-	ErrNoGitRemoteFound // no git remote found
-	ErrNoGitRepo        // no git repo found
+	_                   _e = iota
+	ErrNoGitRemoteFound    // no git remote found
+	ErrNoGitRepo           // no git repo found
 )
 
 func (e _e) Error() string {
