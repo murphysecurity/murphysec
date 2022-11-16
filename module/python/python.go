@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -89,36 +90,47 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 		}
 	}
 
-	entries, e := os.ReadDir(dir)
-	if e != nil {
-		return false, e
-	}
-	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name(), ".") {
-			continue //ignore hide file/folder
-		}
-		err := filepath.Walk(filepath.Join(dir, entry.Name()), func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				return nil
-			}
-			if strings.Contains(info.Name(), "requirement") {
-				waitingScanPipManagerFiles[info.Name()] = path
-			}
-			if info.Name() == "Dockerfile" {
-				parseDockerFile(dir, path, waitingScanPipManagerFiles)
-			}
-			return nil
-		})
+	_ = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if strings.HasPrefix(info.Name(), ".") {
+			return filepath.SkipDir
+		}
+		if strings.Contains(info.Name(), "requirement") {
+			waitingScanPipManagerFiles[info.Name()] = path
+		}
+		if info.Name() == "Dockerfile" {
+			parseDockerFile(dir, path, waitingScanPipManagerFiles)
+		}
+		return nil
+	})
+
+	// distinct waitingScanPipManagerFiles
+	var pendingScanRequirements []string
+	var requirementAbsPathSet = make(map[string]struct{})
+	for _, s := range waitingScanPipManagerFiles {
+		abs, e := filepath.Abs(filepath.Join(dir, s))
+		if e != nil {
 			continue
 		}
+		requirementAbsPathSet[abs] = struct{}{}
 	}
-	logger.Sugar().Infof("total found pipManagerFiles: %d", len(waitingScanPipManagerFiles))
-	for entryName, fp := range waitingScanPipManagerFiles {
-		logger.Info("start readRequirements...", zap.String("name", entryName), zap.String("relativePath", fp))
+	for it := range requirementAbsPathSet {
+		r, e := filepath.Rel(dir, it)
+		if e != nil {
+			continue
+		}
+		pendingScanRequirements = append(pendingScanRequirements, r)
+	}
+	sort.Strings(pendingScanRequirements)
+
+	logger.Sugar().Infof("total found pipManagerFiles: %d", len(pendingScanRequirements))
+	for _, fp := range pendingScanRequirements {
+		logger.Info("start readRequirements...", zap.String("relativePath", fp))
 		deps, e := readRequirements(fp)
 		if e != nil {
 			logger.Sugar().Errorf("Parse requirements file failed[%s]: %s", fp, e.Error())
@@ -129,7 +141,7 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 		}
 		found = true
 		m := model.Module{
-			Name:           fmt.Sprintf("Python-%s", entryName),
+			Name:           fmt.Sprintf("Python-%s", filepath.Base(fp)),
 			PackageManager: model.PMPip,
 			Language:       model.Python,
 			Dependencies:   deps,
