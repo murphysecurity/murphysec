@@ -24,12 +24,7 @@ compose-build:
   before_script:
     - mkdir -p .go
   script:
-    - GOOS=linux GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-linux-amd64
-    - GOOS=windows GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-windows-amd64.exe
-    - GOOS=darwin GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-darwin-amd64
-    - GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-saas-linux-amd64
-    - GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-saas-windows-amd64.exe
-    - GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-saas-darwin-amd64
+    - chmod +x ./ci/mp-build.sh && ./ci/mp-build.sh
     - sha256sum out/bin/*
 
 internal-cos-upload:
