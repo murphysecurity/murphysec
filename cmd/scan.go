@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/build_flags"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/inspector"
@@ -64,7 +65,7 @@ func scanCmd() *cobra.Command {
 		Short: "Scan the source code of the specified project, currently supporting java, javascript, go, and python",
 	}
 	c.Flags().BoolVar(&CliJsonOutput, "json", false, "json output")
-	if env.AllowDeepScan {
+	if build_flags.AllowDeepScan {
 		c.Flags().BoolVar(&DeepScan, "deep", false, "deep scan, will upload the source code")
 	}
 	c.Flags().StringVar(&ProjectId, "project-id", "", "team id")

@@ -2,7 +2,7 @@ package inspector
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/build_flags"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/view"
 	"go.uber.org/zap"
@@ -23,7 +23,7 @@ func Scan(ctx context.Context) error {
 		return e
 	}
 
-	if env.AllowFileHash {
+	if build_flags.AllowFileHash {
 		Logger.Info("File hash scanning")
 		if e := FileHashScan(ctx); e != nil {
 			Logger.Error("FileHash calc failed", zap.Error(e))
@@ -31,7 +31,7 @@ func Scan(ctx context.Context) error {
 		}
 	}
 
-	if env.AllowDeepScan && scanTask.EnableDeepScan {
+	if build_flags.AllowDeepScan && scanTask.EnableDeepScan {
 		Logger.Info("DeepScan")
 		scanComplete = view.CodeFileUploadingForDeep(ui)
 		if e := UploadCodeFile(ctx); e != nil {

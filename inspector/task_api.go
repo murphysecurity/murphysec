@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/build_flags"
 	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
@@ -35,7 +36,7 @@ func submitModuleInfoApi(ctx context.Context) error {
 			ScanStrategy:   string(it.ScanStrategy),
 		})
 	}
-	if len(task.FileHashes) != 0 && env.AllowFileHash {
+	if len(task.FileHashes) != 0 && build_flags.AllowFileHash {
 		list := make([]api.VoFileHash, 0)
 		for _, it := range task.FileHashes {
 			for _, hash := range it.Hash {

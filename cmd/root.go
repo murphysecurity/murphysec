@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/build_flags"
 	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/logger"
@@ -43,12 +44,12 @@ func rootCmd() *cobra.Command {
 	must.Must(c.PersistentFlags().MarkHidden("ide"))
 	c.AddCommand(authCmd())
 	c.AddCommand(scanCmd())
-	if env.AllowBinScan {
+	if build_flags.AllowBinScan {
 		c.AddCommand(binScanCmd())
 		c.AddCommand(iotScanCmd())
 	}
 	c.AddCommand(ideaScanCmd())
-	if env.ScannerScan {
+	if build_flags.ScannerScan {
 		c.AddCommand(scannerCmd())
 	}
 	c.AddCommand(machineCmd())
