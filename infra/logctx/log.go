@@ -14,5 +14,9 @@ func With(ctx context.Context, logger *zap.Logger) context.Context {
 }
 
 func Use(ctx context.Context) *zap.Logger {
-	return ctx.Value(key).(*zap.Logger)
+	l, ok := ctx.Value(key).(*zap.Logger)
+	if !ok || l == nil {
+		return zap.NewNop()
+	}
+	return l
 }
