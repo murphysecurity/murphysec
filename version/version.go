@@ -1,63 +1,46 @@
 package version
 
 import (
-	"fmt"
 	"github.com/iseki0/osname"
+	"github.com/murphysecurity/murphysec/build_flags"
+	"github.com/murphysecurity/murphysec/infra/buildinfo"
 	"runtime"
-	"runtime/debug"
+	"strings"
 )
 
-const version = "v3.0.0"
+const name = "murphysec-cli"
 
 var userAgent string
 
-func init() {
+func initUserAgent() {
+	userAgent += name + "/" + Version()
+	var (
+		e         error
+		platforms []string
+	)
 	osn, e := osname.OsName()
-	if e != nil {
+	if e != nil && osn != "" {
 		osn = "<unknownOS>"
 	}
-	var platform = fmt.Sprintf("%s; %s; %s", osn, runtime.GOOS, runtime.GOARCH)
-	userAgent = fmt.Sprintf("murphysec-cli/%s (%s)", Version(), platform)
-	if h := GetGitHash(); h != "" {
-		userAgent = userAgent + " GitHash/" + h
+	platforms = append(platforms, osn, runtime.GOOS, runtime.GOARCH)
+	userAgent += " " + strings.Join(platforms, ";")
+	if s := buildinfo.UserAgentSuffix(); s != "" {
+		userAgent += " " + s
 	}
-	if h := GetGitTime(); h != "" {
-		userAgent = userAgent + " GitTime/" + GetGitTime()
-	}
+}
+
+func init() {
+	initUserAgent()
 }
 
 func UserAgent() string {
 	return userAgent
 }
 
-var buildInfo map[string]string
-
-func fillBuildInfo() {
-	if buildInfo != nil {
-		return
-	}
-	info, b := debug.ReadBuildInfo()
-	buildInfo = map[string]string{}
-	if !b {
-		return
-	}
-	for _, it := range info.Settings {
-		buildInfo[it.Key] = it.Value
-	}
+func Version() string {
+	return buildinfo.Get().Version + "-" + build_flags.Kind
 }
 
-func GetGitHash() string {
-	fillBuildInfo()
-	if buildInfo["vcs"] != "git" {
-		return ""
-	}
-	return buildInfo["vcs.revision"]
-}
-
-func GetGitModified() string {
-	return buildInfo["vcs.modified"]
-}
-
-func GetGitTime() string {
-	return buildInfo["vcs.time"]
+func FullInfo() string {
+	return name + " " + Version() + "\n\nBuild: " + buildinfo.Commit()
 }
