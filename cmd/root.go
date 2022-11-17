@@ -49,8 +49,9 @@ func rootCmd() *cobra.Command {
 		c.AddCommand(iotScanCmd())
 	}
 	c.AddCommand(ideaScanCmd())
-	if build_flags.ScannerScan {
+	if build_flags.InternalFeature {
 		c.AddCommand(scannerCmd())
+		c.AddCommand(internalCmd())
 	}
 	c.AddCommand(machineCmd())
 	c.AddCommand(dockerScanCmd())

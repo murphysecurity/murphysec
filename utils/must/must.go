@@ -11,6 +11,26 @@ func Must(err error) {
 	}
 }
 
+func M(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+func M1[T1 any](t1 T1, e error) T1 {
+	if e != nil {
+		panic(e)
+	}
+	return t1
+}
+
+func M2[T1, T2 any](t1 T1, t2 T2, e error) (T1, T2) {
+	if e != nil {
+		panic(e)
+	}
+	return t1, t2
+}
+
 func A[T any](r T, err error) T {
 	if err != nil {
 		panic(err)
