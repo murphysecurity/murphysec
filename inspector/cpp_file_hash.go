@@ -23,7 +23,10 @@ func MD5HashingCppFiles(parentCtx context.Context, dir string) (rs [][16]byte, e
 	// finding files
 	eg.Go(func() error { defer close(fileCh); return findAllCppHashingFiles(ctx, dir, fileCh) })
 	// hashing files
-	eg.Go(func() error { defer close(hashCh); return md5HashingFilesFromChannelConcurrently(ctx, 2, fileCh, hashCh) })
+	eg.Go(func() error {
+		defer close(hashCh)
+		return md5HashingFilesFromChannelConcurrently(ctx, 2, fileCh, hashCh)
+	})
 
 	for hash := range hashCh {
 		set[hash.hash] = struct{}{}
