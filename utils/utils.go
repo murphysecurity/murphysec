@@ -95,3 +95,7 @@ func GetOutBoundIP() string {
 	}
 	return localAddr.IP.String()
 }
+
+func HasHiddenFilePrefix(name string) bool {
+	return len(name) > 0 && name[0] == '.'
+}

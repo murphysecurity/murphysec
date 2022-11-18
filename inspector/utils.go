@@ -2,34 +2,17 @@ package inspector
 
 import (
 	_ "embed"
+	"github.com/murphysecurity/murphysec/infra/predata"
+	"github.com/murphysecurity/murphysec/utils"
 	"path/filepath"
-	"strings"
 )
 
 //go:embed auto_scan_ignore
 var _dirIgnoreText string
-var ignoredDirMap = map[string]struct{}{}
-
-func init() {
-	for _, s := range strings.Split(_dirIgnoreText, "\n") {
-		s := strings.TrimSpace(s)
-		if s == "" || strings.HasPrefix(s, "#") {
-			continue
-		}
-		ignoredDirMap[s] = struct{}{}
-	}
-}
+var ignoredDirMap = predata.StringsToMapBool(predata.ParseString(_dirIgnoreText))
 
 func dirShouldIgnore(name string) bool {
-	if strings.HasPrefix(name, ".") {
-		return true
-	}
-	_, ok := ignoredDirMap[name]
-	if ok {
-		return true
-	}
-	_, ok = ignoredDirMap[filepath.Base(name)]
-	return ok
+	return utils.HasHiddenFilePrefix(name) || ignoredDirMap[name] || ignoredDirMap[filepath.Base(name)]
 }
 
 type unit = struct{}

@@ -8,6 +8,7 @@ import (
 	"context"
 	_ "embed"
 	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/infra/predata"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -165,22 +166,10 @@ func scanCodeFile(ctx context.Context) []string {
 }
 
 func codeFileShouldUpload(p string) bool {
-	ext := filepath.Ext(p)
-	_, ok := __uploadFileExt[ext]
-	return ok
+	return !utils.HasHiddenFilePrefix(filepath.Base(p)) && __uploadFileExt[filepath.Ext(p)]
 }
 
-var __uploadFileExt = map[string]struct{}{}
+var __uploadFileExt = predata.StringsToMapBool(predata.ParseString(__uploadFileExtList))
 
 //go:embed file_upload_ext
 var __uploadFileExtList string
-
-func init() {
-	for _, s := range strings.Split(__uploadFileExtList, "\n") {
-		s = strings.TrimSpace(s)
-		if s == "" || strings.HasPrefix(s, "#") {
-			continue
-		}
-		__uploadFileExt[s] = struct{}{}
-	}
-}
