@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/api"
-	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/model"
@@ -50,7 +49,7 @@ func InspectEnv(ctx context.Context) error {
 
 	if e := api.SendDetect(&api.SendDetectRequest{
 		TaskInfo: task.TaskId,
-		ApiToken: conf.APIToken(),
+		ApiToken: "", // todo: token empty
 		Modules: []api.VoModule{
 			module2,
 			{
@@ -102,7 +101,7 @@ func createTaskApi(task *model.ScanTask) error {
 		TaskType:      task.TaskType,
 		UserAgent:     version.UserAgent(),
 		CmdLine:       strings.Join(os.Args, " "),
-		ApiToken:      conf.APIToken(),
+		ApiToken:      "", // todo: empty token
 		ProjectName:   name,
 		ProjectType:   model.ProjectTypeLocal,
 		TargetAbsPath: name, // workaround

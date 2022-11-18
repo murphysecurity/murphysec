@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/api"
-	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
@@ -67,7 +66,6 @@ func initLogger() error {
 	SLOG = LOG.Sugar()
 	api.Logger = _logger
 	inspector.Logger = _logger
-	conf.Logger = _logger
 	model.Logger = _logger
 	logger.InitLegacyLogger(_logger)
 

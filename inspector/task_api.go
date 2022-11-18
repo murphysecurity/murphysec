@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/build_flags"
-	"github.com/murphysecurity/murphysec/conf"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/version"
@@ -69,7 +68,7 @@ func createTaskApi(ctx context.Context) (e error) {
 		TaskType:        scanTask.TaskType,
 		UserAgent:       version.UserAgent(),
 		CmdLine:         strings.Join(os.Args, " "),
-		ApiToken:        conf.APIToken(),
+		ApiToken:        "", // todo: token
 		ProjectName:     scanTask.ProjectName,
 		TargetAbsPath:   scanTask.ProjectDir,
 		ProjectType:     scanTask.ProjectType,

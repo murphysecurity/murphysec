@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/build_flags"
-	"github.com/murphysecurity/murphysec/conf"
+	"github.com/murphysecurity/murphysec/config"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/module"
@@ -37,7 +38,7 @@ func rootCmd() *cobra.Command {
 	c.PersistentFlags().StringVar(&cliLogFilePathOverride, "write-log-to", "", "specify log file path")
 	c.PersistentFlags().StringVar(&consoleLogLevelOverride, "log-level", "silent", "specify log level, must be silent|error|warn|info|debug")
 	c.PersistentFlags().BoolVar(&enableNetworkLog, "network-log", false, "print network data")
-	c.PersistentFlags().StringVar(&conf.APITokenCliOverride, "token", "", "specify API token")
+	c.PersistentFlags().StringVar(&config.CliTokenOverride, "token", "", "specify API token")
 	c.PersistentFlags().StringVar(&CliServerAddressOverride, "server", "", "specify server address")
 	c.PersistentFlags().BoolVarP(&allowInsecure, "allow-insecure", "x", false, "Allow insecure TLS connection")
 	c.PersistentFlags().String("ide", "", "hidden")
@@ -86,7 +87,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	env.ConfigureServerBaseUrl(CliServerAddressOverride)
 	api.C = api.NewClient()
-	api.C.Token = conf.APIToken()
+	api.C.Token, _ = config.ReadTokenFile(context.TODO())
 	return nil
 }
 

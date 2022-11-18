@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/murphysecurity/murphysec/conf"
+	"github.com/murphysecurity/murphysec/config"
 	"github.com/spf13/cobra"
 	"strings"
 )
@@ -56,7 +57,7 @@ func authLoginRun(cmd *cobra.Command, args []string) {
 		SetGlobalExitCode(-1)
 		return
 	}
-	if _, e := conf.ReadTokenFile(); e == nil {
+	if _, e := config.ReadTokenFile(context.TODO()); e == nil {
 		var rs bool
 		e := survey.AskOne(&survey.Confirm{Message: "Warning: You have a token, continue will overwrite it. That's OK?", Default: false}, &rs)
 		if e != nil {
@@ -68,7 +69,7 @@ func authLoginRun(cmd *cobra.Command, args []string) {
 			return
 		}
 	}
-	e := conf.StoreToken(token)
+	e := config.WriteLocalTokenFile(context.TODO(), token)
 	if e != nil {
 		SLOG.Error("token setup failed: %s", e.Error())
 		fmt.Println("Sorry, token setup failed")
@@ -78,12 +79,7 @@ func authLoginRun(cmd *cobra.Command, args []string) {
 }
 
 func authLogoutRun(cmd *cobra.Command, args []string) {
-	e := conf.RemoveToken()
-	if e == conf.TokenFileNotFound {
-		SLOG.Warn("Token file is not exists")
-		SetGlobalExitCode(0)
-		return
-	}
+	e := config.RemoveTokenFile(context.TODO())
 	if e != nil {
 		SLOG.Errorf("auth logout failed: %s", e.Error())
 		fmt.Println("Sorry, clear token failed.")
