@@ -9,7 +9,7 @@ import (
 
 var __x509Pattern = regexp.MustCompile("x509: .+ certificate is not standards compliant")
 
-func IsTlsCertError(e error) bool {
+func IsTLSError(e error) bool {
 	var a0 x509.HostnameError
 	if errors.As(e, &a0) {
 		return true
