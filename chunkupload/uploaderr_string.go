@@ -9,11 +9,12 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[ErrDirInvalid-1]
+	_ = x[ErrEvalAbsPath-2]
 }
 
-const _uploadErr_name = "uploader: dir invalid"
+const _uploadErr_name = "uploader: dir invaliduploader: cannot evaluate absolute path"
 
-var _uploadErr_index = [...]uint8{0, 21}
+var _uploadErr_index = [...]uint8{0, 21, 60}
 
 func (i uploadErr) String() string {
 	i -= 1

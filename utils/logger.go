@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"go.uber.org/zap"
+	"io"
 )
 
 const _LoggerCtxKey = `_LoggerCtxKey`
@@ -17,4 +18,13 @@ func UseLogger(ctx context.Context) *zap.Logger {
 		return l
 	}
 	return zap.NewNop()
+}
+
+func LogCloseErr(logger *zap.SugaredLogger, pipeName string, closer io.Closer) {
+	if closer == nil {
+		panic("closer == nil")
+	}
+	if e := closer.Close(); e != nil {
+		logger.Warnf("close pipe %s failed: %v", pipeName, e)
+	}
 }

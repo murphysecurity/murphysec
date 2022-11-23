@@ -5,9 +5,11 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"fmt"
+	ctxio "github.com/jbenet/go-context/io"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/pkg/errors"
+	"github.com/murphysecurity/murphysec/utils"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"io/fs"
@@ -31,100 +33,102 @@ const (
 
 type Filter func(path string, entry fs.DirEntry) (FilterVote, error)
 
+const ChunkSize = 16 * 1024 * 1024
+
 // UploadDirectory will pack files in the directory to tar.gz stream and upload it
 func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params Params) error {
 	var (
 		e      error
 		logger = logctx.Use(ctx).Sugar()
 	)
+	logger.Infof("UploaderDirectory, %s", dir)
+
 	e = checkDirValid(ctx, dir)
 	if e != nil {
 		return e
 	}
 	dir, e = filepath.Abs(dir)
 	if e != nil {
-		logger.Errorf("%v", e)
-		return ErrEvalAbsPath
+		return fmt.Errorf("eval abs path: %w", e)
 	}
-	r, w := io.Pipe()
-	defer w.Close()
-	gzipStream := gzip.NewWriter(w)
-	tarStream := tar.NewWriter(gzipStream)
+
 	eg, ec := errgroup.WithContext(ctx)
-	eg.Go(func() error {
-		defer func() {
-			var e error
-			e = tarStream.Close()
-			if e != nil {
-				logger.Warnf("tar stream close with error: %v", e)
-			}
-			e = gzipStream.Close()
-			if e != nil {
-				logger.Warnf("gzip stream close with error: %v", e)
-			}
-		}()
-		return fileWalker(ec, dir, fileFilter, tarStream)
-	})
-	eg.Go(func() error {
-		e := chunkUploadStreamer(ec, r, params)
-		if e != nil {
+	pr, pw := io.Pipe()
+	// create contextual io, avoid deadlock
+	contextualReader := ctxio.NewReader(ec, pr)
+	contextualWriter := ctxio.NewWriter(ec, pw)
 
-		}
-	})
+	eg.Go(func() error { return chunkUploadRoutine(ctx, params, contextualReader) })
+	eg.Go(func() error { defer func() { _ = pw.Close() }(); return dirPacker(ctx, dir, fileFilter, contextualWriter) })
 
+	e = eg.Wait()
+	if e != nil {
+		logger.Warnf("UploadDirectory failed, %v", e)
+	}
+	return nil
 }
 
-func fileWalker(ctx context.Context, dir string, filter Filter, writer *tar.Writer) error {
+func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer) (_returnErr error) {
 	var (
-		vote   FilterVote
 		e      error
-		logger = logctx.Use(ctx).Sugar()
+		logger = logctx.Use(ctx).Sugar().Named("dirPacker")
 	)
-	logger.Infof("fileWalker: begin")
-	defer func() { logger.Infof("fileWalker: end, %v", e) }()
+	logger.Infof("begin")
+	defer func() { logger.Warnf("end with error: %v", _returnErr) }()
+
+	gzipWriter := gzip.NewWriter(writer)
+	defer func() { utils.LogCloseErr(logger, "gzip", gzipWriter) }()
+	tarWriter := tar.NewWriter(gzipWriter)
+	defer func() { utils.LogCloseErr(logger, "tar", tarWriter) }()
 
 	var putFile = func(p string, entry fs.DirEntry) error {
 		var (
-			rel    string
-			e      error
-			header tar.Header
-			info   fs.FileInfo
-			f      *os.File
+			e error
 		)
-		rel, e = filepath.Rel(dir, p)
+		rel, e := filepath.Rel(dir, p)
 		if e != nil {
-			return e
+			return fmt.Errorf("eval rel path: %w", e)
 		}
 		rel = filepath.ToSlash(rel)
-		info, e = entry.Info()
+		info, e := entry.Info()
 		if e != nil {
-			return e
+			return fmt.Errorf("get info: %w", e)
 		}
+		f, e := os.Open(p)
+		if e != nil {
+			return fmt.Errorf("read file: %w", e)
+		}
+		defer func() { utils.LogCloseErr(logger, "file", f) }()
+
+		var header tar.Header
 		header.Name = rel
 		header.Mode = 0666
 		header.Size = info.Size()
-		e = writer.WriteHeader(&header)
+
+		e = tarWriter.WriteHeader(&header)
 		if e != nil {
-			return e
+			return fmt.Errorf("write header: %w", e)
 		}
-		f, e = os.Open(p)
+
+		_, e = io.Copy(writer, f)
 		if e != nil {
-			return e
+			return fmt.Errorf("write data: %w", e)
 		}
-		defer func() {
-			if e := f.Close(); e != nil {
-				logger.Warnf("close file failed, %v", e)
-			}
-		}()
+
 		return nil
 	}
+
 	e = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if e == nil {
-			return e
+		if err != nil {
+			return err
 		}
 		if d == nil {
-			return errors.New("fs entry is nil")
+			return fmt.Errorf("fs.DirEntry is nil")
 		}
+		var (
+			vote FilterVote
+			e    error
+		)
 		vote, e = filter(path, d)
 		if e != nil {
 			return e
@@ -135,58 +139,59 @@ func fileWalker(ctx context.Context, dir string, filter Filter, writer *tar.Writ
 		case FilterSkipDir:
 			return filepath.SkipDir
 		case FilterAdd:
-			logger.Debugf("put file: %s", path)
-			e = putFile(path, d)
-			if e != nil {
-				return e
-			}
 		default:
-			panic("bad")
+			panic("bad value")
 		}
-		return nil
+		if d.IsDir() {
+			return nil
+		} // ignore directory
+		return putFile(path, d)
 	})
+	if e != nil {
+		return e
+	}
 	return e
 }
 
-const ChunkSize = 16 * 1024 * 1024
-
-func chunkUploadStreamer(ctx context.Context, reader io.Reader, params Params) (e error) {
+func chunkUploadRoutine(ctx context.Context, params Params, reader io.Reader) error {
 	var (
+		e         error
+		logger    = logctx.Use(ctx).Sugar().Named("chunkUploader")
 		buf       = &bytes.Buffer{}
-		logger    = logctx.Use(ctx).Sugar()
-		n64       int64
-		chunkId   int
 		uploading = true
+		chunkId   int
 	)
-
-	logger.Infof("chunkUploadStreamer: begin")
-	defer func() { logger.Infof("chunkUploadStreamer: end, %v", e) }()
+	logger.Infof("begin")
+	defer func() { logger.Infof("end, %v", e) }()
 
 	for uploading {
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
-		buf.Reset()
 		chunkId++
-		n64, e = io.CopyN(buf, reader, ChunkSize)
-		logger.Debugf("chunk copy[%d] %d bytes, %v", chunkId, n64, e)
+		e = ctx.Err()
 		if e != nil {
-			if e == io.EOF {
-				uploading = false
-			} else {
-				return e
-			}
+			return e
 		}
-		if ctx.Err() != nil {
-			return ctx.Err()
+		_, e = io.CopyN(buf, reader, ChunkSize)
+		if e == io.EOF {
+			e = nil
+			uploading = false
+			logger.Debugf("reader EOF")
 		}
+		if e != nil {
+			logger.Warnf("error during reading: %v", e)
+			return e
+		}
+		e = ctx.Err()
+		if e != nil {
+			return e
+		}
+		// uploading
 		e = api.UploadCheckFiles(api.DefaultClient(), params.TaskId, params.SubtaskId, chunkId, bytes.NewReader(buf.Bytes()))
 		if e != nil {
 			return e
 		}
+		buf.Reset()
 	}
-	logger.Infof("chunk copy ended")
-	return nil
+	return e
 }
 
 func checkDirValid(ctx context.Context, dir string) error {
@@ -204,18 +209,5 @@ func checkDirValid(ctx context.Context, dir string) error {
 	if !info.IsDir() {
 		return ErrDirInvalid
 	}
-
-}
-
-//go:generate stringer -type uploadErr -linecomment
-type uploadErr int
-
-const (
-	_              uploadErr = iota
-	ErrDirInvalid            // uploader: dir invalid
-	ErrEvalAbsPath           // uploader: cannot evaluate absolute path
-)
-
-func (i uploadErr) Error() string {
-	return i.String()
+	return nil
 }
