@@ -22,8 +22,8 @@ func (Inspector) CheckDir(dir string) bool {
 }
 
 func (Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
-	ivyPath := filepath.Join(task.ScanDir, "ivy.xml")
+	task := model.UseInspectionTask(ctx)
+	ivyPath := filepath.Join(task.Dir(), "ivy.xml")
 	data, e := os.ReadFile(ivyPath)
 	if e != nil {
 		return fmt.Errorf("open ivy file: %w", e)

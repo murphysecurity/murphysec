@@ -24,9 +24,9 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
+	task := model.UseInspectionTask(ctx)
 	logger := utils.UseLogger(ctx)
-	scanDir := task.ScanDir
+	scanDir := task.Dir()
 	gemFile := filepath.Join(scanDir, "Gemfile")
 	gemLockFile := filepath.Join(scanDir, "Gemfile.lock")
 	if !utils.IsFile(gemFile) || !utils.IsFile(gemLockFile) {

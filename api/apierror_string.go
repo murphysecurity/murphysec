@@ -13,11 +13,12 @@ func _() {
 	_ = x[ErrGeneral-3]
 	_ = x[ErrUnprocessableResponse-4]
 	_ = x[ErrTokenInvalid-5]
+	_ = x[ErrBadURL-6]
 }
 
-const _apiError_name = "api: tls errorapi: timeoutapi: general errorapi: cannot process server responseapi: token invalid"
+const _apiError_name = "api: tls errorapi: timeoutapi: general errorapi: cannot process server responseapi: token invalidapi: bad URL"
 
-var _apiError_index = [...]uint8{0, 14, 26, 44, 79, 97}
+var _apiError_index = [...]uint8{0, 14, 26, 44, 79, 97, 109}
 
 func (i apiError) String() string {
 	i -= 1

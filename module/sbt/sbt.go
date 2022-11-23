@@ -19,14 +19,14 @@ func (i Inspector) CheckDir(dir string) bool {
 }
 
 func (i Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
-	dep, e := sbtDependencyTree(ctx, task.ScanDir)
+	task := model.UseInspectionTask(ctx)
+	dep, e := sbtDependencyTree(ctx, task.Dir())
 	if e != nil {
 		return fmt.Errorf("sbt command: %w", e)
 	}
 	module := model.Module{
 		PackageManager: "sbt",
-		ModulePath:     filepath.Join(task.ScanDir, "build.sbt"),
+		ModulePath:     filepath.Join(task.Dir(), "build.sbt"),
 		Dependencies:   mapToModel(dep),
 		ScanStrategy:   model.ScanStrategyNormal,
 	}

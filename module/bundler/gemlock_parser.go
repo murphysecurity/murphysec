@@ -30,7 +30,6 @@ o:
 	return &cur
 }
 
-
 type symbol int
 
 const (

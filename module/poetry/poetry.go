@@ -33,8 +33,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
-	pyprojectFile := filepath.Join(task.ScanDir, "pyproject.toml")
+	task := model.UseInspectionTask(ctx)
+	pyprojectFile := filepath.Join(task.Dir(), "pyproject.toml")
 	data, e := utils.ReadFileLimited(pyprojectFile, 1024*1024*4)
 	if e != nil {
 		return errors.Wrap(e, "Read pyproject.toml fail")
@@ -47,7 +47,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	for _, it := range manifest.Dependencies {
 		cmap[it.CompName] = it.CompVersion
 	}
-	poetryFile := filepath.Join(task.ScanDir, "poetry.lock.py")
+	poetryFile := filepath.Join(task.Dir(), "poetry.lock.py")
 	if utils.IsFile(poetryFile) {
 		if deps, e := parsePoetryLock(poetryFile); e == nil {
 			for _, it := range deps {
@@ -58,7 +58,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	module := model.Module{
 		PackageManager: "poetry",
 		ModuleName:     manifest.Name,
-		ModulePath:     task.ScanDir,
+		ModulePath:     task.Dir(),
 	}
 	for k, v := range cmap {
 		var di model.DependencyItem
@@ -95,7 +95,7 @@ func parsePoetry(input []byte) (*Manifest, error) {
 		var di model.DependencyItem
 		di.CompName = k
 		di.CompVersion = v
-		di.EcoRepo =EcoRepo
+		di.EcoRepo = EcoRepo
 		deps = append(deps, di)
 	}
 	return &Manifest{

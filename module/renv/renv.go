@@ -21,9 +21,9 @@ func (Inspector) CheckDir(dir string) bool {
 }
 
 func (Inspector) InspectProject(ctx context.Context) error {
-	inspectTask := model.UseInspectorTask(ctx)
+	inspectTask := model.UseInspectionTask(ctx)
 	logger := utils.UseLogger(ctx)
-	data, e := os.ReadFile(filepath.Join(inspectTask.ScanDir, "renv.lock"))
+	data, e := os.ReadFile(filepath.Join(inspectTask.Dir(), "renv.lock"))
 	if e != nil {
 		return fmt.Errorf("read renv.lock: %w", e)
 	}
@@ -51,7 +51,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	inspectTask.AddModule(model.Module{
 		PackageManager: "renv",
 		ModuleName:     "RProject",
-		ModulePath:     filepath.Join(inspectTask.ScanDir, "renv.lock"),
+		ModulePath:     filepath.Join(inspectTask.Dir(), "renv.lock"),
 		Dependencies:   deps,
 	})
 	return nil

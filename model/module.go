@@ -9,6 +9,14 @@ type Module struct {
 	ScanStrategy   ScanStrategy     `json:"scan_strategy"`
 }
 
+func (m Module) String() string {
+	var s = "[" + m.PackageManager + "]" + m.ModuleName
+	if m.ModuleVersion != "" {
+		s += "@" + m.ModuleVersion
+	}
+	return s
+}
+
 func (m Module) IsZero() bool {
 	return len(m.Dependencies) == 0 && m.ModuleName == "" && m.ModuleVersion == ""
 }

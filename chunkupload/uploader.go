@@ -59,7 +59,10 @@ func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params 
 	contextualWriter := ctxio.NewWriter(ec, pw)
 
 	eg.Go(func() error { return chunkUploadRoutine(ctx, params, contextualReader) })
-	eg.Go(func() error { defer func() { _ = pw.Close() }(); return dirPacker(ctx, dir, fileFilter, contextualWriter) })
+	eg.Go(func() error {
+		defer func() { _ = pw.Close() }()
+		return dirPacker(ctx, dir, fileFilter, contextualWriter)
+	})
 
 	e = eg.Wait()
 	if e != nil {

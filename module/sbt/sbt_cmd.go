@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	list "github.com/bahlo/generic-list-go"
+	"github.com/murphysecurity/murphysec/infra/logpipe"
 	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os/exec"
@@ -18,7 +19,7 @@ func sbtDependencyTree(ctx context.Context, dir string) ([]Dep, error) {
 	c.Dir = dir
 	parser := newSbtDependencyTreeOutputParser()
 	defer parser.Close()
-	logAppender := utils.NewLogPipe(logger, "sbt")
+	logAppender := logpipe.New(logger, "sbt")
 	defer logAppender.Close()
 	c.Stdout = io.MultiWriter(logAppender, parser)
 	c.Stderr = logAppender

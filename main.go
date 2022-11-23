@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/murphysecurity/murphysec/cmd"
+	"github.com/murphysecurity/murphysec/infra/exitcode"
 	"os"
 )
 
@@ -10,5 +11,5 @@ func main() {
 	if e != nil {
 		os.Exit(-1)
 	}
-	os.Exit(cmd.GetGlobalExitCode())
+	exitcode.Exit()
 }

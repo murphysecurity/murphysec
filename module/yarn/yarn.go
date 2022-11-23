@@ -1,6 +1,12 @@
 package yarn
 
-import "github.com/murphysecurity/murphysec/model"
+import (
+	"context"
+	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/model"
+	"os"
+	"path/filepath"
+)
 
 var EcoRepo = model.EcoRepo{
 	Ecosystem:  "npm",
@@ -26,4 +32,42 @@ func mapToModel(deps []Dep) []model.DependencyItem {
 		}
 	}
 	return r
+}
+
+type Inspector struct{}
+
+func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+	return false
+}
+
+func (i *Inspector) String() string {
+	return "Yarn"
+}
+
+func (i *Inspector) CheckDir(dir string) bool {
+	info, e := os.Stat(filepath.Join(dir, "yarn.lock"))
+	return e == nil && !info.IsDir()
+}
+
+func (i *Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectionTask(ctx)
+	dir := task.Dir()
+	logger.Info.Println("yarn inspect.", dir)
+	rs, e := analyzeYarnDep(dir)
+
+	if e != nil {
+		return e
+	}
+	m := model.Module{
+		PackageManager: "yarn",
+		ModuleName:     filepath.Base(dir),
+		ModulePath:     filepath.Join(dir, "yarn.lock"),
+		Dependencies:   mapToModel(rs),
+	}
+	if n, v := readModuleName(dir); n != "" {
+		m.ModuleName = n
+		m.ModuleVersion = v
+	}
+	task.AddModule(m)
+	return nil
 }

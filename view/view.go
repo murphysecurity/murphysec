@@ -1,58 +1,71 @@
 package view
 
 import (
+	"context"
 	"fmt"
 	"github.com/muesli/termenv"
-	"github.com/murphysecurity/murphysec/display"
+	"github.com/murphysecurity/murphysec/infra/ui"
 	"strconv"
+	"sync"
 )
 
-func TLSAlert(ui display.UI, e error) {
-	ui.Display(display.MsgError, "当前建立的网络连接不安全，您可以通过 -x 或 --allow-insecure 选项忽略这个错误")
-	ui.Display(display.MsgError, e.Error())
+func TLSAlert(ctx context.Context, e error) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgError, "当前建立的网络连接不安全，您可以通过 -x 或 --allow-insecure 选项忽略这个错误")
+	u.Display(ui.MsgError, e.Error())
 }
 
-func TokenInvalid(ui display.UI) {
-	ui.Display(display.MsgError, "任务创建失败，Token 无效")
+func TokenInvalid(ctx context.Context) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgError, "任务创建失败，Token 无效")
 }
 
-func TaskCreateFailed(ui display.UI, e error) {
-	ui.Display(display.MsgError, fmt.Sprintf("任务创建失败："+e.Error()))
+func TaskCreateFailed(ctx context.Context, e error) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgError, fmt.Sprintf("任务创建失败："+e.Error()))
 }
 
-func TaskCreating(ui display.UI) func() {
-	ui.UpdateStatus(display.StatusRunning, "正在创建扫描任务，请稍候······")
-	return func() { ui.ClearStatus() }
+func TaskCreating(ctx context.Context) func() {
+	var u = ui.Use(ctx)
+	u.UpdateStatus(ui.StatusRunning, "正在创建扫描任务，请稍候······")
+	return func() { u.ClearStatus() }
 }
 
-func ScanCompleteSubmitting(ui display.UI) func() {
-	ui.UpdateStatus(display.StatusRunning, "项目扫描结束，正在提交信息...")
-	return func() { ui.ClearStatus() }
+func ScanCompleteSubmitting(ctx context.Context) func() {
+	var u = ui.Use(ctx)
+	u.UpdateStatus(ui.StatusRunning, "项目扫描结束，正在提交信息...")
+	return func() { u.ClearStatus() }
 }
 
-func SubmitError(ui display.UI, err error) {
-	ui.Display(display.MsgError, "信息提交失败："+err.Error())
+func SubmitError(ctx context.Context, err error) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgError, "信息提交失败："+err.Error())
 }
 
-func WaitingServerResponse(ui display.UI) func() {
-	ui.UpdateStatus(display.StatusRunning, "正在等待服务器返回结果")
-	return func() { ui.ClearStatus() }
+func WaitingServerResponse(ctx context.Context) func() {
+	var u = ui.Use(ctx)
+	u.UpdateStatus(ui.StatusRunning, "正在等待服务器返回结果")
+	return func() { u.ClearStatus() }
 }
 
-func GetScanResultFailed(ui display.UI, e error) {
-	ui.Display(display.MsgError, "获取扫描结果失败："+e.Error())
+func GetScanResultFailed(ctx context.Context, e error) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgError, "获取扫描结果失败："+e.Error())
 }
 
-func StartingInspection(ui display.UI) func() {
-	ui.UpdateStatus(display.StatusRunning, "正在启动检测")
-	return func() { ui.ClearStatus() }
+func StartingInspection(ctx context.Context) func() {
+	var u = ui.Use(ctx)
+	u.UpdateStatus(ui.StatusRunning, "正在启动检测")
+	return func() { u.ClearStatus() }
 }
-func StartingInspectionFailed(ui display.UI, e error) {
-	ui.Display(display.MsgError, "启动检测失败："+e.Error())
+func StartingInspectionFailed(ctx context.Context, e error) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgError, "启动检测失败："+e.Error())
 }
 
-func DisplayScanResultSummary(ui display.UI, totalDep int, totalVuln int) {
-	ui.Display(display.MsgNotice, fmt.Sprint(
+func DisplayScanResultSummary(ctx context.Context, totalDep int, totalVuln int) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgNotice, fmt.Sprint(
 		"项目扫描完成，依赖数：",
 		termenv.String(strconv.Itoa(totalDep)).Foreground(termenv.ANSIBrightCyan),
 		"，漏洞数：",
@@ -60,49 +73,60 @@ func DisplayScanResultSummary(ui display.UI, totalDep int, totalVuln int) {
 	))
 }
 
-func DisplayScanResultReport(ui display.UI, r string) {
+func DisplayScanResultReport(ctx context.Context, r string) {
+	var u = ui.Use(ctx)
 	if r == "" {
 		return
 	}
-	ui.Display(display.MsgNotice, "检测报告详见："+r)
+	u.Display(ui.MsgNotice, "检测报告详见："+r)
 }
 
-func ProjectName(ui display.UI, n string) {
-	ui.Display(display.MsgInfo, "项目名称："+n)
+func ProjectName(ctx context.Context, n string) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgInfo, "项目名称："+n)
 }
 
-func FileUploading(ui display.UI) func() {
-	ui.UpdateStatus(display.StatusRunning, "正在上传文件...")
-	return func() { ui.ClearStatus() }
+func FileUploading(ctx context.Context) func() {
+	var u = ui.Use(ctx)
+	u.UpdateStatus(ui.StatusRunning, "正在上传文件...")
+	return func() { u.ClearStatus() }
 }
 
-func FileUploadSucceeded(ui display.UI) {
-	ui.Display(display.MsgInfo, "文件上传成功")
+func FileUploadSucceeded(ctx context.Context) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgInfo, "文件上传成功")
 }
 
-func FileUploadFailed(ui display.UI, e error) {
-	ui.Display(display.MsgError, "文件上传失败："+e.Error())
+func FileUploadFailed(ctx context.Context, e error) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgError, "文件上传失败："+e.Error())
 }
 
-func ProjectScanComplete(ui display.UI) {
-	ui.Display(display.MsgInfo, "项目扫描完成")
+func ProjectScanComplete(ctx context.Context) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgInfo, "项目扫描完成")
 }
 
-func ProjectScanning(ui display.UI) func() {
-	ui.UpdateStatus(display.StatusRunning, "正在进行扫描...")
-	return func() { ui.ClearStatus() }
+func ProjectScanning(ctx context.Context) func() {
+	var u = ui.Use(ctx)
+	u.UpdateStatus(ui.StatusRunning, "正在进行扫描...")
+	var once sync.Once
+	return func() { once.Do(func() { u.ClearStatus() }) }
 }
 
-func HashingFileFailed(ui display.UI, e error) {
-	ui.Display(display.MsgInfo, "文件哈希计算失败："+e.Error())
+func HashingFileFailed(ctx context.Context, e error) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgInfo, "文件哈希计算失败："+e.Error())
 }
 
-func CodeFileUploadingForDeep(ui display.UI) func() {
-	ui.Display(display.MsgInfo, "正在上传代码进行深度检测")
-	ui.UpdateStatus(display.StatusRunning, "代码上传中")
-	return func() { ui.ClearStatus() }
+func CodeFileUploadingForDeep(ctx context.Context) func() {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgInfo, "正在上传代码进行深度检测")
+	u.UpdateStatus(ui.StatusRunning, "代码上传中")
+	return func() { u.ClearStatus() }
 }
 
-func CodeFileUploadErr(ui display.UI, e error) {
-	ui.Display(display.MsgError, "代码上传失败："+e.Error())
+func CodeFileUploadErr(ctx context.Context, e error) {
+	var u = ui.Use(ctx)
+	u.Display(ui.MsgError, "代码上传失败："+e.Error())
 }

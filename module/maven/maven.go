@@ -3,7 +3,6 @@ package maven
 import (
 	"context"
 	"fmt"
-	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
@@ -23,9 +22,9 @@ func (d Dependency) String() string {
 	return fmt.Sprintf("%v: %v", d.Coordinate, d.Children)
 }
 
-func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.Module, error) {
+func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.Module, error) {
 	log := utils.UseLogger(ctx)
-	dir := task.ScanDir
+	dir := task.Dir()
 	var modules []model.Module
 	var e error
 	var useBackupResolver = false
@@ -35,7 +34,6 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 	if e != nil {
 		useBackupResolver = true
 		log.Sugar().Warnf("Mvn command not found %v", e)
-		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到您的环境中 Maven 无法正常运行，可能会导致检测结果不完整，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 	} else {
 		log.Sugar().Infof("Mvn command found: %s", mvnCmdInfo)
 		var e error
@@ -43,7 +41,6 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 		if e != nil {
 			log.Error("Scan maven dependencies failed", zap.Error(e))
 			useBackupResolver = true
-			task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
 		}
 	}
 

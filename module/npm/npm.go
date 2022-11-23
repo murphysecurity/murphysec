@@ -33,13 +33,13 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return e
 	}
 	for _, it := range m {
-		model.UseInspectorTask(ctx).AddModule(it)
+		model.UseInspectionTask(ctx).AddModule(it)
 	}
 	return nil
 }
 
 func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
-	dir := model.UseInspectorTask(ctx).ScanDir
+	dir := model.UseInspectionTask(ctx).Dir()
 	logger := utils.UseLogger(ctx)
 	pkgFile := filepath.Join(dir, "package-lock.json")
 	logger.Debug("Read package-lock.json", zap.String("path", pkgFile))

@@ -12,6 +12,8 @@ var IdeaMavenHome string
 var IdeaMavenConf string
 var IdeaMavenJre string
 var MvnCommandTimeout = envi("MVN_COMMAND_TIMEOUT", 0)
+var DisableMvnCommand = strings.TrimSpace(os.Getenv("NO_MVN")) != ""
+var MavenCentral string
 
 func init() {
 	var s string
@@ -25,6 +27,10 @@ func init() {
 	s = strings.TrimSpace(os.Getenv("IDEA_MAVEN_JRE"))
 	if s != "" && utils.IsDir(s) {
 		IdeaMavenJre = s
+	}
+
+	if strings.TrimSpace(os.Getenv("SKIP_MAVEN_CENTRAL")) == "" {
+		MavenCentral = "https://repo1.maven.org/maven2/"
 	}
 }
 

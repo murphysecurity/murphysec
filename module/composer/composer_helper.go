@@ -3,6 +3,7 @@ package composer
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logpipe"
 	"github.com/murphysecurity/murphysec/utils"
 	"os/exec"
 )
@@ -17,7 +18,7 @@ func doComposerInstall(ctx context.Context, projectDir string) error {
 	c.Dir = projectDir
 	logger.Sugar().Infof("Command: %s", c.String())
 	defer logger.Info("doComposerInstall terminated")
-	lp := utils.NewLogPipe(logger, "composer")
+	lp := logpipe.New(logger, "composer")
 	defer lp.Close()
 	c.Stderr = lp
 	c.Stdout = lp

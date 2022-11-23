@@ -29,8 +29,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	logger := utils.UseLogger(ctx)
-	task := model.UseInspectorTask(ctx)
-	dir := task.ScanDir
+	task := model.UseInspectionTask(ctx)
+	dir := task.Dir()
 	manifest, e := readManifest(ctx, filepath.Join(dir, "composer.json"))
 	if e != nil {
 		return e

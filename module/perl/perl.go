@@ -21,8 +21,8 @@ func (i Inspector) CheckDir(dir string) bool {
 }
 
 func (i Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
-	var scanDir = task.ScanDir
+	task := model.UseInspectionTask(ctx)
+	var scanDir = task.Dir()
 	var metaFile = filepath.Join(scanDir, "MYMETA.json")
 	if !utils.IsFile(metaFile) {
 		metaFile = filepath.Join(scanDir, "META.json")

@@ -22,7 +22,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
+	task := model.UseInspectionTask(ctx)
 	modules, e := ScanMavenProject(ctx, task)
 	if e != nil {
 		return e

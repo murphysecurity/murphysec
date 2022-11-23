@@ -71,7 +71,7 @@ func parseDockerFile(dir, path string, m map[string]string) {
 func scanDepFile(ctx context.Context, dir string) (bool, error) {
 	var logger = utils.UseLogger(ctx)
 	var found = false
-	var task = model.UseInspectorTask(ctx)
+	var task = model.UseInspectionTask(ctx)
 
 	var tomlFile = filepath.Join(dir, "pyproject.toml")
 	var waitingScanPipManagerFiles = make(map[string]string)
@@ -151,13 +151,8 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 }
 
 func (i Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
 	logger := utils.UseLogger(ctx)
-	var relativeDir string
-	if s, e := filepath.Rel(task.ProjectDir, task.ScanDir); e == nil {
-		relativeDir = filepath.ToSlash(s)
-	}
-	dir := model.UseInspectorTask(ctx).ScanDir
+	dir := model.UseInspectionTask(ctx).Dir()
 
 	foundDepFiles, e := scanDepFile(ctx, dir)
 	if e != nil {
@@ -225,9 +220,9 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	}
 	{
 		m := model.Module{
-			ModuleName:     relativeDir,
+			ModuleName:     filepath.ToSlash(model.UseInspectionTask(ctx).RelDir()),
 			PackageManager: "pip",
-			ModulePath:     filepath.Join(dir),
+			ModulePath:     dir,
 		}
 		if m.ModuleName == "." {
 			m.ModuleName = "Python"
@@ -239,7 +234,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 			di.EcoRepo = EcoRepo
 			m.Dependencies = append(m.Dependencies, di)
 		}
-		model.UseInspectorTask(ctx).AddModule(m)
+		model.UseInspectionTask(ctx).AddModule(m)
 		return nil
 	}
 }

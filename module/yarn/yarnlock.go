@@ -1,11 +1,9 @@
 package yarn
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/iseki0/go-yarnlock"
 	"github.com/murphysecurity/murphysec/logger"
-	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/simplejson"
 	"github.com/pkg/errors"
 	"io"
@@ -13,44 +11,6 @@ import (
 	"path/filepath"
 	"regexp"
 )
-
-type Inspector struct{}
-
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
-	return false
-}
-
-func (i *Inspector) String() string {
-	return "Yarn"
-}
-
-func (i *Inspector) CheckDir(dir string) bool {
-	info, e := os.Stat(filepath.Join(dir, "yarn.lock"))
-	return e == nil && !info.IsDir()
-}
-
-func (i *Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
-	dir := task.ScanDir
-	logger.Info.Println("yarn inspect.", dir)
-	rs, e := analyzeYarnDep(dir)
-
-	if e != nil {
-		return e
-	}
-	m := model.Module{
-		PackageManager: "yarn",
-		ModuleName:     filepath.Base(dir),
-		ModulePath:     filepath.Join(dir, "yarn.lock"),
-		Dependencies:   mapToModel(rs),
-	}
-	if n, v := readModuleName(dir); n != "" {
-		m.ModuleName = n
-		m.ModuleVersion = v
-	}
-	task.AddModule(m)
-	return nil
-}
 
 type pkgFile struct {
 	DevDependencies map[string]string `json:"dev_dependencies,omitempty"`

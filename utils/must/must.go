@@ -2,6 +2,7 @@ package must
 
 import (
 	"io"
+	"reflect"
 )
 
 // Must panics if err is not nil.
@@ -49,4 +50,16 @@ func True(b bool) {
 // Useful in defer statement.
 func Close(c io.Closer) {
 	Must(c.Close())
+}
+
+func NotNil(a any) {
+	if reflect.ValueOf(a).IsNil() {
+		panic("value is nil")
+	}
+}
+
+func NotZero(a any) {
+	if reflect.ValueOf(a).IsZero() {
+		panic("value is zero")
+	}
 }

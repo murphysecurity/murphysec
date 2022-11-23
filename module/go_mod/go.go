@@ -25,9 +25,9 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
+	task := model.UseInspectionTask(ctx)
 	logger := utils.UseLogger(ctx)
-	modFilePath := filepath.Join(task.ScanDir, "go.mod")
+	modFilePath := filepath.Join(task.Dir(), "go.mod")
 	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
 	data, e := utils.ReadFileLimited(modFilePath, 1024*1024*4)
 	if e != nil {

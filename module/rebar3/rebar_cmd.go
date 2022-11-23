@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logpipe"
 	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os/exec"
@@ -38,7 +39,7 @@ func EvaluateRebar3Tree(ctx context.Context, dir string) ([]depNode, error) {
 	var cmd = exec.Command("rebar3", "tree")
 	cmd.Dir = dir
 	logger.Sugar().Infof("Execute command: %s at %s", cmd.String(), dir)
-	rebarLogger := utils.NewLogPipe(logger, "rebar3")
+	rebarLogger := logpipe.New(logger, "rebar3")
 	defer rebarLogger.Close()
 	var buf = &bytes.Buffer{}
 	cmd.Stdout = io.MultiWriter(buf, rebarLogger)

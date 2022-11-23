@@ -26,8 +26,8 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return false
 }
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
-	dep, e := inspectPkgConfig(filepath.Join(task.ScanDir, "packages.config"))
+	task := model.UseInspectionTask(ctx)
+	dep, e := inspectPkgConfig(filepath.Join(task.Dir(), "packages.config"))
 	if e != nil {
 		return e
 	}
@@ -35,7 +35,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		PackageManager: "nuget",
 		ModuleName:     "packages.config",
 		ModuleVersion:  "",
-		ModulePath:     filepath.Join(task.ProjectDir, "packages.config"),
+		ModulePath:     filepath.Join(task.Dir(), "packages.config"),
 		Dependencies:   dep,
 	}
 	task.AddModule(m)

@@ -54,9 +54,9 @@ func binScanUploadFile(ctx context.Context) error {
 	defer view.FileUploading(ui)()
 	pathCh := make(chan string, 10)
 	g, goCtx := errgroup.WithContext(ctx)
-	g.Go(func() error { return scanBinaryFile(goCtx, scanTask.ProjectDir, pathCh) })
+	g.Go(func() error { return scanBinaryFile(goCtx, scanTask.ProjectPath, pathCh) })
 	r, w := io.Pipe()
-	g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, scanTask.ProjectDir, w) })
+	g.Go(func() error { return packFileToTgzStream(goCtx, pathCh, scanTask.ProjectPath, w) })
 	g.Go(func() error { return uploadTgzChunk(goCtx, r) })
 	if e := g.Wait(); e != nil {
 		Logger.Error("Upload failed", zap.Error(e))

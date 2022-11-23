@@ -25,8 +25,8 @@ func (Inspector) InspectProject(ctx context.Context) (err error) {
 			err = fmt.Errorf("CargoInspector: %w", err)
 		}
 	}()
-	task := model.UseInspectorTask(ctx)
-	cargoLockPath := filepath.Join(task.ScanDir, "cargo.lock")
+	task := model.UseInspectionTask(ctx)
+	cargoLockPath := filepath.Join(task.Dir(), "cargo.lock")
 	data, e := os.ReadFile(cargoLockPath)
 	if e != nil {
 		return e

@@ -23,12 +23,12 @@ func (Inspector) CheckDir(dir string) bool {
 	return false
 }
 func (Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
+	task := model.UseInspectionTask(ctx)
 	_, e := GetRebar3Version(ctx)
 	if e != nil {
 		return e
 	}
-	tree, e := EvaluateRebar3Tree(ctx, task.ScanDir)
+	tree, e := EvaluateRebar3Tree(ctx, task.Dir())
 	if e != nil {
 		return e
 	}
@@ -40,7 +40,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		PackageManager: "rebar3",
 		ModuleName:     tree[0].Name,
 		ModuleVersion:  tree[0].Version,
-		ModulePath:     filepath.Join(task.ScanDir, "rebar.config"),
+		ModulePath:     filepath.Join(task.Dir(), "rebar.config"),
 		Dependencies:   _mapDepNodes(tree),
 	})
 	return nil

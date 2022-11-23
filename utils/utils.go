@@ -99,3 +99,32 @@ func GetOutBoundIP() string {
 func HasHiddenFilePrefix(name string) bool {
 	return len(name) > 0 && name[0] == '.'
 }
+
+func CopySlice[T ~[]A, A any](input T) T {
+	var r = make(T, len(input))
+	copy(r, input)
+	return r
+}
+
+func KeysOfMap[K comparable, V any](m map[K]V) []K {
+	var r []K
+	for k := range m {
+		r = append(r, k)
+	}
+	return r
+}
+
+func NoNilSlice[T ~[]A, A any](input T) T {
+	if input == nil {
+		return make([]A, 0)
+	}
+	return input
+}
+
+func MapSlice[I any, O any](input []I, mapper func(I) O) []O {
+	var r = make([]O, len(input))
+	for i := range input {
+		r[i] = mapper(input[i])
+	}
+	return r
+}

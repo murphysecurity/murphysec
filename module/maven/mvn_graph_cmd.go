@@ -3,6 +3,7 @@ package maven
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logpipe"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -35,7 +36,7 @@ func (m PluginGraphCmd) RunC(ctx context.Context) error {
 	}
 	c := m.MavenCmdInfo.Command(ctx, args...)
 	c.Dir = m.ScanDir
-	logStream := utils.NewLogPipe(logger, "mvn")
+	logStream := logpipe.New(logger, "mvn")
 	defer logStream.Close()
 	c.Stderr = logStream
 	c.Stdout = logStream

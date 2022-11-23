@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logpipe"
+	"github.com/murphysecurity/murphysec/infra/suffixbuf"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"io"
@@ -52,7 +54,7 @@ func getConanInfo(ctx context.Context) (*CmdInfo, error) {
 
 func ExecuteConanInfoCmd(ctx context.Context, conanPath string, dir string) (string, error) {
 	logger := utils.UseLogger(ctx)
-	lp := utils.NewLogPipe(logger, "conan")
+	lp := logpipe.New(logger, "conan")
 	defer lp.Close()
 	jsonP := getConanInfoJsonPath()
 	logger.Sugar().Debugf("temp file: %s", jsonP)
@@ -60,8 +62,8 @@ func ExecuteConanInfoCmd(ctx context.Context, conanPath string, dir string) (str
 	logger.Sugar().Infof("Command: %s", c.String())
 	c.Env = getEnvForConan()
 	c.Dir = dir
-	sb := utils.MkSuffixBuffer(1024)
-	logPipe := utils.NewLogPipe(logger, "conan")
+	sb := suffixbuf.NewSize(1024)
+	logPipe := logpipe.New(logger, "conan")
 	defer logPipe.Close()
 	c.Stdout = io.MultiWriter(sb, logPipe)
 	c.Stderr = io.MultiWriter(sb, logPipe)

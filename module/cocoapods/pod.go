@@ -25,9 +25,9 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectorTask(ctx)
+	task := model.UseInspectionTask(ctx)
 	logger := utils.UseLogger(ctx)
-	projectDir := task.ScanDir
+	projectDir := task.Dir()
 	podLockPath := filepath.Join(projectDir, "Podfile.lock")
 	logger.Debug("Reading Podfile.lock", zap.String("path", podLockPath))
 	data, e := os.ReadFile(filepath.Join(projectDir, "Podfile.lock"))

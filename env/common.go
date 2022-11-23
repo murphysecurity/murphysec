@@ -3,7 +3,6 @@ package env
 import (
 	"os"
 	"strconv"
-	"strings"
 )
 
 func envi(name string, defaultValue int) int {
@@ -14,23 +13,7 @@ func envi(name string, defaultValue int) int {
 	}
 }
 
-var SpecificProjectName = ""
-var DisableGit = false
-var _ServerBaseURL = "https://www.murphysec.com"
+const DefaultServerURL = "https://www.murphysec.com"
 
-var DisableMvnCommand = strings.TrimSpace(os.Getenv("NO_MVN")) != ""
-var MavenCentral string
-
-func init() {
-	if strings.TrimSpace(os.Getenv("SKIP_MAVEN_CENTRAL")) == "" {
-		MavenCentral = "https://repo1.maven.org/maven2/"
-	}
-}
-
-func ConfigureServerBaseUrl(u string) {
-	_ServerBaseURL = strings.TrimRight(strings.TrimSpace(u), "/")
-}
-
-func ServerBaseUrl() string {
-	return _ServerBaseURL
-}
+var ServerURLOverride = os.Getenv("MPS_CLI_SERVER")
+var APITokenOverride = os.Getenv("API_TOKEN")

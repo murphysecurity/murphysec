@@ -26,6 +26,7 @@ const (
 	ErrGeneral                        // api: general error
 	ErrUnprocessableResponse          // api: cannot process server response
 	ErrTokenInvalid                   // api: token invalid
+	ErrBadURL                         // api: bad URL
 )
 
 func (i apiError) Error() string {
@@ -36,6 +37,16 @@ var _DefaultClient *Client
 
 func DefaultClient() *Client {
 	return _DefaultClient
+}
+
+func InitDefaultClient(config *Config) error {
+	must.NotNil(config)
+	c, e := config.Build()
+	if e != nil {
+		return e
+	}
+	_DefaultClient = c
+	return nil
 }
 
 type Client struct {
@@ -135,7 +146,7 @@ func (c *GeneralError) Error() string {
 }
 
 func joinURL(base *url.URL, relPath string) *url.URL {
-	var u = *base
+	var u = *base // copy
 	u.Path = path.Join(u.Path, relPath)
 	return &u
 }

@@ -1,109 +1,119 @@
 package model
 
-import (
-	"github.com/murphysecurity/murphysec/env"
-	"net/url"
-	"strings"
-)
+import "time"
 
-type TaskScanResponse struct {
-	Complete          bool `json:"complete"`
-	DependenciesCount int  `json:"dependencies_count"`
-	IssuesCompsCount  int  `json:"issues_comps_count"`
-	ProjectScore      int  `json:"project_score"`
-	SurpassScore      int  `json:"surpass_score"`
-	Modules           []struct {
-		ModuleId       int    `json:"module_id"`
-		Language       string `json:"language"`
-		PackageManager string `json:"package_manager"`
-		Comps          []struct {
-			MinFixedInfo []struct {
-				Name               string `json:"name"`
-				OldVersion         string `json:"old_version"`
-				NewVersion         string `json:"new_version"`
-				SecurityScore      int    `json:"security_score"`
-				CompatibilityScore int    `json:"compatibility_score"`
-			} `json:"min_fixed_info,omitempty"`
-			IsDirectDependency bool   `json:"is_direct_dependency"`
-			CompId             int    `json:"comp_id"`
-			CompName           string `json:"comp_name"`
-			CompVersion        string `json:"comp_version"`
-			MinFixedVersion    string `json:"min_fixed_version"`
-			License            *struct {
-				Level LicenseLevel `json:"level"`
-				Spdx  string       `json:"spdx"`
-			} `json:"license,omitempty"`
-			Solutions []struct {
-				Compatibility *int   `json:"compatibility,omitempty"`
-				Description   string `json:"description"`
-				Type          string `json:"type,omitempty"`
-			} `json:"solutions,omitempty"`
-			Vuls         []VoVulnInfo `json:"vuls"`
-			FixType      string       `json:"fix_type"`
-			CompSecScore int          `json:"comp_sec_score"`
-		} `json:"comps"`
-	} `json:"modules"`
-	TaskId           string `json:"task_id"`
-	Status           string `json:"status"`
-	InspectReportUrl string `json:"inspect_report_url"`
+// ScanResultResponse 服务端输出，字段名比较迷惑，需要注意。
+//
+// 标注为 <unknown> 的暂时不知道是什么，估计用不上
+type ScanResultResponse struct {
+	SubtaskId    string               `json:"subtask_id"`
+	ProjectsId   string               `json:"projects_id"`
+	TeamId       string               `json:"team_id"`
+	TaskId       string               `json:"task_id"`
+	UserId       string               `json:"user_id"`
+	SubtaskName  string               `json:"subtask_name"`
+	FinishTime   time.Time            `json:"finish_time"`
+	Addr         string               `json:"addr"`          // <unknown>
+	FromSource   string               `json:"from_source"`   // <unknown>
+	OptionalNum  int                  `json:"optional_num"`  // 可选修复数量
+	RecommendNum int                  `json:"recommend_num"` // 建议修复数量
+	StringNum    int                  `json:"string_num"`    // 强烈建议修复数量
+	RelyNum      int                  `json:"rely_num"`      // 本次扫描依赖组件总数
+	LeakNum      int                  `json:"leak_num"`      // 本次任务包含漏洞总数
+	HighNum      int                  `json:"high_num"`      // 高危漏洞数量
+	MediumNum    int                  `json:"medium_num"`    // 中危漏洞数量
+	LowNum       int                  `json:"low_num"`       // 低危漏洞数量
+	CriticalNum  int                  `json:"critical_num"`  // 严重漏洞数量
+	LicenseNum   int                  `json:"license_num"`   // 许可证数量
+	Languages    string               `json:"languages"`     // 语言，逗号隔开的
+	CompInfoList []ScanResultCompInfo `json:"comp_info_list"`
+	VulnInfoMap  map[string]VulnerabilityDetailInfo
 }
 
-func (t TaskScanResponse) ReportURL() string {
-	if t.InspectReportUrl == "" {
-		return ""
-	}
-	u, e := url.Parse(t.InspectReportUrl)
-	if e == nil && u.Host == "" {
-		return env.ServerBaseUrl() + "/" + strings.TrimLeft(t.InspectReportUrl, "/")
-	}
-	return t.InspectReportUrl
+type ScanResultCompInfo struct {
+	CompName           string                 `json:"comp_name"`
+	CompVersion        string                 `json:"comp_version"`
+	Repository         string                 `json:"repository"`
+	Ecosystem          string                 `json:"ecosystem"`
+	IdDirectDependency bool                   `json:"id_direct_dependency"`
+	CompSecScore       int                    `json:"comp_sec_score"`
+	MinFixedVersion    string                 `json:"min_fixed_version"`
+	CriticalNum        int                    `json:"critical_num"`
+	HighNum            int                    `json:"high_num"`
+	MediumNum          int                    `json:"medium_num"`
+	LowNum             int                    `json:"low_num"`
+	VulnList           []ScanResultCompEffect `json:"vuln_list,omitempty"`
+	LicenseList        []LicenseItem          `json:"license_list,omitempty"`
+	DependentPath      []string               `json:"dependent_path,omitempty"`
+	Solutions          []Solution             `json:"solutions,omitempty"`
+	FixPlanList        FixPlanList            `json:"fix_plan_list"`
+	SuggestLevel       int                    `json:"suggest_level"` // 对应到IDEA的show_level，具体计算规则不明
 }
 
-type VoVulnInfo struct {
-	CveId           string        `json:"cve_id"`
-	Description     string        `json:"description"`
-	Level           VulnLevelType `json:"level"`
-	Influence       int           `json:"influence"`
-	Poc             bool          `json:"poc"`
-	PublishTime     int           `json:"publish_time"`
-	AffectedVersion string        `json:"affected_version"`
-	MinFixedVersion string        `json:"min_fixed_version"`
-	References      []struct {
-		Name string `json:"name"`
-		Url  string `json:"url"`
-	} `json:"references"`
-	Solutions []struct {
-		Type          string `json:"type"`
-		Description   string `json:"description"`
-		Compatibility int    `json:"compatibility"`
-	} `json:"solutions"`
-	SuggestLevel SuggestLevel `json:"suggest_level"`
-	VulnNo       string       `json:"vuln_no"`
-	VulnPath     []string     `json:"vuln_path"`
-	Title        string       `json:"title"`
+type ScanResultCompEffect struct {
+	EffectVersion   string     `json:"effect_version"`
+	MinFixedVersion string     `json:"min_fixed_version"`
+	MpsId           string     `json:"mps_id"`
+	Solutions       []Solution `json:"solutions,omitempty"`
 }
 
-type SuggestLevel string
+type Solution struct {
+	Description     string `json:"description"`
+	Type            string `json:"type"`
+	CompatibleScore *int   `json:"compatible_score,omitempty"`
+}
 
-const (
-	SuggestLevelOptional        SuggestLevel = "Optional"
-	SuggestLevelRecommend       SuggestLevel = "Recommend"
-	SuggestLevelStrongRecommend SuggestLevel = "StrongRecommend"
-)
-
-type VulnLevelType string
-
-const (
-	VulnLevelCritical VulnLevelType = "Critical"
-	VulnLevelHigh     VulnLevelType = "High"
-	VulnLevelMedium   VulnLevelType = "Medium"
-	VulnLevelLow      VulnLevelType = "Low"
-)
+type LicenseItem struct {
+	Spdx  string       `json:"spdx"`
+	Level LicenseLevel `json:"level"`
+}
 
 type LicenseLevel string
 
 const (
-	LicenseLevelLow    LicenseLevel = "Low"
-	LicenseLevelMedium LicenseLevel = "Medium"
 	LicenseLevelHigh   LicenseLevel = "High"
+	LicenseLevelMedium LicenseLevel = "Medium"
+	LicenseLevelLow    LicenseLevel = "Low"
 )
+
+type FixPlanItem struct {
+	CompatibilityScore int    `json:"compatibility_score"`
+	SecurityScore      int    `json:"security_score"`
+	TargetVersion      string `json:"target_version"`
+}
+
+type FixPlanList struct {
+	Plan1 *FixPlanItem `json:"plan1"`
+	Plan2 *FixPlanItem `json:"plan2"`
+	Plan3 *FixPlanItem `json:"plan3"`
+}
+
+// VulnerabilityDetailInfo 漏洞详情
+type VulnerabilityDetailInfo struct {
+	AttackVector       string         `json:"attack_vector"`        // 攻击向量
+	CnvdID             string         `json:"cnvd_id"`              // 漏洞CNVD ID
+	CveID              string         `json:"cve_id"`               // 漏洞CVE ID
+	CvssScore          float64        `json:"cvss_score"`           //
+	CvssVector         string         `json:"cvss_vector"`          // CVSS 向量
+	Description        string         `json:"description"`          // 漏洞详情信息
+	Exp                bool           `json:"exp"`                  // 是否有EXP
+	Exploitability     string         `json:"exploitability"`       //
+	FixSuggestionLevel string         `json:"fix_suggestion_level"` //
+	Influence          int            `json:"influence"`            // 漏洞影响指数
+	Languages          []string       `json:"languages"`            // 漏洞语言
+	Level              string         `json:"level"`                //
+	MpsID              string         `json:"mps_id"`               // 漏洞MPS ID
+	Patch              string         `json:"patch"`                // Patch信息
+	Poc                bool           `json:"poc"`                  // 存在POC与否？
+	PublishedDate      time.Time      `json:"published_date"`       // 漏洞发布时间
+	ReferenceURLList   []ReferenceURL `json:"reference_url_list"`   //
+	ScopeInfluence     string         `json:"scope_influence"`      //
+	Title              string         `json:"title"`                // 漏洞标题
+	TroubleShooting    []string       `json:"trouble_shooting"`     // 排查方式列表
+	VulnType           string         `json:"vuln_type"`            // 漏洞类型
+}
+
+type ReferenceURL struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
