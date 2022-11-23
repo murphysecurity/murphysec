@@ -5,10 +5,19 @@ import (
 	"github.com/murphysecurity/murphysec/errors"
 )
 
-var ErrReadComposerManifest = errors.New("Read composer.json failed")
-var ErrParseComposerManifest = errors.New("Parsing composer.json failed")
-var ErrComposerInstallFail = errors.New("PHP composer install command execute failed")
-var ErrNoComposerFound = errors.New("no composer found")
+//go:generate stringer -type _e -linecomment -output composer_error_string.go
+type _e int
+
+const (
+	_                        _e = iota
+	ErrReadComposerManifest     // read composer.json failed
+	ErrParseComposerManifest    // parsing composer.json failed
+	ErrNoComposerFound          // no composer found
+)
+
+func (i _e) Error() string {
+	return i.String()
+}
 
 type ce struct {
 	key    error
