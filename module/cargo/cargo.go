@@ -37,11 +37,10 @@ func (Inspector) InspectProject(ctx context.Context) (err error) {
 	}
 	deps := tree.Dependencies
 	task.AddModule(model.Module{
-		PackageManager: model.PmCargo,
-		Language:       model.Rust,
-		Name:           tree.Name,
-		Version:        tree.Version,
-		RelativePath:   cargoLockPath,
+		PackageManager: "cargo",
+		ModuleName:     tree.CompName,
+		ModuleVersion:  tree.CompVersion,
+		ModulePath:     cargoLockPath,
 		Dependencies:   deps,
 	})
 	return nil
@@ -49,4 +48,9 @@ func (Inspector) InspectProject(ctx context.Context) (err error) {
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return model.InspectorFeatureAllowNested&feature > 0
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "cargo",
+	Repository: "",
 }

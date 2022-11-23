@@ -42,11 +42,15 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return errors.WithMessage(e, "Parse Gemfile.lock failed")
 	}
 	task.AddModule(model.Module{
-		PackageManager: model.PMBundler,
-		Language:       model.Ruby,
-		Name:           tree[0].Name,
+		PackageManager: "bundler",
+		ModuleName:     tree[0].CompName,
 		Dependencies:   tree,
-		RelativePath:   scanDir,
+		ModulePath:     scanDir,
 	})
 	return nil
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "bundler",
+	Repository: "",
 }

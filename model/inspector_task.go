@@ -11,15 +11,15 @@ type InspectorTask struct {
 }
 
 func (i *InspectorTask) AddModule(module Module) {
-	if filepath.IsAbs(module.RelativePath) {
-		f, e := filepath.Rel(i.ProjectDir, module.RelativePath)
+	if filepath.IsAbs(module.ModulePath) {
+		f, e := filepath.Rel(i.ProjectDir, module.ModulePath)
 		if e == nil {
-			module.RelativePath = f
+			module.ModulePath = f
 		}
 	}
-	module.RelativePath = filepath.ToSlash(module.RelativePath)
-	if module.RelativePath == "." {
-		module.RelativePath = "./"
+	module.ModulePath = filepath.ToSlash(module.ModulePath)
+	if module.ModulePath == "." {
+		module.ModulePath = "./"
 	}
 	if module.ScanStrategy == "" {
 		module.ScanStrategy = ScanStrategyNormal

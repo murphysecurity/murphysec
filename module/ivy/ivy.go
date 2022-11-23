@@ -33,12 +33,10 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		return fmt.Errorf("parse xml: %w", e)
 	}
 	module := model.Module{
-		PackageManager: model.PmIvy,
-		Language:       model.Java,
-		Name:           "<NoName>",
-		Version:        "",
-		RelativePath:   ivyPath,
-		Dependencies:   make([]model.Dependency, 0),
+		PackageManager: "ivy",
+		ModuleName:     "<NoName>",
+		ModulePath:     ivyPath,
+		Dependencies:   make([]model.DependencyItem, 0),
 		ScanStrategy:   model.ScanStrategyBackup,
 	}
 
@@ -46,8 +44,8 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		org := infoNode.SelectAttr("organisation")
 		name := infoNode.SelectAttr("module")
 		ver := infoNode.SelectAttr("revision")
-		module.Name = org + ":" + name
-		module.Version = ver
+		module.ModuleName = org + ":" + name
+		module.ModuleVersion = ver
 	}
 	xmlquery.FindEach(root, "//ivy-module/dependencies/dependency", func(i int, node *xmlquery.Node) {
 		//var org, name, version string
@@ -60,9 +58,12 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		if org == "" || name == "" {
 			return
 		}
-		module.Dependencies = append(module.Dependencies, model.Dependency{
-			Name:    org + ":" + name,
-			Version: version,
+		module.Dependencies = append(module.Dependencies, model.DependencyItem{
+			Component: model.Component{
+				CompName:    org + ":" + name,
+				CompVersion: version,
+				EcoRepo:     EcoRepo,
+			},
 		})
 	})
 	task.AddModule(module)
@@ -71,4 +72,9 @@ func (Inspector) InspectProject(ctx context.Context) error {
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "maven",
+	Repository: "",
 }

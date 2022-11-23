@@ -72,7 +72,7 @@ func tokenizePodLocks(input string) (pdTokens, error) {
 	return rs, nil
 }
 
-func getDepFromLock(input string) ([]model.Dependency, error) {
+func getDepFromLock(input string) ([]model.DependencyItem, error) {
 	tree, e := parse(input)
 	if e != nil {
 		return nil, e
@@ -115,7 +115,7 @@ func getDepFromLock(input string) ([]model.Dependency, error) {
 			}
 		}
 	}
-	var rs []model.Dependency
+	var rs []model.DependencyItem
 	for _, it := range directDep {
 		t := _buildTree(graph, versionMap, map[string]struct{}{}, it)
 		if t == nil {
@@ -126,16 +126,19 @@ func getDepFromLock(input string) ([]model.Dependency, error) {
 	return rs, nil
 }
 
-func _buildTree(graph map[string][]string, versions map[string]string, visited map[string]struct{}, target string) *model.Dependency {
+func _buildTree(graph map[string][]string, versions map[string]string, visited map[string]struct{}, target string) *model.DependencyItem {
 	if _, ok := visited[target]; ok {
 		return nil
 	}
 	visited[target] = struct{}{}
 	defer delete(visited, target)
 
-	r := &model.Dependency{
-		Name:         target,
-		Version:      versions[target],
+	r := &model.DependencyItem{
+		Component: model.Component{
+			CompName:    target,
+			CompVersion: versions[target],
+			EcoRepo:     EcoRepo,
+		},
 		Dependencies: nil,
 	}
 	for _, it := range graph[target] {

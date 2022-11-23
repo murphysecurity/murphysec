@@ -32,20 +32,14 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return e
 	}
 	m := model.Module{
-		PackageManager: model.PmNuget,
-		Language:       model.DotNet,
-		Name:           "packages.config",
-		Version:        "",
-		RelativePath:   filepath.Join(task.ProjectDir, "packages.config"),
+		PackageManager: "nuget",
+		ModuleName:     "packages.config",
+		ModuleVersion:  "",
+		ModulePath:     filepath.Join(task.ProjectDir, "packages.config"),
 		Dependencies:   dep,
-		RuntimeInfo:    nil,
 	}
 	task.AddModule(m)
 	return nil
-}
-
-func (i *Inspector) PackageManagerType() model.PackageManagerType {
-	return model.PmNuget
 }
 
 type PkgConfig struct {
@@ -57,25 +51,28 @@ type PkgConfig struct {
 	} `xml:"package"`
 }
 
-func (this *PkgConfig) Deps() []model.Dependency {
-	rs := make([]model.Dependency, 0)
+func (this *PkgConfig) Deps() []model.DependencyItem {
+	var rs []model.DependencyItem
 	for _, it := range this.Package {
 		if it.DevelopmentDependency {
 			continue
 		}
-		d := model.Dependency{
-			Name:    it.Id,
-			Version: it.Version,
+		d := model.DependencyItem{
+			Component: model.Component{
+				CompName:    it.Id,
+				CompVersion: it.Version,
+				EcoRepo:     EcoRepo,
+			},
 		}
-		if strings.ContainsAny(d.Version, "*") {
-			d.Version = ""
+		if strings.ContainsAny(d.CompVersion, "*") {
+			d.CompVersion = ""
 		}
 		rs = append(rs, d)
 	}
 	return rs
 }
 
-func inspectPkgConfig(filePath string) ([]model.Dependency, error) {
+func inspectPkgConfig(filePath string) ([]model.DependencyItem, error) {
 	data, e := utils.ReadFileLimited(filePath, 4*1024*1024)
 	if e != nil {
 		return nil, errors.WithMessage(e, "Read packages.config failed")
@@ -85,4 +82,9 @@ func inspectPkgConfig(filePath string) ([]model.Dependency, error) {
 		return nil, errors.WithMessage(e, "Parse packages.config failed")
 	}
 	return pkg.Deps(), nil
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "nuget",
+	Repository: "",
 }

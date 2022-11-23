@@ -15,6 +15,10 @@ type Dependency struct {
 	Children []Dependency `json:"children,omitempty"`
 }
 
+func (d Dependency) IsZero() bool {
+	return len(d.Children) == 0 && d.ArtifactId == "" && d.GroupId == "" && d.Version == ""
+}
+
 func (d Dependency) String() string {
 	return fmt.Sprintf("%v: %v", d.Coordinate, d.Children)
 }
@@ -61,21 +65,19 @@ func ScanMavenProject(ctx context.Context, task *model.InspectorTask) ([]model.M
 	}
 	for _, entry := range deps.ListAllEntries() {
 		task.AddModule(model.Module{
-			PackageManager: model.PMMaven,
-			Language:       model.Java,
-			Name:           entry.coordinate.Name(),
-			Version:        entry.coordinate.Version,
-			RelativePath:   filepath.Join(dir, entry.relativePath),
+			PackageManager: "maven",
+			ModuleName:     entry.coordinate.Name(),
+			ModuleVersion:  entry.coordinate.Version,
+			ModulePath:     filepath.Join(dir, entry.relativePath),
 			Dependencies:   convDeps(entry.children),
-			RuntimeInfo:    mvnCmdInfo,
 			ScanStrategy:   strategy,
 		})
 	}
 	return modules, nil
 }
 
-func convDeps(deps []Dependency) []model.Dependency {
-	rs := make([]model.Dependency, 0)
+func convDeps(deps []Dependency) []model.DependencyItem {
+	rs := make([]model.DependencyItem, 0)
 	for _, it := range deps {
 		d := _convDep(it)
 		if d == nil {
@@ -86,14 +88,16 @@ func convDeps(deps []Dependency) []model.Dependency {
 	return rs
 }
 
-func _convDep(dep Dependency) *model.Dependency {
-	if dep.GroupId == "" || dep.ArtifactId == "" || dep.Version == "" {
+func _convDep(dep Dependency) *model.DependencyItem {
+	if dep.IsZero() {
 		return nil
 	}
-	d := &model.Dependency{
-		Name:         dep.Name(),
-		Version:      dep.Version,
-		Dependencies: []model.Dependency{},
+	d := &model.DependencyItem{
+		Component: model.Component{
+			CompName:    dep.Name(),
+			CompVersion: dep.Version,
+			EcoRepo:     EcoRepo,
+		},
 	}
 	for _, it := range dep.Children {
 		dd := _convDep(it)
@@ -103,4 +107,9 @@ func _convDep(dep Dependency) *model.Dependency {
 		d.Dependencies = append(d.Dependencies, *dd)
 	}
 	return d
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "maven",
+	Repository: "",
 }

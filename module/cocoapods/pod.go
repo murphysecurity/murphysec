@@ -39,11 +39,15 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return errors.WithMessage(e, "Parse Podfile.lock failed")
 	}
 	task.AddModule(model.Module{
-		PackageManager: model.PMCocoaPods,
-		Language:       model.ObjectiveC,
-		Name:           tree[0].Name,
+		PackageManager: "cocoapods",
+		ModuleName:     tree[0].CompName,
 		Dependencies:   tree,
-		RelativePath:   podLockPath,
+		ModulePath:     podLockPath,
 	})
 	return nil
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "cocoapods",
+	Repository: "",
 }

@@ -31,35 +31,37 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	if e != nil || j == nil {
 		return fmt.Errorf("parse renv.lock: %w", e)
 	}
-	var deps []model.Dependency
+	var deps []model.DependencyItem
 	for _, it := range j.Get("Packages").JSONMap() {
 		if it == nil {
 			continue
 		}
 		var name = it.Get("Package").String()
 		var version = it.Get("Version").String()
-		deps = append(deps, model.Dependency{
-			Name:    name,
-			Version: version,
-		})
+		var di model.DependencyItem
+		di.CompName = name
+		di.CompVersion = version
+		di.EcoRepo = EcoRepo
+		deps = append(deps, di)
 	}
 	if len(deps) == 0 {
 		logger.Warn("No valid package item found")
 		return nil
 	}
 	inspectTask.AddModule(model.Module{
-		PackageManager: "",
-		Language:       "R",
-		Name:           "RProject",
-		Version:        "",
-		RelativePath:   filepath.Join(inspectTask.ScanDir, "renv.lock"),
+		PackageManager: "renv",
+		ModuleName:     "RProject",
+		ModulePath:     filepath.Join(inspectTask.ScanDir, "renv.lock"),
 		Dependencies:   deps,
-		RuntimeInfo:    nil,
-		ScanStrategy:   "",
 	})
 	return nil
 }
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "spm",
+	Repository: "",
 }

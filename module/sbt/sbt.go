@@ -25,17 +25,14 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		return fmt.Errorf("sbt command: %w", e)
 	}
 	module := model.Module{
-		PackageManager: model.PmSbt,
-		Language:       model.Scala,
-		Name:           "",
-		Version:        "",
-		RelativePath:   filepath.Join(task.ScanDir, "build.sbt"),
-		Dependencies:   dep,
+		PackageManager: "sbt",
+		ModulePath:     filepath.Join(task.ScanDir, "build.sbt"),
+		Dependencies:   mapToModel(dep),
 		ScanStrategy:   model.ScanStrategyNormal,
 	}
 	if len(dep) > 0 {
-		module.Name = dep[0].Name
-		module.Version = dep[0].Version
+		module.ModuleName = dep[0].Name
+		module.ModuleVersion = dep[0].Version
 	}
 	task.AddModule(module)
 	return nil
@@ -43,4 +40,30 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 
 func (i Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "maven",
+	Repository: "",
+}
+
+type Dep struct {
+	Name     string
+	Version  string
+	Children []Dep
+}
+
+func mapToModel(deps []Dep) []model.DependencyItem {
+	r := make([]model.DependencyItem, len(deps))
+	for i := range deps {
+		r[i] = model.DependencyItem{
+			Component: model.Component{
+				CompName:    deps[i].Name,
+				CompVersion: deps[i].Version,
+				EcoRepo:     EcoRepo,
+			},
+			Dependencies: mapToModel(deps[i].Children),
+		}
+	}
+	return r
 }

@@ -142,7 +142,7 @@ func _calcIndent(s string) int {
 	return len(s) - len(strings.TrimLeft(s, " \t"))
 }
 
-func getDepGraph(input string) ([]model.Dependency, error) {
+func getDepGraph(input string) ([]model.DependencyItem, error) {
 	// ([\w.-]+)\s*\(([\w.-]+)\)
 	// catch group: name, version
 	var pattern = regexp.MustCompile("([\\w.-]+)\\s*\\(([\\w.-]+)\\)")
@@ -189,7 +189,7 @@ func getDepGraph(input string) ([]model.Dependency, error) {
 		roots = append(roots, left)
 	}
 	// build tree
-	var rs []model.Dependency
+	var rs []model.DependencyItem
 	for _, it := range roots {
 		if t := _buildCompTree(graph, versionMap, it, map[string]struct{}{}); t != nil {
 			rs = append(rs, *t)
@@ -198,7 +198,7 @@ func getDepGraph(input string) ([]model.Dependency, error) {
 	return rs, nil
 }
 
-func _buildCompTree(graph map[string][]string, versionMap map[string]string, target string, visited map[string]struct{}) *model.Dependency {
+func _buildCompTree(graph map[string][]string, versionMap map[string]string, target string, visited map[string]struct{}) *model.DependencyItem {
 	// avoid cycling
 	if _, ok := visited[target]; ok {
 		return nil
@@ -206,9 +206,12 @@ func _buildCompTree(graph map[string][]string, versionMap map[string]string, tar
 	visited[target] = struct{}{}
 	defer delete(visited, target)
 
-	d := &model.Dependency{
-		Name:         target,
-		Version:      versionMap[target],
+	d := &model.DependencyItem{
+		Component: model.Component{
+			CompName:    target,
+			CompVersion: versionMap[target],
+			EcoRepo:     EcoRepo,
+		},
 		Dependencies: nil,
 	}
 	for _, tt := range graph[target] {

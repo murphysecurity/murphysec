@@ -2,7 +2,6 @@ package poetry
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pelletier/go-toml/v2"
@@ -46,26 +45,27 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	}
 	cmap := map[string]string{}
 	for _, it := range manifest.Dependencies {
-		cmap[it.Name] = it.Version
+		cmap[it.CompName] = it.CompVersion
 	}
 	poetryFile := filepath.Join(task.ScanDir, "poetry.lock.py")
 	if utils.IsFile(poetryFile) {
 		if deps, e := parsePoetryLock(poetryFile); e == nil {
 			for _, it := range deps {
-				cmap[it.Name] = it.Version
+				cmap[it.CompName] = it.CompVersion
 			}
 		}
 	}
 	module := model.Module{
-		PackageManager: model.PMPoetry,
-		Language:       model.Python,
-		Name:           manifest.Name,
-		Dependencies:   []model.Dependency{},
-		UUID:           uuid.Must(uuid.NewRandom()),
-		RelativePath:   task.ScanDir,
+		PackageManager: "poetry",
+		ModuleName:     manifest.Name,
+		ModulePath:     task.ScanDir,
 	}
 	for k, v := range cmap {
-		module.Dependencies = append(module.Dependencies, model.Dependency{Name: k, Version: v})
+		var di model.DependencyItem
+		di.CompName = k
+		di.CompVersion = v
+		di.EcoRepo = EcoRepo
+		module.Dependencies = append(module.Dependencies, di)
 	}
 
 	task.AddModule(module)
@@ -74,7 +74,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 
 type Manifest struct {
 	Name         string
-	Dependencies []model.Dependency
+	Dependencies []model.DependencyItem
 }
 
 func parsePoetry(input []byte) (*Manifest, error) {
@@ -86,16 +86,17 @@ func parsePoetry(input []byte) (*Manifest, error) {
 	if !ok {
 		return nil, errors.WithMessage(ErrParsePoetry, "bad toml")
 	}
-	var deps []model.Dependency
+	var deps []model.DependencyItem
 	for k, v := range m {
 		v := strings.Trim(v, "~^* ")
 		if v == "" {
 			continue
 		}
-		deps = append(deps, model.Dependency{
-			Name:    k,
-			Version: v,
-		})
+		var di model.DependencyItem
+		di.CompName = k
+		di.CompVersion = v
+		di.EcoRepo =EcoRepo
+		deps = append(deps, di)
 	}
 	return &Manifest{
 		Name:         root.Get("tool", "poetry", "name").String("<noname>"),
@@ -144,4 +145,9 @@ func (t tomlTree) String(a ...string) string {
 			return ""
 		}
 	}
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "pip",
+	Repository: "",
 }

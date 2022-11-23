@@ -56,7 +56,7 @@ func parseCargoLock(input []byte) (cargoLock, error) {
 	return rs, nil
 }
 
-func analyzeCargoLock(input []byte) (_ *model.Dependency, err error) {
+func analyzeCargoLock(input []byte) (_ *model.DependencyItem, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("analyzeCargoLock: %w", err)
@@ -73,7 +73,7 @@ func analyzeCargoLock(input []byte) (_ *model.Dependency, err error) {
 	return _buildTree(lock, rootName, map[string]struct{}{}), nil
 }
 
-func _buildTree(lock cargoLock, name string, visited map[string]struct{}) *model.Dependency {
+func _buildTree(lock cargoLock, name string, visited map[string]struct{}) *model.DependencyItem {
 	if _, ok := visited[name]; ok {
 		return nil
 	}
@@ -83,9 +83,12 @@ func _buildTree(lock cargoLock, name string, visited map[string]struct{}) *model
 	if !ok {
 		return nil
 	}
-	r := &model.Dependency{
-		Name:    name,
-		Version: item.Version,
+	r := &model.DependencyItem{
+		Component: model.Component{
+			CompName:    name,
+			CompVersion: item.Version,
+			EcoRepo:     EcoRepo,
+		},
 	}
 	for _, depName := range item.Dependencies {
 		c := _buildTree(lock, depName, visited)

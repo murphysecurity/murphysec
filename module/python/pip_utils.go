@@ -28,7 +28,7 @@ func locatePipCommand(ctx context.Context) string {
 	return ""
 }
 
-func executePipList(ctx context.Context, dir string) ([]model.Dependency, error) {
+func executePipList(ctx context.Context, dir string) ([]model.DependencyItem, error) {
 	var logger = utils.UseLogger(ctx)
 	path := locatePipCommand(ctx)
 	if path == "" {

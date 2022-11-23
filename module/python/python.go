@@ -81,10 +81,9 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 			logger.Sugar().Warnf("Analyze pyproject.toml failed: %s", e.Error())
 		} else if len(list) > 0 {
 			task.AddModule(model.Module{
-				Name:           "Python-pyprojects.toml",
-				RelativePath:   tomlFile,
-				PackageManager: model.PMPip,
-				Language:       model.Python,
+				ModuleName:     "Python-pyprojects.toml",
+				ModulePath:     tomlFile,
+				PackageManager: "pip",
 				Dependencies:   list,
 			})
 		}
@@ -141,11 +140,10 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 		}
 		found = true
 		m := model.Module{
-			Name:           fmt.Sprintf("Python-%s", filepath.Base(fp)),
-			PackageManager: model.PMPip,
-			Language:       model.Python,
+			ModuleName:     fmt.Sprintf("Python-%s", filepath.Base(fp)),
+			PackageManager: "pip",
 			Dependencies:   deps,
-			RelativePath:   fp,
+			ModulePath:     fp,
 		}
 		task.AddModule(m)
 	}
@@ -227,31 +225,35 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	}
 	{
 		m := model.Module{
-			Name:           relativeDir,
-			PackageManager: model.PMPip,
-			Language:       model.Python,
-			Dependencies:   []model.Dependency{},
-			RelativePath:   filepath.Join(dir),
+			ModuleName:     relativeDir,
+			PackageManager: "pip",
+			ModulePath:     filepath.Join(dir),
 		}
-		if m.Name == "." {
-			m.Name = "Python"
+		if m.ModuleName == "." {
+			m.ModuleName = "Python"
 		}
 		for k, v := range componentMap {
-			m.Dependencies = append(m.Dependencies, model.Dependency{
-				Name:    k,
-				Version: v,
-			})
+			var di model.DependencyItem
+			di.CompName = k
+			di.CompVersion = v
+			di.EcoRepo = EcoRepo
+			m.Dependencies = append(m.Dependencies, di)
 		}
 		model.UseInspectorTask(ctx).AddModule(m)
 		return nil
 	}
 }
 
-func mergeComponentVersionOnly(target map[string]string, deps []model.Dependency) {
+func mergeComponentVersionOnly(target map[string]string, deps []model.DependencyItem) {
 	for _, it := range deps {
-		v, ok := target[strings.ToLower(it.Name)]
-		if v == "" && ok && it.Version != "" {
-			target[it.Name] = it.Version
+		v, ok := target[strings.ToLower(it.CompName)]
+		if v == "" && ok && it.CompVersion != "" {
+			target[it.CompName] = it.CompVersion
 		}
 	}
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "pip",
+	Repository: "",
 }

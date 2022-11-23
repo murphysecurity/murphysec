@@ -50,12 +50,9 @@ type ScanTask struct {
 	StartTime         time.Time
 	GitInfo           *GitInfo
 	TaskType          TaskType
-	ContributorList   []Contributor
 	TotalContributors int
 	Modules           []Module
 	ScanResult        *TaskScanResponse
-	EnableDeepScan    bool
-	FileHashes        []FileHash
 }
 
 func CreateScanTask(projectDir string, taskKind TaskKind, taskType TaskType) *ScanTask {
@@ -88,12 +85,6 @@ func fillScanTaskGitInfo(task *ScanTask) {
 	task.GitInfo = gitInfo
 	task.ProjectName = gitInfo.ProjectName
 	task.ProjectType = ProjectTypeGit
-	contributors, e := collectContributor(task.ProjectDir)
-	if e != nil {
-		Logger.Warn("Collect contributors failed", zap.Error(e))
-		return
-	}
-	task.ContributorList = contributors
 }
 
 func WithScanTask(ctx context.Context, task *ScanTask) context.Context {

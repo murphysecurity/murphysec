@@ -26,7 +26,7 @@ func (t *_ConanInfoJsonFile) ReadFromFile(path string) error {
 
 type _ConanInfoJsonFile []_InfoJsonItem
 
-func (t _ConanInfoJsonFile) Tree() (*model.Dependency, error) {
+func (t _ConanInfoJsonFile) Tree() (*model.DependencyItem, error) {
 	var rootName string
 	for _, it := range t {
 		if len(it.RequiredBy) == 0 && rootName == "" {
@@ -46,20 +46,21 @@ func (t _ConanInfoJsonFile) Tree() (*model.Dependency, error) {
 	return _tree(rootName, depGraph, map[string]bool{}), nil
 }
 
-func _tree(name string, g map[string][]string, visitedName map[string]bool) *model.Dependency {
+func _tree(name string, g map[string][]string, visitedName map[string]bool) *model.DependencyItem {
 	if visitedName[name] {
 		return nil
 	}
 	visitedName[name] = true
 	defer delete(visitedName, name)
 	r := strings.SplitN(name, "/", 2)
-	d := &model.Dependency{
-		Name:         r[0],
-		Version:      "",
-		Dependencies: nil,
+	d := &model.DependencyItem{
+		Component: model.Component{
+			CompName: r[0],
+			EcoRepo:  EcoRepo,
+		},
 	}
 	if len(r) > 1 {
-		d.Version = r[1]
+		d.CompVersion = r[1]
 	}
 	for _, it := range g[name] {
 		t := _tree(it, g, visitedName)

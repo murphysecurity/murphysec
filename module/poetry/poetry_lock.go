@@ -7,7 +7,7 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-func parsePoetryLock(f string) (rs []model.Dependency, e error) {
+func parsePoetryLock(f string) (rs []model.DependencyItem, e error) {
 	var data []byte
 	data, e = utils.ReadFileLimited(f, 4*1024*1024)
 	if e != nil {
@@ -20,9 +20,12 @@ func parsePoetryLock(f string) (rs []model.Dependency, e error) {
 		return nil, e
 	}
 	for _, it := range root.Get("package").AsArray() {
-		rs = append(rs, model.Dependency{
-			Name:    it.Get("name").String(),
-			Version: it.Get("version").String(),
+		rs = append(rs, model.DependencyItem{
+			Component: model.Component{
+				CompName:    it.Get("name").String(),
+				CompVersion: it.Get("version").String(),
+				EcoRepo:     EcoRepo,
+			},
 		})
 	}
 	logger.Info.Println("Parse poetry.lock, found", len(rs))

@@ -3,7 +3,6 @@ package conan
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/display"
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/model"
@@ -64,14 +63,15 @@ func (*Inspector) InspectProject(ctx context.Context) error {
 		return e
 	}
 	task.AddModule(model.Module{
-		PackageManager: model.PmConan,
-		Language:       model.Cxx,
-		Name:           "conanfile.txt",
-		Version:        "",
-		RelativePath:   filepath.Join(task.ScanDir, "conanfile.txt"),
+		PackageManager: "conan",
+		ModuleName:     "conanfile.txt",
+		ModulePath:     filepath.Join(task.ScanDir, "conanfile.txt"),
 		Dependencies:   t.Dependencies,
-		RuntimeInfo:    cmdInfo,
-		UUID:           uuid.UUID{},
 	})
 	return nil
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "conan",
+	Repository: "",
 }

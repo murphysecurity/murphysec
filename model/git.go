@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/murphysecurity/murphysec/errors"
 	giturls "github.com/whilp/git-urls"
 	"time"
@@ -79,45 +78,4 @@ func getGitInfo(dir string) (*GitInfo, error) {
 	}
 	return gitInfo, nil
 }
-func collectContributor(dir string) ([]Contributor, error) {
-	repo, e := git.PlainOpen(dir)
-	if e != nil {
-		return nil, fmt.Errorf("open repo failed: %w", e)
-	}
-	contributorSet := map[Contributor]struct{}{}
-	commitIter, e := repo.CommitObjects()
-	if e != nil {
-		return nil, fmt.Errorf("list commit failed: %w", e)
-	}
-	e = commitIter.ForEach(func(commit *object.Commit) error {
-		if commit.Hash.IsZero() {
-			return nil
-		}
-		if commit.Committer.Name != "" {
-			contributorSet[Contributor{
-				Name:  commit.Committer.Name,
-				Email: commit.Committer.Email,
-			}] = struct{}{}
-		}
-		if commit.Author.Name != "" {
-			contributorSet[Contributor{
-				Name:  commit.Author.Name,
-				Email: commit.Author.Email,
-			}] = struct{}{}
-		}
-		return nil
-	})
-	if e != nil {
-		return nil, fmt.Errorf("iterate contributors failed: %w", e)
-	}
-	var rs []Contributor
-	for contributor := range contributorSet {
-		rs = append(rs, contributor)
-	}
-	return rs, e
-}
 
-type Contributor struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}

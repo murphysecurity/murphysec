@@ -40,10 +40,9 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	}
 	task.AddModule(model.Module{
 		PackageManager: "PerlEnv",
-		Language:       "Perl",
-		Name:           deps.Name,
-		Version:        deps.Version,
-		RelativePath:   metaFile,
+		ModuleName:     deps.Name,
+		ModuleVersion:  deps.Version,
+		ModulePath:     metaFile,
 		Dependencies:   deps.deps(),
 	})
 	return nil
@@ -51,4 +50,9 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 
 func (i Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "perl",
+	Repository: "",
 }

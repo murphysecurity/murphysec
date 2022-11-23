@@ -5,14 +5,13 @@ import (
 	"context"
 	"fmt"
 	list "github.com/bahlo/generic-list-go"
-	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os/exec"
 	"regexp"
 )
 
-func sbtDependencyTree(ctx context.Context, dir string) ([]model.Dependency, error) {
+func sbtDependencyTree(ctx context.Context, dir string) ([]Dep, error) {
 	var logger = utils.UseLogger(ctx)
 	c := exec.CommandContext(ctx, "sbt", "-Dsbt.ci=true", "-Dsbt.color=never", "-Dsbt.progress=never", "-Dsbt.log.noformat=true", "-Dsbt.supershell=false", "dependencyTree")
 	logger.Sugar().Infof("Execute command: %s", c)
@@ -31,17 +30,17 @@ func sbtDependencyTree(ctx context.Context, dir string) ([]model.Dependency, err
 	if e != nil {
 		return nil, e
 	}
-	return root.Dependencies, nil
+	return root.Children, nil
 }
 
 type sbtDependencyTreeOutputParser struct {
 	io.WriteCloser
 	err     error
 	closeCh chan struct{}
-	root    *model.Dependency
+	root    *Dep
 }
 
-func (s *sbtDependencyTreeOutputParser) Result() (*model.Dependency, error) {
+func (s *sbtDependencyTreeOutputParser) Result() (*Dep, error) {
 	<-s.closeCh
 	return s.root, s.err
 }
@@ -54,21 +53,21 @@ func newSbtDependencyTreeOutputParser() (r *sbtDependencyTreeOutputParser) {
 	r = &sbtDependencyTreeOutputParser{
 		WriteCloser: writer,
 		closeCh:     make(chan struct{}),
-		root:        &model.Dependency{},
+		root:        &Dep{},
 	}
 
 	go func() {
 		defer close(r.closeCh)
 		type item struct {
-			*model.Dependency
+			*Dep
 			indent int
 		}
 		q := list.New[item]()
 		q.PushBack(item{
-			Dependency: &model.Dependency{},
-			indent:     0,
+			Dep:    &Dep{},
+			indent: 0,
 		})
-		r.root = q.Back().Value.Dependency
+		r.root = q.Back().Value.Dep
 
 		var scanner = bufio.NewScanner(reader)
 		scanner.Buffer(make([]byte, 4096), 4096)
@@ -96,7 +95,7 @@ func newSbtDependencyTreeOutputParser() (r *sbtDependencyTreeOutputParser) {
 			var version = m[3]
 			if indent == q.Back().Value.indent {
 				// append as child of current node
-				q.Back().Value.Dependencies = append(q.Back().Value.Dependencies, model.Dependency{
+				q.Back().Value.Children = append(q.Back().Value.Children, Dep{
 					Name:    name,
 					Version: version,
 				})
@@ -104,12 +103,12 @@ func newSbtDependencyTreeOutputParser() (r *sbtDependencyTreeOutputParser) {
 			}
 			if indent > q.Back().Value.indent {
 				// use last children as new stack top
-				if len(q.Back().Value.Dependencies) == 0 {
+				if len(q.Back().Value.Children) == 0 {
 					r.err = fmt.Errorf("bad indent")
 					break
 				}
-				lastChildren := &q.Back().Value.Dependencies[len(q.Back().Value.Dependencies)-1]
-				lastChildren.Dependencies = append(lastChildren.Dependencies, model.Dependency{
+				lastChildren := &q.Back().Value.Children[len(q.Back().Value.Children)-1]
+				lastChildren.Children = append(lastChildren.Children, Dep{
 					Name:    name,
 					Version: version,
 				})

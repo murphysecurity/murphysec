@@ -2,7 +2,6 @@ package rebar3
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"path/filepath"
@@ -25,7 +24,7 @@ func (Inspector) CheckDir(dir string) bool {
 }
 func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
-	ver, e := GetRebar3Version(ctx)
+	_, e := GetRebar3Version(ctx)
 	if e != nil {
 		return e
 	}
@@ -38,29 +37,27 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	}
 
 	task.AddModule(model.Module{
-		PackageManager: model.PmRebar3,
-		Language:       model.Erlang,
-		Name:           tree[0].Name,
-		Version:        tree[0].Version,
-		RelativePath:   filepath.Join(task.ScanDir, "rebar.config"),
+		PackageManager: "rebar3",
+		ModuleName:     tree[0].Name,
+		ModuleVersion:  tree[0].Version,
+		ModulePath:     filepath.Join(task.ScanDir, "rebar.config"),
 		Dependencies:   _mapDepNodes(tree),
-		RuntimeInfo:    ver,
-		UUID:           uuid.New(),
 	})
 	return nil
 }
 
-func (Inspector) PackageManagerType() model.PackageManagerType {
-	return model.PmRebar3
-}
-
-func _mapDepNodes(node []depNode) (r []model.Dependency) {
+func _mapDepNodes(node []depNode) (r []model.DependencyItem) {
 	for _, it := range node {
-		r = append(r, model.Dependency{
-			Name:         it.Name,
-			Version:      it.Version,
-			Dependencies: _mapDepNodes(it.Children),
-		})
+		var di model.DependencyItem
+		di.CompName = it.Name
+		di.CompVersion = it.Version
+		di.EcoRepo = EcoRepo
+		r = append(r, di)
 	}
 	return
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "rebar",
+	Repository: "",
 }

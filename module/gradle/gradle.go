@@ -180,20 +180,22 @@ type GradleDependencyInfo struct {
 
 func (g *GradleDependencyInfo) BaseModule(path string) model.Module {
 	return model.Module{
-		PackageManager: model.PMGradle,
-		Language:       model.Java,
-		Name:           g.ProjectName,
+		PackageManager: "gradle",
+		ModuleName:     g.ProjectName,
 		Dependencies:   _convDep(g.Dependencies),
-		RelativePath:   path,
+		ModulePath:     path,
 	}
 }
 
-func _convDep(input []DepElement) []model.Dependency {
-	var rs []model.Dependency
+func _convDep(input []DepElement) []model.DependencyItem {
+	var rs []model.DependencyItem
 	for _, it := range input {
-		rs = append(rs, model.Dependency{
-			Name:         it.CompName(),
-			Version:      it.Version,
+		rs = append(rs, model.DependencyItem{
+			Component: model.Component{
+				CompName:   it.CompName(),
+				CompVersion: it.Version,
+				EcoRepo:     EcoRepo,
+			},
 			Dependencies: _convDep(it.Children),
 		})
 	}
@@ -252,4 +254,9 @@ func parseGradleDependencies(lines []string) *GradleDependencyInfo {
 		}
 	}
 	return info
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "maven",
+	Repository: "",
 }

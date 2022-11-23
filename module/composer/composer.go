@@ -2,7 +2,6 @@ package composer
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
@@ -37,14 +36,10 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return e
 	}
 	module := &model.Module{
-		PackageManager: model.PMComposer,
-		Language:       model.PHP,
-		Name:           manifest.Name,
-		Version:        manifest.Version,
-		RelativePath:   filepath.Join(dir, "composer.json"),
-		Dependencies:   []model.Dependency{},
-		RuntimeInfo:    nil,
-		UUID:           uuid.UUID{},
+		PackageManager: "composer",
+		ModuleName:     manifest.Name,
+		ModuleVersion:  manifest.Version,
+		ModulePath:     filepath.Join(dir, "composer.json"),
 	}
 	lockfilePkgs := map[string]Package{}
 
@@ -75,31 +70,34 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 			module.Dependencies = append(module.Dependencies, *node)
 		}
 	}
-	if module.Name == "" && module.Version == "" && len(module.Dependencies) == 0 {
+	if module.IsZero() {
 		return nil
 	}
 	task.AddModule(*module)
 	return nil
 }
 
-func _buildDepTree(lockfile map[string]Package, visitedDep map[string]struct{}, targetName string, versionConstraint string) *model.Dependency {
+func _buildDepTree(lockfile map[string]Package, visitedDep map[string]struct{}, targetName string, versionConstraint string) *model.DependencyItem {
 	if _, ok := visitedDep[targetName]; ok || len(visitedDep) > 3 {
 		return nil
 	}
 	visitedDep[targetName] = struct{}{}
 	defer delete(visitedDep, targetName)
-	rs := &model.Dependency{
-		Name:    targetName,
-		Version: versionConstraint,
+	rs := &model.DependencyItem{
+		Component: model.Component{
+			CompName:    targetName,
+			CompVersion: versionConstraint,
+			EcoRepo:     EcoRepo,
+		},
 	}
-	pkg := lockfile[rs.Name]
+	pkg := lockfile[rs.CompName]
 	if targetName == "php" || (strings.HasPrefix(targetName, "ext-") && (pkg.Version == "*" || pkg.Version == "" || versionConstraint == "*")) {
 		return nil
 	}
 	if pkg.Version == "" {
 		return rs // fallback
 	}
-	rs.Version = pkg.Version
+	rs.CompVersion = pkg.Version
 	for _, requiredPkgName := range pkg.Require {
 		node := _buildDepTree(lockfile, visitedDep, requiredPkgName, "") // ignore transitive dependency version constraint
 		if node != nil {
@@ -149,4 +147,9 @@ func vendorScan(ctx context.Context, dir string) []Package {
 		return nil
 	})
 	return rs
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "composer",
+	Repository: "",
 }

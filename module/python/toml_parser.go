@@ -14,7 +14,7 @@ import (
 
 var ErrParseToml = errors.New("Parse toml failed")
 
-func tomlBuildSysFile(ctx context.Context, path string) ([]model.Dependency, error) {
+func tomlBuildSysFile(ctx context.Context, path string) ([]model.DependencyItem, error) {
 	logger := utils.UseLogger(ctx)
 	logger.Debug("Process toml buildSys file", zap.String("path", path))
 	data, e := utils.ReadFileLimited(path, 4*1024*1024)
@@ -24,7 +24,7 @@ func tomlBuildSysFile(ctx context.Context, path string) ([]model.Dependency, err
 	return tomlBuildSys(data)
 }
 
-func tomlBuildSys(data []byte) ([]model.Dependency, error) {
+func tomlBuildSys(data []byte) ([]model.DependencyItem, error) {
 	// numpy==1.13.3 Cython>=0.29.13 wheel
 	pa := regexp.MustCompile("([\\w.-]+)(?:[>=]?=([\\w.-]+))?")
 	t, e := simpletoml.UnmarshalTOML(data)
@@ -51,12 +51,13 @@ func tomlBuildSys(data []byte) ([]model.Dependency, error) {
 		}
 	}
 
-	r := make([]model.Dependency, 0)
+	r := make([]model.DependencyItem, 0)
 	for pair := rsm.Oldest(); pair != nil; pair = pair.Next() {
-		r = append(r, model.Dependency{
-			Name:    pair.Key,
-			Version: pair.Value,
-		})
+		var di model.DependencyItem
+		di.CompName = pair.Key
+		di.CompVersion = pair.Value
+		di.EcoRepo = EcoRepo
+		r = append(r, di)
 	}
 	return r, nil
 }

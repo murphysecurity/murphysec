@@ -82,13 +82,10 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 		logger.Warn("Not found root component")
 	}
 	module := model.Module{
-		PackageManager: model.PMNpm,
-		Language:       model.JavaScript,
-		Name:           lockfile.Name,
-		Version:        lockfile.Version,
-		RelativePath:   filepath.Join(dir, "package-lock.json"),
-		Dependencies:   []model.Dependency{},
-		RuntimeInfo:    nil,
+		PackageManager: "npm",
+		ModuleName:     lockfile.Name,
+		ModuleVersion:  lockfile.Version,
+		ModulePath:     filepath.Join(dir, "package-lock.json"),
 	}
 	m := map[string]int{}
 	for _, it := range rootComp {
@@ -99,7 +96,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	return []model.Module{module}, nil
 }
 
-func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *model.Dependency {
+func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *model.DependencyItem {
 	if deep > 5 {
 		return nil
 	}
@@ -112,10 +109,12 @@ func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *mode
 	if !ok {
 		return nil
 	}
-	r := model.Dependency{
-		Name:         root,
-		Version:      d.Version,
-		Dependencies: nil,
+	r := model.DependencyItem{
+		Component: model.Component{
+			CompName:    root,
+			CompVersion: d.Version,
+			EcoRepo:     EcoRepo,
+		},
 	}
 	for depName := range d.Requires {
 		cd := _convDep(depName, m, visited, deep+1)
@@ -136,4 +135,9 @@ type NpmPkgLock struct {
 		Version  string                 `json:"version"`
 		Requires map[string]interface{} `json:"requires"`
 	} `json:"dependencies"`
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "npm",
+	Repository: "",
 }

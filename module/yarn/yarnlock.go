@@ -39,16 +39,14 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return e
 	}
 	m := model.Module{
-		PackageManager: model.PMYarn,
-		Language:       model.JavaScript,
-		Name:           filepath.Base(dir),
-		Version:        "",
-		RelativePath:   filepath.Join(dir, "yarn.lock"),
-		Dependencies:   rs,
+		PackageManager: "yarn",
+		ModuleName:     filepath.Base(dir),
+		ModulePath:     filepath.Join(dir, "yarn.lock"),
+		Dependencies:   mapToModel(rs),
 	}
 	if n, v := readModuleName(dir); n != "" {
-		m.Name = n
-		m.Version = v
+		m.ModuleName = n
+		m.ModuleVersion = v
 	}
 	task.AddModule(m)
 	return nil
@@ -77,7 +75,7 @@ func readModuleName(dir string) (string, string) {
 	return j.Get("name").String(), j.Get("version").String()
 }
 
-func yarnFallback(dir string) ([]model.Dependency, error) {
+func yarnFallback(dir string) ([]Dep, error) {
 	f, e := os.Open(filepath.Join(dir, "package.json"))
 	if e != nil {
 		return nil, errors.Wrap(e, "Open package.json failed.")
@@ -92,7 +90,7 @@ func yarnFallback(dir string) ([]model.Dependency, error) {
 	if e := json.Unmarshal(data, &pkg); e != nil {
 		return nil, errors.Wrap(e, "parse failed")
 	}
-	rs := make([]model.Dependency, 0)
+	var rs []Dep
 	distinct := map[string]string{}
 	for k, v := range pkg.DevDependencies {
 		distinct[k] = v
@@ -101,15 +99,15 @@ func yarnFallback(dir string) ([]model.Dependency, error) {
 		distinct[k] = v
 	}
 	for k, v := range distinct {
-		rs = append(rs, model.Dependency{
-			Name:    k,
-			Version: v,
-		})
+		var di Dep
+		di.Name = k
+		di.Version = v
+		rs = append(rs, di)
 	}
 	return rs, nil
 }
 
-func analyzeYarnDep(dir string) ([]model.Dependency, error) {
+func analyzeYarnDep(dir string) ([]Dep, error) {
 	f, e := os.Open(filepath.Join(dir, "yarn.lock"))
 	if e != nil {
 		logger.Info.Println("Open yarn.lock failed.", e.Error())
@@ -127,12 +125,12 @@ func analyzeYarnDep(dir string) ([]model.Dependency, error) {
 	return buildDepTree(lockfile), nil
 }
 
-func buildDepTree(lkFile yarnlock.LockFile) []model.Dependency {
+func buildDepTree(lkFile yarnlock.LockFile) []Dep {
 	type id struct {
 		name    string
 		version string
 	}
-	var rs []model.Dependency
+	var rs []Dep
 	repeatedElement := map[id]struct{}{}
 	for _, key := range lkFile.RootElement() {
 		node := _buildDepTree(lkFile, key, map[string]struct{}{}, 5)
@@ -147,7 +145,7 @@ func buildDepTree(lkFile yarnlock.LockFile) []model.Dependency {
 	return rs
 }
 
-func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[string]struct{}, depth int) *model.Dependency {
+func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[string]struct{}, depth int) *Dep {
 	if depth < 0 {
 		return nil
 	}
@@ -167,10 +165,9 @@ func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[stri
 	if pkgName == "" || pkgVer == "" {
 		return nil
 	}
-	node := &model.Dependency{
-		Name:         pkgName,
-		Version:      info.Version, // use real version
-		Dependencies: nil,
+	node := &Dep{
+		Name:    pkgName,
+		Version: info.Version, // use real version
 	}
 	type id struct {
 		name    string
@@ -187,7 +184,7 @@ func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[stri
 			continue
 		}
 		repeatedElement[id{c.Name, c.Version}] = struct{}{}
-		node.Dependencies = append(node.Dependencies, *c)
+		node.Children = append(node.Children, *c)
 	}
 	return node
 }

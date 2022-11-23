@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func readRequirements(path string) ([]model.Dependency, error) {
+func readRequirements(path string) ([]model.DependencyItem, error) {
 	data, e := os.ReadFile(path)
 	if e != nil {
 		return nil, errors.Wrap(e, "read requirements failed")
@@ -16,19 +16,20 @@ func readRequirements(path string) ([]model.Dependency, error) {
 	return parseRequirements(string(data)), nil
 }
 
-func parseRequirements(data string) []model.Dependency {
+func parseRequirements(data string) []model.DependencyItem {
 	var pattern = regexp.MustCompile("^([\\w_.-]+)[>=<]+([\\w.]+)$")
-	var deps []model.Dependency
+	var deps []model.DependencyItem
 	for _, s := range strings.Split(data, "\n") {
 		s = strings.TrimSpace(s)
 		m := pattern.FindStringSubmatch(s)
 		if m == nil {
 			continue
 		}
-		deps = append(deps, model.Dependency{
-			Name:    m[1],
-			Version: m[2],
-		})
+		var di model.DependencyItem
+		di.CompName = m[1]
+		di.CompVersion = m[2]
+		di.EcoRepo = EcoRepo
+		deps = append(deps, di)
 	}
 	return deps
 }

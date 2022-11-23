@@ -39,25 +39,32 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return errors.WithMessage(e, "Parse go mod failed")
 	}
 	m := model.Module{
-		PackageManager: model.PMGoMod,
-		Language:       model.Go,
-		RelativePath:   modFilePath,
-		Name:           "<NoNameModule>",
+		PackageManager: "gomod",
+		ModulePath:     modFilePath,
+		ModuleName:     "<NoNameModule>",
 	}
 	if f.Module != nil {
-		m.Version = f.Module.Mod.Version
-		m.Name = f.Module.Mod.Path
+		m.ModuleVersion = f.Module.Mod.Version
+		m.ModulePath = f.Module.Mod.Path
 	}
 
 	for _, it := range f.Require {
 		if it == nil {
 			continue
 		}
-		m.Dependencies = append(m.Dependencies, model.Dependency{
-			Name:    it.Mod.Path,
-			Version: it.Mod.Version,
+		m.Dependencies = append(m.Dependencies, model.DependencyItem{
+			Component: model.Component{
+				CompName:    it.Mod.Path,
+				CompVersion: it.Mod.Version,
+				EcoRepo:     EcoRepo,
+			},
 		})
 	}
 	task.AddModule(m)
 	return nil
+}
+
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "gomod",
+	Repository: "",
 }
