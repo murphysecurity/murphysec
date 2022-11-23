@@ -5,11 +5,21 @@ import (
 	"strings"
 )
 
-var ErrConanReport = errors.New("conan report error")
-var ErrConanNotFound = errors.New("conan not found")
-var ErrGetConanVersionFail = errors.New("get conan command version failed")
-var ErrRootNodeNotFound = errors.New("can't found root node in conan info graph")
-var ErrReadConanJsonFail = errors.New("read conan json failed")
+//go:generate stringer -type _e -linecomment -output error_string.go
+type _e int
+
+const (
+	_                      _e = iota
+	ErrConanReport            // conan report error
+	ErrConanNotFound          // conan not found
+	ErrGetConanVersionFail    // get conan command version failed
+	ErrRootNodeNotFound       // can't found root node in conan info graph
+	ErrReadConanJsonFail      // read conan json failed
+)
+
+func (i _e) Error() string {
+	return i.String()
+}
 
 type conanError string
 
