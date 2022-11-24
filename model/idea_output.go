@@ -31,12 +31,13 @@ type PluginOutput struct {
 		Medium   int `json:"medium,omitempty"`
 		Low      int `json:"low,omitempty"`
 	} `json:"issues_level_count,omitempty"`
-	TaskId            string         `json:"task_id,omitempty"`
-	TotalContributors int            `json:"total_contributors"`
-	ProjectId         string         `json:"project_id"`
-	InspectErrors     []InspectError `json:"inspect_errors,omitempty"`
-	DependenciesCount int            `json:"dependencies_count"`
-	InspectReportUrl  string         `json:"inspect_report_url"`
+	TaskId             string         `json:"task_id,omitempty"`
+	TotalContributors  int            `json:"total_contributors"`
+	ProjectId          string         `json:"project_id"`
+	InspectErrors      []InspectError `json:"inspect_errors,omitempty"`
+	DependenciesCount  int            `json:"dependencies_count"`
+	InspectReportUrl   string         `json:"inspect_report_url"`
+	AnonymousReportUrl string         `json:"anonymous_report_url"`
 }
 type PluginComp struct {
 	CompName           string               `json:"comp_name"`
@@ -162,12 +163,13 @@ func GenerateIdeaOutput(c context.Context) string {
 		Comps:       []PluginComp{},
 		TaskId:      i.TaskId,
 		//InspectErrors:     ctx.InspectorError,
-		TotalContributors: ctx.TotalContributors,
-		ProjectId:         ctx.ProjectId,
-		DependenciesCount: ctx.ScanResult.DependenciesCount,
-		InspectReportUrl:  ctx.ScanResult.ReportURL(),
-		ProjectScore:      ctx.ScanResult.ProjectScore,
-		SurpassScore:      fmt.Sprintf("%d%%", ctx.ScanResult.SurpassScore),
+		TotalContributors:  ctx.TotalContributors,
+		ProjectId:          ctx.ProjectId,
+		DependenciesCount:  ctx.ScanResult.DependenciesCount,
+		InspectReportUrl:   ctx.ScanResult.ReportURL(),
+		AnonymousReportUrl: ctx.AnonymousReportUrl(),
+		ProjectScore:       ctx.ScanResult.ProjectScore,
+		SurpassScore:       fmt.Sprintf("%d%%", ctx.ScanResult.SurpassScore),
 	}
 	// merge module comps
 	rs := map[id]PluginComp{}

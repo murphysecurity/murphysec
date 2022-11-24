@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"net/url"
 	"strings"
@@ -57,6 +58,10 @@ func (t TaskScanResponse) ReportURL() string {
 		return env.ServerBaseUrl() + "/" + strings.TrimLeft(t.InspectReportUrl, "/")
 	}
 	return t.InspectReportUrl
+}
+
+func (s *ScanTask) AnonymousReportUrl() string {
+	return fmt.Sprintf("%s/rep/%s/%s", env.ServerBaseUrl(), s.ProjectId, s.ScanResult.TaskId)
 }
 
 type VoVulnInfo struct {
