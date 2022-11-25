@@ -12,12 +12,12 @@ import (
 	"time"
 )
 
-func managedInspect(ctx context.Context) error {
+func ManagedInspect(ctx context.Context) error {
 	var logger = logctx.Use(ctx)
 	scanTask := model.UseScanTask(ctx)
 
 	// 获取扫描路径
-	baseDir := scanTask.ProjectPath()
+	baseDir := scanTask.ProjectPath
 	logger.Info("Auto scan dir", zap.String("dir", baseDir))
 
 	// 扫
