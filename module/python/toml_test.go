@@ -21,9 +21,41 @@ requires = [
 ]
 `
 	//language=json
-	var target = `[{"name":"wheel","version":""},{"name":"setuptools","version":""},{"name":"Cython","version":"0.29.13"},{"name":"numpy","version":"1.13.3"},{"name":"pybind11","version":"2.2.4"}]`
+	var target = `[
+          {
+            "comp_name": "wheel",
+            "comp_version": "",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "setuptools",
+            "comp_version": "",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "Cython",
+            "comp_version": "0.29.13",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "numpy",
+            "comp_version": "1.13.3",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "pybind11",
+            "comp_version": "2.2.4",
+            "ecosystem": "pip",
+            "repository": ""
+          }
+        ]`
 	r, e := tomlBuildSys([]byte(_t))
 	assert.NoError(t, e)
+	t.Log(string(must.A(json.MarshalIndent(r, "", "  "))))
 	var a, b any
 	must.Must(json.Unmarshal([]byte(target), &a))
 	must.Must(json.Unmarshal(must.A(json.Marshal(r)), &b))
