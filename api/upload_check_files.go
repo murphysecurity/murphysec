@@ -1,10 +1,18 @@
 package api
 
-import "io"
+import (
+	"io"
+	"strconv"
+)
 
 func UploadCheckFiles(client *Client, taskId string, subTaskId string, chunkId int, reader io.Reader) error {
 	checkNotNull(client)
 	checkNotZeroInt(chunkId)
 	checkNotNull(reader)
-	return client.DoJson(client.POST("/v3/client/upload_check_files", reader), nil)
+	u := joinURL(client.baseUrl, "/platform3/v3/client/upload_check_file")
+	q := u.Query()
+	q.Add("chunk_id", strconv.Itoa(chunkId))
+	q.Add("subtask_id", subTaskId)
+	u.RawQuery = q.Encode()
+	return client.DoJson(client.POST(u, reader), nil)
 }

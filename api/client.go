@@ -72,7 +72,8 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 	}()
 
 	req.Header.Set("User-Agent", version.UserAgent())
-	logger.Debugf("Request: %s", req.URL.RequestURI())
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	logger.Debugf("Request: %v", req.URL)
 	httpResponse, e = c.client.Do(req)
 	if isHttpTimeout(e) {
 		return ErrTimeout
@@ -83,7 +84,7 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 	if e != nil {
 		return errors.WithCause(ErrGeneral, e)
 	}
-	logger.Info("API response", zap.Any("status", httpResponse.StatusCode))
+	logger.Infof("API response - %d", httpResponse.StatusCode)
 	var data []byte
 	data, e = io.ReadAll(httpResponse.Body)
 	if e != nil {
@@ -117,16 +118,16 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 	}
 }
 
-func (c *Client) GET(relUri string) *http.Request {
-	return must.A(http.NewRequest(http.MethodGet, joinURL(c.baseUrl, relUri).RequestURI(), nil))
+func (c *Client) GET(url *url.URL) *http.Request {
+	return must.A(http.NewRequest(http.MethodGet, url.String(), nil))
 }
 
-func (c *Client) POST(relUri string, body io.Reader) *http.Request {
-	return must.A(http.NewRequest(http.MethodPost, joinURL(c.baseUrl, relUri).RequestURI(), body))
+func (c *Client) POST(url *url.URL, body io.Reader) *http.Request {
+	return must.A(http.NewRequest(http.MethodPost, url.String(), body))
 }
 
-func (c *Client) PostJson(relUri string, data any) *http.Request {
-	u := c.POST(relUri, bytes.NewReader(must.A(json.Marshal(data))))
+func (c *Client) PostJson(url *url.URL, data any) *http.Request {
+	u := c.POST(url, bytes.NewReader(must.A(json.Marshal(data))))
 	u.Header.Set("Content-Type", "application/json")
 	return u
 }
@@ -138,11 +139,11 @@ func isHttpTimeout(e error) bool {
 
 type GeneralError struct {
 	Code  int    `json:"code"`
-	MsgEn string `json:"msg_en"`
+	MsgZh string `json:"msg_zh"`
 }
 
 func (c *GeneralError) Error() string {
-	return fmt.Sprintf("[%d]%s", c.Code, c.MsgEn)
+	return fmt.Sprintf("[%d]%s", c.Code, c.MsgZh)
 }
 
 func joinURL(base *url.URL, relPath string) *url.URL {

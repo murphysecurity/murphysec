@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/murphysecurity/murphysec/cmd"
+	"fmt"
 	"github.com/murphysecurity/murphysec/infra/exitcode"
 	"os"
 )
 
 func main() {
-	e := cmd.Execute()
-	if e != nil {
-		os.Exit(-1)
+	if e := rootCmd().Execute(); e != nil {
+		fmt.Fprintln(os.Stderr, e.Error())
+		os.Exit(1)
 	}
 	exitcode.Exit()
 }

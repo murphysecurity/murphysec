@@ -28,6 +28,9 @@ func (CLI) Display(level MessageLevel, msg string) {
 }
 
 func (CLI) ClearStatus() {
+	if cliStatus == StatusIdle {
+		return
+	}
 	cliStatus = StatusIdle
 	cliStatusMsg = ""
 	termenv.ClearLine()

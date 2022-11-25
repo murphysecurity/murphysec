@@ -1,5 +1,11 @@
 package api
 
+import (
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/utils/must"
+)
+
 type SubmitSBOMTreeNode struct {
 	Dependencies []SubmitSBOMTreeNode `json:"dependencies,omitempty"`
 	CompName     string               `json:"comp_name"`
@@ -21,8 +27,12 @@ type SBOMSubmitRequest struct {
 	Modules   []SubmitSBOMModule `json:"modules"`
 }
 
-func SBOMSubmit(client *Client, req *SBOMSubmitRequest) error {
+func SubmitSBOM(client *Client, subtaskId string, modules []model.Module) error {
 	checkNotNull(client)
-	checkNotNull(req)
-	return client.DoJson(client.PostJson("/v3/client/upload_data", req), nil)
+	must.NotZero(subtaskId)
+	var req = map[string]any{
+		"subtask_id": subtaskId,
+		"modules":    utils.NoNilSlice(modules),
+	}
+	return client.DoJson(client.PostJson(joinURL(client.baseUrl, "/platform3/v3/client/upload_data"), req), nil)
 }

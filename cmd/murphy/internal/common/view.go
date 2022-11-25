@@ -1,4 +1,4 @@
-package cmd
+package common
 
 import (
 	"context"
@@ -15,8 +15,4 @@ func displayGetTokenErr(ctx context.Context, e error) {
 
 func displayInitializeFailed(ctx context.Context, e error) {
 	ui.Use(ctx).Display(ui.MsgError, "初始化失败："+e.Error())
-}
-
-func displayScanInvalidDir(ctx context.Context) {
-	ui.Use(ctx).Display(ui.MsgError, "您指定了一个无效目录")
 }

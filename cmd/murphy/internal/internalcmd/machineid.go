@@ -1,4 +1,4 @@
-package cmd
+package internalcmd
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func machineCmd() *cobra.Command {
+func machineidCmd() *cobra.Command {
 	return &cobra.Command{
 		Use: "machine-id",
 		Run: func(cmd *cobra.Command, args []string) {

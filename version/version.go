@@ -2,7 +2,6 @@ package version
 
 import (
 	"github.com/iseki0/osname"
-	"github.com/murphysecurity/murphysec/build_flags"
 	"github.com/murphysecurity/murphysec/infra/buildinfo"
 	"runtime"
 	"strings"
@@ -38,7 +37,7 @@ func UserAgent() string {
 }
 
 func Version() string {
-	return buildinfo.Get().Version + "-" + build_flags.Kind
+	return buildinfo.Get().Version // + "-" + build_flags.Kind
 }
 
 func FullInfo() string {

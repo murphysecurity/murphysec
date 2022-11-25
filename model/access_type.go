@@ -1,5 +1,10 @@
 package model
 
+import (
+	"github.com/pkg/errors"
+	"strings"
+)
+
 type AccessType string
 
 const (
@@ -13,4 +18,16 @@ func (i AccessType) Valid() bool {
 		return true
 	}
 	return false
+}
+
+func (i *AccessType) Of(s string) error {
+	switch strings.ToLower(s) {
+	case "cli", "":
+		*i = AccessTypeCli
+	case "idea":
+		*i = AccessTypeIdea
+	default:
+		return errors.New("bad access type")
+	}
+	return nil
 }

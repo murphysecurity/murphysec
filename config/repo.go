@@ -54,6 +54,7 @@ func ReadRepoConfig(ctx context.Context, repoPath string, accessType model.Acces
 	}
 
 	var logger = logctx.Use(ctx).Sugar()
+	logger.Infof("reading repo config: %s", repoPath)
 	var cf *configFileT
 	var e error
 	var f *os.File

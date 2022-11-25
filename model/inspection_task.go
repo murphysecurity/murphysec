@@ -19,7 +19,7 @@ func (i *InspectionTask) Dir() string {
 
 // RelDir 返回相对路径
 func (i *InspectionTask) RelDir() string {
-	rel, e := filepath.Rel(i.scanTask.projectPath, i.inspectionDir)
+	rel, e := filepath.Rel(i.scanTask.ProjectPath, i.inspectionDir)
 	if e != nil {
 		return ""
 	}
@@ -52,5 +52,5 @@ func (i *InspectionTask) AddModule(module Module) {
 		}
 		module.ModulePath = relPath
 	}
-	i.scanTask.modules = append(i.scanTask.modules, module)
+	i.scanTask.Modules = append(i.scanTask.Modules, module)
 }

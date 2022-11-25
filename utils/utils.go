@@ -107,7 +107,7 @@ func CopySlice[T ~[]A, A any](input T) T {
 }
 
 func KeysOfMap[K comparable, V any](m map[K]V) []K {
-	var r []K
+	var r = make([]K, 0, len(m))
 	for k := range m {
 		r = append(r, k)
 	}

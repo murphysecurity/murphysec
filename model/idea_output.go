@@ -52,9 +52,10 @@ type PluginComp struct {
 	IsDirectDependency bool          `json:"is_direct_dependency"`
 	//Language           string        `json:"language"`
 	//FixType            string        `json:"fix_type"`
-	CompSecScore  int         `json:"comp_sec_score"`
-	FixPlanList   FixPlanList `json:"fix_plan_list"`
-	DependentPath []string    `json:"dependent_path"`
+	CompSecScore   int         `json:"comp_sec_score"`
+	FixPlanList    FixPlanList `json:"fix_plan_list"`
+	DependentPath  []string    `json:"dependent_path"`
+	PackageManager string      `json:"package_manager"`
 }
 
 type PluginCompSolution struct {
@@ -65,7 +66,15 @@ type PluginCompSolution struct {
 
 func GetIDEAOutput(ctx context.Context) PluginOutput {
 	var task = UseScanTask(ctx)
-	var r = task.result
+
+	// workaround: 从模块列表里拎包管理器出来
+	pmMap := make(map[Component]string)
+	for _, module := range task.Modules {
+		for _, component := range module.ComponentList() {
+			pmMap[component] = module.PackageManager
+		}
+	}
+	var r = task.Result
 	var pluginOutput = PluginOutput{
 		SubtaskName: r.SubtaskName,
 		Comps:       make([]PluginComp, 0),
@@ -125,7 +134,22 @@ func GetIDEAOutput(ctx context.Context) PluginOutput {
 			CompSecScore:       comp.CompSecScore,
 			FixPlanList:        comp.FixPlanList,
 			DependentPath:      utils.NoNilSlice(comp.DependentPath),
+			PackageManager:     pmMap[comp.Component],
 		}
+		// workaround: IDE侧要求我一定加进去，后续他不要求了，就删掉
+		if pc.FixPlanList.Plan1 != nil {
+			pc.FixPlanList.Plan1.CompName = comp.CompName
+			pc.FixPlanList.Plan1.OldVersion = comp.CompVersion
+		}
+		if pc.FixPlanList.Plan2 != nil {
+			pc.FixPlanList.Plan2.CompName = comp.CompName
+			pc.FixPlanList.Plan2.OldVersion = comp.CompVersion
+		}
+		if pc.FixPlanList.Plan3 != nil {
+			pc.FixPlanList.Plan3.CompName = comp.CompName
+			pc.FixPlanList.Plan3.OldVersion = comp.CompVersion
+		}
+
 		pluginOutput.Comps = append(pluginOutput.Comps, pc)
 	}
 	return pluginOutput

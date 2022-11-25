@@ -1,4 +1,4 @@
-package cmd
+package auth
 
 import (
 	"context"
@@ -10,26 +10,11 @@ import (
 	"strings"
 )
 
-func authCmd() *cobra.Command {
-	c := &cobra.Command{
-		Use:   "auth",
-		Short: "Authenticate CLI with murphysec",
-	}
-	c.AddCommand(authLoginCmd())
-	c.AddCommand(authLogoutCmd())
-	return c
-}
-
 func authLoginCmd() *cobra.Command {
 	c := &cobra.Command{Use: "login [token]", Run: authLoginRun}
 	var forceTokenOverwrite bool
 	c.Flags().BoolVarP(&forceTokenOverwrite, "force", "f", false, "force overwrite current token")
 	c.Args = cobra.MaximumNArgs(1)
-	return c
-}
-
-func authLogoutCmd() *cobra.Command {
-	c := &cobra.Command{Use: "logout", Run: authLogoutRun}
 	return c
 }
 
@@ -71,15 +56,6 @@ func authLoginRun(cmd *cobra.Command, args []string) {
 	e := config.WriteLocalTokenFile(context.TODO(), token)
 	if e != nil {
 		fmt.Println("Sorry, token setup failed")
-		fmt.Println(e.Error())
-		exitcode.Set(-1)
-	}
-}
-
-func authLogoutRun(cmd *cobra.Command, args []string) {
-	e := config.RemoveTokenFile(context.TODO())
-	if e != nil {
-		fmt.Println("Sorry, clear token failed.")
 		fmt.Println(e.Error())
 		exitcode.Set(-1)
 	}

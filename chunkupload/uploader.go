@@ -41,7 +41,7 @@ func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params 
 		e      error
 		logger = logctx.Use(ctx).Sugar()
 	)
-	logger.Infof("UploaderDirectory, %s", dir)
+	logger.Infof("UploadDirectory, %s", dir)
 
 	e = checkDirValid(ctx, dir)
 	if e != nil {
@@ -67,6 +67,58 @@ func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params 
 	e = eg.Wait()
 	if e != nil {
 		logger.Warnf("UploadDirectory failed, %v", e)
+		return e
+	}
+	return nil
+}
+
+func UploadFile(ctx context.Context, path string, params Params) error {
+	var (
+		e      error
+		logger = logctx.Use(ctx).Sugar()
+	)
+	logger.Infof("UploadFile, %s", path)
+	path, e = filepath.Abs(path)
+	if e != nil {
+		return fmt.Errorf("eval abs path: %w", e)
+	}
+
+	eg, ec := errgroup.WithContext(ctx)
+	pr, pw := io.Pipe()
+	// create contextual io, avoid deadlock
+	contextualReader := ctxio.NewReader(ec, pr)
+	contextualWriter := ctxio.NewWriter(ec, pw)
+
+	eg.Go(func() error { return chunkUploadRoutine(ctx, params, contextualReader) })
+	eg.Go(func() error {
+		defer func() { _ = pw.Close() }()
+		return fileStreamer(ctx, path, contextualWriter)
+	})
+
+	e = eg.Wait()
+	if e != nil {
+		logger.Warnf("UploadFile failed, %v", e)
+		return e
+	}
+
+	return nil
+}
+
+func fileStreamer(ctx context.Context, path string, writer io.Writer) (e error) {
+	var (
+		logger = logctx.Use(ctx).Sugar()
+		f      *os.File
+	)
+	f, e = os.Open(path)
+	if e != nil {
+		return e
+	}
+	defer func() { utils.LogCloseErr(logger, "file", f) }()
+	logger.Infof("begin")
+	defer func() { logger.Warnf("end with error: %v", e) }()
+	_, e = io.Copy(writer, f)
+	if e != nil {
+		return e
 	}
 	return nil
 }

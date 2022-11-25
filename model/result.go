@@ -6,6 +6,7 @@ import "time"
 //
 // 标注为 <unknown> 的暂时不知道是什么，估计用不上
 type ScanResultResponse struct {
+	Complete     bool                 `json:"complete"`
 	SubtaskId    string               `json:"subtask_id"`
 	ProjectsId   string               `json:"projects_id"`
 	TeamId       string               `json:"team_id"`
@@ -31,10 +32,7 @@ type ScanResultResponse struct {
 }
 
 type ScanResultCompInfo struct {
-	CompName           string                 `json:"comp_name"`
-	CompVersion        string                 `json:"comp_version"`
-	Repository         string                 `json:"repository"`
-	Ecosystem          string                 `json:"ecosystem"`
+	Component
 	IdDirectDependency bool                   `json:"id_direct_dependency"`
 	CompSecScore       int                    `json:"comp_sec_score"`
 	MinFixedVersion    string                 `json:"min_fixed_version"`
@@ -80,6 +78,8 @@ type FixPlanItem struct {
 	CompatibilityScore int    `json:"compatibility_score"`
 	SecurityScore      int    `json:"security_score"`
 	TargetVersion      string `json:"target_version"`
+	CompName           string `json:"comp_name,omitempty"` // 这两个字段现在不应该放在这，但是IDE那边一定要我塞进去
+	OldVersion         string `json:"old_version,omitempty"`
 }
 
 type FixPlanList struct {

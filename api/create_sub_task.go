@@ -21,6 +21,7 @@ type CreateSubTaskRequest struct {
 type CreateSubTaskResponse struct {
 	ProjectsName string `json:"projects_name"` // 项目名称
 	TaskID       string `json:"task_id"`       // 任务ID
+	SubtaskID    string `json:"subtask_id"`    // 子任务ID
 	TaskName     string `json:"task_name"`     // 任务名称
 }
 
@@ -28,7 +29,7 @@ func CreateSubTask(client *Client, request *CreateSubTaskRequest) (*CreateSubTas
 	checkNotNull(client)
 	checkNotNull(request)
 	var resp CreateSubTaskResponse
-	if e := client.DoJson(client.PostJson("/v3/client/create_subtask", request), &resp); e != nil {
+	if e := client.DoJson(client.PostJson(joinURL(client.baseUrl, "/platform3/v3/client/create_subtask"), request), &resp); e != nil {
 		return nil, e
 	}
 	return &resp, nil
