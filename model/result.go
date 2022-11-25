@@ -27,6 +27,8 @@ type ScanResultResponse struct {
 	CriticalNum  int                  `json:"critical_num"`  // 严重漏洞数量
 	LicenseNum   int                  `json:"license_num"`   // 许可证数量
 	Languages    string               `json:"languages"`     // 语言，逗号隔开的
+	SurpassScore int                  `json:"surpass_score"`
+	ProjectScore int                  `json:"project_score"`
 	CompInfoList []ScanResultCompInfo `json:"comp_info_list"`
 	VulnInfoMap  map[string]VulnerabilityDetailInfo
 }

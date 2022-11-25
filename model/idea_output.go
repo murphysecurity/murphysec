@@ -16,27 +16,23 @@ func GenerateIdeaErrorOutput(e error) string {
 }
 
 type PluginOutput struct {
-	//ProjectName string       `json:"project_name"`
-	SubtaskName string       `json:"subtask_name"`
-	Username    string       `json:"username"`
-	ErrCode     IdeaErrCode  `json:"err_code"`
-	IssuesCount int          `json:"issues_count,omitempty"`
-	Comps       []PluginComp `json:"comps,omitempty"`
-	//ProjectScore     int          `json:"project_score"`
-	//SurpassScore     string       `json:"surpass_score"`
+	SubtaskName      string       `json:"subtask_name"`
+	Username         string       `json:"username"`
+	ErrCode          IdeaErrCode  `json:"err_code"`
+	IssuesCount      int          `json:"issues_count,omitempty"`
+	Comps            []PluginComp `json:"comps,omitempty"`
 	IssuesLevelCount struct {
 		Critical int `json:"critical,omitempty"`
 		High     int `json:"high,omitempty"`
 		Medium   int `json:"medium,omitempty"`
 		Low      int `json:"low,omitempty"`
 	} `json:"issues_level_count,omitempty"`
-	TaskId    string `json:"task_id"`
-	SubtaskId string `json:"subtask_id"`
-	//TotalContributors int            `json:"total_contributors"`
-	//ProjectId         string         `json:"project_id"`
+	TaskId            string         `json:"task_id"`
+	SubtaskId         string         `json:"subtask_id"`
 	InspectErrors     []InspectError `json:"inspect_errors,omitempty"`
 	DependenciesCount int            `json:"dependencies_count"`
-	//InspectReportUrl  string         `json:"inspect_report_url"`
+	SurpassScore      int            `json:"surpass_score"`
+	ProjectScore      int            `json:"project_score"`
 }
 
 type PluginComp struct {
@@ -93,6 +89,8 @@ func GetIDEAOutput(ctx context.Context) PluginOutput {
 		TaskId:            r.TaskId,
 		SubtaskId:         r.SubtaskId,
 		DependenciesCount: r.RelyNum,
+		ProjectScore:      r.ProjectScore,
+		SurpassScore:      r.SurpassScore,
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {
