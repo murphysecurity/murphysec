@@ -3,6 +3,7 @@ package python
 import (
 	"encoding/json"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -36,49 +37,69 @@ Whoosh>=2.4.1
 	var rs =
 	// language=json
 	`[
-  {
-  "name": "Werkzeug",
-  "version": "0.6.2"
-  },
-  {
-  "name": "mock",
-  "version": "1.0.1"
-  },
-  {
-  "name": "WebTest",
-  "version": "1.3.4"
-  },
-  {
-  "name": "django-webtest",
-  "version": "1.5.3"
-  },
-  {
-  "name": "factory-boy",
-  "version": "2.1.1"
-  },
-  {
-  "name": "httpretty",
-  "version": "0.6.3"
-  },
-  {
-  "name": "ruamel.yaml",
-  "version": "1.0.0"
-  },
-  {
-  "name": "Sphinx",
-  "version": "1.2b3"
-  },
-  {
-  "name": "flake8",
-  "version": "0.8"
-  },
-  {
-  "name": "Whoosh",
-  "version": "2.4.1"
-  }
-  ]
-`
-	var r []model.Dependency
+          {
+            "comp_name": "Werkzeug",
+            "comp_version": "0.6.2",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "mock",
+            "comp_version": "1.0.1",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "WebTest",
+            "comp_version": "1.3.4",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "django-webtest",
+            "comp_version": "1.5.3",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "factory-boy",
+            "comp_version": "2.1.1",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "httpretty",
+            "comp_version": "0.6.3",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "ruamel.yaml",
+            "comp_version": "1.0.0",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "Sphinx",
+            "comp_version": "1.2b3",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "flake8",
+            "comp_version": "0.8",
+            "ecosystem": "pip",
+            "repository": ""
+          },
+          {
+            "comp_name": "Whoosh",
+            "comp_version": "2.4.1",
+            "ecosystem": "pip",
+            "repository": ""
+          }
+        ]`
+	t.Log(string(must.A(json.MarshalIndent(parseRequirements(data), "", "  "))))
+	var r []model.DependencyItem
 	assert.NoError(t, json.Unmarshal([]byte(rs), &r))
 	assert.Equal(t, r, parseRequirements(data))
 }

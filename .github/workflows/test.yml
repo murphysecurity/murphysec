@@ -50,7 +50,7 @@ jobs:
         run: git diff --color --exit-code .
 
       - name: Go vet
-        run: go vet
+        run: go vet ./...
 
       - name: Set up gotestfmt
         run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
