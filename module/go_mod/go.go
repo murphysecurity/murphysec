@@ -2,6 +2,7 @@ package go_mod
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
@@ -26,7 +27,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	modFilePath := filepath.Join(task.Dir(), "go.mod")
 	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
 	data, e := utils.ReadFileLimited(modFilePath, 1024*1024*4)

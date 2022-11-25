@@ -49,7 +49,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	}
 	poetryFile := filepath.Join(task.Dir(), "poetry.lock.py")
 	if utils.IsFile(poetryFile) {
-		if deps, e := parsePoetryLock(poetryFile); e == nil {
+		if deps, e := parsePoetryLock(ctx, poetryFile); e == nil {
 			for _, it := range deps {
 				cmap[it.CompName] = it.CompVersion
 			}

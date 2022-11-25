@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
@@ -40,7 +41,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 
 func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	dir := model.UseInspectionTask(ctx).Dir()
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	pkgFile := filepath.Join(dir, "package-lock.json")
 	logger.Debug("Read package-lock.json", zap.String("path", pkgFile))
 	data, e := os.ReadFile(pkgFile)
@@ -89,7 +90,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	}
 	m := map[string]int{}
 	for _, it := range rootComp {
-		if d := _convDep(it, lockfile, m, 1); d != nil {
+		if d := _convDep(it, lockfile, m, 0); d != nil {
 			module.Dependencies = append(module.Dependencies, *d)
 		}
 	}
@@ -115,6 +116,7 @@ func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *mode
 			CompVersion: d.Version,
 			EcoRepo:     EcoRepo,
 		},
+		IsDirectDependency: deep == 0,
 	}
 	for depName := range d.Requires {
 		cd := _convDep(depName, m, visited, deep+1)

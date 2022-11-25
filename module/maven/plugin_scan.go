@@ -3,7 +3,7 @@ package maven
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/vifraa/gopom"
 	"go.uber.org/zap"
 	"io/fs"
@@ -12,7 +12,7 @@ import (
 )
 
 func ScanDepsByPluginCommand(ctx context.Context, projectDir string, mvnCmdInfo *MvnCommandInfo) (*DepsMap, error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	var profiles, e = findPomProfiles(ctx, filepath.Join(projectDir, "pom.xml"))
 	if e != nil {
 		logger.Warn("Error during find pom profiles", zap.Error(e))
@@ -34,7 +34,7 @@ func ScanDepsByPluginCommand(ctx context.Context, projectDir string, mvnCmdInfo 
 }
 
 func collectPluginResultFile(ctx context.Context, projectDir string) (*DepsMap, error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	var graphPaths []string
 	if e := filepath.Walk(projectDir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil || info == nil {

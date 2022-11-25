@@ -45,7 +45,7 @@ func LogFileCleanup() {
 	// file before staticRefTime will be ignored
 	var staticRefTime = must.A(time.Parse(time.RFC3339, "2020-01-01T00:00:00Z"))
 
-	logFilePattern := regexp.MustCompile("^(\\d+)\\.log$")
+	logFilePattern := regexp.MustCompile(`^(\d+)\.log$`)
 	basePath := filepath.Dir(defaultLogFilePath)
 	if basePath == "" {
 		return
@@ -67,7 +67,7 @@ func LogFileCleanup() {
 			if lt.Before(staticRefTime) {
 				continue
 			}
-			if time.Now().Sub(time.UnixMilli(int64(ts))) > time.Hour*24*7 {
+			if time.Since(time.UnixMilli(int64(ts))) > time.Hour*24*7 {
 				_ = os.Remove(filepath.Join(basePath, entry.Name()))
 			}
 		}

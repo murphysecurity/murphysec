@@ -42,7 +42,7 @@ func (d *dos2unixW) Write(p []byte) (n int, err error) {
 		}
 		d.lastCR = ch == '\r'
 	}
-	n, e := d.w.Write(b)
+	_, e := d.w.Write(b)
 	if e != nil {
 		return 0, e
 	} else {
@@ -76,7 +76,7 @@ func (u *unix2dosW) Write(p []byte) (n int, err error) {
 			b = append(b, ch)
 		}
 	}
-	n, e := u.w.Write(b)
+	_, e := u.w.Write(b)
 	if e != nil {
 		return 0, e
 	} else {

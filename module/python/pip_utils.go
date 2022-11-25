@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils"
 	"os/exec"
 )
 
@@ -14,7 +14,7 @@ var ErrNoPipCommand = errors.New("pip command not found")
 
 func locatePipCommand(ctx context.Context) string {
 	var (
-		logger     = utils.UseLogger(ctx)
+		logger     = logctx.Use(ctx)
 		pipVerList = []string{"pip", "pip3", "pip2"}
 	)
 	logger.Debug("Trying to locate pip command...")
@@ -29,7 +29,7 @@ func locatePipCommand(ctx context.Context) string {
 }
 
 func executePipList(ctx context.Context, dir string) ([]model.DependencyItem, error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	path := locatePipCommand(ctx)
 	if path == "" {
 		return nil, ErrNoPipCommand

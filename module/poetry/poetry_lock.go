@@ -1,22 +1,24 @@
 package poetry
 
 import (
-	"github.com/murphysecurity/murphysec/logger"
+	"context"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pelletier/go-toml/v2"
 )
 
-func parsePoetryLock(f string) (rs []model.DependencyItem, e error) {
+func parsePoetryLock(ctx context.Context, f string) (rs []model.DependencyItem, e error) {
 	var data []byte
+	var logger = logctx.Use(ctx).Sugar()
 	data, e = utils.ReadFileLimited(f, 4*1024*1024)
 	if e != nil {
-		logger.Warn.Println("Read file failed.", e.Error(), f)
+		logger.Warnf("Read file failed. %v %v", e, f)
 		return nil, e
 	}
 	root := &tomlTree{}
 	if e := toml.Unmarshal(data, &root); e != nil {
-		logger.Warn.Println("Parse toml failed.", e.Error(), f)
+		logger.Warnf("Parse toml failed. %v %v", e.Error(), f)
 		return nil, e
 	}
 	for _, it := range root.Get("package").AsArray() {
@@ -28,6 +30,6 @@ func parsePoetryLock(f string) (rs []model.DependencyItem, e error) {
 			},
 		})
 	}
-	logger.Info.Println("Parse poetry.lock, found", len(rs))
+	logger.Infof("Parse poetry.lock, found %d", len(rs))
 	return
 }

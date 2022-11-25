@@ -3,6 +3,7 @@ package conan
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
@@ -28,7 +29,7 @@ func (*Inspector) CheckDir(dir string) bool {
 }
 func (*Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	cmdInfo, e := getConanInfo(ctx)
 	if e != nil {
 		return e

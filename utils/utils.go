@@ -55,7 +55,7 @@ func DistinctStringSlice(s []string) []string {
 	return rs
 }
 
-func base64UrlEncode(s string) string {
+func Base64UrlEncode(s string) string {
 	b := new(bytes.Buffer)
 	w := base64.NewEncoder(base64.URLEncoding, b)
 	must.A(w.Write([]byte(s)))

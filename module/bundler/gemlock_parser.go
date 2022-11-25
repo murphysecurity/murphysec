@@ -142,8 +142,8 @@ func _calcIndent(s string) int {
 func getDepGraph(input string) ([]model.DependencyItem, error) {
 	// ([\w.-]+)\s*\(([\w.-]+)\)
 	// catch group: name, version
-	var pattern = regexp.MustCompile("([\\w.-]+)\\s*\\(([\\w.-]+)\\)")
-	var p2 = regexp.MustCompile("^[\\w.-]+")
+	var pattern = regexp.MustCompile(`([\w.-]+)\s*\(([\w.-]+)\)`)
+	var p2 = regexp.MustCompile(`^[\w.-]+`)
 	tree, e := parseGemLock(input)
 	if e != nil {
 		return nil, e

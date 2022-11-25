@@ -2,6 +2,7 @@ package composer
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
@@ -28,7 +29,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	task := model.UseInspectionTask(ctx)
 	dir := task.Dir()
 	manifest, e := readManifest(ctx, filepath.Join(dir, "composer.json"))
@@ -123,11 +124,11 @@ type Manifest struct {
 }
 
 func vendorScan(ctx context.Context, dir string) []Package {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	logger.Debug("vendorScan", zap.String("dir", dir))
 	defer logger.Debug("vendorScan terminated")
 	var rs []Package
-	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+	e := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if info == nil {
 			return nil
 		}
@@ -146,6 +147,9 @@ func vendorScan(ctx context.Context, dir string) []Package {
 		}
 		return nil
 	})
+	if e != nil {
+		logger.Sugar().Warnf("Walk: %v", e)
+	}
 	return rs
 }
 

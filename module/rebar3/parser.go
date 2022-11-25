@@ -46,7 +46,7 @@ type depNode struct {
 }
 
 func tokenize(input string) *tokenizer {
-	var lp = regexp.MustCompile("^([ │├─└]*)(.+?)─(.+?)\\s")
+	var lp = regexp.MustCompile(`^([ │├─└]*)(.+?)─(.+?)\s`)
 	t := &tokenizer{}
 	for _, line := range strings.Split(input, "\n") {
 		line = strings.TrimRight(line, "\r")

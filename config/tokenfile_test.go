@@ -23,7 +23,7 @@ func TestTokenFile(t *testing.T) {
 	var (
 		token string
 	)
-	token, e = ReadTokenFile(ctx)
+	_, e = ReadTokenFile(ctx)
 	assert.ErrorIs(t, e, ErrNoToken)
 	assert.NoError(t, WriteLocalTokenFile(ctx, "foo"))
 	token, e = ReadTokenFile(ctx)

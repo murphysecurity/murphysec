@@ -7,6 +7,7 @@ import (
 	"github.com/antchfx/xmlquery"
 	"github.com/mitchellh/go-homedir"
 	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"go.uber.org/zap"
@@ -41,7 +42,7 @@ func GetMvnConfig(ctx context.Context) (*UserConfig, error) {
 	if ctx == nil {
 		ctx = context.TODO()
 	}
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	var node *xmlquery.Node
 	for _, p := range mavenSettingsPaths(ctx) {
 		logger.Debug("Reading maven settings", zap.String("path", p))
@@ -84,7 +85,7 @@ func GetMvnConfig(ctx context.Context) (*UserConfig, error) {
 }
 
 func locateMvnInstallPath(ctx context.Context) string {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	info, e := CheckMvnCommand(ctx)
 	if e != nil {
 		return ""

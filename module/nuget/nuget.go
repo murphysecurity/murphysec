@@ -20,10 +20,7 @@ func (i *Inspector) String() string {
 	return "Nuget"
 }
 func (i *Inspector) CheckDir(dir string) bool {
-	if utils.IsFile(filepath.Join(dir, "packages.config")) {
-		return true
-	}
-	return false
+	return utils.IsFile(filepath.Join(dir, "packages.config"))
 }
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)

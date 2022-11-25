@@ -3,6 +3,7 @@ package maven
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/vifraa/gopom"
 	"go.uber.org/zap"
@@ -64,7 +65,7 @@ type resolveContext struct {
 
 func newResolveContext(ctx context.Context) *resolveContext {
 	return &resolveContext{
-		logger:  utils.UseLogger(ctx),
+		logger:  logctx.Use(ctx),
 		visited: map[Coordinate]struct{}{},
 	}
 }

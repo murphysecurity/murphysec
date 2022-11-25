@@ -2,7 +2,7 @@ package maven
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -17,7 +17,7 @@ type PomResolver struct {
 
 func NewPomResolver(ctx context.Context) *PomResolver {
 	return &PomResolver{
-		logger:        utils.UseLogger(ctx),
+		logger:        logctx.Use(ctx),
 		repos:         nil,
 		pomCache:      newPomCache(),
 		stats:         newResolverStats(),

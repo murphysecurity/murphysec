@@ -1,9 +1,10 @@
 package yarn
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/iseki0/go-yarnlock"
-	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils/simplejson"
 	"github.com/pkg/errors"
 	"io"
@@ -67,10 +68,11 @@ func yarnFallback(dir string) ([]Dep, error) {
 	return rs, nil
 }
 
-func analyzeYarnDep(dir string) ([]Dep, error) {
+func analyzeYarnDep(ctx context.Context, dir string) ([]Dep, error) {
+	var logger = logctx.Use(ctx).Sugar()
 	f, e := os.Open(filepath.Join(dir, "yarn.lock"))
 	if e != nil {
-		logger.Info.Println("Open yarn.lock failed.", e.Error())
+		logger.Infof("Open yarn.lock failed. %v", e)
 		return yarnFallback(dir)
 	}
 	defer f.Close()

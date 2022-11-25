@@ -29,8 +29,8 @@ func parseGradleVersionOutput(input string) (*GradleVersion, error) {
 		Version: "",
 		Items:   map[string]string{},
 	}
-	var gvPattern = regexp.MustCompile("(?m)^Gradle\\s+([\\w.-]+)")
-	var itemPattern = regexp.MustCompile("(?m)^([\\w -]+):\\s+(.+)")
+	var gvPattern = regexp.MustCompile(`(?m)^Gradle\s+([\w.-]+)`)
+	var itemPattern = regexp.MustCompile(`(?m)^([\w -]+):\s+(.+)`)
 	if m := gvPattern.FindStringSubmatch(input); m != nil {
 		v.Version = strings.TrimSpace(m[1])
 	}

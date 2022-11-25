@@ -3,6 +3,7 @@ package renv
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simplejson"
@@ -22,7 +23,7 @@ func (Inspector) CheckDir(dir string) bool {
 
 func (Inspector) InspectProject(ctx context.Context) error {
 	inspectTask := model.UseInspectionTask(ctx)
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	data, e := os.ReadFile(filepath.Join(inspectTask.Dir(), "renv.lock"))
 	if e != nil {
 		return fmt.Errorf("read renv.lock: %w", e)

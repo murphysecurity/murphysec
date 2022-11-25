@@ -12,13 +12,13 @@ var _ UI = (*CLI)(nil)
 func (CLI) UpdateStatus(s Status, msg string) {
 	cliStatus = s
 	cliStatusMsg = msg
-	termenv.ClearLine()
+	termenv.ClearLine() //nolint:all
 	fmt.Print("\r")
 	statusRepaint()
 }
 
 func (CLI) Display(level MessageLevel, msg string) {
-	termenv.ClearLine()
+	termenv.ClearLine() //nolint:all
 	if level == MsgError {
 		fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s] %s", level.String(), msg)))
 	} else {
@@ -33,7 +33,7 @@ func (CLI) ClearStatus() {
 	}
 	cliStatus = StatusIdle
 	cliStatusMsg = ""
-	termenv.ClearLine()
+	termenv.ClearLine() //nolint:all
 }
 
 var cliStatus = StatusIdle

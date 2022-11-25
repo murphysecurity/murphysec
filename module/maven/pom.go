@@ -6,7 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/vifraa/gopom"
 	"golang.org/x/text/encoding/ianaindex"
 	"io"
@@ -108,7 +108,7 @@ func (p Pom) ParentCoordinate() *Coordinate {
 }
 
 func readPomFile(ctx context.Context, path string) (*gopom.Project, error) {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	logger.Sugar().Debugf("Read pom: %s", path)
 	data, e := os.ReadFile(path)
 	if e != nil {

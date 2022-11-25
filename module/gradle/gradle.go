@@ -3,8 +3,8 @@ package gradle
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"io/fs"
 	"os"
@@ -25,7 +25,7 @@ func (i *Inspector) String() string {
 }
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
-	var logger = utils.UseLogger(ctx).Sugar()
+	var logger = logctx.Use(ctx).Sugar()
 	var rs []model.Module
 	task := model.UseInspectionTask(ctx)
 	dir := task.Dir()
@@ -77,9 +77,9 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 }
 
 func backupParser(ctx context.Context, dir string) *GradleDependencyInfo {
-	var logger = utils.UseLogger(ctx).Sugar()
+	var logger = logctx.Use(ctx).Sugar()
 	var dep []DepElement
-	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+	e := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d == nil || !d.Type().IsRegular() || !strings.HasPrefix(d.Name(), "build.gradle") {
 			return nil
 		}
@@ -103,6 +103,9 @@ func backupParser(ctx context.Context, dir string) *GradleDependencyInfo {
 		}
 		return nil
 	})
+	if e != nil {
+		logger.Warnf("Walk: %v", e)
+	}
 	if len(dep) != 0 {
 		return &GradleDependencyInfo{
 			ProjectName:  fmt.Sprintf("GradleProject-%s", filepath.Base(dir)),
@@ -128,7 +131,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleEnv) ([]string, error) {
 	c := info.ExecuteContext(ctx, "projects")
 	c.Dir = projectDir
-	pattern := regexp.MustCompile("Project\\s+'(:.+?)'")
+	pattern := regexp.MustCompile(`Project\s+'(:.+?)'`)
 	output, e := c.Output()
 	if e != nil {
 		return nil, e
@@ -148,7 +151,7 @@ func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleEnv
 }
 
 func evalGradleDependencies(ctx context.Context, projectDir string, projectName string, info *GradleEnv) (*GradleDependencyInfo, error) {
-	var logger = utils.UseLogger(ctx).Sugar()
+	var logger = logctx.Use(ctx).Sugar()
 	c := info.ExecuteContext(ctx, fmt.Sprintf("%s:dependencies", projectName), "--configuration=runtimeClasspath")
 	logger.Infof("Execute: %s", c.String())
 	c.Dir = projectDir
@@ -179,9 +182,17 @@ func (g *GradleDependencyInfo) BaseModule(path string) model.Module {
 	return model.Module{
 		PackageManager: "gradle",
 		ModuleName:     g.ProjectName,
-		Dependencies:   _convDep(g.Dependencies),
+		Dependencies:   convDep(g.Dependencies),
 		ModulePath:     path,
 	}
+}
+
+func convDep(input []DepElement) []model.DependencyItem {
+	var r = _convDep(input)
+	for i := range r {
+		r[i].IsDirectDependency = true
+	}
+	return r
 }
 
 func _convDep(input []DepElement) []model.DependencyItem {
@@ -204,7 +215,7 @@ func parseGradleDependencies(lines []string) *GradleDependencyInfo {
 		ProjectName:  "",
 		Dependencies: []DepElement{},
 	}
-	taskPattern := regexp.MustCompile("^\\w+$|^\\w+\\s-")
+	taskPattern := regexp.MustCompile(`^\w+$|^\w+\s-`)
 	projectPattern := regexp.MustCompile("(?:Root project|[Pp]roject) ([':A-Za-z0-9._-]+)")
 	type task struct {
 		name  string
@@ -231,7 +242,6 @@ func parseGradleDependencies(lines []string) *GradleDependencyInfo {
 				if currTaskName != "" {
 					tasks = append(tasks, task{currTaskName, currTaskLines})
 					currTaskLines = nil
-					currTaskName = ""
 				}
 				currTaskName = strings.TrimSpace(strings.TrimRight(strings.TrimSpace(m), "-"))
 				continue

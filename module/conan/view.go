@@ -2,13 +2,12 @@ package conan
 
 import (
 	"context"
-	"fmt"
 	"github.com/murphysecurity/murphysec/infra/ui"
 )
 
 func badConanView(ctx context.Context) {
 	u := ui.Use(ctx)
-	u.Display(ui.MsgWarn, fmt.Sprintf("识别到您的环境中 conan 无法正常运行，可能会导致检测结果不完整或失败，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情"))
+	u.Display(ui.MsgWarn, "识别到您的环境中 conan 无法正常运行，可能会导致检测结果不完整或失败，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情")
 }
 
 func printConanError(ctx context.Context, e *conanError) {

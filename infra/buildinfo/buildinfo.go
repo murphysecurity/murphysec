@@ -18,7 +18,7 @@ type D struct {
 }
 
 func (d D) IsZero() bool {
-	return d.Version == "" && d.CommitTime.IsZero() && d.CommitHash == "" && d.Modified == false
+	return d.Version == "" && d.CommitTime.IsZero() && d.CommitHash == "" && !d.Modified
 }
 
 func buildInfo() (d D) {

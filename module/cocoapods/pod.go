@@ -2,6 +2,7 @@ package cocoapods
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
@@ -26,7 +27,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	projectDir := task.Dir()
 	podLockPath := filepath.Join(projectDir, "Podfile.lock")
 	logger.Debug("Reading Podfile.lock", zap.String("path", podLockPath))

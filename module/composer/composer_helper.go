@@ -3,8 +3,8 @@ package composer
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/logpipe"
-	"github.com/murphysecurity/murphysec/utils"
 	"os/exec"
 )
 
@@ -13,7 +13,7 @@ func doComposerInstall(ctx context.Context, projectDir string) error {
 	if e != nil {
 		return errors.WithCause(ErrNoComposerFound, e)
 	}
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	c := exec.CommandContext(ctx, composerPath, "install", "--ignore-platform-reqs", "--no-progress", "--no-dev", "--no-autoloader", "--no-scripts", "--no-interaction")
 	c.Dir = projectDir
 	logger.Sugar().Infof("Command: %s", c.String())

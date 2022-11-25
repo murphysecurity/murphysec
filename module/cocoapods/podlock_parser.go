@@ -77,10 +77,10 @@ func getDepFromLock(input string) ([]model.DependencyItem, error) {
 	if e != nil {
 		return nil, e
 	}
-	namePattern := regexp.MustCompile("[\\w\\\\\\/.-]+")
+	namePattern := regexp.MustCompile(`[\w\\\/.-]+`)
 	// ([\w.\\\/-]+)\s*\(([\w.\\\/-]+)
 	// catch group: name, version
-	nvPattern := regexp.MustCompile("([\\w.\\\\\\/-]+)\\s*\\(([\\w.\\\\\\/-]+)")
+	nvPattern := regexp.MustCompile(`([\w.\\\/-]+)\s*\(([\w.\\\/-]+)`)
 
 	// finding all direct dependencies
 	var directDep []string

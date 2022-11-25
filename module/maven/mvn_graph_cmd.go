@@ -3,8 +3,8 @@ package maven
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/logpipe"
-	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"strings"
@@ -20,7 +20,7 @@ type PluginGraphCmd struct {
 }
 
 func (m PluginGraphCmd) RunC(ctx context.Context) error {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	if ctx == nil {
 		ctx = context.TODO()
 	}

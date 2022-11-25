@@ -3,7 +3,7 @@ package maven
 import (
 	"context"
 	list "github.com/bahlo/generic-list-go"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/vifraa/gopom"
 	"go.uber.org/zap"
 )
@@ -12,7 +12,7 @@ func BuildDepTree(ctx context.Context, resolver *PomResolver, coordinate Coordin
 	analyzer := &depAnalyzer{
 		Context:       ctx,
 		resolver:      resolver,
-		logger:        utils.UseLogger(ctx),
+		logger:        logctx.Use(ctx),
 		versionChosen: map[string]string{},
 	}
 	tree := analyzer.analyze(coordinate)
@@ -24,8 +24,6 @@ type depAnalyzer struct {
 	context.Context
 	resolver *PomResolver
 	logger   *zap.Logger
-	// full resolved item should be skipped, to reduce the large tree
-	fullResolved map[Coordinate]string
 	// chosen version shouldn't be changed again
 	versionChosen map[string]string
 }

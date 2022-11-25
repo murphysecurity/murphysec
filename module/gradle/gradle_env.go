@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"os/exec"
 )
 
@@ -21,12 +21,12 @@ func (g *GradleEnv) ExecuteContext(ctx context.Context, args ...string) *exec.Cm
 	_args = append(_args, "--quiet", "--console", "plain")
 	_args = append(_args, args...)
 	c := exec.CommandContext(ctx, g.Path, _args...)
-	utils.UseLogger(ctx).Sugar().Infof("Prepare: %s", c.String())
+	logctx.Use(ctx).Sugar().Infof("Prepare: %s", c.String())
 	return c
 }
 
 func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
-	var log = utils.UseLogger(ctx).Sugar()
+	var log = logctx.Use(ctx).Sugar()
 	var r = &GradleEnv{GradleWrapperStatus: GradleWrapperStatusNotDetected}
 	if script := prepareGradleWrapperScriptFile(ctx, dir); script != "" {
 		gv, e := evalVersion(ctx, script)
@@ -55,7 +55,7 @@ func evalVersion(ctx context.Context, cmdPath string) (_ *GradleVersion, err err
 	defer func() {
 		err = evalVersionError(err)
 	}()
-	var log = utils.UseLogger(ctx).Sugar()
+	var log = logctx.Use(ctx).Sugar()
 	cmd := exec.CommandContext(ctx, cmdPath, "--version", "--quiet")
 	log.Infof("Execute: %s", cmd.String())
 	data, e := cmd.Output()

@@ -17,10 +17,7 @@ func (Inspector) String() string {
 	return "Rebar3"
 }
 func (Inspector) CheckDir(dir string) bool {
-	if utils.IsFile(filepath.Join(dir, "rebar.config")) {
-		return true
-	}
-	return false
+	return utils.IsFile(filepath.Join(dir, "rebar.config"))
 }
 func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)

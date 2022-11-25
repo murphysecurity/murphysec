@@ -2,6 +2,7 @@ package bundler
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
@@ -25,7 +26,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	scanDir := task.Dir()
 	gemFile := filepath.Join(scanDir, "Gemfile")
 	gemLockFile := filepath.Join(scanDir, "Gemfile.lock")

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/logpipe"
-	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os/exec"
 )
@@ -22,7 +22,7 @@ func GetRebar3Version(ctx context.Context) (string, error) {
 	if __rebarVersionCached != "" {
 		return __rebarVersionCached, nil
 	}
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	var cmd = exec.Command("rebar3", "version")
 	logger.Sugar().Infof("Execute command: %s", cmd.String())
 	data, e := cmd.Output()
@@ -35,7 +35,7 @@ func GetRebar3Version(ctx context.Context) (string, error) {
 }
 
 func EvaluateRebar3Tree(ctx context.Context, dir string) ([]depNode, error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	var cmd = exec.Command("rebar3", "tree")
 	cmd.Dir = dir
 	logger.Sugar().Infof("Execute command: %s at %s", cmd.String(), dir)

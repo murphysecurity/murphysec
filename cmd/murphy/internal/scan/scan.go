@@ -42,7 +42,6 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) error {
 	}
 	if errors.Is(e, config.ErrRepoConfigNotFound) {
 		logger.Infof("config not found, will be written soon")
-		repoConfig = &config.RepoConfig{}
 		shouldWriteConfig = true
 	}
 

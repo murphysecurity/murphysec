@@ -60,8 +60,8 @@ func (b *blockParser) _parse() []DepElement {
 	return rs
 }
 
-var __parseDepElementPattern1 = regexp.MustCompile("^([A-Za-z0-9\\.-]+)\\:([A-Za-z0-9\\.-]+)(?:\\:([A-Za-z0-9\\.-]+))?(?: *-> *([A-Za-z0-9\\.-]+))?")
-var __parseDepElementPattern2 = regexp.MustCompile("^project ([A-Za-z0-9_.:-]+)")
+var __parseDepElementPattern1 = regexp.MustCompile(`^([A-Za-z0-9\.-]+)\:([A-Za-z0-9\.-]+)(?:\:([A-Za-z0-9\.-]+))?(?: *-> *([A-Za-z0-9\.-]+))?`)
+var __parseDepElementPattern2 = regexp.MustCompile(`^project ([A-Za-z0-9_.:-]+)`)
 
 func parseDepElement(s string) *DepElement {
 	s = strings.TrimLeft(s, "+- |\\/")

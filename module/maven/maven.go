@@ -3,8 +3,8 @@ package maven
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"path/filepath"
 )
@@ -23,7 +23,7 @@ func (d Dependency) String() string {
 }
 
 func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.Module, error) {
-	log := utils.UseLogger(ctx)
+	log := logctx.Use(ctx)
 	dir := task.Dir()
 	var modules []model.Module
 	var e error
@@ -80,6 +80,7 @@ func convDeps(deps []Dependency) []model.DependencyItem {
 		if d == nil {
 			continue
 		}
+		d.IsDirectDependency = true
 		rs = append(rs, *d)
 	}
 	return rs

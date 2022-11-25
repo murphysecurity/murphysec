@@ -2,7 +2,7 @@ package maven
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"go.uber.org/zap"
 	"net/url"
 	"path/filepath"
@@ -10,7 +10,7 @@ import (
 
 func BackupResolve(ctx context.Context, projectDir string) (*DepsMap, error) {
 	var rs = newDepsMap()
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	logger.Sugar().Infof("Backup scan: %s", projectDir)
 	resolver, e := prepareResolver(ctx)
 	if e != nil {
@@ -42,7 +42,7 @@ func BackupResolve(ctx context.Context, projectDir string) (*DepsMap, error) {
 }
 
 func prepareResolver(ctx context.Context) (*PomResolver, error) {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	userConfig, e := GetMvnConfig(ctx)
 	if e != nil {
 		return nil, e

@@ -7,7 +7,6 @@ import (
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module"
-	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"time"
 )
@@ -35,12 +34,12 @@ func ManagedInspect(ctx context.Context) error {
 		// 创建检查任务
 		c := model.WithInspectionTask(ctx, scanTask.BuildInspectionTask(it.path))
 		// 绑定 logger
-		c = utils.WithLogger(c, logger.Named(fmt.Sprintf("%s-%d", it.inspector.String(), idx)))
+		c = logctx.With(c, logger.Named(fmt.Sprintf("%s-%d", it.inspector.String(), idx)))
 
 		// Do!
-		logger.Sugar().Infof("Begin: %s, duration: %v", it.String(), time.Now().Sub(st))
+		logger.Sugar().Infof("Begin: %s", it.String())
 		e := it.inspector.InspectProject(c)
-		logger.Sugar().Infof("End: %s, duration: %v", it.String(), time.Now().Sub(st))
+		logger.Sugar().Infof("End: %s, duration: %v", it.String(), time.Since(st))
 		if e != nil {
 			logger.Error("InspectError", zap.Error(e), zap.Any("inspector", it))
 		}

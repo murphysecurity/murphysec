@@ -3,14 +3,14 @@ package maven
 import (
 	"container/list"
 	"context"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"go.uber.org/zap"
 	"path/filepath"
 	"strings"
 )
 
 func ReadLocalProject(ctx context.Context, dir string) ([]*UnresolvedPom, error) {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 
 	// Workaround for Maven CI Friendly Versions: https://maven.apache.org/maven-ci-friendly.html
 	var revisionMap = map[string]string{}
@@ -38,14 +38,14 @@ func ReadLocalProject(ctx context.Context, dir string) ([]*UnresolvedPom, error)
 		}
 
 		if pom.Properties.Entries != nil {
-			if v := pom.Properties.Entries["revision"]; v != "" && strings.Index(v, "${") == -1 {
+			if v := pom.Properties.Entries["revision"]; v != "" && !strings.Contains(v, "${") {
 				revisionMap[pom.GroupID+pom.ArtifactID] = v
 				if pom.Version == "${revision}" {
 					pom.Version = v
 				}
 			}
 		}
-		if pom.Version != "" && strings.Index(pom.Version, "${") == -1 {
+		if pom.Version != "" && !strings.Contains(pom.Version, "${") {
 			revisionMap[pom.GroupID+pom.ArtifactID] = pom.Version
 		}
 		if pom.Parent.Version == "${revision}" {

@@ -3,6 +3,7 @@ package python
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simpletoml"
@@ -15,7 +16,7 @@ import (
 var ErrParseToml = errors.New("Parse toml failed")
 
 func tomlBuildSysFile(ctx context.Context, path string) ([]model.DependencyItem, error) {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	logger.Debug("Process toml buildSys file", zap.String("path", path))
 	data, e := utils.ReadFileLimited(path, 4*1024*1024)
 	if e != nil {
@@ -26,7 +27,7 @@ func tomlBuildSysFile(ctx context.Context, path string) ([]model.DependencyItem,
 
 func tomlBuildSys(data []byte) ([]model.DependencyItem, error) {
 	// numpy==1.13.3 Cython>=0.29.13 wheel
-	pa := regexp.MustCompile("([\\w.-]+)(?:[>=]?=([\\w.-]+))?")
+	pa := regexp.MustCompile(`([\w.-]+)(?:[>=]?=([\w.-]+))?`)
 	t, e := simpletoml.UnmarshalTOML(data)
 	if e != nil {
 		return nil, errors.WithCause(ErrParseToml, e)

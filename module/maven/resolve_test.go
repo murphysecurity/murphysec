@@ -3,7 +3,7 @@ package maven
 import (
 	"context"
 	"fmt"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -23,7 +23,7 @@ func prepareTest() {
 	}
 	e := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
 		if filepath.Ext(path) == ".noext" {
-			must.Must(os.Link(path, strings.TrimSuffix(path, ".noext")))
+			_ = os.Link(path, strings.TrimSuffix(path, ".noext"))
 		}
 		return nil
 	})
@@ -53,7 +53,7 @@ func TestResolve(t *testing.T) {
 		mavenRepo = "https://maven.aliyun.com/repository/public"
 	}
 	logger := must.A(zap.NewDevelopment(zap.AddStacktrace(zap.ErrorLevel)))
-	ctx := utils.WithLogger(context.TODO(), logger)
+	ctx := logctx.With(context.TODO(), logger)
 
 	modules := must.A(ReadLocalProject(ctx, "./__test/multi_module"))
 	resolver := NewPomResolver(ctx)

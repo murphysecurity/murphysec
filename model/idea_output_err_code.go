@@ -40,8 +40,7 @@ const (
 )
 
 func (code IdeaErrCode) Error() string {
-	s, _ := _errCodeList[code]
-	return s
+	return _errCodeList[code]
 }
 
 func (code IdeaErrCode) String() string {

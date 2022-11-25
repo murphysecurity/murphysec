@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/simplejson"
 	"go.uber.org/zap"
@@ -43,7 +44,7 @@ func parseComposerLock(data []byte) ([]Package, error) {
 }
 
 func readManifest(ctx context.Context, path string) (*Manifest, error) {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	logger.Debug("readManifest", zap.String("path", path))
 	composerFileData, e := utils.ReadFileLimited(path, _ComposerManifestFileSizeLimit)
 	if e != nil {

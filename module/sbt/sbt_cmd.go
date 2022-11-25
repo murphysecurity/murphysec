@@ -5,15 +5,15 @@ import (
 	"context"
 	"fmt"
 	list "github.com/bahlo/generic-list-go"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/logpipe"
-	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os/exec"
 	"regexp"
 )
 
 func sbtDependencyTree(ctx context.Context, dir string) ([]Dep, error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	c := exec.CommandContext(ctx, "sbt", "-Dsbt.ci=true", "-Dsbt.color=never", "-Dsbt.progress=never", "-Dsbt.log.noformat=true", "-Dsbt.supershell=false", "dependencyTree")
 	logger.Sugar().Infof("Execute command: %s", c)
 	c.Dir = dir
@@ -46,7 +46,7 @@ func (s *sbtDependencyTreeOutputParser) Result() (*Dep, error) {
 	return s.root, s.err
 }
 
-var treePattern = regexp.MustCompile("^\\[info] ([ +-]*)([\\w+.-]+:[\\w+.-]+):([\\w+.-]+)(?: \\[\\w+])?")
+var treePattern = regexp.MustCompile(`^\[info] ([ +-]*)([\w+.-]+:[\w+.-]+):([\w+.-]+)(?: \[\w+])?`)
 
 func newSbtDependencyTreeOutputParser() (r *sbtDependencyTreeOutputParser) {
 	reader, writer := io.Pipe()

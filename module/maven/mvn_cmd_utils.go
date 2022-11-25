@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"go.uber.org/zap"
 	"os"
 	"os/exec"
@@ -52,7 +52,7 @@ type _MvnCommandResult struct {
 }
 
 func CheckMvnCommand(ctx context.Context) (info *MvnCommandInfo, err error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	if cachedMvnCommandResult != nil {
 		if cachedMvnCommandResult.e != nil {
 			logger.Warn("Cached maven error", zap.Error(cachedMvnCommandResult.e))
@@ -91,7 +91,7 @@ func CheckMvnCommand(ctx context.Context) (info *MvnCommandInfo, err error) {
 }
 
 func executeMvnVersion(ctx context.Context, mvnPath string, javaHome string) (string, error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*8)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, mvnPath, "--version", "--batch-mode")
@@ -109,7 +109,7 @@ func executeMvnVersion(ctx context.Context, mvnPath string, javaHome string) (st
 }
 
 func checkMvnVersion(ctx context.Context, mvnPath string, javaHome string) (string, error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	output, err := executeMvnVersion(ctx, mvnPath, javaHome)
 	if err != nil {
 		if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
@@ -130,7 +130,7 @@ func checkMvnVersion(ctx context.Context, mvnPath string, javaHome string) (stri
 }
 
 func parseMvnVersion(input string) string {
-	versionPattern := regexp.MustCompile("Apache Maven (\\d+(?:\\.[\\dA-Za-z_-]+)+)")
+	versionPattern := regexp.MustCompile(`Apache Maven (\d+(?:\.[\dA-Za-z_-]+)+)`)
 	lines := strings.Split(input, "\n")
 	for i := range lines {
 		lines[i] = strings.TrimSpace(lines[i])

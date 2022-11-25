@@ -99,9 +99,6 @@ func InitLogger(ctx context.Context) (context.Context, error) {
 	loggerCore := zapcore.NewTee(consoleCore, jsonCore)
 	_logger := zap.New(loggerCore, zap.AddCaller())
 
-	//inspector.Logger = _logger       // todo: legacy
-	logger.InitLegacyLogger(_logger) // todo: 是时候去掉了
-
 	_logger.Sugar().Infof("Log start: %s, %s", time.Now().Format(time.RFC3339), version.UserAgent())
 	_logger.Sugar().Infof("Args: %s", utils.DesensitizedArgs)
 	for _, s := range os.Environ() {

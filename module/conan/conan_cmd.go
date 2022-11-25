@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/errors"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/logpipe"
 	"github.com/murphysecurity/murphysec/infra/suffixbuf"
-	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"io"
 	"math/rand"
@@ -53,7 +53,7 @@ func getConanInfo(ctx context.Context) (*CmdInfo, error) {
 }
 
 func ExecuteConanInfoCmd(ctx context.Context, conanPath string, dir string) (string, error) {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	lp := logpipe.New(logger, "conan")
 	defer lp.Close()
 	jsonP := getConanInfoJsonPath()

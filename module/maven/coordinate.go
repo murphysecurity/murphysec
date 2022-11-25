@@ -11,7 +11,7 @@ type Coordinate struct {
 	Version    string `json:"version"`
 }
 
-var rb = regexp.MustCompile("\\s")
+var rb = regexp.MustCompile(`\s`)
 
 func (c Coordinate) Normalize() Coordinate {
 	return Coordinate{

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
@@ -69,7 +70,7 @@ func parseDockerFile(dir, path string, m map[string]string) {
 }
 
 func scanDepFile(ctx context.Context, dir string) (bool, error) {
-	var logger = utils.UseLogger(ctx)
+	var logger = logctx.Use(ctx)
 	var found = false
 	var task = model.UseInspectionTask(ctx)
 
@@ -151,7 +152,7 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 }
 
 func (i Inspector) InspectProject(ctx context.Context) error {
-	logger := utils.UseLogger(ctx)
+	logger := logctx.Use(ctx)
 	dir := model.UseInspectionTask(ctx).Dir()
 
 	foundDepFiles, e := scanDepFile(ctx, dir)
@@ -165,7 +166,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	componentMap := map[string]string{}
 	ignoreSet := map[string]struct{}{}
 	logger.Debug("Start walk python project dir", zap.String("dir", dir))
-	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+	e = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d == nil {
 			return nil
 		}
@@ -204,6 +205,9 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		}
 		return nil
 	})
+	if e != nil {
+		logger.Warn("Walk error", zap.Error(e))
+	}
 
 	if pipListDeps, e := executePipList(ctx, dir); e != nil {
 		logger.Warn("pip list execution failed", zap.Error(e))

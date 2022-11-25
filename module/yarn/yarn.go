@@ -2,7 +2,7 @@ package yarn
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/logger"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"os"
 	"path/filepath"
@@ -20,6 +20,13 @@ type Dep struct {
 }
 
 func mapToModel(deps []Dep) []model.DependencyItem {
+	r := _mapToModel(deps)
+	for i := range r {
+		r[i].IsDirectDependency = true
+	}
+	return r
+}
+func _mapToModel(deps []Dep) []model.DependencyItem {
 	var r = make([]model.DependencyItem, len(deps))
 	for i := range deps {
 		r[i] = model.DependencyItem{
@@ -28,7 +35,7 @@ func mapToModel(deps []Dep) []model.DependencyItem {
 				CompVersion: deps[i].Version,
 				EcoRepo:     EcoRepo,
 			},
-			Dependencies: mapToModel(deps[i].Children),
+			Dependencies: _mapToModel(deps[i].Children),
 		}
 	}
 	return r
@@ -51,9 +58,10 @@ func (i *Inspector) CheckDir(dir string) bool {
 
 func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
+	var logger = logctx.Use(ctx).Sugar()
 	dir := task.Dir()
-	logger.Info.Println("yarn inspect.", dir)
-	rs, e := analyzeYarnDep(dir)
+	logger.Info("yarn inspect.", dir)
+	rs, e := analyzeYarnDep(ctx, dir)
 
 	if e != nil {
 		return e
