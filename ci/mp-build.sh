@@ -3,7 +3,7 @@ set -ex
 
 export CGO_ENABLED=0
 
-ldflags="-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=\"$CI_COMMIT_TAG\" -buildid="
+ldflags="-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid="
 
 oss="windows linux darwin"
 for i in  $oss; do

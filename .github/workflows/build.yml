@@ -38,7 +38,7 @@ jobs:
         run: go mod download
 
       - name: Build
-        run: go build -v -ldflags '-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version="$GITHUB_REF" -buildid=' -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/murphy
+        run: go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$GITHUB_REF -buildid=" -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/murphy
 
       - name: Rename for Windows
         if: matrix.goos == 'windows'
