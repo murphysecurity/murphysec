@@ -34,20 +34,20 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		e       error
 	)
 
-	// get absolute path and check if a directory
-	scanDir = must.A(filepath.Abs(scanDir))
-	if !utils.IsDir(scanDir) {
-		fmt.Fprintln(os.Stderr, "must be a directory")
-		exitcode.Set(1)
-		return
-	}
-
 	common.LogLevel = logger2.LevelDebug
 	ctx, e = common.InitLogger(ctx)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "init logger failed: %v\n", e)
 	}
 	var logger = logctx.Use(ctx).Sugar()
+
+	// get absolute path and check if a directory
+	scanDir = must.A(filepath.Abs(scanDir))
+	if !utils.IsDir(scanDir) {
+		logger.Error("not a directory")
+		exitcode.Set(1)
+		return
+	}
 
 	var scantask = &model.ScanTask{
 		Ctx:         ctx,
