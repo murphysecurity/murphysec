@@ -8,5 +8,6 @@ func Cmd() *cobra.Command {
 	c.AddCommand(internalWriteTaskIdCmd())
 	c.AddCommand(internalReadTaskIdCmd())
 	c.AddCommand(machineidCmd())
+	c.AddCommand(scannerScanCmd())
 	return c
 }
