@@ -1,7 +1,6 @@
 package model
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -60,8 +59,7 @@ type PluginCompSolution struct {
 	Type          string `json:"type,omitempty"`
 }
 
-func GetIDEAOutput(ctx context.Context) PluginOutput {
-	var task = UseScanTask(ctx)
+func GetIDEAOutput(task *ScanTask) PluginOutput {
 
 	// workaround: 从模块列表里拎包管理器出来
 	pmMap := make(map[Component]string)

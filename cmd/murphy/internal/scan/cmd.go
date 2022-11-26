@@ -60,7 +60,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	e = scan(ctx, scanDir, model.AccessTypeCli)
+	_, e = scan(ctx, scanDir, model.AccessTypeCli)
 	if e != nil {
 		logger.Error(e)
 		exitcode.Set(1)
@@ -74,6 +74,8 @@ func IdeaScan() *cobra.Command {
 	c.Args = cobra.ExactArgs(1)
 	c.Run = ideascanRun
 	c.Hidden = true
+	c.Flags().String("ide", "", "unused")
+	must.M(c.Flags().MarkHidden("ide"))
 	return &c
 }
 
@@ -113,11 +115,11 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	e = scan(ctx, scanDir, model.AccessTypeIdea)
+	task, e := scan(ctx, scanDir, model.AccessTypeIdea)
 	if e != nil {
 		logger.Error(e)
 		exitcode.Set(1)
 		return
 	}
-	fmt.Println(string(must.A(json.MarshalIndent(model.GetIDEAOutput(ctx), "", "  "))))
+	fmt.Println(string(must.A(json.MarshalIndent(model.GetIDEAOutput(task), "", "  "))))
 }

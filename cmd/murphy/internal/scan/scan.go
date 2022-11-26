@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 )
 
-func scan(ctx context.Context, dir string, accessType model.AccessType) error {
+func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.ScanTask, error) {
 	must.NotNil(ctx)
 	must.True(filepath.IsAbs(dir))
 	must.True(accessType.Valid())
@@ -64,11 +64,11 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) error {
 	createTaskResp, e = api.CreateSubTask(api.DefaultClient(), &createSubtask)
 	if errors.Is(e, api.ErrTLSError) {
 		cv.DisplayTLSNotice(ctx)
-		return e
+		return nil, e
 	}
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)
-		return e
+		return nil, e
 	}
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.TaskName, createTaskResp.TaskID)
 	if shouldWriteConfig {
@@ -94,21 +94,21 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) error {
 	e = inspector.ManagedInspect(ctx)
 	if e != nil {
 		cv.DisplayScanFailed(ctx, e)
-		return e
+		return nil, e
 	}
 
 	// submit SBOM
 	e = api.SubmitSBOM(api.DefaultClient(), task.SubtaskId, task.Modules)
 	if e != nil {
 		cv.DisplaySubmitSBOMErr(ctx, e)
-		return e
+		return nil, e
 	}
 
 	// start check
 	e = api.StartCheck(api.DefaultClient(), task.SubtaskId)
 	if e != nil {
 		cv.DisplaySubmitSBOMErr(ctx, e)
-		return e
+		return nil, e
 	}
 
 	cv.DisplayWaitingResponse(ctx)
@@ -119,10 +119,10 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) error {
 	task.Result = result
 	if e != nil {
 		cv.DisplayScanFailed(ctx, e)
-		return e
+		return nil, e
 	}
 	cv.DisplayStatusClear(ctx)
 	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum)
 
-	return nil
+	return task, nil
 }
