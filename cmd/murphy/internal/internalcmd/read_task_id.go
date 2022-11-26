@@ -18,7 +18,7 @@ func internalReadTaskIdCmd() *cobra.Command {
 	var ctx = logctx.With(context.TODO(), logger)
 
 	var c cobra.Command
-	c.Use = "read-task-id"
+	c.Use = "read-task-id <DIR>"
 	c.Flags().String("type", "", "")
 	must.M(cobra.MarkFlagRequired(c.Flags(), "type"))
 	c.Args = cobra.ExactArgs(1)

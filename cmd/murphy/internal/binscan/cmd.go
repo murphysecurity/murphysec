@@ -17,7 +17,7 @@ import (
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
-	c.Use = "binscan"
+	c.Use = "binscan <DIR>"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = binScanRun
 	c.Flags().String("task-id", "", "specified task id")

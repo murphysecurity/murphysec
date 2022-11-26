@@ -20,7 +20,7 @@ import (
 
 func scannerScanCmd() *cobra.Command {
 	var c cobra.Command
-	c.Use = "scanner_scan"
+	c.Use = "scanner_scan <DIR>"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = scannerScanRun
 

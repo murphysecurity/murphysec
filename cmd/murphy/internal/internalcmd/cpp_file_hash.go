@@ -16,7 +16,7 @@ import (
 
 func cppFileHashCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use:  "cpphash",
+		Use:  "cpphash <DIR>",
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := must.M1(zap.NewProduction())

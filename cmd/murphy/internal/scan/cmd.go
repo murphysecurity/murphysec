@@ -18,7 +18,7 @@ import (
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
-	c.Use = "scan"
+	c.Use = "scan <DIR>"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = scanRun
 	return &c
@@ -70,7 +70,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 
 func IdeaScan() *cobra.Command {
 	var c cobra.Command
-	c.Use = "ideascan"
+	c.Use = "ideascan <DIR>"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = ideascanRun
 	c.Hidden = true

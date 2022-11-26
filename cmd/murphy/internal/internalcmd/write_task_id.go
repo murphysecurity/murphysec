@@ -17,7 +17,7 @@ func internalWriteTaskIdCmd() *cobra.Command {
 	var ctx = logctx.With(context.TODO(), logger)
 
 	var c cobra.Command
-	c.Use = "write-task-id"
+	c.Use = "write-task-id <DIR> <TaskID>"
 	c.Flags().String("type", "", "")
 	must.M(cobra.MarkFlagRequired(c.Flags(), "type"))
 	c.Args = cobra.ExactArgs(2)
