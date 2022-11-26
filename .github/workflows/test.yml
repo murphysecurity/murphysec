@@ -21,8 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.19.2
-          check-latest: true
+          go-version: 1.19
           cache: true
 
       - uses: denoland/setup-deno@v1
