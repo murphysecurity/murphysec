@@ -9,7 +9,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"os"
+	"path/filepath"
 )
 
 func internalWriteTaskIdCmd() *cobra.Command {
@@ -20,11 +20,11 @@ func internalWriteTaskIdCmd() *cobra.Command {
 	c.Use = "write-task-id"
 	c.Flags().String("type", "", "")
 	must.M(cobra.MarkFlagRequired(c.Flags(), "type"))
-	c.Args = cobra.ExactArgs(1)
+	c.Args = cobra.ExactArgs(2)
 
 	c.Run = func(cmd *cobra.Command, args []string) {
 		var acct = model.AccessType(cmd.Flag("type").Value.String())
-		if e := config.WriteRepoConfig(ctx, must.A(os.Getwd()), acct, config.RepoConfig{TaskId: args[0]}); e != nil {
+		if e := config.WriteRepoConfig(ctx, must.A(filepath.Abs(args[0])), acct, config.RepoConfig{TaskId: args[1]}); e != nil {
 			logger.Error(e.Error())
 			exitcode.Set(1)
 			return

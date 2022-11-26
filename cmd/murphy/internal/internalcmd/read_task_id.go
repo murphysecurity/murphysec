@@ -10,7 +10,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"os"
+	"path/filepath"
 )
 
 func internalReadTaskIdCmd() *cobra.Command {
@@ -25,7 +25,7 @@ func internalReadTaskIdCmd() *cobra.Command {
 
 	c.Run = func(cmd *cobra.Command, args []string) {
 		var acct = model.AccessType(cmd.Flag("type").Value.String())
-		if c, e := config.ReadRepoConfig(ctx, must.A(os.Getwd()), acct); e != nil {
+		if c, e := config.ReadRepoConfig(ctx, must.A(filepath.Abs(args[0])), acct); e != nil {
 			logger.Error(e.Error())
 			exitcode.Set(1)
 			return
