@@ -52,9 +52,10 @@ func DisplayWaitingResponse(ctx context.Context) {
 	ui.Use(ctx).UpdateStatus(ui.StatusRunning, "正在等待服务器返回扫描结果...")
 }
 
-func DisplaySubtaskCreated(ctx context.Context, projectName string, taskName string, taskId string) {
+func DisplaySubtaskCreated(ctx context.Context, projectName string, taskName string, taskId string, subtaskName, subtaskId string) {
 	ui.Use(ctx).Display(ui.MsgInfo, "项目名称："+projectName)
 	ui.Use(ctx).Display(ui.MsgInfo, fmt.Sprintf("任务名称：%s [ID: %s]", taskName, taskId))
+	ui.Use(ctx).Display(ui.MsgInfo, fmt.Sprintf("子任务：%s [ID: %s]", subtaskName, subtaskId))
 	ui.Use(ctx).Display(ui.MsgInfo, "")
 }
 

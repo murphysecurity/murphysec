@@ -74,7 +74,8 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 		cv.DisplayCreateSubtaskErr(ctx, e)
 		return nil, e
 	}
-	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.TaskName, createTaskResp.TaskID)
+	logger.Infof("subtask created, %s / %s", createTaskResp.TaskID, createTaskResp.SubtaskID)
+	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.TaskName, createTaskResp.TaskID, createSubtask.SubtaskName, createTaskResp.SubtaskID)
 	if shouldWriteConfig {
 		logger.Infof("creating repo config...")
 		e = config.WriteRepoConfig(ctx, dir, accessType, config.RepoConfig{TaskId: createTaskResp.TaskID})
