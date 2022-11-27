@@ -109,6 +109,9 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 				SuggestLevel:    info.FixSuggestionLevel,
 				Title:           info.Title,
 			}
+			if info.PublishedDate.IsZero() {
+				d.PublishTime = 0
+			}
 			rs = append(rs, d)
 		}
 		return
