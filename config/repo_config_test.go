@@ -12,8 +12,8 @@ import (
 
 func TestRepoConfig(t *testing.T) {
 	var ctx = logctx.With(context.TODO(), must.A(zap.NewDevelopment()))
-	assert.NoError(t, WriteRepoConfig(ctx, ".", model.AccessTypeCli, RepoConfig{TaskId: "foo"}))
+	assert.NoError(t, WriteRepoConfig(ctx, ".", model.AccessTypeCli, RepoConfig{TaskId: "111"}))
 	co, e := ReadRepoConfig(ctx, ".", model.AccessTypeCli)
 	assert.NoError(t, e)
-	assert.Equal(t, "foo", co.TaskId)
+	assert.Equal(t, "111", co.TaskId)
 }
