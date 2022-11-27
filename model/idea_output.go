@@ -65,8 +65,8 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 	}
 	var r = task.Result
 	var pluginOutput = PluginOutput{
-		SubtaskName: r.SubtaskName,
 		ErrCode:     100,
+		SubtaskName: task.SubtaskName,
 		IssuesCount: r.LeakNum,
 		Comps:       make([]PluginComp, 0),
 		IssuesLevelCount: struct {

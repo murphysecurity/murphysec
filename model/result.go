@@ -12,7 +12,6 @@ type ScanResultResponse struct {
 	TeamId       string               `json:"team_id"`
 	TaskId       string               `json:"task_id"`
 	UserId       string               `json:"user_id"`
-	SubtaskName  string               `json:"subtask_name"`
 	FinishTime   time.Time            `json:"finish_time"`
 	Addr         string               `json:"addr"`          // <unknown>
 	FromSource   string               `json:"from_source"`   // <unknown>

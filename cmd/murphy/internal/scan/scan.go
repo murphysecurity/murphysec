@@ -92,6 +92,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 		ProjectPath: dir,
 		TaskId:      createTaskResp.TaskID,
 		SubtaskId:   createTaskResp.SubtaskID,
+		SubtaskName: createSubtask.SubtaskName,
 	}
 
 	// do scan

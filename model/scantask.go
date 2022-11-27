@@ -14,6 +14,7 @@ type ScanTask struct {
 	SubtaskId   string
 	Modules     []Module
 	Result      *ScanResultResponse
+	SubtaskName string
 }
 
 func (s *ScanTask) BuildInspectionTask(dir string) *InspectionTask {
