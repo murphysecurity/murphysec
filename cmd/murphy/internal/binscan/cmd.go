@@ -76,16 +76,17 @@ func binScan(ctx context.Context, scanPath string) error {
 	if cliIOTScan {
 		mode = model.ScanModeIot
 	}
+	var subtaskName = filepath.Base(scanPath)
 	taskResp, e := api.CreateSubTask(api.DefaultClient(), &api.CreateSubTaskRequest{
 		AccessType:  model.AccessTypeCli,
 		ScanMode:    mode,
-		SubtaskName: filepath.Base(scanPath),
+		SubtaskName: subtaskName,
 	})
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)
 		return e
 	}
-
+	cv.DisplaySubtaskCreated(ctx, taskResp.ProjectsName, taskResp.TaskName, taskResp.TaskID, filepath.Base(scanPath), taskResp.SubtaskID)
 	cv.DisplayUploading(ctx)
 	defer cv.DisplayStatusClear(ctx)
 	e = chunkupload.UploadFile(ctx, scanPath, chunkupload.Params{
