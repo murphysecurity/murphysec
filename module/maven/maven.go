@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/model"
 	"go.uber.org/zap"
 	"path/filepath"
@@ -46,6 +47,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.
 
 	// analyze pom file
 	if useBackupResolver {
+		ui.Use(ctx).Display(ui.MsgWarn, "通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://www.murphysec.com/docs/quick-start/language-support/ 了解详情")
 		var e error
 		deps, e = BackupResolve(ctx, dir)
 		if e != nil {
