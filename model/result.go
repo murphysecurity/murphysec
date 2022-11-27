@@ -45,7 +45,7 @@ type ScanResultCompInfo struct {
 	LicenseList        []LicenseItem          `json:"license_list,omitempty"`
 	DependentPath      []string               `json:"dependent_path,omitempty"`
 	Solutions          []Solution             `json:"solutions,omitempty"`
-	FixPlanList        FixPlanList            `json:"fix_plan_list"`
+	FixPlans           FixPlanList            `json:"fix_plans"`
 	SuggestLevel       int                    `json:"suggest_level"` // 对应到IDEA的show_level，具体计算规则不明
 }
 

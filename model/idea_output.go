@@ -43,7 +43,7 @@ type PluginComp struct {
 	Solutions          []Solution             `json:"solutions,omitempty"`
 	IsDirectDependency bool                   `json:"is_direct_dependency"`
 	CompSecScore       int                    `json:"comp_sec_score"`
-	FixPlanList        FixPlanList            `json:"fix_plan_list"`
+	FixPlans           FixPlanList            `json:"fix_plans"`
 	DependentPath      []string               `json:"dependent_path"`
 	PackageManager     string                 `json:"package_manager"`
 }
@@ -128,7 +128,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			Solutions:          utils.NoNilSlice(comp.Solutions),
 			IsDirectDependency: comp.IdDirectDependency,
 			CompSecScore:       comp.CompSecScore,
-			FixPlanList:        comp.FixPlanList,
+			FixPlans:           comp.FixPlans,
 			DependentPath:      utils.NoNilSlice(comp.DependentPath),
 			PackageManager:     pmMap[comp.Component],
 		}
@@ -136,17 +136,17 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			continue
 		}
 		// workaround: IDE侧要求我一定加进去，后续他不要求了，就删掉
-		if pc.FixPlanList.Plan1 != nil {
-			pc.FixPlanList.Plan1.CompName = comp.CompName
-			pc.FixPlanList.Plan1.OldVersion = comp.CompVersion
+		if pc.FixPlans.Plan1 != nil {
+			pc.FixPlans.Plan1.CompName = comp.CompName
+			pc.FixPlans.Plan1.OldVersion = comp.CompVersion
 		}
-		if pc.FixPlanList.Plan2 != nil {
-			pc.FixPlanList.Plan2.CompName = comp.CompName
-			pc.FixPlanList.Plan2.OldVersion = comp.CompVersion
+		if pc.FixPlans.Plan2 != nil {
+			pc.FixPlans.Plan2.CompName = comp.CompName
+			pc.FixPlans.Plan2.OldVersion = comp.CompVersion
 		}
-		if pc.FixPlanList.Plan3 != nil {
-			pc.FixPlanList.Plan3.CompName = comp.CompName
-			pc.FixPlanList.Plan3.OldVersion = comp.CompVersion
+		if pc.FixPlans.Plan3 != nil {
+			pc.FixPlans.Plan3.CompName = comp.CompName
+			pc.FixPlans.Plan3.OldVersion = comp.CompVersion
 		}
 
 		pluginOutput.Comps = append(pluginOutput.Comps, pc)
