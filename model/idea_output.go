@@ -129,6 +129,9 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			DependentPath:      utils.NoNilSlice(comp.DependentPath),
 			PackageManager:     pmMap[comp.Component],
 		}
+		if len(pc.Vulns) == 0 {
+			continue
+		}
 		// workaround: IDE侧要求我一定加进去，后续他不要求了，就删掉
 		if pc.FixPlanList.Plan1 != nil {
 			pc.FixPlanList.Plan1.CompName = comp.CompName
