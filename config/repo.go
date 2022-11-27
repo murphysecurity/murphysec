@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 )
 
 const DefaultRepoConfigName = ".murphy.yml"
@@ -48,6 +49,13 @@ type RepoConfig struct {
 	TaskId string `json:"task_id,omitempty" yaml:"task_id,omitempty"`
 }
 
+func (r *RepoConfig) Validate() error {
+	if !regexp.MustCompile(`^\d*$`).MatchString(r.TaskId) {
+		return _ErrRepoConfigBadTaskId
+	}
+	return nil
+}
+
 func ReadRepoConfig(ctx context.Context, repoPath string, accessType model.AccessType) (*RepoConfig, error) {
 	if !accessType.Valid() {
 		return nil, ErrRepoConfigBadAccessType
@@ -73,6 +81,10 @@ func ReadRepoConfig(ctx context.Context, repoPath string, accessType model.Acces
 	}
 
 	var selectedConfig = cf.GetAccessType(accessType)
+	e = selectedConfig.Validate()
+	if e != nil {
+		return nil, e
+	}
 	return &selectedConfig, nil
 }
 

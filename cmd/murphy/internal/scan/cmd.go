@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
+	"github.com/murphysecurity/murphysec/config"
 	"github.com/murphysecurity/murphysec/infra/exitcode"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ui"
@@ -16,11 +17,15 @@ import (
 	"path/filepath"
 )
 
+var cliTaskIdOverride string
+
 func Cmd() *cobra.Command {
 	var c cobra.Command
 	c.Use = "scan <DIR>"
+	c.Short = "scan project directory"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = scanRun
+	c.Flags().StringVar(&cliTaskIdOverride, "task-id", "", "specify task id, and write it to config")
 	return &c
 }
 
@@ -60,6 +65,23 @@ func scanRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	if cliTaskIdOverride != "" {
+		logger.Infof("CLI task id override: %s", cliTaskIdOverride)
+		cf := config.RepoConfig{TaskId: cliTaskIdOverride}
+		if e := cf.Validate(); e != nil {
+			cv.DisplayBadTaskId(ctx)
+			logger.Error(e)
+			exitcode.Set(1)
+			return
+		}
+		e = config.WriteRepoConfig(ctx, scanDir, model.AccessTypeCli, config.RepoConfig{TaskId: cliTaskIdOverride})
+		if e != nil {
+			cv.DisplayInitializeFailed(ctx, e)
+			logger.Error(e)
+			exitcode.Set(1)
+			return
+		}
+	}
 	_, e = scan(ctx, scanDir, model.AccessTypeCli)
 	if e != nil {
 		logger.Error(e)

@@ -9,6 +9,7 @@ const (
 	ErrRepoConfigBad                                // config: repo config broken
 	ErrRepoConfigUnsupportedVersion                 // config: repo config version unsupported
 	ErrRepoConfigBadAccessType                      // config: bad access type
+	_ErrRepoConfigBadTaskId                         // config: bad task id
 )
 
 func (i repoConfigError) Error() string {

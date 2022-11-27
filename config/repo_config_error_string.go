@@ -12,11 +12,12 @@ func _() {
 	_ = x[ErrRepoConfigBad-2]
 	_ = x[ErrRepoConfigUnsupportedVersion-3]
 	_ = x[ErrRepoConfigBadAccessType-4]
+	_ = x[_ErrRepoConfigBadTaskId-5]
 }
 
-const _repoConfigError_name = "config: no repo config foundconfig: repo config brokenconfig: repo config version unsupportedconfig: bad access type"
+const _repoConfigError_name = "config: no repo config foundconfig: repo config brokenconfig: repo config version unsupportedconfig: bad access typeconfig: bad task id"
 
-var _repoConfigError_index = [...]uint8{0, 28, 54, 93, 116}
+var _repoConfigError_index = [...]uint8{0, 28, 54, 93, 116, 135}
 
 func (i repoConfigError) String() string {
 	i -= 1

@@ -16,7 +16,6 @@ func GenerateIdeaErrorOutput(e error) string {
 
 type PluginOutput struct {
 	SubtaskName      string       `json:"subtask_name"`
-	Username         string       `json:"username"`
 	ErrCode          IdeaErrCode  `json:"err_code"`
 	IssuesCount      int          `json:"issues_count,omitempty"`
 	Comps            []PluginComp `json:"comps,omitempty"`
@@ -35,22 +34,18 @@ type PluginOutput struct {
 }
 
 type PluginComp struct {
-	CompName        string `json:"comp_name"`
-	ShowLevel       int    `json:"show_level"`
-	MinFixedVersion string `json:"min_fixed_version"`
-	//DisposePlan        PluginCompFixList    `json:"dispose_plan"`
-	Vulns       []PluginVulnDetailInfo `json:"vulns"`
-	CompVersion string                 `json:"version"`
-	//License            PluginCompLicense         `json:"license,omitempty"`
-	Licenses           []LicenseItem `json:"licenses"`
-	Solutions          []Solution    `json:"solutions,omitempty"`
-	IsDirectDependency bool          `json:"is_direct_dependency"`
-	//Language           string        `json:"language"`
-	//FixType            string        `json:"fix_type"`
-	CompSecScore   int         `json:"comp_sec_score"`
-	FixPlanList    FixPlanList `json:"fix_plan_list"`
-	DependentPath  []string    `json:"dependent_path"`
-	PackageManager string      `json:"package_manager"`
+	CompName           string                 `json:"comp_name"`
+	ShowLevel          int                    `json:"show_level"`
+	MinFixedVersion    string                 `json:"min_fixed_version"`
+	Vulns              []PluginVulnDetailInfo `json:"vulns"`
+	CompVersion        string                 `json:"version"`
+	Licenses           []LicenseItem          `json:"licenses"`
+	Solutions          []Solution             `json:"solutions,omitempty"`
+	IsDirectDependency bool                   `json:"is_direct_dependency"`
+	CompSecScore       int                    `json:"comp_sec_score"`
+	FixPlanList        FixPlanList            `json:"fix_plan_list"`
+	DependentPath      []string               `json:"dependent_path"`
+	PackageManager     string                 `json:"package_manager"`
 }
 
 type PluginCompSolution struct {
@@ -71,8 +66,9 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 	var r = task.Result
 	var pluginOutput = PluginOutput{
 		SubtaskName: r.SubtaskName,
-		Comps:       make([]PluginComp, 0),
+		ErrCode:     100,
 		IssuesCount: r.LeakNum,
+		Comps:       make([]PluginComp, 0),
 		IssuesLevelCount: struct {
 			Critical int `json:"critical,omitempty"`
 			High     int `json:"high,omitempty"`
@@ -86,9 +82,10 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		},
 		TaskId:            r.TaskId,
 		SubtaskId:         r.SubtaskId,
+		InspectErrors:     nil,
 		DependenciesCount: r.RelyNum,
-		ProjectScore:      r.ProjectScore,
 		SurpassScore:      r.SurpassScore,
+		ProjectScore:      r.ProjectScore,
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {

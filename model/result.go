@@ -85,9 +85,9 @@ type FixPlanItem struct {
 }
 
 type FixPlanList struct {
-	Plan1 *FixPlanItem `json:"plan1"`
-	Plan2 *FixPlanItem `json:"plan2"`
-	Plan3 *FixPlanItem `json:"plan3"`
+	Plan1 *FixPlanItem `json:"plan1,omitempty"`
+	Plan2 *FixPlanItem `json:"plan2,omitempty"`
+	Plan3 *FixPlanItem `json:"plan3,omitempty"`
 }
 
 // VulnerabilityDetailInfo 漏洞详情

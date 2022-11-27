@@ -15,12 +15,14 @@ import (
 	"path/filepath"
 )
 
+var cliIOTScan bool
+
 func Cmd() *cobra.Command {
 	var c cobra.Command
 	c.Use = "binscan <DIR>"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = binScanRun
-	c.Flags().String("task-id", "", "specified task id")
+	c.Flags().BoolVar(&cliIOTScan, "iot", false, "IOT scan mode")
 	return &c
 }
 
@@ -70,9 +72,13 @@ func binScanRun(cmd *cobra.Command, args []string) {
 }
 
 func binScan(ctx context.Context, scanPath string) error {
+	var mode = model.ScanModeBinary
+	if cliIOTScan {
+		mode = model.ScanModeIot
+	}
 	taskResp, e := api.CreateSubTask(api.DefaultClient(), &api.CreateSubTaskRequest{
 		AccessType:  model.AccessTypeCli,
-		ScanMode:    model.ScanModeBinary,
+		ScanMode:    mode,
 		SubtaskName: filepath.Base(scanPath),
 	})
 	if e != nil {

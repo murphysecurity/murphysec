@@ -39,6 +39,10 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	repoConfig, e = config.ReadRepoConfig(ctx, dir, accessType)
 	if e == nil {
 		createSubtask.TaskID = ref.OmitZero(repoConfig.TaskId)
+		if repoConfig.TaskId == "" {
+			logger.Infof("task id not set, will be written soom")
+			shouldWriteConfig = true
+		}
 	}
 	if errors.Is(e, config.ErrRepoConfigNotFound) {
 		logger.Infof("config not found, will be written soon")

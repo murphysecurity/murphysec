@@ -86,3 +86,7 @@ func DisplayUploading(ctx context.Context) {
 func DisplayUploadErr(ctx context.Context, e error) {
 	ui.Use(ctx).Display(ui.MsgError, "上传失败："+e.Error())
 }
+
+func DisplayBadTaskId(ctx context.Context) {
+	ui.Use(ctx).Display(ui.MsgError, "无效的任务 ID")
+}
