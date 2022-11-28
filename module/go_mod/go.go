@@ -49,23 +49,33 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		m.Name = f.Module.Mod.Path
 	}
 
-	var depM = make(map[[2]string]struct{})
+	var depReplace = make(map[[2]string][2]string)
+	for _, it := range f.Replace {
+		depReplace[[2]string{it.Old.Path, it.Old.Version}] = [2]string{it.New.Path, it.New.Version}
+		depReplace[[2]string{it.Old.Path, ""}] = [2]string{it.New.Path, it.New.Version}
+	}
+
 	for _, it := range f.Require {
 		if it == nil {
 			continue
 		}
-		depM[[2]string{it.Mod.Path, it.Mod.Version}] = struct{}{}
+		if target, ok := depReplace[[2]string{it.Mod.Path, it.Mod.Version}]; ok {
+			m.Dependencies = append(m.Dependencies, model.Dependency{
+				Name:    target[0],
+				Version: target[1],
+			})
+			continue
+		}
+		if target, ok := depReplace[[2]string{it.Mod.Path, ""}]; ok {
+			m.Dependencies = append(m.Dependencies, model.Dependency{
+				Name:    target[0],
+				Version: target[1],
+			})
+			continue
+		}
+		m.Dependencies = append(m.Dependencies, model.Dependency{Name: it.Mod.Path, Version: it.Mod.Version})
 	}
-	for _, it := range f.Replace {
-		delete(depM, [2]string{it.Old.Path, it.Old.Version})
-		depM[[2]string{it.New.Path, it.New.Version}] = struct{}{}
-	}
-	for it := range depM {
-		m.Dependencies = append(m.Dependencies, model.Dependency{
-			Name:    it[0],
-			Version: it[1],
-		})
-	}
+
 	task.AddModule(m)
 	return nil
 }
