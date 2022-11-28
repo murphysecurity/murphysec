@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
 	"github.com/murphysecurity/murphysec/config"
@@ -13,6 +14,7 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"path/filepath"
 )
@@ -111,10 +113,12 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 	// get absolute path and check if a directory
 	scanDir, e = filepath.Abs(scanDir)
 	if e != nil {
-		cv.DisplayScanInvalidPath(ctx, e)
+		reportIdeError(model.IDEStatusScanDirInvalid, e)
+		exitcode.Set(1)
+		return
 	}
 	if !utils.IsDir(scanDir) {
-		cv.DisplayScanInvalidPathMustDir(ctx, nil)
+		reportIdeError(model.IDEStatusScanDirInvalid, fmt.Errorf("not a dir"))
 		exitcode.Set(1)
 		return
 	}
@@ -122,7 +126,7 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 	// init logging
 	ctx, e = common.InitLogger(ctx)
 	if e != nil {
-		cv.DisplayInitializeFailed(ctx, e)
+		reportIdeError(model.IDEStatusLogFileCreationError, e)
 		exitcode.Set(1)
 		return
 	}
@@ -131,7 +135,7 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 	// init API
 	e = common.InitAPIClient(ctx)
 	if e != nil {
-		cv.DisplayInitializeFailed(ctx, e)
+		reportIdeError(model.IDEStatusAPIFail, e)
 		logger.Error(e)
 		exitcode.Set(1)
 		return
@@ -139,9 +143,46 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 
 	task, e := scan(ctx, scanDir, model.AccessTypeIdea)
 	if e != nil {
+		autoReportIde(e)
 		logger.Error(e)
 		exitcode.Set(1)
 		return
 	}
 	fmt.Println(string(must.A(json.MarshalIndent(model.GetIDEAOutput(task), "", "  "))))
+}
+
+type ideErrorResp struct {
+	ErrCode model.IDEStatus `json:"err_code"`
+	ErrMsg  string          `json:"err_msg"`
+}
+
+func autoReportIde(e error) {
+	if errors.Is(e, api.ErrTokenInvalid) {
+		reportIdeError(model.IDEStatusTokenInvalid, e)
+		return
+	}
+	if errors.Is(e, api.ErrServerFail) {
+		reportIdeError(model.IDEStatusServerFail, e)
+		return
+	}
+	if errors.Is(e, api.ErrGeneralError) {
+		reportIdeError(model.IDEStatusGeneralAPIError, e)
+		return
+	}
+	if errors.Is(e, api.ErrRequest) {
+		reportIdeError(model.IDEStatusAPIFail, e)
+		return
+	}
+	reportIdeError(model.IDEStatusUnknownError, e)
+}
+
+func reportIdeError(status model.IDEStatus, e error) {
+	resp := ideErrorResp{
+		ErrCode: status,
+		ErrMsg:  status.String(),
+	}
+	if e != nil {
+		resp.ErrMsg = e.Error()
+	}
+	fmt.Println(string(must.A(json.MarshalIndent(resp, "", "  "))))
 }

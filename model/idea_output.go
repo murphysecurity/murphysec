@@ -1,22 +1,13 @@
 package model
 
 import (
-	"encoding/json"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/murphysecurity/murphysec/utils/must"
 )
-
-func GenerateIdeaErrorOutput(e error) string {
-	iec := GetIdeaErrCode(e)
-	return string(must.A(json.Marshal(struct {
-		ErrCode IdeaErrCode `json:"err_code"`
-		ErrMsg  string      `json:"err_msg"`
-	}{ErrCode: iec, ErrMsg: e.Error()})))
-}
 
 type PluginOutput struct {
 	SubtaskName      string       `json:"subtask_name"`
-	ErrCode          IdeaErrCode  `json:"err_code"`
+	ErrCode          IDEStatus    `json:"err_code"`
+	ErrMsg           string       `json:"err_msg"`
 	IssuesCount      int          `json:"issues_count,omitempty"`
 	Comps            []PluginComp `json:"comps,omitempty"`
 	IssuesLevelCount struct {
@@ -65,7 +56,8 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 	}
 	var r = task.Result
 	var pluginOutput = PluginOutput{
-		ErrCode:     100,
+		ErrCode:     IDEStatusSucceeded,
+		ErrMsg:      IDEStatusSucceeded.String(),
 		SubtaskName: task.SubtaskName,
 		IssuesCount: r.LeakNum,
 		Comps:       make([]PluginComp, 0),

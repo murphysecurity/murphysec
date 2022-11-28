@@ -3,9 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"github.com/murphysecurity/murphysec/errors"
-	"github.com/murphysecurity/murphysec/infra/tlserr"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
 	"go.uber.org/zap"
@@ -15,23 +12,6 @@ import (
 	"path"
 	"reflect"
 )
-
-//go:generate stringer -type apiError -output apierror_string.go -linecomment
-type apiError int
-
-const (
-	_                        apiError = iota
-	ErrTLSError                       // api: tls error
-	ErrTimeout                        // api: timeout
-	ErrGeneral                        // api: general error
-	ErrUnprocessableResponse          // api: cannot process server response
-	ErrTokenInvalid                   // api: token invalid
-	ErrBadURL                         // api: bad URL
-)
-
-func (i apiError) Error() string {
-	return i.String()
-}
 
 var _DefaultClient *Client
 
@@ -75,20 +55,14 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 	req.Header.Set("Authorization", "Bearer "+c.token)
 	logger.Debugf("Request: %v", req.URL)
 	httpResponse, e = c.client.Do(req)
-	if isHttpTimeout(e) {
-		return ErrTimeout
-	}
-	if tlserr.IsTLSError(e) {
-		return errors.WithCause(ErrTLSError, e)
-	}
 	if e != nil {
-		return errors.WithCause(ErrGeneral, e)
+		return errorOf(e)
 	}
 	logger.Infof("API response - %d", httpResponse.StatusCode)
 	var data []byte
 	data, e = io.ReadAll(httpResponse.Body)
 	if e != nil {
-		return errors.WithCause(ErrGeneral, e)
+		return errorOf(e)
 	}
 	defer httpResponse.Body.Close()
 
@@ -100,21 +74,29 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 			return nil
 		}
 		if e = json.Unmarshal(data, resBody); e != nil {
-			return errors.WithCause(ErrUnprocessableResponse, e)
+			return &Error{
+				HTTPStatus:            statusCode,
+				UnprocessableResponse: true,
+				Cause:                 e,
+			}
 		}
 		return nil
 	}
 
 	// Error
-	if statusCode == 401 {
-		return ErrTokenInvalid
-	}
-	var m GeneralError
+	var m generalErrorResponse
 	if e = json.Unmarshal(data, &m); e != nil {
-		logger.Error("Server error response can't be parsed, suppressed", zap.Error(e))
-		return fmt.Errorf("%w ([%d]%s)", ErrUnprocessableResponse, statusCode, httpResponse.Status)
+		return &Error{
+			Cause:                 e,
+			HTTPStatus:            statusCode,
+			UnprocessableResponse: true,
+		}
 	} else {
-		return &m
+		return &Error{
+			HTTPStatus: statusCode,
+			Code:       m.Code,
+			Message:    m.MsgZh,
+		}
 	}
 }
 
@@ -137,13 +119,9 @@ func isHttpTimeout(e error) bool {
 	return ok && r.Timeout()
 }
 
-type GeneralError struct {
+type generalErrorResponse struct {
 	Code  int    `json:"code"`
 	MsgZh string `json:"msg_zh"`
-}
-
-func (c *GeneralError) Error() string {
-	return fmt.Sprintf("[%d]%s", c.Code, c.MsgZh)
 }
 
 func joinURL(base *url.URL, relPath string) *url.URL {
