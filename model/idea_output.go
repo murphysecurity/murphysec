@@ -30,7 +30,7 @@ type PluginComp struct {
 	ShowLevel          int                    `json:"show_level"`
 	MinFixedVersion    string                 `json:"min_fixed_version"`
 	Vulns              []PluginVulnDetailInfo `json:"vulns"`
-	CompVersion        string                 `json:"version"`
+	CompVersion        string                 `json:"comp_version"`
 	Licenses           []LicenseItem          `json:"licenses"`
 	Solutions          []Solution             `json:"solutions,omitempty"`
 	IsDirectDependency bool                   `json:"is_direct_dependency"`
@@ -38,12 +38,6 @@ type PluginComp struct {
 	FixPlans           FixPlanList            `json:"fix_plans"`
 	DependentPath      []string               `json:"dependent_path"`
 	PackageManager     string                 `json:"package_manager"`
-}
-
-type PluginCompSolution struct {
-	Compatibility *int   `json:"compatibility,omitempty"`
-	Description   string `json:"description"`
-	Type          string `json:"type,omitempty"`
 }
 
 func GetIDEAOutput(task *ScanTask) PluginOutput {

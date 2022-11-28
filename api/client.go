@@ -114,11 +114,6 @@ func (c *Client) PostJson(url *url.URL, data any) *http.Request {
 	return u
 }
 
-func isHttpTimeout(e error) bool {
-	r, ok := e.(*url.Error)
-	return ok && r.Timeout()
-}
-
 type generalErrorResponse struct {
 	Code  int    `json:"code"`
 	MsgZh string `json:"msg_zh"`

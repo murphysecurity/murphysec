@@ -1,0 +1,245 @@
+openapi: 3.0.3
+info:
+  title: Client JSON output schemas
+  description: Client JSON output schemas
+  version: 1.0.0
+components:
+  paths:
+
+  schemas:
+    ReferenceURL:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+      required:
+        - name
+        - url
+    Solution:
+      type: object
+      properties:
+        description:
+          type: string
+        type:
+          type: string
+        compatible_score:
+          type: integer
+      required:
+        - description
+        - type
+    PluginComp:
+      type: object
+      properties:
+        comp_name:
+          type: string
+        show_level:
+          type: integer
+        min_fixed_version:
+          type: string
+        vulns:
+          type: array
+          items:
+            $ref: '#/components/schemas/PluginVulnDetailInfo'
+        comp_version:
+          type: string
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LicenseItem'
+        solutions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Solution'
+        is_direct_dependency:
+          type: boolean
+        comp_sec_score:
+          type: integer
+        fix_plans:
+          $ref: '#/components/schemas/FixPlanList'
+        dependent_path:
+          type: array
+          items:
+            type: string
+        package_manager:
+          type: string
+      required:
+        - comp_name
+        - show_level
+        - min_fixed_version
+        - vulns
+        - comp_version
+        - licenses
+        - solutions
+        - is_direct_dependency
+        - comp_sec_score
+        - fix_plans
+        - dependent_path
+        - package_manager
+    PluginVulnDetailInfo:
+      type: object
+      properties:
+        cve_id:
+          type: string
+        description:
+          type: string
+        suggest_level:
+          type: string
+          enum:
+            - Optional
+            - Recommend
+            - StrongRecommend
+        influence:
+          type: integer
+        level:
+          type: string
+          enum:
+            - Critical
+            - High
+            - Medium
+            - Low
+        mps_id:
+          type: string
+        poc:
+          type: boolean
+        publish_time:
+          type: integer
+          description: UNIX timestamp
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReferenceURL'
+        min_fixed_version:
+          type: string
+        affected_version:
+          type: string
+        title:
+          type: string
+        solutions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Solution'
+      required:
+        - mps_id
+        - cve_id
+        - description
+        - level
+        - influence
+        - poc
+        - publish_time
+        - affected_version
+        - min_fixed_version
+        - references
+        - solutions
+        - suggest_level
+        - title
+    FixPlanList:
+      type: object
+      properties:
+        plan1:
+          $ref: '#/components/schemas/FixPlanItem'
+        plan2:
+          $ref: '#/components/schemas/FixPlanItem'
+        plan3:
+          $ref: '#/components/schemas/FixPlanItem'
+    FixPlanItem:
+      type: object
+      properties:
+        compatibility_score:
+          type: integer
+        security_score:
+          type: integer
+        target_version:
+          type: string
+        old_version:
+          type: string
+        comp_name:
+          type: string
+      required:
+        - compatibility_score
+        - security_score
+        - target_version
+        - old_version
+        - comp_name
+    LicenseItem:
+      type: object
+      properties:
+        spdx:
+          type: string
+        level:
+          type: string
+          enum:
+            - High
+            - Medium
+            - Low
+    PluginOutput:
+      type: object
+      properties:
+        subtask_name:
+          type: string
+        err_code:
+          type: integer
+        err_msg:
+          type: string
+        issue_count:
+          type: integer
+        comps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PluginComp'
+        issues_level_count:
+          type: object
+          properties:
+            critical:
+              type: integer
+            high:
+              type: integer
+            medium:
+              type: integer
+            low:
+              type: integer
+          required:
+            - critical
+            - high
+            - medium
+            - low
+        task_id:
+          type: string
+        subtask_id:
+          type: string
+        inspect_errors:
+          type: array
+          items:
+            type: object
+        dependencies_count:
+          type: integer
+        surpass_score:
+          type: integer
+        project_score:
+          type: integer
+      required:
+        - subtask_name
+        - err_code
+        - err_msg
+        - issues_count
+        - comps
+        - task_id
+        - subtask_id
+        - inspect_errors
+        - dependencies_count
+        - surpass_score
+        - project_score
+paths:
+  /ideascan:
+    get:
+      description: 伪接口，仅用于表达ideascan命令输出
+      summary: 伪接口，仅用于表达ideascan命令输出
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PluginOutput'
