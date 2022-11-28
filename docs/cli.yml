@@ -4,8 +4,6 @@ info:
   description: Client JSON output schemas
   version: 1.0.0
 components:
-  paths:
-
   schemas:
     ReferenceURL:
       type: object
