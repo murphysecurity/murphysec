@@ -34,7 +34,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return errors.WithMessage(e, "Open GoMod file")
 	}
 	logger.Debug("Parsing go.mod")
-	f, e := modfile.ParseLax(filepath.Base(modFilePath), data, nil)
+	f, e := modfile.Parse(filepath.Base(modFilePath), data, nil)
 	if e != nil {
 		return errors.WithMessage(e, "Parse go mod failed")
 	}
