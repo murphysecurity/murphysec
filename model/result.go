@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"github.com/murphysecurity/murphysec/infra/date"
+	"time"
+)
 
 // ScanResultResponse 服务端输出，字段名比较迷惑，需要注意。
 //
@@ -106,7 +109,7 @@ type VulnerabilityDetailInfo struct {
 	MpsID              string         `json:"mps_id"`               // 漏洞MPS ID
 	Patch              string         `json:"patch"`                // Patch信息
 	Poc                bool           `json:"poc"`                  // 存在POC与否？
-	PublishedDate      time.Time      `json:"published_date"`       // 漏洞发布时间
+	PublishedDate      date.Date      `json:"published_date"`       // 漏洞发布时间
 	ReferenceURLList   []ReferenceURL `json:"reference_url_list"`   //
 	ScopeInfluence     string         `json:"scope_influence"`      //
 	Title              string         `json:"title"`                // 漏洞标题

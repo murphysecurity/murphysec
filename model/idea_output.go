@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/murphysecurity/murphysec/utils"
+	"time"
 )
 
 type PluginOutput struct {
@@ -93,7 +94,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 				Level:           info.Level,
 				Influence:       info.Influence,
 				Poc:             info.Poc,
-				PublishTime:     int(info.PublishedDate.Unix()),
+				PublishTime:     int(time.Time(info.PublishedDate).Unix()),
 				AffectedVersion: effect.EffectVersion,
 				MinFixedVersion: effect.MinFixedVersion,
 				References:      utils.NoNilSlice(info.ReferenceURLList),
@@ -101,7 +102,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 				SuggestLevel:    info.FixSuggestionLevel,
 				Title:           info.Title,
 			}
-			if info.PublishedDate.IsZero() {
+			if time.Time(info.PublishedDate).IsZero() {
 				d.PublishTime = 0
 			}
 			rs = append(rs, d)
