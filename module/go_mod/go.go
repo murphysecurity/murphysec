@@ -49,13 +49,21 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		m.Name = f.Module.Mod.Path
 	}
 
+	var depM = make(map[[2]string]struct{})
 	for _, it := range f.Require {
 		if it == nil {
 			continue
 		}
+		depM[[2]string{it.Mod.Path, it.Mod.Version}] = struct{}{}
+	}
+	for _, it := range f.Replace {
+		delete(depM, [2]string{it.Old.Path, it.Old.Version})
+		depM[[2]string{it.New.Path, it.New.Version}] = struct{}{}
+	}
+	for it := range depM {
 		m.Dependencies = append(m.Dependencies, model.Dependency{
-			Name:    it.Mod.Path,
-			Version: it.Mod.Version,
+			Name:    it[0],
+			Version: it[1],
 		})
 	}
 	task.AddModule(m)
