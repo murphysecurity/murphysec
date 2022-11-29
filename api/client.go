@@ -2,7 +2,9 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"github.com/murphysecurity/murphysec/api/spec"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
 	"go.uber.org/zap"
@@ -30,6 +32,7 @@ func InitDefaultClient(config *Config) error {
 }
 
 type Client struct {
+	ctx     context.Context
 	client  *http.Client
 	baseUrl *url.URL
 	token   string
@@ -60,14 +63,22 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 	}
 	logger.Infof("API response - %d", httpResponse.StatusCode)
 	var data []byte
+	defer httpResponse.Body.Close()
 	data, e = io.ReadAll(httpResponse.Body)
 	if e != nil {
 		return errorOf(e)
 	}
-	defer httpResponse.Body.Close()
 
 	var statusCode = httpResponse.StatusCode
-
+	e = spec.Validate(c.ctx, req, httpResponse, data)
+	if e != nil {
+		return &Error{
+			Cause:                 ErrValidateFail,
+			HTTPStatus:            statusCode,
+			UnprocessableResponse: true,
+			Message:               "",
+		}
+	}
 	// Normal code
 	if statusCode >= 200 && statusCode < 300 {
 		if resBody == nil {

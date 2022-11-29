@@ -21,6 +21,7 @@ const (
 	ErrBadURL                         // api: bad URL
 	ErrServerFail                     // api: server fail
 	ErrGeneralError                   // api: general error
+	ErrValidateFail                   // api: validation fail
 )
 
 func (i apiError) Error() string {

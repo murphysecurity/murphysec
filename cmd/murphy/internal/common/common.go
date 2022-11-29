@@ -52,6 +52,7 @@ func InitAPIClient(ctx context.Context) error {
 		return e
 	}
 	var cf = &api.Config{
+		Ctx:                ctx,
 		Logger:             logctx.Use(ctx),
 		EnableNetworkDebug: EnableNetworkLogging,
 		Token:              token,

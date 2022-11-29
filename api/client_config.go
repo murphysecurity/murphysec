@@ -1,7 +1,10 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/murphysecurity/murphysec/api/spec"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/httplogger"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -18,6 +21,7 @@ type Config struct {
 	EnableNetworkDebug bool
 	Token              string
 	AllowInsecure      bool
+	Ctx                context.Context
 }
 
 func (c *Config) Build() (*Client, error) {
@@ -43,6 +47,7 @@ func (c *Config) Build() (*Client, error) {
 	}
 
 	var client Client
+	client.ctx = c.Ctx
 
 	client.client = &http.Client{Transport: defaultTransport}
 
@@ -68,6 +73,11 @@ func (c *Config) Build() (*Client, error) {
 
 	// Token
 	client.token = c.Token
+
+	// todo: refactor
+	spec.GetSpec().AddServer(&openapi3.Server{
+		URL: client.baseUrl.String() + "/platform3",
+	})
 
 	return &client, nil
 }
