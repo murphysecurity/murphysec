@@ -47,6 +47,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	if f.Module != nil {
 		m.ModuleVersion = f.Module.Mod.Version
 		m.ModulePath = f.Module.Mod.Path
+		m.ModuleName = f.Module.Mod.Path
 	}
 
 	for _, it := range f.Require {
