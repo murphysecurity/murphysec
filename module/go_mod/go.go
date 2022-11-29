@@ -66,6 +66,6 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 }
 
 var EcoRepo = model.EcoRepo{
-	Ecosystem:  "gomod",
+	Ecosystem:  "go",
 	Repository: "",
 }
