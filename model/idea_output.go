@@ -21,16 +21,16 @@ type PluginOutput struct {
 	ProjectName      string       `json:"project_name"`
 	Username         string       `json:"username"`
 	ErrCode          IdeaErrCode  `json:"err_code"`
-	IssuesCount      int          `json:"issues_count,omitempty"`
+	IssuesCount      int          `json:"issues_count"`
 	Comps            []PluginComp `json:"comps,omitempty"`
 	ProjectScore     int          `json:"project_score"`
 	SurpassScore     string       `json:"surpass_score"`
 	IssuesLevelCount struct {
-		Critical int `json:"critical,omitempty"`
-		High     int `json:"high,omitempty"`
-		Medium   int `json:"medium,omitempty"`
-		Low      int `json:"low,omitempty"`
-	} `json:"issues_level_count,omitempty"`
+		Critical int `json:"critical"`
+		High     int `json:"high"`
+		Medium   int `json:"medium"`
+		Low      int `json:"low"`
+	} `json:"issues_level_count"`
 	TaskId             string         `json:"task_id,omitempty"`
 	TotalContributors  int            `json:"total_contributors"`
 	ProjectId          string         `json:"project_id"`
