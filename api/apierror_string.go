@@ -19,9 +19,9 @@ func _() {
 	_ = x[ErrValidateFail-9]
 }
 
-const _apiError_name = "api: tls errorapi: timeoutapi: request failapi: cannot process server responseapi: token invalidapi: bad URLapi: server failapi: general errorapi: validate fail"
+const _apiError_name = "api: tls errorapi: timeoutapi: request failapi: cannot process server responseapi: token invalidapi: bad URLapi: server failapi: general errorapi: validation fail"
 
-var _apiError_index = [...]uint8{0, 14, 26, 43, 78, 96, 108, 124, 142, 160}
+var _apiError_index = [...]uint8{0, 14, 26, 43, 78, 96, 108, 124, 142, 162}
 
 func (i apiError) String() string {
 	i -= 1
