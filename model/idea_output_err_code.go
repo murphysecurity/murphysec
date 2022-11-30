@@ -16,6 +16,7 @@ const (
 	IDEStatusLogFileCreationError           // log file creation error
 	IDEStatusServerFail                     // server fail
 	IDEStatusGeneralAPIError                // general API error
+	IDEStatusTaskNotExists                  // task not exists
 )
 
 func (i IDEStatus) Error() string {

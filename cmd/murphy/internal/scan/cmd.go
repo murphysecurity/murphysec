@@ -157,6 +157,10 @@ type ideErrorResp struct {
 }
 
 func autoReportIde(e error) {
+	if errors.Is(e, api.ErrTaskNotFound) {
+		reportIdeError(model.IDEStatusTaskNotExists, e)
+		return
+	}
 	if errors.Is(e, api.ErrTokenInvalid) {
 		reportIdeError(model.IDEStatusTokenInvalid, e)
 		return
