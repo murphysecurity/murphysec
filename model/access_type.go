@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"strings"
 )
 

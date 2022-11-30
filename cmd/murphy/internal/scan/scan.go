@@ -2,6 +2,7 @@ package scan
 
 import (
 	"context"
+	"errors"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
 	"github.com/murphysecurity/murphysec/config"
@@ -11,7 +12,6 @@ import (
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/pkg/errors"
 	"path/filepath"
 )
 

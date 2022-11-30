@@ -2,11 +2,11 @@ package config
 
 import (
 	"context"
+	"errors"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"

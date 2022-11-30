@@ -2,10 +2,10 @@ package gitinfo
 
 import (
 	"context"
+	"errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/pkg/errors"
 	"time"
 )
 

@@ -1,9 +1,9 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"github.com/murphysecurity/murphysec/infra/tlserr"
-	"github.com/pkg/errors"
 	"net/url"
 	"strconv"
 )
