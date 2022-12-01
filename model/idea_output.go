@@ -22,7 +22,7 @@ type PluginOutput struct {
 	Username         string       `json:"username"`
 	ErrCode          IdeaErrCode  `json:"err_code"`
 	IssuesCount      int          `json:"issues_count"`
-	Comps            []PluginComp `json:"comps,omitempty"`
+	Comps            []PluginComp `json:"comps"`
 	ProjectScore     int          `json:"project_score"`
 	SurpassScore     string       `json:"surpass_score"`
 	IssuesLevelCount struct {
@@ -31,7 +31,7 @@ type PluginOutput struct {
 		Medium   int `json:"medium"`
 		Low      int `json:"low"`
 	} `json:"issues_level_count"`
-	TaskId             string         `json:"task_id,omitempty"`
+	TaskId             string         `json:"task_id"`
 	TotalContributors  int            `json:"total_contributors"`
 	ProjectId          string         `json:"project_id"`
 	InspectErrors      []InspectError `json:"inspect_errors,omitempty"`
@@ -47,7 +47,7 @@ type PluginComp struct {
 	Vulns              []VoVulnInfo         `json:"vulns"`
 	Version            string               `json:"version"`
 	License            *PluginCompLicense   `json:"license,omitempty"`
-	Solutions          []PluginCompSolution `json:"solutions,omitempty"`
+	Solutions          []PluginCompSolution `json:"solutions"`
 	IsDirectDependency bool                 `json:"is_direct_dependency"`
 	Language           string               `json:"language"`
 	FixType            string               `json:"fix_type"`
