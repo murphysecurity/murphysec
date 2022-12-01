@@ -111,7 +111,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	}
 
 	// start check
-	e = api.StartCheck(api.DefaultClient(), task.SubtaskId)
+	e = api.StartCheck(api.DefaultClient(), task.SubtaskId, api.SubtypeSBOM)
 	if e != nil {
 		cv.DisplaySubmitSBOMErr(ctx, e)
 		return nil, e
