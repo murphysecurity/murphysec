@@ -97,9 +97,6 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 		if info.IsDir() {
 			return nil
 		}
-		if strings.HasPrefix(info.Name(), ".") {
-			return filepath.SkipDir
-		}
 		if strings.Contains(info.Name(), "requirement") {
 			waitingScanPipManagerFiles[info.Name()] = path
 		}
