@@ -13,7 +13,7 @@ func envi(name string, defaultValue int) int {
 	}
 }
 
-const DefaultServerURL = "https://www.murphysec.com"
+const DefaultServerURL = "https://new.murphysec.com"
 
 var ServerURLOverride = os.Getenv("MPS_CLI_SERVER")
 var APITokenOverride = os.Getenv("API_TOKEN")
