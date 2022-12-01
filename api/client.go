@@ -70,17 +70,18 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 	}
 
 	var statusCode = httpResponse.StatusCode
-	e = spec.Validate(c.ctx, req, httpResponse, data)
-	if e != nil {
-		return &Error{
-			Cause:                 ErrValidateFail,
-			HTTPStatus:            statusCode,
-			UnprocessableResponse: true,
-			Message:               "",
-		}
-	}
 	// Normal code
 	if statusCode >= 200 && statusCode < 300 {
+		e = spec.Validate(c.ctx, req, httpResponse, data)
+		if e != nil {
+			return &Error{
+				Cause:                 ErrValidateFail,
+				HTTPStatus:            statusCode,
+				UnprocessableResponse: true,
+				Message:               "",
+			}
+		}
+
 		if resBody == nil {
 			return nil
 		}
