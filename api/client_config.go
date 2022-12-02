@@ -3,8 +3,6 @@ package api
 import (
 	"context"
 	"crypto/tls"
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/murphysecurity/murphysec/api/spec"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/httplogger"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -73,11 +71,6 @@ func (c *Config) Build() (*Client, error) {
 
 	// Token
 	client.token = c.Token
-
-	// todo: refactor
-	spec.GetSpec().AddServer(&openapi3.Server{
-		URL: client.baseUrl.String() + "/platform3",
-	})
 
 	return &client, nil
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/murphysecurity/murphysec/api/spec"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/murphysecurity/murphysec/version"
 	"go.uber.org/zap"
@@ -72,16 +71,6 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 	var statusCode = httpResponse.StatusCode
 	// Normal code
 	if statusCode >= 200 && statusCode < 300 {
-		e = spec.Validate(c.ctx, req, httpResponse, data)
-		if e != nil {
-			return &Error{
-				Cause:                 ErrValidateFail,
-				HTTPStatus:            statusCode,
-				UnprocessableResponse: true,
-				Message:               "",
-			}
-		}
-
 		if resBody == nil {
 			return nil
 		}
