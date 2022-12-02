@@ -2,6 +2,11 @@ name: Test
 
 on:
   push:
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/test.yml"
   pull_request:
     types:
       - opened

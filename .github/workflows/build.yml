@@ -37,8 +37,13 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Build
-        run: go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$GITHUB_REF -buildid=" -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/murphy
+      - name: Build without tag
+        if: "!startsWith(github.ref, 'refs/tags/v')"
+        run: go build -v -ldflags "-s -w -buildid=" -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/murphy
+
+      - name: Build with tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$GITHUB_REF_NAME -buildid=" -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/murphy
 
       - name: Rename for Windows
         if: matrix.goos == 'windows'
@@ -50,6 +55,33 @@ jobs:
           name: murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
           path: out/*
 
+  merge:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: murphysec-linux-amd64
+      - uses: actions/download-artifact@v3
+        with:
+          name: murphysec-linux-arm64
+      - uses: actions/download-artifact@v3
+        with:
+          name: murphysec-windows-amd64
+      - uses: actions/download-artifact@v3
+        with:
+          name: murphysec-darwin-arm64
+      - uses: actions/download-artifact@v3
+        with:
+          name: murphysec-darwin-amd64
+      - run: ls -alh
+        if: always()
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle
+          path: ./murphysec-*
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
