@@ -35,6 +35,7 @@ func init() {
 }
 
 func locateMavenIdeaMavenHome() string {
+	// todo: refactor
 	var s = strings.TrimSpace(os.Getenv("IDEA_MAVEN_HOME"))
 	if s == "" {
 		return ""
