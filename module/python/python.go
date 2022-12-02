@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/infra/maputils"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
@@ -107,22 +108,7 @@ func scanDepFile(ctx context.Context, dir string) (bool, error) {
 	})
 
 	// distinct waitingScanPipManagerFiles
-	var pendingScanRequirements []string
-	var requirementAbsPathSet = make(map[string]struct{})
-	for _, s := range waitingScanPipManagerFiles {
-		abs, e := filepath.Abs(filepath.Join(dir, s))
-		if e != nil {
-			continue
-		}
-		requirementAbsPathSet[abs] = struct{}{}
-	}
-	for it := range requirementAbsPathSet {
-		r, e := filepath.Rel(dir, it)
-		if e != nil {
-			continue
-		}
-		pendingScanRequirements = append(pendingScanRequirements, r)
-	}
+	var pendingScanRequirements = utils.DistinctStringSlice(maputils.Values(waitingScanPipManagerFiles))
 	sort.Strings(pendingScanRequirements)
 
 	logger.Sugar().Infof("total found pipManagerFiles: %d", len(pendingScanRequirements))
