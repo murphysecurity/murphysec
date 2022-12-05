@@ -6,7 +6,7 @@ on:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/*.yml"
+      - ".github/workflows/build.yml"
 jobs:
   build:
     runs-on: ubuntu-latest
