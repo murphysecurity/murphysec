@@ -37,7 +37,7 @@ type ScanResultResponse struct {
 
 type ScanResultCompInfo struct {
 	Component
-	IdDirectDependency bool                   `json:"id_direct_dependency"`
+	IsDirectDependency bool                   `json:"is_direct_dependency"`
 	CompSecScore       int                    `json:"comp_sec_score"`
 	MinFixedVersion    string                 `json:"min_fixed_version"`
 	CriticalNum        int                    `json:"critical_num"`

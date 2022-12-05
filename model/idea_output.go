@@ -113,7 +113,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			Vulns:              utils.NoNilSlice(vulnListMapper(comp.VulnList)),
 			Licenses:           utils.NoNilSlice(comp.LicenseList),
 			Solutions:          utils.NoNilSlice(comp.Solutions),
-			IsDirectDependency: comp.IdDirectDependency,
+			IsDirectDependency: comp.IsDirectDependency,
 			CompSecScore:       comp.CompSecScore,
 			FixPlans:           comp.FixPlans,
 			DependentPath:      utils.NoNilSlice(comp.DependentPath),
