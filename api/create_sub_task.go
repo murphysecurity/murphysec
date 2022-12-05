@@ -16,6 +16,7 @@ type CreateSubTaskRequest struct {
 	PushTime    *time.Time       `json:"push_time,omitempty"` // 提交时间
 	SubtaskName string           `json:"subtask_name"`
 	TaskID      *string          `json:"task_id,omitempty"`
+	Dir         string           `json:"dir"` // 路径
 }
 
 type CreateSubTaskResponse struct {

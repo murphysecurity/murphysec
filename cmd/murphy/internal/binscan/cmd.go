@@ -81,6 +81,7 @@ func binScan(ctx context.Context, scanPath string) error {
 		AccessType:  model.AccessTypeCli,
 		ScanMode:    mode,
 		SubtaskName: subtaskName,
+		Dir:         filepath.Dir(scanPath),
 	})
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)

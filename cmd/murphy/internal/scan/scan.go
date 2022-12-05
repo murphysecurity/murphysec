@@ -32,6 +32,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	createSubtask.SubtaskName = filepath.Base(dir)
 	createSubtask.AccessType = accessType
 	createSubtask.ScanMode = model.ScanModeSource
+	createSubtask.Dir = dir
 
 	// get repo config
 	var shouldWriteConfig = false
