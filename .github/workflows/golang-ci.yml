@@ -1,6 +1,11 @@
 name: golangci-lint
 on:
   push:
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+
   #    tags:
   #      - v*
   #    branches:
