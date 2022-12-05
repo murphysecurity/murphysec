@@ -100,6 +100,7 @@ func IdeaScan() *cobra.Command {
 	c.Hidden = true
 	c.Flags().String("ide", "", "unused")
 	must.M(c.Flags().MarkHidden("ide"))
+	c.Flags().StringVar(&cliTaskIdOverride, "task-id", "", "specify task id, and write it to config")
 	return &c
 }
 
@@ -139,6 +140,24 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 		logger.Error(e)
 		exitcode.Set(1)
 		return
+	}
+
+	if cliTaskIdOverride != "" {
+		logger.Infof("CLI task id override: %s", cliTaskIdOverride)
+		cf := config.RepoConfig{TaskId: cliTaskIdOverride}
+		if e := cf.Validate(); e != nil {
+			cv.DisplayBadTaskId(ctx)
+			logger.Error(e)
+			exitcode.Set(1)
+			return
+		}
+		e = config.WriteRepoConfig(ctx, scanDir, model.AccessTypeIdea, config.RepoConfig{TaskId: cliTaskIdOverride})
+		if e != nil {
+			cv.DisplayInitializeFailed(ctx, e)
+			logger.Error(e)
+			exitcode.Set(1)
+			return
+		}
 	}
 
 	task, e := scan(ctx, scanDir, model.AccessTypeIdea)
