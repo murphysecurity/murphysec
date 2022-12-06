@@ -60,6 +60,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 				CompVersion: it.Mod.Version,
 				EcoRepo:     EcoRepo,
 			},
+			IsDirectDependency: !it.Indirect,
 		})
 	}
 	task.AddModule(m)
