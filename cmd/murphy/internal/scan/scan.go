@@ -71,6 +71,10 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 		cv.DisplayTLSNotice(ctx)
 		return nil, e
 	}
+	if errors.Is(e, api.ErrTaskNotCli) {
+		cv.DisplayTaskNotForCli(ctx)
+		return nil, e
+	}
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)
 		return nil, e

@@ -40,6 +40,10 @@ func DisplayTLSNotice(ctx context.Context) {
 	ui.Use(ctx).Display(ui.MsgWarn, "当前建立的网络连接不安全，通讯已断开，您可以通过 -x 或 --allow-insecure 选项忽略这个错误")
 }
 
+func DisplayTaskNotForCli(ctx context.Context) {
+	ui.Use(ctx).Display(ui.MsgError, "扫描失败，该任务不是CLI检测方式，无法检测")
+}
+
 func DisplayCreateSubtaskErr(ctx context.Context, e error) {
 	ui.Use(ctx).Display(ui.MsgError, "扫描失败："+e.Error())
 }
