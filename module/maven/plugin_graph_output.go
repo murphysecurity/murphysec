@@ -3,7 +3,6 @@ package maven
 import (
 	"encoding/json"
 	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/utils"
 	"os"
 )
 
@@ -79,9 +78,6 @@ func (d PluginGraphOutput) _tree(id int, visitedId []bool, edges map[int][]int) 
 		if !scopeAllow {
 			return nil
 		}
-	}
-	if !utils.InStringSlice(d.Artifacts[id].Scopes, "compile") && !utils.InStringSlice(d.Artifacts[id].Scopes, "runtime") {
-		return nil
 	}
 	r := &Dependency{
 		Coordinate: Coordinate{
