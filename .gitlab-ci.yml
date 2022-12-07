@@ -1,0 +1,53 @@
+stages: # List of stages for jobs, and their order of execution
+  - build
+  - internal-pub
+  - notify
+
+variables:
+  GOPROXY: https://goproxy.cn,direct
+  GOPATH: "$CI_PROJECT_DIR/.go"
+  GOBIN: "$CI_PROJECT_DIR/.go/bin"
+  CGO_ENABLED: '0'
+  DENO_DIR: "$CI_PROJECT_DIR/.deno"
+
+compose-build:
+  image: golang:1.19.2-bullseye
+  stage: build
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - out/bin/*
+  cache:
+    key: cli-build-cache-1223
+    paths:
+      - .go/pkg/mod/
+  before_script:
+    - mkdir -p .go
+  script:
+    - GOOS=linux GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-linux-amd64
+    - GOOS=windows GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-windows-amd64.exe
+    - GOOS=darwin GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-darwin-amd64
+    - GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-saas-linux-amd64
+    - GOOS=windows GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-saas-windows-amd64.exe
+    - GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-saas-darwin-amd64
+    - sha256sum out/bin/*
+
+internal-cos-upload:
+  image: iseki0/cos-uploader:v1.1.3
+  stage: internal-pub
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - out/zip/*
+  script:
+    - chmod 755 ./ci/pack.sh && ./ci/pack.sh
+
+lark-notify:
+  image: denoland/deno
+  stage: notify
+  cache:
+    key: cli-deno-cache-1223
+    paths:
+      - .deno
+  script:
+    - deno run --allow-all lark-push.ts
