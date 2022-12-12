@@ -14,16 +14,6 @@ on:
       - "go.mod"
       - "go.sum"
       - ".github/workflows/*.yml"
-  pull_request:
-    paths:
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - ".github/workflows/*.yml"
-    types:
-      - opened
-      - reopened
-      - synchronize
 jobs:
   build:
     runs-on: ubuntu-latest
