@@ -2,11 +2,28 @@ name: Build
 
 on:
   push:
+    tags:
+      - v*
+    branches:
+      - master
+      - v*
+      - dev*
+      - ci*
     paths:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/build.yml"
+      - ".github/workflows/*.yml"
+  pull_request:
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
+    types:
+      - opened
+      - reopened
+      - synchronize
 jobs:
   build:
     runs-on: ubuntu-latest

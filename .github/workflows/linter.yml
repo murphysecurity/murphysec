@@ -1,17 +1,29 @@
 name: golangci-lint
 on:
   push:
+    tags:
+      - v*
+    branches:
+      - master
+      - v*
+      - dev*
+      - ci*
     paths:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
-
-  #    tags:
-  #      - v*
-  #    branches:
-  #      - master
-  #      - main
+      - ".github/workflows/*.yml"
   pull_request:
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
+    types:
+      - opened
+      - reopened
+      - synchronize
+
 permissions:
   contents: read
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
