@@ -11,7 +11,7 @@ require (
 	github.com/iseki0/go-yarnlock v0.0.1
 	github.com/iseki0/osname v0.0.0-20220802070850-5def7ee59aab
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
-	github.com/magiconair/properties v1.8.6
+	github.com/magiconair/properties v1.8.7
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.13.0
 	github.com/pelletier/go-toml/v2 v2.0.6
