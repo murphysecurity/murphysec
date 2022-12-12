@@ -2,7 +2,24 @@ name: Test
 
 on:
   push:
+    tags:
+      - v*
+    branches:
+      - master
+      - v*
+      - dev*
+      - ci*
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
   pull_request:
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
     types:
       - opened
       - reopened

@@ -2,6 +2,13 @@ name: Build
 
 on:
   push:
+    tags:
+      - v*
+    branches:
+      - master
+      - v*
+      - dev*
+      - ci*
     paths:
       - "**/*.go"
       - "go.mod"
