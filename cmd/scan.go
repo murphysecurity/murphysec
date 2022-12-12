@@ -77,6 +77,7 @@ func scanCmd() *cobra.Command {
 }
 
 func binScanCmd() *cobra.Command {
+	var jsonOutput bool
 	c := &cobra.Command{
 		Use: "binscan DIR",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -92,19 +93,29 @@ func binScanCmd() *cobra.Command {
 					return
 				}
 			}
-			task := model.CreateScanTask(projectDir, model.TaskKindBinary, model.TaskTypeCli)
+			taskType := model.TaskTypeCli
+			if jsonOutput {
+				taskType = model.TaskTypeJenkins
+			}
+			task := model.CreateScanTask(projectDir, model.TaskKindBinary, taskType)
 			ctx = model.WithScanTask(ctx, task)
 			if e := inspector.BinScan(ctx); e != nil {
 				SetGlobalExitCode(1)
+			} else {
+				if jsonOutput {
+					fmt.Println(model.GenerateIdeaOutput(ctx))
+				}
 			}
 		},
 		Short: "Scan specified binary files and software artifacts, currently supporting .jar, .war, and common binary file formats (The file will be uploaded to the server for analysis.)",
 	}
+	c.Flags().BoolVar(&jsonOutput, "json", false, "json output")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
 
 func iotScanCmd() *cobra.Command {
+	var jsonOutput bool
 	c := &cobra.Command{
 		Use:   "iotscan DIR",
 		Short: "Scan the specified IoT device firmware, currently supporting .bin or other formats (The file will be uploaded to the server for analysis.)",
@@ -121,13 +132,22 @@ func iotScanCmd() *cobra.Command {
 					return
 				}
 			}
-			task := model.CreateScanTask(projectDir, model.TaskKindIotScan, model.TaskTypeCli)
+			taskType := model.TaskTypeCli
+			if jsonOutput {
+				taskType = model.TaskTypeJenkins
+			}
+			task := model.CreateScanTask(projectDir, model.TaskKindIotScan, taskType)
 			ctx = model.WithScanTask(ctx, task)
 			if e := inspector.BinScan(ctx); e != nil {
 				SetGlobalExitCode(1)
+			} else {
+				if jsonOutput {
+					fmt.Println(model.GenerateIdeaOutput(ctx))
+				}
 			}
 		},
 	}
 	c.Args = cobra.ExactArgs(1)
+	c.Flags().BoolVar(&jsonOutput, "json", false, "json output")
 	return c
 }

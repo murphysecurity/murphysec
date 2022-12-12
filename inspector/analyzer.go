@@ -11,17 +11,17 @@ import (
 	"strings"
 )
 
-func InspectDockerfile(ctx context.Context) {
+func InspectDockerfile(ctx context.Context) error {
 	scanTask := model.UseScanTask(ctx)
 	ui := scanTask.UI()
 	dockerfilePath := scanTask.ProjectDir
 	data, e := os.ReadFile(dockerfilePath)
 	if e != nil {
 		ui.Display(display.MsgError, fmt.Sprintf("读取 Dockerfile 失败：%s", e.Error()))
-		return
+		return e
 	}
 	if e := createTaskC(ctx); e != nil {
-		return
+		return e
 	}
 	r := analyzeDockerfile(string(data))
 	module := model.Module{
@@ -35,17 +35,18 @@ func InspectDockerfile(ctx context.Context) {
 	}
 	scanTask.Modules = append(scanTask.Modules, module)
 	if e := submitModuleInfoC(ctx); e != nil {
-		return
+		return nil
 	}
 	if e := startCheckC(ctx); e != nil {
-		return
+		return nil
 	}
 	if e := queryResultC(ctx); e != nil {
-		return
+		return nil
 	}
 	if scanTask.ScanResult.ReportURL() != "" {
 		ui.Display(display.MsgNotice, fmt.Sprintf("检测报告详见：%s", scanTask.ScanResult.ReportURL()))
 	}
+	return e
 }
 
 type DockerfileResult []DockerfileItem
