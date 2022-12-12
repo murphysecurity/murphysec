@@ -91,6 +91,7 @@ jobs:
           path: ./bundle.7z
 
   internal-upload:
+    if: github.event_name != 'pull_request'
     needs:
       - merge
     runs-on: ubuntu-latest
