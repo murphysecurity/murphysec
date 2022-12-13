@@ -97,7 +97,7 @@ jobs:
     needs:
       - merge
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
     env:
       COS_BASE64: ${{ secrets.COS_BASE64 }}
       LARK_PUSH_KEY: ${{ secrets.LARK_PUSH_KEY }}
