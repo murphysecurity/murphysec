@@ -62,10 +62,16 @@ jobs:
           name: murphysec-${{ matrix.goos }}-${{ matrix.goarch }}
           path: out/*
 
-  merge:
+  internal-publish:
+    name: Internal publish
     needs:
       - build
+    if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    env:
+      COS_BASE64: ${{ secrets.COS_BASE64 }}
+      LARK_PUSH_KEY: ${{ secrets.LARK_PUSH_KEY }}
+      QCLOUD_COS_DOMAIN: ${{ secrets.QCLOUD_COS_DOMAIN }}
     steps:
       - uses: actions/download-artifact@v3
         with:
@@ -86,32 +92,6 @@ jobs:
         run: 7z a bundle.7z -mx=9 -ms=on murphy*
       - run: ls -alh
         if: always()
-      - name: Upload artifacts - 7zip-bundle
-        uses: actions/upload-artifact@v3
-        with:
-          name: 7zip-bundle
-          path: ./bundle.7z
-
-  internal-upload:
-    if: github.event_name != 'pull_request'
-    needs:
-      - merge
-    runs-on: ubuntu-latest
-    env:
-      COS_BASE64: ${{ secrets.COS_BASE64 }}
-      LARK_PUSH_KEY: ${{ secrets.LARK_PUSH_KEY }}
-      QCLOUD_COS_DOMAIN: ${{ secrets.QCLOUD_COS_DOMAIN }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-        with:
-          name: 7zip-bundle
-      - run: ls -lah
-      - name: Download upload tools
-        run: |
-          wget https://github.com/iseki0/tccos-tools/releases/download/v0.1.0/cosupload-linux-amd64
-          mv cosupload-linux-amd64 cosupload
-          chmod 0755 cosupload
       - name: Internal upload
         run: ./cosupload bundle.7z /client/$GITHUB_REF_NAME/
       - uses: denoland/setup-deno@v1
@@ -119,6 +99,7 @@ jobs:
           deno-version: v1.x
       - name: Lark push
         run: deno run --allow-all ci/lark-push.ts
+
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
