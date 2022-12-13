@@ -82,11 +82,6 @@ jobs:
         run: 7z a bundle.7z -mx=9 -ms=on murphy*
       - run: ls -alh
         if: always()
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: bundle
-          path: ./murphysec-*
       - name: Upload artifacts - 7zip-bundle
         uses: actions/upload-artifact@v3
         with:
