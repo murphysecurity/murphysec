@@ -22,7 +22,7 @@ type ScanResultResponse struct {
 	RecommendNum int                                `json:"recommend_num"` // 建议修复数量
 	StringNum    int                                `json:"string_num"`    // 强烈建议修复数量
 	RelyNum      int                                `json:"rely_num"`      // 本次扫描依赖组件总数
-	LeakNum      int                                `json:"leak_num"`      // 本次任务包含漏洞总数
+	LeakNum      int                                `json:"leak_num"`      // 本次任务包含缺陷组件数量
 	HighNum      int                                `json:"high_num"`      // 高危漏洞数量
 	MediumNum    int                                `json:"medium_num"`    // 中危漏洞数量
 	LowNum       int                                `json:"low_num"`       // 低危漏洞数量
