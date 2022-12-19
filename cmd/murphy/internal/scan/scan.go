@@ -133,7 +133,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 		return nil, e
 	}
 	cv.DisplayStatusClear(ctx)
-	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum)
+	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum, len(result.VulnInfoMap))
 
 	return task, nil
 }

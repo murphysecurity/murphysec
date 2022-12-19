@@ -75,12 +75,14 @@ func DisplayStatusClear(ctx context.Context) {
 	ui.Use(ctx).ClearStatus()
 }
 
-func DisplayScanResultSummary(ctx context.Context, totalDep int, totalVuln int) {
+func DisplayScanResultSummary(ctx context.Context, totalDep int, totalVulnDep int, totalVuln int) {
 	var u = ui.Use(ctx)
 	u.Display(ui.MsgNotice, fmt.Sprint(
 		"项目扫描完成，依赖数：",
 		termenv.String(strconv.Itoa(totalDep)).Foreground(termenv.ANSIBrightCyan),
-		"，漏洞数：",
+		"，缺陷组件数：",
+		termenv.String(strconv.Itoa(totalVulnDep)).Foreground(termenv.ANSIBrightRed),
+		"，漏洞数",
 		termenv.String(strconv.Itoa(totalVuln)).Foreground(termenv.ANSIBrightRed),
 	))
 }
