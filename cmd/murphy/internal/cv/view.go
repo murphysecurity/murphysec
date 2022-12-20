@@ -97,3 +97,10 @@ func DisplayUploadErr(ctx context.Context, e error) {
 func DisplayBadTaskId(ctx context.Context) {
 	ui.Use(ctx).Display(ui.MsgError, "无效的任务 ID")
 }
+
+func DisplayAlertMessage(ctx context.Context, msg string) {
+	if msg == "" {
+		return
+	}
+	ui.Use(ctx).Display(ui.MsgNotice, msg)
+}

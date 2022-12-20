@@ -80,6 +80,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 		return nil, e
 	}
 	logger.Infof("subtask created, %s / %s", createTaskResp.TaskID, createTaskResp.SubtaskID)
+	cv.DisplayAlertMessage(ctx, createTaskResp.AlertMessage)
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.TaskName, createTaskResp.TaskID, createSubtask.SubtaskName, createTaskResp.SubtaskID)
 	if shouldWriteConfig {
 		logger.Infof("creating repo config...")

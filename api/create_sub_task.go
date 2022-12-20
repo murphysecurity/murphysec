@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/version"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type CreateSubTaskRequest struct {
 	SubtaskName string           `json:"subtask_name"`
 	TaskID      *string          `json:"task_id,omitempty"`
 	Dir         string           `json:"dir"` // 路径
+	CliVersion  string           `json:"cli_version"`
 }
 
 type CreateSubTaskResponse struct {
@@ -24,11 +26,13 @@ type CreateSubTaskResponse struct {
 	TaskID       string `json:"task_id"`       // 任务ID
 	SubtaskID    string `json:"subtask_id"`    // 子任务ID
 	TaskName     string `json:"task_name"`     // 任务名称
+	AlertMessage string `json:"alert_message"`
 }
 
 func CreateSubTask(client *Client, request *CreateSubTaskRequest) (*CreateSubTaskResponse, error) {
 	checkNotNull(client)
 	checkNotNull(request)
+	request.CliVersion = version.Version()
 	var resp CreateSubTaskResponse
 	if e := client.DoJson(client.PostJson(joinURL(client.baseUrl, "/platform3/v3/client/create_subtask"), request), &resp); e != nil {
 		return nil, e
