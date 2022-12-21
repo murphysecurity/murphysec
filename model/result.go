@@ -9,30 +9,31 @@ import (
 //
 // 标注为 <unknown> 的暂时不知道是什么，估计用不上
 type ScanResultResponse struct {
-	Complete     bool                               `json:"complete"`
-	SubtaskId    string                             `json:"subtask_id"`
-	ProjectsId   string                             `json:"projects_id"`
-	TeamId       string                             `json:"team_id"`
-	TaskId       string                             `json:"task_id"`
-	UserId       string                             `json:"user_id"`
-	FinishTime   time.Time                          `json:"finish_time"`
-	Addr         string                             `json:"addr"`          // <unknown>
-	FromSource   string                             `json:"from_source"`   // <unknown>
-	OptionalNum  int                                `json:"optional_num"`  // 可选修复数量
-	RecommendNum int                                `json:"recommend_num"` // 建议修复数量
-	StringNum    int                                `json:"string_num"`    // 强烈建议修复数量
-	RelyNum      int                                `json:"rely_num"`      // 本次扫描依赖组件总数
-	LeakNum      int                                `json:"leak_num"`      // 本次任务包含缺陷组件数量
-	HighNum      int                                `json:"high_num"`      // 高危漏洞数量
-	MediumNum    int                                `json:"medium_num"`    // 中危漏洞数量
-	LowNum       int                                `json:"low_num"`       // 低危漏洞数量
-	CriticalNum  int                                `json:"critical_num"`  // 严重漏洞数量
-	LicenseNum   int                                `json:"license_num"`   // 许可证数量
-	Languages    string                             `json:"languages"`     // 语言，逗号隔开的
-	SurpassScore int                                `json:"surpass_score"`
-	ProjectScore int                                `json:"project_score"`
-	CompInfoList []ScanResultCompInfo               `json:"comp_info_list"`
-	VulnInfoMap  map[string]VulnerabilityDetailInfo `json:"vuln_info_map"`
+	Complete       bool                               `json:"complete"`
+	SubtaskId      string                             `json:"subtask_id"`
+	ProjectsId     string                             `json:"projects_id"`
+	TeamId         string                             `json:"team_id"`
+	TaskId         string                             `json:"task_id"`
+	UserId         string                             `json:"user_id"`
+	FinishTime     time.Time                          `json:"finish_time"`
+	Addr           string                             `json:"addr"`          // <unknown>
+	FromSource     string                             `json:"from_source"`   // <unknown>
+	OptionalNum    int                                `json:"optional_num"`  // 可选修复数量
+	RecommendNum   int                                `json:"recommend_num"` // 建议修复数量
+	StringNum      int                                `json:"string_num"`    // 强烈建议修复数量
+	RelyNum        int                                `json:"rely_num"`      // 本次扫描依赖组件总数
+	LeakNum        int                                `json:"leak_num"`      // 本次任务包含缺陷组件数量
+	HighNum        int                                `json:"high_num"`      // 高危漏洞数量
+	MediumNum      int                                `json:"medium_num"`    // 中危漏洞数量
+	LowNum         int                                `json:"low_num"`       // 低危漏洞数量
+	CriticalNum    int                                `json:"critical_num"`  // 严重漏洞数量
+	LicenseNum     int                                `json:"license_num"`   // 许可证数量
+	Languages      string                             `json:"languages"`     // 语言，逗号隔开的
+	SurpassScore   int                                `json:"surpass_score"`
+	ProjectScore   int                                `json:"project_score"`
+	CompInfoList   []ScanResultCompInfo               `json:"comp_info_list"`
+	VulnInfoMap    map[string]VulnerabilityDetailInfo `json:"vuln_info_map"`
+	LicenseInfoMap map[string]LicenseItem             `json:"license_info_map"`
 }
 
 type ScanResultCompInfo struct {

@@ -17,12 +17,13 @@ type PluginOutput struct {
 		Medium   int `json:"medium,omitempty"`
 		Low      int `json:"low,omitempty"`
 	} `json:"issues_level_count,omitempty"`
-	TaskId            string         `json:"task_id"`
-	SubtaskId         string         `json:"subtask_id"`
-	InspectErrors     []InspectError `json:"inspect_errors,omitempty"`
-	DependenciesCount int            `json:"dependencies_count"`
-	SurpassScore      int            `json:"surpass_score"`
-	ProjectScore      int            `json:"project_score"`
+	TaskId            string                 `json:"task_id"`
+	SubtaskId         string                 `json:"subtask_id"`
+	InspectErrors     []InspectError         `json:"inspect_errors,omitempty"`
+	DependenciesCount int                    `json:"dependencies_count"`
+	SurpassScore      int                    `json:"surpass_score"`
+	ProjectScore      int                    `json:"project_score"`
+	LicenseInfoMap    map[string]LicenseItem `json:"license_info_map"`
 }
 
 type PluginComp struct {
@@ -50,6 +51,9 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		}
 	}
 	var r = task.Result
+	if r.LicenseInfoMap == nil {
+		r.LicenseInfoMap = make(map[string]LicenseItem)
+	}
 	var pluginOutput = PluginOutput{
 		ErrCode:     IDEStatusSucceeded,
 		ErrMsg:      IDEStatusSucceeded.String(),
