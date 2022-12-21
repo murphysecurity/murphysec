@@ -77,6 +77,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		DependenciesCount: r.RelyNum,
 		SurpassScore:      r.SurpassScore,
 		ProjectScore:      r.ProjectScore,
+		LicenseInfoMap:    r.LicenseInfoMap,
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {
