@@ -134,12 +134,16 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 				return nil
 			}
 			for k, v := range parseRequirements(string(data)) {
-				versionedComps[k] = v
+				if v == "" {
+					unknownVersionComps[k] = struct{}{}
+				} else {
+					versionedComps[k] = v
+				}
 			}
 			return nil
 		}
 		if filepath.Ext(filename) == ".py" {
-			data, e := readFile(filename, 256*1024)
+			data, e := readFile(path, 256*1024)
 			if e != nil {
 				logger.Warnf("read py: %s %v", path, e)
 				return nil

@@ -14,7 +14,12 @@ func parseRequirements(data string) map[string]string {
 		if m == nil {
 			continue
 		}
-		deps[m[1]] = m[2]
+		k := strings.TrimSpace(m[1])
+		if k == "" {
+			continue
+		}
+		v := strings.TrimSpace(m[2])
+		deps[k] = v
 	}
 	return deps
 }
