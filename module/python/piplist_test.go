@@ -18,7 +18,7 @@ DEPRECATION: The default format will switch to columns in the future. You can us
 certifi (2022.9.24)
 urllib3 (1.26.12)
 `
-	m, e:=parsePipListDefaultFormat([]byte(r))
+	m, e := parsePipListDefaultFormat([]byte(r))
 	assert.NoError(t, e)
 	assert.NotNil(t, m)
 	assert.Len(t, m, 2)

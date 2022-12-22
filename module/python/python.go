@@ -82,11 +82,11 @@ var EcoRepo = model.EcoRepo{
 }
 
 func isRequirementsFile(filename string) bool {
-	return strings.Index(strings.ToLower(filename), "requirement") > -1
+	return strings.Contains(strings.ToLower(filename), "requirement")
 }
 
-func isDockerfile(fileame string) bool {
-	return strings.Index(strings.ToLower(fileame), "dockerfile") > -1
+func isDockerfile(filename string) bool {
+	return strings.Contains(strings.ToLower(filename), "dockerfile")
 }
 
 func dirIgnore(name string) bool {
