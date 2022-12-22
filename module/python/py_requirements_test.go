@@ -1,9 +1,9 @@
 package python
 
 import (
-	"encoding/json"
-	"github.com/murphysecurity/murphysec/model"
 	"github.com/stretchr/testify/assert"
+	"sort"
+	"strings"
 	"testing"
 )
 
@@ -32,53 +32,13 @@ coveralls>=0.1.1,<0.2
 # Others
 Whoosh>=2.4.1
 `
-
-	var rs =
-	// language=json
-	`[
-  {
-  "name": "Werkzeug",
-  "version": "0.6.2"
-  },
-  {
-  "name": "mock",
-  "version": "1.0.1"
-  },
-  {
-  "name": "WebTest",
-  "version": "1.3.4"
-  },
-  {
-  "name": "django-webtest",
-  "version": "1.5.3"
-  },
-  {
-  "name": "factory-boy",
-  "version": "2.1.1"
-  },
-  {
-  "name": "httpretty",
-  "version": "0.6.3"
-  },
-  {
-  "name": "ruamel.yaml",
-  "version": "1.0.0"
-  },
-  {
-  "name": "Sphinx",
-  "version": "1.2b3"
-  },
-  {
-  "name": "flake8",
-  "version": "0.8"
-  },
-  {
-  "name": "Whoosh",
-  "version": "2.4.1"
-  }
-  ]
-`
-	var r []model.Dependency
-	assert.NoError(t, json.Unmarshal([]byte(rs), &r))
-	assert.Equal(t, r, parseRequirements(data))
+	var expect = `Sphinx1.2b3 WebTest1.3.4 Werkzeug0.6.2 Whoosh2.4.1 django-webtest1.5.3 factory-boy2.1.1 flake80.8 httpretty0.6.3 mock1.0.1 ruamel.yaml1.0.0`
+	var r []string
+	for k, v := range parseRequirements(data) {
+		r = append(r, k+v)
+	}
+	sort.Strings(r)
+	var actual = strings.Join(r, " ")
+	t.Log(actual)
+	assert.Equal(t, expect, actual)
 }
