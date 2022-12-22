@@ -1,19 +1,13 @@
 package python
 
 import (
-	"bufio"
 	"context"
-	"fmt"
 	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/infra/maputils"
+	"github.com/murphysecurity/murphysec/infra/pathignore"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils"
-	"go.uber.org/zap"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
 )
@@ -39,10 +33,7 @@ func (i Inspector) CheckDir(dir string) bool {
 			if name == "conanfile.py" {
 				continue
 			}
-			if name == "pyproject.toml" {
-				return true
-			}
-			if strings.HasPrefix(name, "requirements") {
+			if isRequirementsFile(name) {
 				return true
 			}
 			if filepath.Ext(name) == ".py" {
@@ -53,189 +44,153 @@ func (i Inspector) CheckDir(dir string) bool {
 	return false
 }
 
-func parseDockerFile(dir, path string, m map[string]string) {
-	// find all PipManagerFiles from dockerfile
-	var regexpToFindPipManagerFiles = `pip\d?\s+install.*?\s-r\s+([^\s&|;"']+)`
-
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return
-	}
-	result := regexp.MustCompile(regexpToFindPipManagerFiles).FindAllStringSubmatch(string(data), -1)
-	for _, item := range result {
-		if len(item) != 2 {
-			continue
-		}
-		m[item[1]] = filepath.Join(dir, item[1])
-	}
-}
-
-func scanDepFile(ctx context.Context, dir string) (bool, error) {
-	var logger = logctx.Use(ctx)
-	var found = false
-	var task = model.UseInspectionTask(ctx)
-
-	var tomlFile = filepath.Join(dir, "pyproject.toml")
-	var waitingScanPipManagerFiles = make(map[string]string)
-	if utils.IsFile(tomlFile) {
-		list, e := tomlBuildSysFile(ctx, tomlFile)
-		if e != nil {
-			logger.Sugar().Warnf("Analyze pyproject.toml failed: %s", e.Error())
-		} else if len(list) > 0 {
-			task.AddModule(model.Module{
-				ModuleName:     "Python-pyprojects.toml",
-				ModulePath:     tomlFile,
-				PackageManager: "pip",
-				Dependencies:   list,
-			})
-		}
-	}
-
-	_ = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-		if strings.Contains(info.Name(), "requirement") {
-			waitingScanPipManagerFiles[info.Name()] = path
-		}
-		if info.Name() == "Dockerfile" {
-			parseDockerFile(dir, path, waitingScanPipManagerFiles)
-		}
-		return nil
-	})
-
-	// distinct waitingScanPipManagerFiles
-	var pendingScanRequirements = utils.DistinctStringSlice(maputils.Values(waitingScanPipManagerFiles))
-	sort.Strings(pendingScanRequirements)
-
-	logger.Sugar().Infof("total found pipManagerFiles: %d", len(pendingScanRequirements))
-	for _, fp := range pendingScanRequirements {
-		logger.Info("start readRequirements...", zap.String("relativePath", fp))
-		deps, e := readRequirements(fp)
-		if e != nil {
-			logger.Sugar().Errorf("Parse requirements file failed[%s]: %s", fp, e.Error())
-			continue
-		}
-		if len(deps) == 0 {
-			continue
-		}
-		found = true
-		m := model.Module{
-			ModuleName:     fmt.Sprintf("Python-%s", filepath.Base(fp)),
-			PackageManager: "pip",
-			Dependencies:   deps,
-			ModulePath:     fp,
-		}
-		task.AddModule(m)
-	}
-	return found, nil
-}
-
 func (i Inspector) InspectProject(ctx context.Context) error {
-	logger := logctx.Use(ctx)
+	logger := logctx.Use(ctx).Sugar()
 	dir := model.UseInspectionTask(ctx).Dir()
-
-	foundDepFiles, e := scanDepFile(ctx, dir)
+	info, e := collectDepsInfo(ctx, dir)
 	if e != nil {
-		logger.Sugar().Warnf("Scan deps failed: %s", e.Error())
+		return e
 	}
-	if foundDepFiles {
+	if len(info) == 0 {
+		logger.Infof("found no deps, omit module")
 		return nil
 	}
 
-	componentMap := map[string]string{}
-	ignoreSet := map[string]struct{}{}
-	logger.Debug("Start walk python project dir", zap.String("dir", dir))
-	e = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d == nil {
-			return nil
-		}
-		if d.Name() == "venv" && d.IsDir() {
-			logger.Debug("Found venv dir, skip", zap.String("dir", path))
-			return fs.SkipDir
-		}
-		if d.IsDir() {
-			ignoreSet[d.Name()] = struct{}{}
-			return nil
-		}
-		if filepath.Ext(path) != ".py" {
-			return nil
-		}
-		f, e := os.Open(path)
-		if e != nil {
-			logger.Sugar().Warnf("Open python file failed: %s, path: %s", e.Error(), path)
-			return e
-		}
-		defer f.Close()
-		scanner := bufio.NewScanner(io.LimitReader(f, 4*1024*1024))
-		scanner.Split(bufio.ScanLines)
-		scanner.Buffer(make([]byte, 16*1024), 16*1024)
-		for scanner.Scan() {
-			if scanner.Err() != nil {
-				logger.Sugar().Warnf("Scan python file failed, path: %s, error: %s", path, e.Error())
-				return nil
-			}
-			t := strings.TrimSpace(scanner.Text())
-			for _, pkg := range parsePyImport(t) {
-				if pyPkgBlackList[pkg] {
-					continue
-				}
-				componentMap[pkg] = ""
-			}
-		}
-		return nil
-	})
-	if e != nil {
-		logger.Warn("Walk error", zap.Error(e))
+	m := model.Module{
+		ModuleName:     filepath.ToSlash(model.UseInspectionTask(ctx).RelDir()),
+		PackageManager: "pip",
+		ModulePath:     dir,
 	}
-
-	if pipListDeps, e := executePipList(ctx, dir); e != nil {
-		logger.Warn("pip list execution failed", zap.Error(e))
-	} else {
-		mergeComponentVersionOnly(componentMap, pipListDeps)
+	if m.ModuleName == "." {
+		m.ModuleName = "Python"
 	}
-
-	for s := range ignoreSet {
-		delete(componentMap, s)
+	for _, it := range info {
+		k, v := it[0], it[1]
+		var di model.DependencyItem
+		di.CompName = k
+		di.CompVersion = v
+		di.EcoRepo = EcoRepo
+		m.Dependencies = append(m.Dependencies, di)
 	}
-	if len(componentMap) == 0 {
-		logger.Warn("No components valid, omit module")
-		return nil
-	}
-	{
-		m := model.Module{
-			ModuleName:     filepath.ToSlash(model.UseInspectionTask(ctx).RelDir()),
-			PackageManager: "pip",
-			ModulePath:     dir,
-		}
-		if m.ModuleName == "." {
-			m.ModuleName = "Python"
-		}
-		for k, v := range componentMap {
-			var di model.DependencyItem
-			di.CompName = k
-			di.CompVersion = v
-			di.EcoRepo = EcoRepo
-			m.Dependencies = append(m.Dependencies, di)
-		}
-		model.UseInspectionTask(ctx).AddModule(m)
-		return nil
-	}
-}
-
-func mergeComponentVersionOnly(target map[string]string, deps []model.DependencyItem) {
-	for _, it := range deps {
-		v, ok := target[strings.ToLower(it.CompName)]
-		if v == "" && ok && it.CompVersion != "" {
-			target[it.CompName] = it.CompVersion
-		}
-	}
+	model.UseInspectionTask(ctx).AddModule(m)
+	return nil
 }
 
 var EcoRepo = model.EcoRepo{
 	Ecosystem:  "pip",
 	Repository: "",
+}
+
+func isRequirementsFile(filename string) bool {
+	return strings.Contains(strings.ToLower(filename), "requirement")
+}
+
+func isDockerfile(filename string) bool {
+	return strings.Contains(strings.ToLower(filename), "dockerfile")
+}
+
+func dirIgnore(name string) bool {
+	return name == "" || name[0] == '.' || pathignore.DirName(name)
+}
+
+func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
+	var logger = logctx.Use(ctx).Sugar()
+	if !filepath.IsAbs(dir) {
+		panic("dir must be absolute")
+	}
+	var noVersionComps = make(map[string]struct{})
+	var versionedComps = make(map[string]string)
+	var unknownVersionComps = make(map[string]struct{})
+	e := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d == nil {
+			return err
+		}
+		filename := d.Name()
+		if d.IsDir() {
+			if dirIgnore(filename) {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		// ignore conan.py
+		if filename == "" || filename[0] == '.' || filename == "conan.py" {
+			return nil
+		}
+		if isDockerfile(filename) {
+			data, e := readFile(path, 64*1024) // Dockerfile max 64K
+			if e != nil {
+				logger.Warnf("read dockerfile: %s %v", path, e)
+				return nil
+			}
+			for _, s := range parseDockerfilePipInstall(string(data)) {
+				noVersionComps[s] = struct{}{}
+			}
+			return nil
+		}
+		if isRequirementsFile(filename) {
+			data, e := readFile(path, 64*1024)
+			if e != nil {
+				logger.Warnf("read requirement: %s %v", path, e)
+				return nil
+			}
+			for k, v := range parseRequirements(string(data)) {
+				if v == "" {
+					unknownVersionComps[k] = struct{}{}
+				} else {
+					versionedComps[k] = v
+				}
+			}
+			return nil
+		}
+		if filepath.Ext(filename) == ".py" {
+			data, e := readFile(path, 256*1024)
+			if e != nil {
+				logger.Warnf("read py: %s %v", path, e)
+				return nil
+			}
+			for _, s := range parsePyImport(string(data)) {
+				if pyPkgBlackList[s] {
+					continue
+				}
+				unknownVersionComps[s] = struct{}{}
+			}
+		}
+		return nil
+	})
+	if e != nil {
+		logger.Warnf("walk error: %v", e)
+	}
+	// merge unknown version components
+	for s := range unknownVersionComps {
+		if versionedComps[s] != "" {
+			delete(unknownVersionComps, s)
+		}
+	}
+	if len(unknownVersionComps) != 0 {
+		// try to resolve version from pip list
+		m, e := getEnvPipListMap(ctx)
+		if e != nil {
+			m = make(map[string]string)
+		}
+		for s := range unknownVersionComps {
+			versionedComps[s] = m[s]
+		}
+	}
+	for s := range noVersionComps {
+		if versionedComps[s] != "" {
+			continue
+		}
+		versionedComps[s] = ""
+	}
+
+	var result [][2]string
+	for k, v := range versionedComps {
+		result = append(result, [2]string{k, v})
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i][0] < result[j][0] // sort by name is enough
+	})
+
+	return result, nil
 }

@@ -1,35 +1,25 @@
 package python
 
 import (
-	"github.com/murphysecurity/murphysec/errors"
-	"github.com/murphysecurity/murphysec/model"
-	"os"
 	"regexp"
 	"strings"
 )
 
-func readRequirements(path string) ([]model.DependencyItem, error) {
-	data, e := os.ReadFile(path)
-	if e != nil {
-		return nil, errors.Wrap(e, "read requirements failed")
-	}
-	return parseRequirements(string(data)), nil
-}
-
-func parseRequirements(data string) []model.DependencyItem {
+func parseRequirements(data string) map[string]string {
 	var pattern = regexp.MustCompile(`^([\w_.-]+)[>=<]+([\w.]+)$`)
-	var deps []model.DependencyItem
+	var deps = make(map[string]string)
 	for _, s := range strings.Split(data, "\n") {
 		s = strings.TrimSpace(s)
 		m := pattern.FindStringSubmatch(s)
 		if m == nil {
 			continue
 		}
-		var di model.DependencyItem
-		di.CompName = m[1]
-		di.CompVersion = m[2]
-		di.EcoRepo = EcoRepo
-		deps = append(deps, di)
+		k := strings.TrimSpace(m[1])
+		if k == "" {
+			continue
+		}
+		v := strings.TrimSpace(m[2])
+		deps[k] = v
 	}
 	return deps
 }
