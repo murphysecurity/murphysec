@@ -33,8 +33,8 @@ func evalPipList(ctx context.Context) (map[string]string, error) {
 		return nil, e
 	}
 	m, e := evalPipListJsonFormat(ctx, pip, defaultPipTimeout)
-	if e != nil {
-		return nil, e
+	if e == nil {
+		return m, nil
 	}
 	m, e = evalPipListDefaultFormat(ctx, pip, defaultPipTimeout)
 	return m, e
