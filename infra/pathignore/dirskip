@@ -1,0 +1,17 @@
+Network Trash Folder
+$RECYCLE.BIN
+.DS_Store
+lost+found
+Temporary Items
+__MACOSX
+.Trash-*
+
+build
+venv
+.vscode
+dist
+.idea
+nbproject
+nbbuild
+node_modules
+cmake-build-*
