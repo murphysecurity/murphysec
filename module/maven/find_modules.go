@@ -1,8 +1,8 @@
 package maven
 
 import (
-	"container/list"
 	"context"
+	list "github.com/bahlo/generic-list-go"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"path/filepath"
@@ -15,14 +15,14 @@ func ReadLocalProject(ctx context.Context, dir string) ([]*UnresolvedPom, error)
 	// Workaround for Maven CI Friendly Versions: https://maven.apache.org/maven-ci-friendly.html
 	var revisionMap = map[string]string{}
 
-	var moduleQ = list.New()
+	var moduleQ = list.New[string]()
 	moduleQ.PushBack(dir)
 
 	var projectPomList []*UnresolvedPom
 
 	var visitedPath = make(map[string]bool)
 	for moduleQ.Len() > 0 {
-		current := moduleQ.Front().Value.(string)
+		current := moduleQ.Front().Value
 		moduleQ.Remove(moduleQ.Front())
 
 		if visitedPath[current] {
