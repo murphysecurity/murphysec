@@ -58,6 +58,12 @@ func ReadLocalProject(ctx context.Context, dir string) ([]*UnresolvedPom, error)
 			moduleQ.PushBack(filepath.Join(current, module))
 		}
 
+		for _, profile := range pom.Profiles {
+			for _, module := range profile.Modules {
+				moduleQ.PushBack(filepath.Join(current, module))
+			}
+		}
+
 		projectPomList = append(projectPomList, &UnresolvedPom{pom, pomPath})
 	}
 
