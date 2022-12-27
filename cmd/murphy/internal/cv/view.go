@@ -104,3 +104,7 @@ func DisplayAlertMessage(ctx context.Context, msg string) {
 	}
 	ui.Use(ctx).Display(ui.MsgNotice, msg)
 }
+
+func DisplayUseDefaultTaskId(ctx context.Context) {
+	ui.Use(ctx).Display(ui.MsgNotice, "未指定 --task-id，检测结果将会关联至“CLI默认项目”中")
+}

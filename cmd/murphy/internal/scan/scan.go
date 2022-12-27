@@ -83,6 +83,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	cv.DisplayAlertMessage(ctx, createTaskResp.AlertMessage)
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.TaskName, createTaskResp.TaskID, createSubtask.SubtaskName, createTaskResp.SubtaskID)
 	if shouldWriteConfig {
+		cv.DisplayUseDefaultTaskId(ctx)
 		logger.Infof("creating repo config...")
 		e = config.WriteRepoConfig(ctx, dir, accessType, config.RepoConfig{TaskId: createTaskResp.TaskID})
 		if e != nil {
