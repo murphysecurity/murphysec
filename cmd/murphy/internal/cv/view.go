@@ -107,4 +107,5 @@ func DisplayAlertMessage(ctx context.Context, msg string) {
 
 func DisplayUseDefaultTaskId(ctx context.Context) {
 	ui.Use(ctx).Display(ui.MsgNotice, "未指定 --task-id，检测结果将会关联至“CLI默认项目”中")
+	ui.Use(ctx).Display(ui.MsgNotice, "请参考文档 https://www.murphysec.com/docs/guides/faqs/cli-taskid.html")
 }
