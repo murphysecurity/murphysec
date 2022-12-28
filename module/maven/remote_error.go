@@ -4,8 +4,8 @@ package maven
 type remoteError int
 
 const (
-	_                               remoteError = iota
-	ErrRemoteNoResource                         // m2remote: no resource
+	_                   remoteError = iota
+	ErrRemoteNoResource             // m2remote: no resource
 )
 
 func (i remoteError) Error() string {
