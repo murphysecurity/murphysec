@@ -9,6 +9,8 @@ on:
       - v*
       - dev*
       - ci*
+      - feat*
+      - fix*
     paths:
       - "**/*.go"
       - "go.mod"
