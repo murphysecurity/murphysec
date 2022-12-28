@@ -13,6 +13,10 @@ type Coordinate struct {
 
 var rb = regexp.MustCompile(`\s`)
 
+func (c Coordinate) IsSnapshotVersion() bool {
+	return strings.HasSuffix(c.Version, "-SNAPSHOT")
+}
+
 func (c Coordinate) Normalize() Coordinate {
 	return Coordinate{
 		GroupId:    rb.ReplaceAllString(c.GroupId, ""),

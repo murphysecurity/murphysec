@@ -22,7 +22,7 @@ func BackupResolve(ctx context.Context, projectDir string) (*DepsMap, error) {
 	}
 	logger.Sugar().Infof("Found %d pom file", len(poms))
 	for _, pom := range poms {
-		resolver.pomCache.add(pom)
+		resolver.addPom(pom)
 	}
 	for _, pom := range poms {
 		coordinate := pom.Coordinate()
@@ -48,9 +48,10 @@ func prepareResolver(ctx context.Context) (*PomResolver, error) {
 		return nil, e
 	}
 	logger.Sugar().Infof("User maven config: %s", userConfig.String())
-	resolver := NewPomResolver(ctx)
+	var remotes []M2Remote
+
 	if userConfig.Repo != "" {
-		resolver.AddRepo(NewLocalRepo(userConfig.Repo))
+		remotes = append(remotes, newLocalRemote(userConfig.Repo))
 		logger.Sugar().Debugf("Add local repo: %s", userConfig.Repo)
 	}
 	for _, remote := range userConfig.Remotes {
@@ -59,9 +60,10 @@ func prepareResolver(ctx context.Context) (*PomResolver, error) {
 			logger.Warn("Parse url failed", zap.Error(e), zap.String("remote", remote))
 			continue
 		}
-		httpRepo := NewHttpRepo(ctx, *u)
-		resolver.AddRepo(httpRepo)
-		logger.Sugar().Debugf("Add http repo: %s", httpRepo)
+		httpRemote := newHttpRemote(*u)
+		remotes = append(remotes, httpRemote)
+		logger.Sugar().Debugf("Add http repo: %s", httpRemote)
 	}
-	return resolver, nil
+
+	return NewPomResolver(ctx, remotes), nil
 }

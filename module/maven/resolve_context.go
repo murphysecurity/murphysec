@@ -80,7 +80,7 @@ func (r *resolveContext) visitExit(coordinate Coordinate) {
 	delete(r.visited, coordinate)
 }
 
-func (r *resolveContext) _resolve(coordinate Coordinate) (*Pom, error) {
+func (r *resolveContext) _resolve(ctx context.Context, coordinate Coordinate) (*Pom, error) {
 	if coordinate.IsBad() {
 		return nil, ErrBadCoordinate.Detailed(coordinate.String())
 	}
@@ -89,30 +89,30 @@ func (r *resolveContext) _resolve(coordinate Coordinate) (*Pom, error) {
 	}
 	defer r.visitExit(coordinate)
 	builder := newPomBuilder()
-	rawPom, e := r.resolver.fetchPom(coordinate)
+	rawPom, e := r.resolver.fetchPom(ctx, coordinate)
 	if e != nil {
 		return nil, e
 	}
 	builder.pom = rawPom
 	builder.parentCoordinate = rawPom.ParentCoordinate()
-	r.resolveInheritance(builder)
+	r.resolveInheritance(ctx, builder)
 	if e := r.resolveCoordinate(builder); e != nil {
 		return nil, e
 	}
 	// resolve & merge dependencyManagement.type==import
-	r.resolveDependencyManagementImport(builder)
+	r.resolveDependencyManagementImport(ctx, builder)
 	// merge dependencyManagement into dependencies
 	builder.deps.mergeAll(builder.depms.listAll(), false, true)
 	return builder.build(), nil
 }
 
-func (r *resolveContext) resolveDependencyManagementImport(builder *pomBuilder) {
+func (r *resolveContext) resolveDependencyManagementImport(ctx context.Context, builder *pomBuilder) {
 	for _, dependency := range builder.listDependencyManagements() {
 		if dependency.Scope != "import" {
 			continue
 		}
 		coordinate := Coordinate{dependency.GroupID, dependency.ArtifactID, dependency.Version}
-		np, e := r._resolve(coordinate)
+		np, e := r._resolve(ctx, coordinate)
 		if e != nil {
 			continue
 		}
@@ -120,7 +120,7 @@ func (r *resolveContext) resolveDependencyManagementImport(builder *pomBuilder) 
 	}
 }
 
-func (r *resolveContext) resolveInheritance(builder *pomBuilder) {
+func (r *resolveContext) resolveInheritance(ctx context.Context, builder *pomBuilder) {
 	logger := r.logger
 	coordinate := builder.parentCoordinate
 	var visitedParents = make(map[Coordinate]struct{})
@@ -131,7 +131,7 @@ func (r *resolveContext) resolveInheritance(builder *pomBuilder) {
 			break
 		}
 		visitedParents[*coordinate] = struct{}{}
-		parent, e := r.resolver.fetchPom(*coordinate)
+		parent, e := r.resolver.fetchPom(ctx, *coordinate)
 		if e != nil {
 			logger.Warn("Fetch parent failed", zap.Any("coordinate", *coordinate), zap.Error(e))
 			break
