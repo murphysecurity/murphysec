@@ -3,53 +3,29 @@ package maven
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 type PomResolver struct {
-	logger        *zap.Logger
-	repos         []PomRepo
-	pomCache      *pomCache
+	logger *zap.Logger
+	//repos         []PomRepo
+	//pomCache      *pomCache
+	fetcher       *fetcher
 	stats         *resolverStats
 	resolvedCache *resolvedPomCache
 }
 
-func NewPomResolver(ctx context.Context) *PomResolver {
+func NewPomResolver(ctx context.Context, remotes []M2Remote) *PomResolver {
 	return &PomResolver{
 		logger:        utils.UseLogger(ctx),
-		repos:         nil,
-		pomCache:      newPomCache(),
 		stats:         newResolverStats(),
+		fetcher:       newFetcher(remotes...),
 		resolvedCache: newResolvedPomCache(),
 	}
 }
 
-func (r *PomResolver) AddRepo(repo PomRepo) {
-	r.repos = append(r.repos, repo)
-}
-
-func (r *PomResolver) fetchPom(coordinate Coordinate) (*UnresolvedPom, error) {
-	r.stats.totalReq++
-	if pom, e := r.pomCache.fetch(coordinate); pom != nil || e != nil {
-		r.stats.cacheHit++
-		return pom, e
-	}
-	logger := r.logger
-	logger.Debug("Fetch pom", zap.Any("coordinate", coordinate))
-	for _, repo := range r.repos {
-		p, e := repo.Fetch(coordinate)
-		if e == nil {
-			r.pomCache.write(coordinate, p, nil)
-			return p, nil
-		}
-		if errors.Is(e, ErrArtifactNotFound) {
-			continue
-		}
-		logger.Sugar().Infof("Fetch %s from repo[%s] failed: %s", coordinate, repo, e)
-	}
-	r.pomCache.write(coordinate, nil, ErrArtifactNotFound)
-	return nil, ErrArtifactNotFound
+func (r *PomResolver) fetchPom(ctx context.Context, coordinate Coordinate) (*UnresolvedPom, error) {
+	return r.fetcher.FetchPom(ctx, coordinate)
 }
 
 func (r *PomResolver) ResolvePom(ctx context.Context, coordinate Coordinate) (*Pom, error) {
@@ -58,11 +34,15 @@ func (r *PomResolver) ResolvePom(ctx context.Context, coordinate Coordinate) (*P
 	}
 	c := newResolveContext(ctx)
 	c.resolver = r
-	pom, err := c._resolve(coordinate)
+	pom, err := c._resolve(ctx, coordinate)
 	if err != nil {
 		r.resolvedCache.storeErr(coordinate, err)
 	} else {
 		r.resolvedCache.storePom(coordinate, pom)
 	}
 	return pom, err
+}
+
+func (r *PomResolver) addPom(module *UnresolvedPom) {
+	r.fetcher.cache.Put(module.Coordinate(), module, nil)
 }
