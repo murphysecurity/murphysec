@@ -16,7 +16,11 @@ type localRemote struct {
 }
 
 func (l *localRemote) GetPath(_ context.Context, path string) ([]byte, error) {
-	return os.ReadFile(filepath.Join(l.basePath, path))
+	data, e := os.ReadFile(filepath.Join(l.basePath, path))
+	if e != nil {
+		return nil, ErrRemoteNoResource
+	}
+	return data, nil
 }
 
 func (l *localRemote) String() string {
