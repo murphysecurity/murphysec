@@ -9,14 +9,12 @@ import (
 type PomResolver struct {
 	logger        *zap.Logger
 	fetcher       *fetcher
-	stats         *resolverStats
 	resolvedCache *resolvedPomCache
 }
 
 func NewPomResolver(ctx context.Context, remotes []M2Remote) *PomResolver {
 	return &PomResolver{
 		logger:        logctx.Use(ctx),
-		stats:         newResolverStats(),
 		fetcher:       newFetcher(remotes...),
 		resolvedCache: newResolvedPomCache(),
 	}
