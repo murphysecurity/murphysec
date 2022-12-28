@@ -7,9 +7,7 @@ import (
 )
 
 type PomResolver struct {
-	logger *zap.Logger
-	//repos         []PomRepo
-	//pomCache      *pomCache
+	logger        *zap.Logger
 	fetcher       *fetcher
 	stats         *resolverStats
 	resolvedCache *resolvedPomCache
