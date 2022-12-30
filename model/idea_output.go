@@ -39,6 +39,7 @@ type PluginComp struct {
 	FixPlans           FixPlanList            `json:"fix_plans"`
 	DependentPath      []string               `json:"dependent_path"`
 	PackageManager     string                 `json:"package_manager"`
+	DirectDependency   []Component            `json:"direct_dependency"`
 }
 
 func GetIDEAOutput(task *ScanTask) PluginOutput {
@@ -123,6 +124,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			FixPlans:           comp.FixPlans,
 			DependentPath:      utils.NoNilSlice(comp.DependentPath),
 			PackageManager:     pmMap[comp.Component],
+			DirectDependency:   utils.NoNilSlice(comp.DirectDependency),
 		}
 		if len(pc.Vulns) == 0 {
 			continue
