@@ -51,6 +51,7 @@ type ScanResultCompInfo struct {
 	Solutions          []Solution             `json:"solutions,omitempty"`
 	FixPlans           FixPlanList            `json:"fix_plans"`
 	SuggestLevel       int                    `json:"suggest_level"` // 对应到IDEA的show_level，具体计算规则不明
+	DirectDependency   []Component            `json:"direct_dependency"`
 }
 
 type ScanResultCompEffect struct {
