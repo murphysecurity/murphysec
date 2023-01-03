@@ -27,8 +27,7 @@ type PluginOutput struct {
 }
 
 type PluginComp struct {
-	CompName           string                 `json:"comp_name"`
-	ShowLevel          int                    `json:"show_level"`
+	Component
 	MinFixedVersion    string                 `json:"min_fixed_version"`
 	Vulns              []PluginVulnDetailInfo `json:"vulns"`
 	CompVersion        string                 `json:"comp_version"`
@@ -39,7 +38,12 @@ type PluginComp struct {
 	FixPlans           FixPlanList            `json:"fix_plans"`
 	DependentPath      []string               `json:"dependent_path"`
 	PackageManager     string                 `json:"package_manager"`
-	DirectDependency   []Component            `json:"direct_dependency"`
+	DirectDependency   []ComponentFixPlanList `json:"direct_dependency"`
+}
+
+type ComponentFixPlanList struct {
+	FixPlanList
+	Component
 }
 
 func GetIDEAOutput(task *ScanTask) PluginOutput {
@@ -110,11 +114,31 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		return
 	}
 
+	componentFixPlanListMap := make(map[Component]FixPlanList)
+	for _, info := range r.CompInfoList {
+		if info.FixPlans.IsZero() {
+			continue
+		}
+		componentFixPlanListMap[info.Component] = info.FixPlans
+	}
+
 	for _, comp := range r.CompInfoList {
+
+		var directDependencyFixPlan []ComponentFixPlanList
+		for _, component := range comp.DirectDependency {
+			fp, ok := componentFixPlanListMap[component]
+			if !ok {
+				continue
+			}
+			directDependencyFixPlan = append(directDependencyFixPlan, ComponentFixPlanList{
+				FixPlanList: fp,
+				Component:   component,
+			})
+		}
+
 		var pc = PluginComp{
-			CompName:           comp.CompName,
+			Component:          comp.Component,
 			CompVersion:        comp.CompVersion,
-			ShowLevel:          comp.SuggestLevel,
 			MinFixedVersion:    comp.MinFixedVersion,
 			Vulns:              utils.NoNilSlice(vulnListMapper(comp.VulnList)),
 			Licenses:           utils.NoNilSlice(comp.LicenseList),
@@ -124,7 +148,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			FixPlans:           comp.FixPlans,
 			DependentPath:      utils.NoNilSlice(comp.DependentPath),
 			PackageManager:     pmMap[comp.Component],
-			DirectDependency:   utils.NoNilSlice(comp.DirectDependency),
+			DirectDependency:   utils.NoNilSlice(directDependencyFixPlan),
 		}
 		if len(pc.Vulns) == 0 {
 			continue

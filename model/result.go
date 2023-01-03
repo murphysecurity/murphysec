@@ -94,6 +94,10 @@ type FixPlanList struct {
 	Plan3 *FixPlanItem `json:"plan3,omitempty"`
 }
 
+func (f FixPlanList) IsZero() bool {
+	return f.Plan1 == nil && f.Plan2 == nil && f.Plan3 == nil
+}
+
 // VulnerabilityDetailInfo 漏洞详情
 type VulnerabilityDetailInfo struct {
 	AttackVector       string         `json:"attack_vector"`        // 攻击向量
