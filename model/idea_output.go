@@ -130,6 +130,19 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			if !ok {
 				continue
 			}
+			// workaround: IDE侧要求我一定加进去，后续他不要求了，就删掉
+			if fp.Plan1 != nil {
+				fp.Plan1.CompName = comp.CompName
+				fp.Plan1.OldVersion = comp.CompVersion
+			}
+			if fp.Plan2 != nil {
+				fp.Plan2.CompName = comp.CompName
+				fp.Plan2.OldVersion = comp.CompVersion
+			}
+			if fp.Plan3 != nil {
+				fp.Plan3.CompName = comp.CompName
+				fp.Plan3.OldVersion = comp.CompVersion
+			}
 			directDependencyFixPlan = append(directDependencyFixPlan, ComponentFixPlanList{
 				FixPlanList: fp,
 				Component:   component,
