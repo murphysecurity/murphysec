@@ -28,9 +28,9 @@ type PluginOutput struct {
 
 type PluginComp struct {
 	Component
+	ShowLevel          int                    `json:"show_level"`
 	MinFixedVersion    string                 `json:"min_fixed_version"`
 	Vulns              []PluginVulnDetailInfo `json:"vulns"`
-	CompVersion        string                 `json:"comp_version"`
 	Licenses           []LicenseItem          `json:"licenses"`
 	Solutions          []Solution             `json:"solutions,omitempty"`
 	IsDirectDependency bool                   `json:"is_direct_dependency"`
@@ -151,8 +151,8 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 
 		var pc = PluginComp{
 			Component:          comp.Component,
-			CompVersion:        comp.CompVersion,
 			MinFixedVersion:    comp.MinFixedVersion,
+			ShowLevel:          comp.SuggestLevel,
 			Vulns:              utils.NoNilSlice(vulnListMapper(comp.VulnList)),
 			Licenses:           utils.NoNilSlice(comp.LicenseList),
 			Solutions:          utils.NoNilSlice(comp.Solutions),
