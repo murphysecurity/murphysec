@@ -6,8 +6,6 @@ const qCloudUrl = (fn) => `https://${Deno.env.get('QCLOUD_COS_DOMAIN')}/client/$
 
 const contentText = [
     ['GitTag', gitTag],
-    ['saas.zip', qCloudUrl('saas.zip')],
-    ['SHA-256', new Sha256().update(await Deno.readFileSync('out/zip/saas.zip')).hex()],
     ['pro.zip', qCloudUrl('pro.zip')],
     ['SHA-256', new Sha256().update(await Deno.readFileSync('out/zip/pro.zip')).hex()],
 ].filter(it => it[1]).map(it => `**${it[0]}: **${it[1]}`).join('\n')
