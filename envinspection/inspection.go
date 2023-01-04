@@ -31,8 +31,8 @@ func InspectEnv(ctx context.Context) error {
 	osVersion := osRelease["VERSION"]
 
 	var packageManager = "unmanaged"
-	if strings.Contains(version.UserAgent(), "ctyunos") {
-		packageManager = "centos:8"
+	if s, ok := processByRule(version.OsName()); ok {
+		packageManager = s
 	}
 
 	module2 := api.VoModule{Name: "Software Installed", PackageManager: model.PackageManagerType(packageManager)}
