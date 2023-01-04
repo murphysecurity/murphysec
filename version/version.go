@@ -12,10 +12,7 @@ const version = "v1.14.2"
 var userAgent string
 
 func init() {
-	osn, e := osname.OsName()
-	if e != nil {
-		osn = "<unknownOS>"
-	}
+	osn := OsName()
 	var platform = fmt.Sprintf("%s; %s; %s", osn, runtime.GOOS, runtime.GOARCH)
 	userAgent = fmt.Sprintf("murphysec-cli/%s (%s)", Version(), platform)
 	if h := GetGitHash(); h != "" {
@@ -24,6 +21,14 @@ func init() {
 	if h := GetGitTime(); h != "" {
 		userAgent = userAgent + " GitTime/" + GetGitTime()
 	}
+}
+
+func OsName() string {
+	osn, e := osname.OsName()
+	if e != nil {
+		osn = "<unknownOS>"
+	}
+	return osn
 }
 
 func UserAgent() string {

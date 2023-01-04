@@ -30,7 +30,12 @@ func InspectEnv(ctx context.Context) error {
 	osId := osRelease["ID"]
 	osVersion := osRelease["VERSION"]
 
-	module2 := api.VoModule{Name: "Software Installed", PackageManager: "Unmanaged"}
+	var packageManager = "unmanaged"
+	if strings.Contains(version.UserAgent(), "ctyunos") {
+		packageManager = "centos:8"
+	}
+
+	module2 := api.VoModule{Name: "Software Installed", PackageManager: model.PackageManagerType(packageManager)}
 	pkgs, e := inspectDpkgPackage(ctx)
 
 	if e == nil && len(pkgs) > 0 {
@@ -59,7 +64,7 @@ func InspectEnv(ctx context.Context) error {
 					{"kernel", kernelVer, nil},
 					{osId, osVersion, nil},
 				},
-				PackageManager: "Unmanaged",
+				PackageManager: model.PackageManagerType(packageManager),
 			}},
 	}); e != nil {
 		LOG.Errorf("Submitting data failed: %s", e.Error())
