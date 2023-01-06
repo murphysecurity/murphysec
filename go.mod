@@ -7,7 +7,7 @@ require (
 	github.com/antchfx/xmlquery v1.3.13
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/denisbrodbeck/machineid v1.0.1
-	github.com/go-git/go-git/v5 v5.5.1
+	github.com/go-git/go-git/v5 v5.5.2
 	github.com/iseki0/go-yarnlock v0.0.1
 	github.com/iseki0/osname v0.0.0-20220802070850-5def7ee59aab
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
@@ -40,7 +40,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
-	github.com/go-git/go-billy/v5 v5.3.1 // indirect
+	github.com/go-git/go-billy/v5 v5.4.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -64,7 +64,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/term v0.2.0 // indirect
 	golang.org/x/tools v0.3.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
