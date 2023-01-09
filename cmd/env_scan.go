@@ -22,7 +22,7 @@ func envScanCmd() *cobra.Command {
 	}
 
 	c.Flags().StringVar(&projName, "project-name", "", "")
-	c.Flags().StringVar(&utils.NetworkInterfaceName, "--interface", "", "Only used in default project identifier")
+	c.Flags().StringVar(&utils.NetworkInterfaceName, "interface", "", "Only used in default project identifier")
 
 	return c
 }
