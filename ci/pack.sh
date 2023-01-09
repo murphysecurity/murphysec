@@ -8,7 +8,7 @@ fi
 
 cd out/bin
 
-proFile='murphysec-linux-amd64 murphysec-darwin-amd64 murphysec-windows-amd64.exe'
+proFile='murphysec-linux-amd64 murphysec-linux-arm64 murphysec-darwin-amd64 murphysec-windows-amd64.exe'
 
 mkdir -p ../zip
 zip pro.zip $proFile

@@ -25,6 +25,7 @@ compose-build:
     - mkdir -p .go
   script:
     - GOOS=linux GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-linux-amd64
+    - GOOS=linux GOARCH=arm64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-linux-arm64
     - GOOS=windows GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-windows-amd64.exe
     - GOOS=darwin GOARCH=amd64 go build -tags pro -trimpath -ldflags '-s -w -buildid=' -o out/bin/murphysec-darwin-amd64
     - sha256sum out/bin/*
