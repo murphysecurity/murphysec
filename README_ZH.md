@@ -180,7 +180,7 @@ powershell -Command "iwr -useb https://s.murphysec.com/install.ps1 | iex"
 > CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/faq/access-token/)
 
 
-进入[墨菲安全控制台](https://www.murphysec.com/control/set)，点击`个人设置`，复制页面中的`访问令牌`
+进入[墨菲安全控制台 - 访问令牌](https://www.murphysec.com/usr/token)，点击页面token后面的复制按钮，复制token到剪贴板。
 
 
 
