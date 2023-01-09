@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -23,9 +22,7 @@ func dockerScanCmd() *cobra.Command {
 			}
 			task := model.CreateScanTask(must.A(filepath.Abs(args[0])), model.TaskKindDockerfile, taskType)
 			ctx = model.WithScanTask(ctx, task)
-			if inspector.InspectDockerfile(ctx) == nil {
-				fmt.Println(model.GenerateIdeaOutput(ctx))
-			}
+			_ = inspector.InspectDockerfile(ctx)
 		},
 	}
 	c.Flags().BoolVar(&jsonOutput, "json", false, "json output")

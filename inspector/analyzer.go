@@ -97,10 +97,10 @@ func analyzeDockerfile(data string) DockerfileResult {
 }
 
 func replaceLineBreak(input string) string {
-	return regexp.MustCompile("\\\\\\r?\\n").ReplaceAllString(input, "")
+	return regexp.MustCompile(`\\\r?\n`).ReplaceAllString(input, "")
 }
 
-var spacePattern = regexp.MustCompile("\\s+")
+var spacePattern = regexp.MustCompile(`\s+`)
 
 type DockerfileItem struct {
 	Kind    string
@@ -108,7 +108,7 @@ type DockerfileItem struct {
 	Version string
 }
 
-var imagesPattern = regexp.MustCompile("FROM\\s+(\\S+)")
+var imagesPattern = regexp.MustCompile(`FROM\s+(\S+)`)
 
 func imageChecker(line string) *DockerfileItem {
 	if m := imagesPattern.FindStringSubmatch(line); m != nil {
@@ -120,23 +120,21 @@ func imageChecker(line string) *DockerfileItem {
 	return nil
 }
 
-var aptInstallPattern = regexp.MustCompile("apt(?:-get)?\\s+install\\s([\\w\\s.-]+)")
+var aptInstallPattern = regexp.MustCompile(`apt(?:-get)?\s+install\s([\w\s.-]+)`)
 
 func debChecker(line string) (r []DockerfileItem) {
-	m := aptInstallPattern.FindStringSubmatch(line)
-	if m == nil {
-		return nil
-	}
-	var listStr = m[1]
-	list := spacePattern.Split(listStr, -1)
-	for _, s := range list {
-		if strings.HasPrefix(s, "-") {
-			continue
+	for _, m := range aptInstallPattern.FindAllStringSubmatch(line, -1) {
+		var listStr = m[1]
+		list := spacePattern.Split(listStr, -1)
+		for _, s := range list {
+			if strings.HasPrefix(s, "-") {
+				continue
+			}
+			r = append(r, DockerfileItem{
+				Kind: "deb",
+				Name: s,
+			})
 		}
-		r = append(r, DockerfileItem{
-			Kind: "deb",
-			Name: s,
-		})
 	}
 	return
 }
@@ -144,20 +142,18 @@ func debChecker(line string) (r []DockerfileItem) {
 var yumInstallPattern = regexp.MustCompile("yum\\s+install\\s([\\w\\s.-]+)")
 
 func yumChecker(line string) (r []DockerfileItem) {
-	m := yumInstallPattern.FindStringSubmatch(line)
-	if m == nil {
-		return nil
-	}
-	var listStr = m[1]
-	list := spacePattern.Split(listStr, -1)
-	for _, s := range list {
-		if strings.HasPrefix(s, "-") {
-			continue
+	for _, m := range yumInstallPattern.FindAllStringSubmatch(line, -1) {
+		var listStr = m[1]
+		list := spacePattern.Split(listStr, -1)
+		for _, s := range list {
+			if strings.HasPrefix(s, "-") {
+				continue
+			}
+			r = append(r, DockerfileItem{
+				Kind: "rpm",
+				Name: s,
+			})
 		}
-		r = append(r, DockerfileItem{
-			Kind: "rpm",
-			Name: s,
-		})
 	}
 	return
 }
