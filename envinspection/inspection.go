@@ -15,12 +15,12 @@ import (
 	"strings"
 )
 
-func InspectEnv(ctx context.Context) error {
+func InspectEnv(ctx context.Context, projectName string) error {
 	var LOG = utils.UseLogger(ctx).Sugar()
 	task := model.CreateScanTask("", model.TaskKindHostEnv, model.TaskTypeCli)
 	ui := task.UI()
 	ctx = model.WithScanTask(ctx, task)
-	if e := createTaskApi(task); e != nil {
+	if e := createTaskApi(task, projectName); e != nil {
 		return e
 	}
 	LOG.Infof("Task created, task id: %s", task.TaskId)
@@ -93,12 +93,12 @@ func InspectEnv(ctx context.Context) error {
 	return nil
 }
 
-func createTaskApi(task *model.ScanTask) error {
+func createTaskApi(task *model.ScanTask, defaultName string) error {
 	ui := task.UI()
 	hostname, e := os.Hostname()
-	name := fmt.Sprintf("HostEnv/%s(%s)", hostname, utils.GetOutBoundIP())
-	if e != nil {
-		return errors.WithCause(ErrGetHostname, e)
+	name := defaultName
+	if name == "" {
+		name = fmt.Sprintf("HostEnv/%s(%s)", hostname, utils.GetOutBoundIP())
 	}
 
 	r, e := api.CreateTask(&api.CreateTaskRequest{

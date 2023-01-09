@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+var NetworkInterfaceName string
+
 func InStringSlice(slice []string, s string) bool {
 	for _, it := range slice {
 		if it == s {
@@ -85,7 +87,23 @@ func Reverse[S ~[]E, E any](s S) {
 }
 
 func GetOutBoundIP() string {
-	conn, err := net.Dial("udp", "8.8.8.8:53")
+	n, e := net.InterfaceByName(NetworkInterfaceName)
+	if e != nil {
+		return GetOutBoundIPDefault()
+	}
+	addrs, e := n.Addrs()
+	if e != nil || len(addrs) == 0 {
+		return GetOutBoundIPDefault()
+	}
+	ipnet, ok := addrs[0].(*net.IPNet)
+	if !ok {
+		return GetOutBoundIPDefault()
+	}
+	return ipnet.IP.String()
+}
+
+func GetOutBoundIPDefault() string {
+	conn, err := net.Dial("udp", "8.8.8.8:0")
 	if err != nil {
 		return ""
 	}
