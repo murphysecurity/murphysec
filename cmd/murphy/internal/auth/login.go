@@ -3,11 +3,12 @@ package auth
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/murphysecurity/murphysec/config"
 	"github.com/murphysecurity/murphysec/infra/exitcode"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 func authLoginCmd() *cobra.Command {
@@ -23,11 +24,11 @@ func authLoginRun(cmd *cobra.Command, args []string) {
 	if len(args) == 1 {
 		token = args[0]
 	} else {
-		fmt.Println("Tips: You can generate a Personal Access Token here https://www.murphysec.com/control/set")
+		fmt.Println("Tips: You can generate a Personal Access Token here https://www.murphysec.com/usr/token")
 		var rs string
 		e := survey.AskOne(&survey.Input{
 			Message: "Input your token",
-			Help:    "Tips: You can generate a Personal Access Token here https://www.murphysec.com/control/set",
+			Help:    "Tips: You can generate a Personal Access Token here https://www.murphysec.com/usr/token",
 		}, &rs, survey.WithValidator(survey.Required))
 		if e != nil {
 			fmt.Println("Token setup failed")

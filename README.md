@@ -100,7 +100,7 @@ powershell -Command "iwr -useb https://s.murphysec.com/install.ps1 | iex"
 
 > MurphySec CLI requires an access token from your MurphySec account for authentication to work properly. [What is an access token?](https://www.murphysec.com/docs/faq/access-token/) 
 
-Go to [MurphySec platform](https://www.murphysec.com/control/set), click `Personal Settings`, and copy the access token from the page.
+Go to [MurphySec platform - Access Token](https://www.murphysec.com/usr/token), click the copy button after the Token, then the access token is copied to the clipboard.
 
 
 ### 3. Authentication
