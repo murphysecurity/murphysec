@@ -49,11 +49,11 @@ jobs:
 
       - name: Build without tag
         if: "!startsWith(github.ref, 'refs/tags/v')"
-        run: go build -v -ldflags "-s -w -buildid=" -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/murphy
+        run: go build -v -ldflags "-s -w -buildid=" -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} .
 
       - name: Build with tag
         if: startsWith(github.ref, 'refs/tags/v')
-        run: go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$GITHUB_REF_NAME -buildid=" -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/murphy
+        run: go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$GITHUB_REF_NAME -buildid=" -trimpath -o out/murphysec-${{ matrix.goos }}-${{ matrix.goarch }} .
 
       - name: Rename for Windows
         if: matrix.goos == 'windows'
