@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
-	github.com/antchfx/xmlquery v1.3.14
+	github.com/antchfx/xmlquery v1.3.15
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/go-git/go-git/v5 v5.5.1
@@ -33,7 +33,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20221026131551-cf6655e29de4 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
-	github.com/antchfx/xpath v1.2.2 // indirect
+	github.com/antchfx/xpath v1.2.3 // indirect
 	github.com/aymanbagabas/go-osc52 v1.2.1 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/cloudflare/circl v1.3.0 // indirect
