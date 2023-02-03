@@ -31,10 +31,11 @@
 - CLI 运行结果
 
   <img alt="cli output" src="./assets/cli.png" width="80%">
- 
+
 - 检测结果页面
 
   <img alt="scan result" src="./assets/scan-result.png" width="80%">
+  
   <img alt="scan result" src="./assets/scan-detail-result.png" width="80%">
 
 ## 目录
@@ -175,16 +176,33 @@ curl -fsSL https://s.murphysec.com/install.sh | /bin/bash
 powershell -Command "iwr -useb https://s.murphysec.com/install.ps1 | iex"
 ```
 
-### 2. 获取访问令牌
+### 2.创建任务
 
-> CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/faq/access-token/)
+首先登录到墨菲安全控制台，创建任务的方式有以下三种
+
+- 方式1：在项目页面，点击项目右上角的加号选择接入
+- 方式2：进入指定项目，点击右上角的创建任务按钮接入
+- 方式3：进入指定项目，点击右上角的创建任务按钮，选择其他接入方式通过模板接入
+
+### 3. 获取访问令牌
+
+> CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/guides/scan-scene/cli.html)
+
+方式1：
+
+进入[墨菲安全控制台](https://www.murphysec.com/)，点击`左下角个人设置`，点击`用户token` 复制`访问令牌`
+
+<img alt="scan result" src="./assets/acces-token1.png" width="80%">
 
 
-进入[墨菲安全控制台 - 访问令牌](https://www.murphysec.com/usr/token)，点击页面token后面的复制按钮，复制token到剪贴板。
+
+方式2： 任务创建页面最下方-->复制token 
+
+<img alt="scan result" src="./assets/acces-token2.png" width="80%">
 
 
 
-### 3. 认证
+### 4. 认证
 
 目前有两种认证方式可用：命令行交互认证、命令行参数认证
 
@@ -214,7 +232,7 @@ murphysec scan [your-project-path]
 
 ### 5. 查看结果
 
-CLI 工具默认不展示结果详情，可以在[墨菲安全控制台](https://www.murphysec.com/control/project)-`项目`页面查看详细的检测结果
+CLI 工具默认不展示结果详情，可以在[墨菲安全控制台](https://www.murphysec.com/project/list)-`项目`页面查看详细的检测结果
 
 
 
@@ -240,16 +258,18 @@ Usage:
   murphysec scan DIR [flags]
 
 Flags:
-  -h, --help   help for scan
-      --json   json output
+  -h, --help                帮助
+      --task-id string   指定本次检测归属的项目ID
 
 Global Flags:
-      --log-level string      specify log level, must be silent|error|warn|info|debug
-      --no-log-file           do not write log file
-      --server string         specify server address
-      --token string          specify API token
-  -v, --version               show version and exit
-      --write-log-to string   specify log file path
+  -x  --allow-insecure        允许不安全的TLS连接
+      --log-level string      指定输出日志信息的级别, 可以为 silent|error|warn|info|debug (默认为 "silent"， 不输出日志)
+      --network-log           打印网络数据
+      --no-log-file           不输出日志文件
+      --server string         指定服务地址
+      --token string          指定墨菲安全服务 Token
+  -v, --version               输出 CLI 版本
+      --write-log-to string   指定日志文件的路径
 
 ```
 
