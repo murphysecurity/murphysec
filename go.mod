@@ -13,7 +13,7 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 	github.com/magiconair/properties v1.8.7
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/muesli/termenv v0.13.0
+	github.com/muesli/termenv v0.14.0
 	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.6.1
@@ -49,7 +49,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/pjbgf/sha1cd v0.2.3 // indirect
