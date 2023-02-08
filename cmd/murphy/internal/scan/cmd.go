@@ -118,7 +118,7 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 		e          error
 		accessType = model.AccessTypeIdea
 	)
-	if cmd.Use == "scan" {
+	if cmd.Use == "scan <DIR>" {
 		accessType = model.AccessTypeCli
 	}
 	// get absolute path and check if a directory
