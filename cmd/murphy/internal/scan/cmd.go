@@ -20,6 +20,8 @@ import (
 )
 
 var cliTaskIdOverride string
+var jsonOutput bool
+var accessType = model.AccessTypeCli
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -28,10 +30,16 @@ func Cmd() *cobra.Command {
 	c.Args = cobra.ExactArgs(1)
 	c.Run = scanRun
 	c.Flags().StringVar(&cliTaskIdOverride, "task-id", "", "specify task id, and write it to config")
+	c.Flags().BoolVar(&jsonOutput, "json", false, "")
 	return &c
 }
 
 func scanRun(cmd *cobra.Command, args []string) {
+	if jsonOutput {
+		accessType = model.AccessTypeIdea
+		ideascanRun(cmd, args)
+		return
+	}
 	var (
 		// workaround
 		ctx     = ui.With(context.TODO(), ui.CLI{})
@@ -76,7 +84,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 			exitcode.Set(1)
 			return
 		}
-		e = config.WriteRepoConfig(ctx, scanDir, model.AccessTypeCli, config.RepoConfig{TaskId: cliTaskIdOverride})
+		e = config.WriteRepoConfig(ctx, scanDir, accessType, config.RepoConfig{TaskId: cliTaskIdOverride})
 		if e != nil {
 			cv.DisplayInitializeFailed(ctx, e)
 			logger.Error(e)
@@ -84,7 +92,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 			return
 		}
 	}
-	_, e = scan(ctx, scanDir, model.AccessTypeCli)
+	_, e = scan(ctx, scanDir, accessType)
 	if e != nil {
 		logger.Error(e)
 		exitcode.Set(1)
