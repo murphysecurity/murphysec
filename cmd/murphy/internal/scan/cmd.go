@@ -21,7 +21,6 @@ import (
 
 var cliTaskIdOverride string
 var jsonOutput bool
-var accessType = model.AccessTypeCli
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -36,7 +35,6 @@ func Cmd() *cobra.Command {
 
 func scanRun(cmd *cobra.Command, args []string) {
 	if jsonOutput {
-		accessType = model.AccessTypeIdea
 		ideascanRun(cmd, args)
 		return
 	}
@@ -84,7 +82,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 			exitcode.Set(1)
 			return
 		}
-		e = config.WriteRepoConfig(ctx, scanDir, accessType, config.RepoConfig{TaskId: cliTaskIdOverride})
+		e = config.WriteRepoConfig(ctx, scanDir, model.AccessTypeCli, config.RepoConfig{TaskId: cliTaskIdOverride})
 		if e != nil {
 			cv.DisplayInitializeFailed(ctx, e)
 			logger.Error(e)
@@ -92,7 +90,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 			return
 		}
 	}
-	_, e = scan(ctx, scanDir, accessType)
+	_, e = scan(ctx, scanDir, model.AccessTypeCli)
 	if e != nil {
 		logger.Error(e)
 		exitcode.Set(1)
@@ -115,10 +113,14 @@ func IdeaScan() *cobra.Command {
 func ideascanRun(cmd *cobra.Command, args []string) {
 	var (
 		// workaround
-		ctx     = ui.With(context.TODO(), ui.None{})
-		scanDir = args[0]
-		e       error
+		ctx        = ui.With(context.TODO(), ui.None{})
+		scanDir    = args[0]
+		e          error
+		accessType = model.AccessTypeIdea
 	)
+	if cmd.Use == "scan" {
+		accessType = model.AccessTypeCli
+	}
 	// get absolute path and check if a directory
 	scanDir, e = filepath.Abs(scanDir)
 	if e != nil {
@@ -159,7 +161,7 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 			exitcode.Set(1)
 			return
 		}
-		e = config.WriteRepoConfig(ctx, scanDir, model.AccessTypeIdea, config.RepoConfig{TaskId: cliTaskIdOverride})
+		e = config.WriteRepoConfig(ctx, scanDir, accessType, config.RepoConfig{TaskId: cliTaskIdOverride})
 		if e != nil {
 			cv.DisplayInitializeFailed(ctx, e)
 			logger.Error(e)
@@ -168,7 +170,7 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	task, e := scan(ctx, scanDir, model.AccessTypeIdea)
+	task, e := scan(ctx, scanDir, accessType)
 	if e != nil {
 		autoReportIde(e)
 		logger.Error(e)
