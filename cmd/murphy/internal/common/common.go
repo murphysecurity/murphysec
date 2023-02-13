@@ -85,7 +85,7 @@ func InitLogger(ctx context.Context) (context.Context, error) {
 		// 创建日志文件
 		logFile, e := logger.CreateLogFile(LogFileOverride)
 		if e != nil {
-			return nil, e
+			return ctx, e
 		}
 		// 绑定日志core
 		jsonCore = zapcore.NewCore(logger.ZapConsoleEncoder, logFile, zapcore.DebugLevel)
