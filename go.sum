@@ -140,8 +140,8 @@ github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKs
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/vifraa/gopom v0.2.1 h1:MYVMAMyiGzXPPy10EwojzKIL670kl5Zbae+o3fFvQEM=
 github.com/vifraa/gopom v0.2.1/go.mod h1:oPa1dcrGrtlO37WPDBm5SqHAT+wTgF8An1Q71Z6Vv4o=
-github.com/wk8/go-ordered-map/v2 v2.1.5 h1:jLbYIFyWQMUwHLO20cImlCRBoNc5lp0nmE2dvwcxc7k=
-github.com/wk8/go-ordered-map/v2 v2.1.5/go.mod h1:9Xvgm2mV2kSq2SAm0Y608tBmu8akTzI7c2bz7/G7ZN4=
+github.com/wk8/go-ordered-map/v2 v2.1.6 h1:vOC/zsyAuGiLrAatj6b+yJuJzeRKQG0FLQQ4JFtMwhc=
+github.com/wk8/go-ordered-map/v2 v2.1.6/go.mod h1:9Xvgm2mV2kSq2SAm0Y608tBmu8akTzI7c2bz7/G7ZN4=
 github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM=
 github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI1Bc68Uw=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
