@@ -23,7 +23,7 @@ require (
 	github.com/whilp/git-urls v1.0.0
 	github.com/wk8/go-ordered-map/v2 v2.1.5
 	go.uber.org/zap v1.24.0
-	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
+	golang.org/x/mod v0.8.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/text v0.6.0
 )
