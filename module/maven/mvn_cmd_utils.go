@@ -31,6 +31,15 @@ func (m MvnCommandInfo) Command(ctx context.Context, args ...string) *exec.Cmd {
 		ctx = context.TODO()
 	}
 	var _args = make([]string, 0, len(args)+5)
+	if env.TlsAllowInsecure {
+		// https://stackoverflow.com/questions/21252800/how-to-tell-maven-to-disregard-ssl-errors-and-trusting-all-certs
+		_args = append(_args,
+			"-Dmaven.wagon.http.ssl.ignore.validity.dates=true",
+			"-Dmaven.resolver.transport=wagon",
+			"-Dmaven.wagon.http.ssl.allowall=true",
+			"-Dmaven.wagon.http.ssl.insecure=true",
+		)
+	}
 	if m.UserSettingsPath != "" {
 		_args = append(_args, "--settings", m.UserSettingsPath)
 	}

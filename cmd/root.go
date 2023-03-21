@@ -88,6 +88,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if CliServerAddressOverride == "" {
 		CliServerAddressOverride = "https://www.murphysec.com"
 	}
+	allowInsecure = allowInsecure || env.TlsAllowInsecure
 	if allowInsecure {
 		// config default http transport allow insecure
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{

@@ -20,6 +20,7 @@ var _ServerBaseURL = "https://www.murphysec.com"
 
 var DisableMvnCommand = strings.TrimSpace(os.Getenv("NO_MVN")) != ""
 var MavenCentral string
+var TlsAllowInsecure = os.Getenv("TLS_ALLOW_INSECURE") != ""
 
 func init() {
 	if strings.TrimSpace(os.Getenv("SKIP_MAVEN_CENTRAL")) == "" {
