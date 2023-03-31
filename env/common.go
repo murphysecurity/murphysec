@@ -22,6 +22,8 @@ var DisableMvnCommand = strings.TrimSpace(os.Getenv("NO_MVN")) != ""
 var MavenCentral string
 var TlsAllowInsecure = os.Getenv("TLS_ALLOW_INSECURE") != ""
 
+var SkipGradleExecution = os.Getenv("SKIP_GRADLE_EXECUTION") != ""
+
 func init() {
 	if strings.TrimSpace(os.Getenv("SKIP_MAVEN_CENTRAL")) == "" {
 		MavenCentral = "https://repo1.maven.org/maven2/"

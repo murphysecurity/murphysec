@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/display"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
@@ -31,37 +32,39 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectorTask(ctx)
 	dir := task.ScanDir
 	logger.Debugf("gradle inspect dir: %s", dir)
-	useGradle := true
-	gradleEnv, e := DetectGradleEnv(ctx, dir)
-	if e != nil {
-		task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
-		logger.Infof("check gradle failed: %s", e.Error())
-		logger.Warnf("Gradle disabled")
-		useGradle = false
-	}
-	if useGradle {
-		logger.Info(gradleEnv.Version.String())
-		projects, e := fetchGradleProjects(ctx, dir, gradleEnv)
+	if !env.SkipGradleExecution {
+		useGradle := true
+		gradleEnv, e := DetectGradleEnv(ctx, dir)
 		if e != nil {
-			logger.Infof("fetch gradle projects failed: %s", e.Error())
+			task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]识别到目录下没有 gradlew 文件或您的环境中 Gradle 无法正常运行，可能会导致检测结果不完整，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+			logger.Infof("check gradle failed: %s", e.Error())
+			logger.Warnf("Gradle disabled")
+			useGradle = false
 		}
-		logger.Debugf("Gradle projects: %s", strings.Join(projects, ", "))
-
-		{
-			depInfo, e := evalGradleDependencies(ctx, dir, "", gradleEnv)
+		if useGradle {
+			logger.Info(gradleEnv.Version.String())
+			projects, e := fetchGradleProjects(ctx, dir, gradleEnv)
 			if e != nil {
-				logger.Info("evalGradleDependencies failed. <root> ", e.Error())
-			} else {
-				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+				logger.Infof("fetch gradle projects failed: %s", e.Error())
 			}
-		}
-		for _, projectId := range projects {
-			depInfo, e := evalGradleDependencies(ctx, dir, projectId, gradleEnv)
-			if e != nil {
-				task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
-				logger.Infof("evalGradleDependencies failed: %s - %s", projectId, e.Error())
-			} else {
-				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+			logger.Debugf("Gradle projects: %s", strings.Join(projects, ", "))
+
+			{
+				depInfo, e := evalGradleDependencies(ctx, dir, "", gradleEnv)
+				if e != nil {
+					logger.Info("evalGradleDependencies failed. <root> ", e.Error())
+				} else {
+					rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+				}
+			}
+			for _, projectId := range projects {
+				depInfo, e := evalGradleDependencies(ctx, dir, projectId, gradleEnv)
+				if e != nil {
+					task.UI().Display(display.MsgWarn, fmt.Sprintf("[%s]通过 Gradle 获取依赖信息失败，可能会导致检测结果不完整或失败，访问https://www.murphysec.com/docs/quick-start/language-support/ 了解详情", dir))
+					logger.Infof("evalGradleDependencies failed: %s - %s", projectId, e.Error())
+				} else {
+					rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+				}
 			}
 		}
 	}
