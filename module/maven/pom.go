@@ -30,7 +30,7 @@ func (u UnresolvedPom) Coordinate() Coordinate {
 	if c.ArtifactId == "" {
 		c.ArtifactId = u.Project.Parent.ArtifactID
 	}
-	if c.Version == "" {
+	if c.Version == "" || c.Version == "${parent.version}" || c.Version == "${project.parent.version}" {
 		c.Version = u.Project.Parent.Version
 	}
 	return c
