@@ -152,7 +152,7 @@ func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleEnv
 
 func evalGradleDependencies(ctx context.Context, projectDir string, projectName string, info *GradleEnv) (*GradleDependencyInfo, error) {
 	var logger = logctx.Use(ctx).Sugar()
-	c := info.ExecuteContext(ctx, fmt.Sprintf("%s:dependencies", projectName), "--configuration=runtimeClasspath")
+	c := info.ExecuteContext(ctx, fmt.Sprintf("%s:dependencies", projectName))
 	logger.Infof("Execute: %s", c.String())
 	c.Dir = projectDir
 	data, e := c.Output()
