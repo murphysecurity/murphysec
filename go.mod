@@ -23,7 +23,7 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/mod v0.10.0
 	golang.org/x/sync v0.1.0
-	golang.org/x/text v0.8.0
+	golang.org/x/text v0.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
