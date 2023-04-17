@@ -45,12 +45,16 @@ func UseInspectionTask(ctx context.Context) *InspectionTask {
 func (i *InspectionTask) AddModule(module Module) {
 	var logger = logctx.Use(i.ctx).Sugar()
 	logger.Infof("add module: %v", module)
-	if !filepath.IsAbs(module.ModulePath) {
-		relPath, e := filepath.Rel(module.ModulePath, i.inspectionDir)
+	if filepath.IsAbs(module.ModulePath) {
+		relPath, e := filepath.Rel(i.scanTask.ProjectPath, module.ModulePath)
 		if e != nil {
 			logger.Warnf("get module relative-path: %v", e)
 		}
 		module.ModulePath = relPath
 	}
+	if module.ModulePath == "." {
+		module.ModulePath = "./"
+	}
+	module.ModulePath = filepath.ToSlash(module.ModulePath)
 	i.scanTask.Modules = append(i.scanTask.Modules, module)
 }
