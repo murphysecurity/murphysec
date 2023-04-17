@@ -16,7 +16,7 @@ require (
 	github.com/muesli/termenv v0.15.1
 	github.com/pelletier/go-toml/v2 v2.0.7
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.6.1
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
 	github.com/vifraa/gopom v0.2.1
 	github.com/wk8/go-ordered-map/v2 v2.1.6
