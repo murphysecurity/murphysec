@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
+	"github.com/murphysecurity/murphysec/config"
 	"github.com/murphysecurity/murphysec/gitinfo"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ref"
@@ -33,6 +34,22 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	createSubtask.ScanMode = model.ScanModeSource
 	createSubtask.Dir = dir
 
+	// get repo config
+	var shouldWriteConfig = false
+	var repoConfig *config.RepoConfig
+	repoConfig, e = config.ReadRepoConfig(ctx, dir, accessType)
+	if e == nil {
+		createSubtask.TaskID = ref.OmitZero(repoConfig.TaskId)
+		if repoConfig.TaskId == "" {
+			logger.Infof("task id not set, will be written soom")
+			shouldWriteConfig = true
+		}
+	}
+	if errors.Is(e, config.ErrRepoConfigNotFound) {
+		logger.Infof("config not found, will be written soon")
+		shouldWriteConfig = true
+	}
+
 	// get git info
 	var gitSummary *gitinfo.Summary
 	gitSummary, e = gitinfo.GetSummary(ctx, dir)
@@ -54,6 +71,10 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 		cv.DisplayTLSNotice(ctx)
 		return nil, e
 	}
+	if errors.Is(e, api.ErrTaskNotCli) {
+		cv.DisplayTaskNotForCli(ctx)
+		return nil, e
+	}
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)
 		return nil, e
@@ -61,6 +82,14 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	logger.Infof("subtask created, %s / %s", createTaskResp.TaskID, createTaskResp.SubtaskID)
 	cv.DisplayAlertMessage(ctx, createTaskResp.AlertMessage)
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.TaskName, createTaskResp.TaskID, createSubtask.SubtaskName, createTaskResp.SubtaskID)
+	if shouldWriteConfig {
+		cv.DisplayUseDefaultTaskId(ctx)
+		logger.Infof("creating repo config...")
+		e = config.WriteRepoConfig(ctx, dir, accessType, config.RepoConfig{TaskId: createTaskResp.TaskID})
+		if e != nil {
+			logger.Warnf("repo config: %v", e)
+		}
+	}
 
 	// create task object
 	task := &model.ScanTask{
