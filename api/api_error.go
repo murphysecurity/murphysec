@@ -22,8 +22,6 @@ const (
 	ErrServerFail                     // api: server fail
 	ErrGeneralError                   // api: general error
 	ErrValidateFail                   // api: validation fail
-	ErrTaskNotFound                   // api: task not found
-	ErrTaskNotCli                     // api: task not for CLI
 )
 
 func (i apiError) Error() string {
@@ -76,10 +74,6 @@ func (i *Error) Is(target error) bool {
 	case ErrTimeout:
 		r, ok := i.Cause.(*url.Error)
 		return ok && r.Timeout()
-	case ErrTaskNotFound:
-		return i.Code == 30033
-	case ErrTaskNotCli:
-		return i.Code == 30046
 	}
 	if r, ok := target.(*Error); ok {
 		if i.Code == r.Code {
