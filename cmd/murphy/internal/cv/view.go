@@ -40,10 +40,6 @@ func DisplayTLSNotice(ctx context.Context) {
 	ui.Use(ctx).Display(ui.MsgWarn, "当前建立的网络连接不安全，通讯已断开，您可以通过 -x 或 --allow-insecure 选项忽略这个错误")
 }
 
-func DisplayTaskNotForCli(ctx context.Context) {
-	ui.Use(ctx).Display(ui.MsgError, "扫描失败，该任务不是CLI检测方式，无法检测")
-}
-
 func DisplayCreateSubtaskErr(ctx context.Context, e error) {
 	ui.Use(ctx).Display(ui.MsgError, "扫描失败："+e.Error())
 }
@@ -94,18 +90,9 @@ func DisplayUploadErr(ctx context.Context, e error) {
 	ui.Use(ctx).Display(ui.MsgError, "上传失败："+e.Error())
 }
 
-func DisplayBadTaskId(ctx context.Context) {
-	ui.Use(ctx).Display(ui.MsgError, "无效的任务 ID")
-}
-
 func DisplayAlertMessage(ctx context.Context, msg string) {
 	if msg == "" {
 		return
 	}
 	ui.Use(ctx).Display(ui.MsgNotice, msg)
-}
-
-func DisplayUseDefaultTaskId(ctx context.Context) {
-	ui.Use(ctx).Display(ui.MsgNotice, "未指定 --task-id，检测结果将会关联至“CLI默认项目”中")
-	ui.Use(ctx).Display(ui.MsgNotice, "请参考文档 https://www.murphysec.com/docs/guides/faqs/cli-taskid.html")
 }

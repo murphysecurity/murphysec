@@ -17,13 +17,11 @@ func _() {
 	_ = x[ErrServerFail-7]
 	_ = x[ErrGeneralError-8]
 	_ = x[ErrValidateFail-9]
-	_ = x[ErrTaskNotFound-10]
-	_ = x[ErrTaskNotCli-11]
 }
 
-const _apiError_name = "api: tls errorapi: timeoutapi: request failapi: cannot process server responseapi: token invalidapi: bad URLapi: server failapi: general errorapi: validation failapi: task not foundapi: task not for CLI"
+const _apiError_name = "api: tls errorapi: timeoutapi: request failapi: cannot process server responseapi: token invalidapi: bad URLapi: server failapi: general errorapi: validation fail"
 
-var _apiError_index = [...]uint8{0, 14, 26, 43, 78, 96, 108, 124, 142, 162, 181, 202}
+var _apiError_index = [...]uint8{0, 14, 26, 43, 78, 96, 108, 124, 142, 162}
 
 func (i apiError) String() string {
 	i -= 1
