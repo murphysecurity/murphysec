@@ -100,6 +100,22 @@ func HasHiddenFilePrefix(name string) bool {
 	return len(name) > 0 && name[0] == '.'
 }
 
+func DistinctSlice[T comparable](input []T) []T {
+	if input == nil {
+		return nil
+	}
+	var r = make([]T, 0)
+	var m = make(map[T]struct{})
+	for _, i := range input {
+		if _, ok := m[i]; ok {
+			continue
+		}
+		m[i] = struct{}{}
+		r = append(r, i)
+	}
+	return r
+}
+
 func CopySlice[T ~[]A, A any](input T) T {
 	var r = make(T, len(input))
 	copy(r, input)

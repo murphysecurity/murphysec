@@ -6,15 +6,16 @@ import (
 
 // ScanTask 表示当前扫描任务
 type ScanTask struct {
-	Ctx         context.Context
-	ProjectPath string
-	AccessType  AccessType
-	Mode        ScanMode
-	TaskId      string
-	SubtaskId   string
-	Modules     []Module
-	Result      *ScanResultResponse
-	SubtaskName string
+	Ctx           context.Context
+	ProjectPath   string
+	AccessType    AccessType
+	Mode          ScanMode
+	TaskId        string
+	SubtaskId     string
+	Modules       []Module
+	CodeFragments []ComponentCodeFragment
+	Result        *ScanResultResponse
+	SubtaskName   string
 }
 
 func (s *ScanTask) BuildInspectionTask(dir string) *InspectionTask {

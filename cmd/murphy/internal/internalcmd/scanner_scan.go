@@ -66,5 +66,10 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		exitcode.Set(1)
 	}
 
-	fmt.Println(string(must.M1(json.MarshalIndent(utils.NoNilSlice(scantask.Modules), "", "  "))))
+	type wrapper struct {
+		Modules               []model.Module                `json:"modules,omitempty"`
+		ComponentCodeFragment []model.ComponentCodeFragment `json:"component_code_fragment,omitempty"`
+	}
+
+	fmt.Println(string(must.M1(json.MarshalIndent(wrapper{scantask.Modules, scantask.CodeFragments}, "", "  "))))
 }

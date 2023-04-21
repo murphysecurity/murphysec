@@ -82,7 +82,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	}
 
 	// submit SBOM
-	e = api.SubmitSBOM(api.DefaultClient(), task.SubtaskId, task.Modules)
+	e = api.SubmitSBOM(api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
 	if e != nil {
 		cv.DisplaySubmitSBOMErr(ctx, e)
 		return nil, e

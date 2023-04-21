@@ -7,6 +7,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module"
+	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"time"
 )
@@ -43,6 +44,19 @@ func ManagedInspect(ctx context.Context) error {
 		if e != nil {
 			logger.Error("InspectError", zap.Error(e), zap.Any("inspector", it))
 		}
+	}
+
+	var components []model.Component
+	for _, m := range scanTask.Modules {
+		components = append(components, m.ComponentList()...)
+	}
+	logger.Sugar().Debugf("scan code fragments, total %d components", len(components))
+	components = utils.DistinctSlice(components)
+	previews, e := scanFragment(ctx, scanTask.ProjectPath, components)
+	if e != nil {
+		logger.Sugar().Errorf("errors during scan fragment: %s", e.Error())
+	} else {
+		scanTask.CodeFragments = previews
 	}
 	return nil
 }
