@@ -52,11 +52,6 @@ func ManagedInspect(ctx context.Context) error {
 	}
 	logger.Sugar().Debugf("scan code fragments, total %d components", len(components))
 	components = utils.DistinctSlice(components)
-	previews, e := scanFragment(ctx, scanTask.ProjectPath, components)
-	if e != nil {
-		logger.Sugar().Errorf("errors during scan fragment: %s", e.Error())
-	} else {
-		scanTask.CodeFragments = previews
-	}
+	// todo: ???
 	return nil
 }
