@@ -18,7 +18,7 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 	for _, component := range components {
 		var param = fix.FixParams{
 			ShowOnly: true,
-			CompList: []fix.CompList{{
+			CompList: []fix.Comp{{
 				CompName:    component.CompName,
 				CompVersion: component.CompVersion,
 			}},
