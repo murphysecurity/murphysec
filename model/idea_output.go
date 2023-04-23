@@ -39,12 +39,12 @@ type PluginComp struct {
 	DependentPath      []string               `json:"dependent_path"`
 	PackageManager     string                 `json:"package_manager"`
 	DirectDependency   []ComponentFixPlanList `json:"direct_dependency"`
+	FixPreviews        []CodeFragment         `json:"fix_previews"`
 }
 
 type ComponentFixPlanList struct {
 	FixPlanList
 	Component
-	FixPreviews []CodeFragment `json:"fix_previews"`
 }
 
 func GetIDEAOutput(task *ScanTask) PluginOutput {
@@ -151,7 +151,6 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			directDependencyFixPlan = append(directDependencyFixPlan, ComponentFixPlanList{
 				FixPlanList: fp,
 				Component:   component,
-				FixPreviews: utils.NoNilSlice(codeFragments[component]),
 			})
 		}
 
@@ -168,6 +167,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			DependentPath:      utils.NoNilSlice(comp.DependentPath),
 			PackageManager:     pmMap[comp.Component],
 			DirectDependency:   utils.NoNilSlice(directDependencyFixPlan),
+			FixPreviews:        utils.NoNilSlice(codeFragments[comp.Component]),
 		}
 		if len(pc.Vulns) == 0 {
 			continue
