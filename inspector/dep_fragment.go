@@ -22,6 +22,7 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 				CompVersion: component.CompVersion,
 			}},
 			PackageManager: "maven",
+			RepoType:       "local",
 			Dir:            dir,
 		}
 		previews, e := param.Fix()
