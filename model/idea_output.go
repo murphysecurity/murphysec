@@ -44,9 +44,14 @@ type PluginComp struct {
 type ComponentFixPlanList struct {
 	FixPlanList
 	Component
+	FixPreviews []CodeFragment `json:"fix_previews"`
 }
 
 func GetIDEAOutput(task *ScanTask) PluginOutput {
+	codeFragments := make(map[Component][]CodeFragment)
+	for _, it := range task.CodeFragments {
+		codeFragments[it.Component] = it.CodeFragments
+	}
 
 	// workaround: 从模块列表里拎包管理器出来
 	pmMap := make(map[Component]string)
@@ -146,6 +151,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			directDependencyFixPlan = append(directDependencyFixPlan, ComponentFixPlanList{
 				FixPlanList: fp,
 				Component:   component,
+				FixPreviews: utils.NoNilSlice(codeFragments[component]),
 			})
 		}
 

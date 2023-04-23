@@ -6,7 +6,6 @@ import (
 	"github.com/murphysecurity/fix-tools/fix"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
-	"path/filepath"
 )
 
 func scanFragment(ctx context.Context, dir string, components []model.Component) ([]model.ComponentCodeFragment, error) {
@@ -31,28 +30,9 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 		}
 		var r = model.ComponentCodeFragment{
 			Component:     component,
-			CodeFragments: make([]model.CodeFragment, 0),
+			CodeFragments: utils.NoNilSlice(previews),
 		}
-		for _, it := range previews {
-			if len(it.Content) == 0 {
-				continue
-			}
-			if filepath.IsAbs(it.Path) {
-				panic("is abs path")
-			}
-			var fp = filepath.ToSlash(it.Path)
-
-			var t string
-			var lineBegin = it.Content[0].Line
-			for _, content := range it.Content {
-				t = t + "\n" + content.Text
-			}
-			r.CodeFragments = append(r.CodeFragments, model.CodeFragment{
-				Text:         t,
-				LineBegin:    lineBegin,
-				RelativePath: fp,
-			})
-		}
+		result = append(result, r)
 	}
 
 	return result, nil
