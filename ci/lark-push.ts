@@ -1,7 +1,7 @@
 // import {Sha256} from "https://deno.land/std@0.159.0/hash/sha256.ts"
 
 const larkPushKey = Deno.env.get("LARK_PUSH_KEY")
-const qCloudUrl = (fn) => `https://${Deno.env.get('QCLOUD_COS_DOMAIN')}/client/${Deno.env.get('GITHUB_REF_NAME')}/${fn}`
+const qCloudUrl = (fn) => `https://${Deno.env.get('QCLOUD_COS_DOMAIN')}/client/${Deno.env.get('CI_COMMIT_REF_NAME')}/${fn}`
 const main = async () => {
 
     const r = await fetch(
@@ -14,7 +14,7 @@ const main = async () => {
     );
 }
 
-const sign = Deno.env.get('GITHUB_REF').startsWith('refs/tag')?'🔖':'✔'
+const sign = Deno.env.get('CI_COMMIT_TAG') !== undefined ? '🔖' : '✔'
 
 const data = {
     "config": {
@@ -23,13 +23,13 @@ const data = {
     "elements": [
         {
             "tag": "markdown",
-            "content": `**📦Bundle：** ${qCloudUrl('bundle.7z')}`
+            "content": `**📦Bundle：** ${qCloudUrl('pro.zip')}`
         }
     ],
     "header": {
         "template": "green",
         "title": {
-            "content": `${sign}Client - ${Deno.env.get('GITHUB_REF_NAME')}`,
+            "content": `${sign}Client - ${Deno.env.get('CI_COMMIT_REF_NAME')}`,
             "tag": "plain_text"
         }
     }
