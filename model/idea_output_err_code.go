@@ -16,7 +16,7 @@ const (
 	IDEStatusLogFileCreationError           // log file creation error
 	IDEStatusServerFail                     // server fail
 	IDEStatusGeneralAPIError                // general API error
-	IDEStatusTaskNotExists                  // task not exists
+	_                                       // deprecated: task not exists, 111
 )
 
 func (i IDEStatus) Error() string {

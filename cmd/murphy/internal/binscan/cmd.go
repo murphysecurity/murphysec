@@ -100,7 +100,7 @@ func binScan(ctx context.Context, scanPath string) error {
 		return e
 	}
 
-	e = api.StartCheck(api.DefaultClient(), taskResp.SubtaskID, api.SubtypeSourcecode)
+	e = api.StartCheck(api.DefaultClient(), taskResp.SubtaskID)
 	if e != nil {
 		cv.DisplayScanFailed(ctx, e)
 		return e

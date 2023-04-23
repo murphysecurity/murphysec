@@ -17,17 +17,16 @@ func _() {
 	_ = x[IDEStatusLogFileCreationError-108]
 	_ = x[IDEStatusServerFail-109]
 	_ = x[IDEStatusGeneralAPIError-110]
-	_ = x[IDEStatusTaskNotExists-111]
 }
 
 const (
 	_IDEStatus_name_0 = "succeededunknown error"
-	_IDEStatus_name_1 = "API request failtoken invalidAPI timeoutscan dir invalidlog file creation errorserver failgeneral API errortask not exists"
+	_IDEStatus_name_1 = "API request failtoken invalidAPI timeoutscan dir invalidlog file creation errorserver failgeneral API error"
 )
 
 var (
 	_IDEStatus_index_0 = [...]uint8{0, 9, 22}
-	_IDEStatus_index_1 = [...]uint8{0, 16, 29, 40, 56, 79, 90, 107, 122}
+	_IDEStatus_index_1 = [...]uint8{0, 16, 29, 40, 56, 79, 90, 107}
 )
 
 func (i IDEStatus) String() string {
@@ -35,7 +34,7 @@ func (i IDEStatus) String() string {
 	case 100 <= i && i <= 101:
 		i -= 100
 		return _IDEStatus_name_0[_IDEStatus_index_0[i]:_IDEStatus_index_0[i+1]]
-	case 104 <= i && i <= 111:
+	case 104 <= i && i <= 110:
 		i -= 104
 		return _IDEStatus_name_1[_IDEStatus_index_1[i]:_IDEStatus_index_1[i+1]]
 	default:

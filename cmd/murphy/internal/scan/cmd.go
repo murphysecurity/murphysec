@@ -19,6 +19,7 @@ import (
 )
 
 var jsonOutput bool
+var deep bool
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -27,6 +28,7 @@ func Cmd() *cobra.Command {
 	c.Args = cobra.ExactArgs(1)
 	c.Run = scanRun
 	c.Flags().BoolVar(&jsonOutput, "json", false, "")
+	c.Flags().BoolVar(&deep, "deep", false, "")
 	return &c
 }
 
@@ -70,7 +72,11 @@ func scanRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	_, e = scan(ctx, scanDir, model.AccessTypeCli)
+	mode := model.ScanModeSource
+	if deep {
+		mode = model.ScanModeSourceDeep
+	}
+	_, e = scan(ctx, scanDir, model.AccessTypeCli, mode)
 	if e != nil {
 		logger.Error(e)
 		exitcode.Set(1)
@@ -131,7 +137,12 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	task, e := scan(ctx, scanDir, accessType)
+	mode := model.ScanModeSource
+	if deep {
+		mode = model.ScanModeSourceDeep
+	}
+
+	task, e := scan(ctx, scanDir, accessType, mode)
 	if e != nil {
 		autoReportIde(e)
 		logger.Error(e)

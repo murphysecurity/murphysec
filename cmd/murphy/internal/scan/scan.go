@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/chunkupload"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
 	"github.com/murphysecurity/murphysec/gitinfo"
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -14,7 +15,7 @@ import (
 	"path/filepath"
 )
 
-func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.ScanTask, error) {
+func scan(ctx context.Context, dir string, accessType model.AccessType, mode model.ScanMode) (*model.ScanTask, error) {
 	must.NotNil(ctx)
 	must.True(filepath.IsAbs(dir))
 	must.True(accessType.Valid())
@@ -30,7 +31,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	var createSubtask api.CreateSubTaskRequest
 	createSubtask.SubtaskName = filepath.Base(dir)
 	createSubtask.AccessType = accessType
-	createSubtask.ScanMode = model.ScanModeSource
+	createSubtask.ScanMode = mode
 	createSubtask.Dir = dir
 
 	// get git info
@@ -39,12 +40,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	if e != nil {
 		logger.Warnf("get git info failed: %v", e)
 	} else {
-		createSubtask.Addr = ref.OmitZero(gitSummary.RemoteAddr)
-		createSubtask.Author = ref.OmitZero(gitSummary.AuthorEmail)
-		createSubtask.Branch = ref.OmitZero(gitSummary.BranchName)
-		createSubtask.PushTime = ref.OmitZero(gitSummary.CommitTime)
-		createSubtask.Commit = ref.OmitZero(gitSummary.CommitHash)
-		createSubtask.Message = ref.OmitZero(gitSummary.CommitMessage)
+		assignGitInfoToCreateSubtaskReq(&createSubtask, gitSummary)
 	}
 
 	// call API
@@ -65,7 +61,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	// create task object
 	task := &model.ScanTask{
 		Ctx:         ctx,
-		Mode:        model.ScanModeSource,
+		Mode:        mode,
 		AccessType:  accessType,
 		ProjectPath: dir,
 		TaskId:      createTaskResp.TaskID,
@@ -73,23 +69,34 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 		SubtaskName: createSubtask.SubtaskName,
 	}
 
-	// do scan
 	ctx = model.WithScanTask(ctx, task)
-	e = inspector.ManagedInspect(ctx)
-	if e != nil {
-		cv.DisplayScanFailed(ctx, e)
-		return nil, e
-	}
+	if task.Mode == model.ScanModeSource {
+		// do scan
+		e = inspector.ManagedInspect(ctx)
+		if e != nil {
+			cv.DisplayScanFailed(ctx, e)
+			return nil, e
+		}
 
-	// submit SBOM
-	e = api.SubmitSBOM(api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
-	if e != nil {
-		cv.DisplaySubmitSBOMErr(ctx, e)
-		return nil, e
+		// submit SBOM
+		e = api.SubmitSBOM(api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
+		if e != nil {
+			cv.DisplaySubmitSBOMErr(ctx, e)
+			return nil, e
+		}
+	} else {
+		cv.DisplayUploading(ctx)
+		e = chunkupload.UploadDirectory(ctx, task.ProjectPath, nil, chunkupload.Params{
+			SubtaskId: task.SubtaskId,
+		})
+		if e != nil {
+			cv.DisplayUploadErr(ctx, e)
+			return nil, e
+		}
 	}
 
 	// start check
-	e = api.StartCheck(api.DefaultClient(), task.SubtaskId, api.SubtypeSBOM)
+	e = api.StartCheck(api.DefaultClient(), task.SubtaskId)
 	if e != nil {
 		cv.DisplaySubmitSBOMErr(ctx, e)
 		return nil, e
@@ -109,4 +116,13 @@ func scan(ctx context.Context, dir string, accessType model.AccessType) (*model.
 	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum, len(result.VulnInfoMap))
 
 	return task, nil
+}
+
+func assignGitInfoToCreateSubtaskReq(createSubtask *api.CreateSubTaskRequest, gitSummary *gitinfo.Summary) {
+	createSubtask.Addr = ref.OmitZero(gitSummary.RemoteAddr)
+	createSubtask.Author = ref.OmitZero(gitSummary.AuthorEmail)
+	createSubtask.Branch = ref.OmitZero(gitSummary.BranchName)
+	createSubtask.PushTime = ref.OmitZero(gitSummary.CommitTime)
+	createSubtask.Commit = ref.OmitZero(gitSummary.CommitHash)
+	createSubtask.Message = ref.OmitZero(gitSummary.CommitMessage)
 }
