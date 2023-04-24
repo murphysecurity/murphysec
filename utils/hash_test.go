@@ -13,23 +13,25 @@ import (
 	"testing"
 )
 
-//GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-windows-amd64.exe
-//GOOS=linux GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-linux-amd64
-//GOOS=linux GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-linux-arm64
-//GOOS=darwin GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-darwin-amd64
-//GOOS=darwin GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-darwin-arm64
+//GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/302-murphysec-windows-amd64.exe
+//GOOS=linux GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/302-murphysec-linux-amd64
+//GOOS=linux GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/302-murphysec-linux-arm64
+//GOOS=darwin GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/302-murphysec-darwin-amd64
+//GOOS=darwin GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/302-murphysec-darwin-arm64
 
 func TestHash(t *testing.T) {
 	dir, _ := os.Getwd()
 	all := strings.ReplaceAll(dir, "utils", filepath.Join("out", "bin"))
 	fileSystem := os.DirFS(all)
 	if fileSystem != nil {
-		cliVersion := "302-"
 		tt := TT{
 			PluginVersion: "3.0.6",
 		}
 
 		fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
+			if d == nil {
+				return nil
+			}
 			if d.IsDir() {
 				return nil
 			}
@@ -62,7 +64,7 @@ func TestHash(t *testing.T) {
 
 			detail := Detail{
 				Type:     typ,
-				FileName: cliVersion + d.Name(),
+				FileName: d.Name(),
 				Hash:     md5Hash,
 			}
 			tt.Details = append(tt.Details, detail)
