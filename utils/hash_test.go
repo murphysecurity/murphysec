@@ -27,7 +27,7 @@ func TestHash(t *testing.T) {
 		tt := TT{
 			PluginVersion: "3.0.6",
 		}
-
+		// nolint:staticcheck
 		_ = fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
 			if d == nil {
 				return nil
