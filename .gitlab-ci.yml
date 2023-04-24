@@ -29,7 +29,7 @@ compose-build:
   rules:
     - if: '$CI_COMMIT_TAG == null'
   script:
-    - GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-windows-amd64 .
+    - GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-windows-amd64.exe .
     - GOOS=linux GOARCH=amd64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-linux-amd64 .
     - GOOS=linux GOARCH=arm64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-linux-arm64 .
     - GOOS=darwin GOARCH=amd64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-darwin-amd64 .
@@ -53,7 +53,7 @@ compose-build-with-tag:
   rules:
     - if: '$CI_COMMIT_TAG != null'
   script:
-    - GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-windows-amd64 .
+    - GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-windows-amd64.exe .
     - GOOS=linux GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-linux-amd64 .
     - GOOS=linux GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-linux-arm64 .
     - GOOS=darwin GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-darwin-amd64 .
@@ -69,7 +69,17 @@ internal-cos-upload:
   script:
     - mkdir out/zip
     - bash -c "cd out/bin/ && zip ../zip/pro.zip *"
+    - cos-uploader --local out/bin/murphysec-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-amd64.exe
+    - cos-uploader --local out/bin/murphysec-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-linux-amd64
+    - cos-uploader --local out/bin/murphysec-linux-arm64 --remote /client/$CI_BUILD_REF_NAME/murphysec-linux-arm64
+    - cos-uploader --local out/bin/murphysec-darwin-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-darwin-amd64
+    - cos-uploader --local out/bin/murphysec-darwin-arm64 --remote /client/$CI_BUILD_REF_NAME/murphysec-darwin-arm64
     - cos-uploader --local out/zip/pro.zip --remote /client/$CI_BUILD_REF_NAME/pro.zip
+    - cos-uploader --local out/bin/murphysec-windows-amd64.exe --remote /client/-/murphysec-windows-amd64.exe
+    - cos-uploader --local out/bin/murphysec-linux-amd64 --remote /client/-/murphysec-linux-amd64
+    - cos-uploader --local out/bin/murphysec-linux-arm64 --remote /client/-/murphysec-linux-arm64
+    - cos-uploader --local out/bin/murphysec-darwin-amd64 --remote /client/-/murphysec-darwin-amd64
+    - cos-uploader --local out/bin/murphysec-darwin-arm64 --remote /client/-/murphysec-darwin-arm64
     - cos-uploader --local out/zip/pro.zip --remote /client/-/pro.zip
 
 lark-notify:
