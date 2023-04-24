@@ -28,7 +28,7 @@ func TestHash(t *testing.T) {
 			PluginVersion: "3.0.6",
 		}
 
-		fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
+		_ = fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
 			if d == nil {
 				return nil
 			}
