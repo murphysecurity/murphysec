@@ -5,24 +5,26 @@ stages: # List of stages for jobs, and their order of execution
 
 variables:
   GOPROXY: https://goproxy.cn,direct
-  GOPATH: "$CI_PROJECT_DIR/.go"
-  GOBIN: "$CI_PROJECT_DIR/.go/bin"
+#  GOPATH: "$CI_PROJECT_DIR/.go"
+#  GOBIN: "$CI_PROJECT_DIR/.go/bin"
   CGO_ENABLED: '0'
-  DENO_DIR: "$CI_PROJECT_DIR/.deno"
-  GOCACHE: "$CI_PROJECT_DIR/.go-cache"
+#  DENO_DIR: "$CI_PROJECT_DIR/.deno"
+#  GOCACHE: "$CI_PROJECT_DIR/.go-cache"
 
 compose-build:
+  tags:
+    - client-build-shell
   image: golang:1.19.2-bullseye
   stage: build
   artifacts:
     expire_in: 1 day
     paths:
       - out/bin/*
-  cache:
-    key: cli-build-cache-v3
-    paths:
-      - .go/pkg/mod/
-      - .go-cache/
+#  cache:
+#    key: cli-build-cache-v3
+#    paths:
+#      - .go/pkg/mod/
+#      - .go-cache/
   before_script:
     - mkdir -p .go-cache
     - mkdir -p .go
@@ -36,17 +38,19 @@ compose-build:
     - GOOS=darwin GOARCH=arm64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-darwin-arm64 .
 
 compose-build-with-tag:
+  tags:
+    - client-build-shell
   image: golang:1.19.2-bullseye
   stage: build
   artifacts:
     expire_in: 1 day
     paths:
       - out/bin/*
-  cache:
-    key: cli-build-cache-v3
-    paths:
-      - .go/pkg/mod/
-      - .go-cache/
+#  cache:
+#    key: cli-build-cache-v3
+#    paths:
+#      - .go/pkg/mod/
+#      - .go-cache/
   before_script:
     - mkdir -p .go-cache
     - mkdir -p .go
