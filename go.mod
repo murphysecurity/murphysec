@@ -14,7 +14,7 @@ require (
 	github.com/magiconair/properties v1.8.7
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.15.1
-	github.com/murphysecurity/fix-tools v0.0.0-20230424083645-1eac37ed6063
+	github.com/murphysecurity/fix-tools v0.0.0-20230424112632-959bfcb61abd
 	github.com/pelletier/go-toml/v2 v2.0.7
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
@@ -31,7 +31,7 @@ replace github.com/denisbrodbeck/machineid v1.0.1 => github.com/iseki0/machineid
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20230417170513-8ee5748c52b5 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230424174541-a2e3b023bd29 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/antchfx/xpath v1.2.4 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230321174746-8dcc6526cfb1 // indirect
@@ -71,7 +71,7 @@ require (
 	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.8.0 // indirect
-	golang.org/x/exp v0.0.0-20230420155640-133eef4313cb // indirect
+	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53 // indirect
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
