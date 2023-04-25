@@ -169,9 +169,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			DirectDependency:   utils.NoNilSlice(directDependencyFixPlan),
 			FixPreviews:        utils.NoNilSlice(codeFragments[comp.Component]),
 		}
-		if len(pc.Vulns) == 0 {
-			continue
-		}
+
 		// workaround: IDE侧要求我一定加进去，后续他不要求了，就删掉
 		if pc.FixPlans.Plan1 != nil {
 			pc.FixPlans.Plan1.CompName = comp.CompName
