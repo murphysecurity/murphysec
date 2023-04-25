@@ -36,6 +36,8 @@ compose-build:
     - GOOS=linux GOARCH=arm64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-linux-arm64 .
     - GOOS=darwin GOARCH=amd64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-darwin-amd64 .
     - GOOS=darwin GOARCH=arm64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-darwin-arm64 .
+  after_script:
+    - rm -rf $CI_PROJECT_DIR
 
 compose-build-with-tag:
   tags:
@@ -62,6 +64,8 @@ compose-build-with-tag:
     - GOOS=linux GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-linux-arm64 .
     - GOOS=darwin GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-darwin-amd64 .
     - GOOS=darwin GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-darwin-arm64 .
+  after_script:
+    - rm -rf $CI_PROJECT_DIR
 
 internal-cos-upload:
   image: iseki0/cos-uploader:v1.1.3
