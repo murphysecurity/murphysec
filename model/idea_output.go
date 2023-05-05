@@ -24,6 +24,7 @@ type PluginOutput struct {
 	SurpassScore      int                    `json:"surpass_score"`
 	ProjectScore      int                    `json:"project_score"`
 	LicenseInfoMap    map[string]LicenseItem `json:"license_info_map"`
+	Username          string                 `json:"username"`
 }
 
 type PluginComp struct {
@@ -88,6 +89,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		SurpassScore:      r.SurpassScore,
 		ProjectScore:      r.ProjectScore,
 		LicenseInfoMap:    r.LicenseInfoMap,
+		Username:          r.Username,
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {

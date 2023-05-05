@@ -34,6 +34,7 @@ type ScanResultResponse struct {
 	CompInfoList   []ScanResultCompInfo               `json:"comp_info_list"`
 	VulnInfoMap    map[string]VulnerabilityDetailInfo `json:"vuln_info_map"`
 	LicenseInfoMap map[string]LicenseItem             `json:"license_info_map"`
+	Username       string                             `json:"username"`
 }
 
 type ScanResultCompInfo struct {
