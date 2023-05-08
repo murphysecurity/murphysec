@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"path"
 	"reflect"
+	"strings"
 )
 
 var _DefaultClient *Client
@@ -36,6 +37,10 @@ type Client struct {
 	baseUrl *url.URL
 	token   string
 	logger  *zap.Logger
+}
+
+func (c Client) BaseURLText() string {
+	return strings.TrimSuffix(c.baseUrl.String(), "/")
 }
 
 func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {

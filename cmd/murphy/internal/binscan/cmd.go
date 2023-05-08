@@ -88,7 +88,7 @@ func binScan(ctx context.Context, scanPath string) error {
 		return e
 	}
 	cv.DisplayAlertMessage(ctx, taskResp.AlertMessage)
-	cv.DisplaySubtaskCreated(ctx, taskResp.ProjectsName, taskResp.TaskName, taskResp.TaskID, filepath.Base(scanPath), taskResp.SubtaskID)
+	cv.DisplaySubtaskCreated(ctx, taskResp.ProjectsName, taskResp.SubtaskID)
 	cv.DisplayUploading(ctx)
 	defer cv.DisplayStatusClear(ctx)
 	e = chunkupload.UploadFile(ctx, scanPath, chunkupload.Params{

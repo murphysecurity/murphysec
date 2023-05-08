@@ -56,7 +56,8 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	}
 	logger.Infof("subtask created, %s / %s", createTaskResp.TaskID, createTaskResp.SubtaskID)
 	cv.DisplayAlertMessage(ctx, createTaskResp.AlertMessage)
-	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.TaskName, createTaskResp.TaskID, createSubtask.SubtaskName, createTaskResp.SubtaskID)
+	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.SubtaskID)
+	cv.DisplayReportUrl(ctx, api.DefaultClient().BaseURLText(), createTaskResp.TaskID, createTaskResp.SubtaskID)
 
 	// create task object
 	task := &model.ScanTask{
