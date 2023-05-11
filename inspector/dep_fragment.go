@@ -30,7 +30,7 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 			Dir:            dir,
 		}
 		logger.Sugar().Debugf("fix: %s", string(must.A(json.Marshal(param))))
-		previews, e := param.Fix()
+		_, previews, e := param.Fix()
 		if e != nil {
 			return nil, fmt.Errorf("scan fragment: %w", e)
 		}
