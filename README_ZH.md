@@ -161,19 +161,19 @@
 #### 在 Linux 上安装
 
 ```
-wget -q https://s.murphysec.com/install.sh -O - | /bin/bash
+wget -q https://s.murphysec.com/release/install.sh -O - | /bin/bash
 ```
 
 #### 在 OSX 上安装
 
 ```
-curl -fsSL https://s.murphysec.com/install.sh | /bin/bash
+curl -fsSL https://s.murphysec.com/release/install.sh | /bin/bash
 ```
 
 #### 在 WINDOWS 上安装
 
 ```
-powershell -Command "iwr -useb https://s.murphysec.com/install.ps1 | iex"
+powershell -Command "iwr -useb https://s.murphysec.com/release/install.ps1 | iex"
 ```
 
 ### 2.创建任务
