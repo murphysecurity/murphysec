@@ -41,12 +41,32 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 
 func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	dir := model.UseInspectionTask(ctx).Dir()
-	logger := logctx.Use(ctx)
 	pkgFile := filepath.Join(dir, "package-lock.json")
+	module := model.Module{
+		PackageManager: "npm",
+		ModuleName:     "",
+		ModuleVersion:  "",
+		ModulePath:     pkgFile,
+	}
+	logger := logctx.Use(ctx)
 	logger.Debug("Read package-lock.json", zap.String("path", pkgFile))
 	data, e := os.ReadFile(pkgFile)
 	if e != nil {
 		return nil, errors.WithMessage(e, "Errors when reading package-lock.json")
+	}
+	lockfileVer, e := parseLockfileVersion(data)
+	if e != nil {
+		return nil, e
+	}
+	if lockfileVer == 3 {
+		parsed, e := parseLockfileV3(data)
+		if e != nil {
+			return nil, fmt.Errorf("v3lockfile: %w", e)
+		}
+		module.ModuleName = parsed.Name
+		module.ModuleVersion = parsed.Version
+		module.Dependencies = parsed.Deps
+		return []model.Module{module}, nil
 	}
 	var lockfile NpmPkgLock
 	if e := json.Unmarshal(data, &lockfile); e != nil {
@@ -55,6 +75,8 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	if lockfile.LockfileVersion > 2 || lockfile.LockfileVersion < 1 {
 		return nil, errors.New(fmt.Sprintf("unsupported lockfileVersion: %d", lockfile.LockfileVersion))
 	}
+	module.ModuleName = lockfile.Name
+	module.ModuleVersion = lockfile.Version
 	for s := range lockfile.Dependencies {
 		if strings.HasPrefix(s, "node_modules/") {
 			delete(lockfile.Dependencies, s)
@@ -82,12 +104,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	if len(rootComp) == 0 {
 		logger.Warn("Not found root component")
 	}
-	module := model.Module{
-		PackageManager: "npm",
-		ModuleName:     lockfile.Name,
-		ModuleVersion:  lockfile.Version,
-		ModulePath:     filepath.Join(dir, "package-lock.json"),
-	}
+
 	m := map[string]int{}
 	for _, it := range rootComp {
 		if d := _convDep(it, lockfile, m, 0); d != nil {
@@ -132,7 +149,7 @@ func _convDep(root string, m NpmPkgLock, visited map[string]int, deep int) *mode
 type NpmPkgLock struct {
 	Name            string `json:"name"`
 	Version         string `json:"version"`
-	LockfileVersion int    `json:"LockfileVersion"`
+	LockfileVersion int    `json:"lockfileVersion"`
 	Dependencies    map[string]struct {
 		Version  string                 `json:"version"`
 		Requires map[string]interface{} `json:"requires"`
@@ -142,4 +159,15 @@ type NpmPkgLock struct {
 var EcoRepo = model.EcoRepo{
 	Ecosystem:  "npm",
 	Repository: "",
+}
+
+func parseLockfileVersion(data []byte) (int, error) {
+	type unknownVersionLockfile struct {
+		LockfileVersion int `json:"lockfileVersion"`
+	}
+	var u unknownVersionLockfile
+	if e := json.Unmarshal(data, &u); e != nil {
+		return 0, fmt.Errorf("parse lockfile version failed: %w", e)
+	}
+	return u.LockfileVersion, nil
 }
