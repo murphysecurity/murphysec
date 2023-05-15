@@ -81,18 +81,18 @@ Visit the [GitHub Releases](https://github.com/murphysecurity/murphysec/releases
 #### Linux
 
 ```
-wget -q https://s.murphysec.com/install.sh -O - | /bin/bash
+wget -q https://s.murphysec.com/release/install.sh -O - | /bin/bash
 ```
 #### OSX
 
 ```
-curl -fsSL https://s.murphysec.com/install.sh | /bin/bash
+curl -fsSL https://s.murphysec.com/release/install.sh | /bin/bash
 ```
 
 #### WINDOWS
 
 ```
-powershell -Command "iwr -useb https://s.murphysec.com/install.ps1 | iex"
+powershell -Command "iwr -useb https://s.murphysec.com/release/install.ps1 | iex"
 ```
 
 
