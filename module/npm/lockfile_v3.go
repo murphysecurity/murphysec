@@ -44,6 +44,9 @@ func parseLockfileV3(data []byte) (r *v3ParsedLockfile, e error) {
 		Version: lockfile.Version,
 		Deps:    make([]model.DependencyItem, 0),
 	}
+	for i := range parsedLockfile.Deps {
+		parsedLockfile.Deps[i].IsDirectDependency = true
+	}
 	root := lockfile._v3Conv("", "", make(map[string]struct{}))
 	if root != nil {
 		parsedLockfile.Deps = root.Dependencies
