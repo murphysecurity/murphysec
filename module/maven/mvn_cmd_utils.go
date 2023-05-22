@@ -90,6 +90,10 @@ func CheckMvnCommand(ctx context.Context) (info *MvnCommandInfo, err error) {
 	return
 }
 
+func locateMvnCmdPath() string {
+	return getMvnCommandOs()
+}
+
 func executeMvnVersion(ctx context.Context, mvnPath string, javaHome string) (string, error) {
 	var logger = logctx.Use(ctx)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*8)

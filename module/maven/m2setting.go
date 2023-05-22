@@ -86,14 +86,13 @@ func GetMvnConfig(ctx context.Context) (*UserConfig, error) {
 
 func locateMvnInstallPath(ctx context.Context) string {
 	logger := logctx.Use(ctx)
-	info, e := CheckMvnCommand(ctx)
-	if e != nil {
+	cmdPath := locateMvnCmdPath()
+	if cmdPath == "" {
 		return ""
 	}
-	fp, e := filepath.EvalSymlinks(info.Path)
+	fp, e := filepath.EvalSymlinks(cmdPath)
 	if e != nil {
 		return ""
-
 	}
 	p := filepath.Dir(filepath.Dir(fp))
 	logger.Sugar().Debugf("Maven install at: %s", p)
