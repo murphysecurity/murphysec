@@ -16,16 +16,4 @@ updates:
     schedule:
       interval: "daily"
 
-  - package-ecosystem: "gomod"
-    directory: "/"
-    target-branch: v2
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    target-branch: v2
-    schedule:
-      interval: "daily"
 
