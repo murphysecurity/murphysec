@@ -6,12 +6,14 @@ import (
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/chunkupload"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
+	"github.com/murphysecurity/murphysec/collect"
 	"github.com/murphysecurity/murphysec/gitinfo"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ref"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"go.uber.org/zap"
 	"path/filepath"
 )
 
@@ -105,6 +107,15 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 
 	cv.DisplayWaitingResponse(ctx)
 	defer cv.DisplayStatusClear(ctx)
+	// 收集贡献者信息
+	cu, e := collect.CollectDir(ctx, task.ProjectPath)
+	if e != nil {
+		logger.Warn("收集贡献者信息失败", zap.Error(e))
+	} else {
+		cu.RepoInfo.SubtaskId = createTaskResp.SubtaskID
+		api.ReportCollectedContributors(ctx, api.DefaultClient(), cu)
+		logger.Info("报送贡献者信息成功")
+	}
 	// query result
 	var result *model.ScanResultResponse
 	result, e = api.QueryResult(ctx, api.DefaultClient(), task.SubtaskId)
