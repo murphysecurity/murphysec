@@ -15,8 +15,13 @@ type ContributorUpload struct {
 	RepoInfo struct {
 		SubtaskId string `json:"subtask_id"`
 	} `json:"repo_info"`
-	LastCommitter *Contributor  `json:"last_committer"`
-	Committers    []Contributor `json:"committers"`
+	LastCommitter struct {
+		CommitterName  string    `json:"committer_name"`
+		CommitterEmail string    `json:"committer_email"`
+		CommitDate     time.Time `json:"commit_date"`
+		CommitMessage  string    `json:"commit_message"`
+	} `json:"last_committer"`
+	Committers []Contributor `json:"committers"`
 }
 
 type Contributor struct {
@@ -43,11 +48,19 @@ func CollectDir(ctx context.Context, dir string) (*ContributorUpload, error) {
 		logger.Debugf("get head failed: %s", e.Error())
 		return nil, fmt.Errorf("collector get head failed: %w", e)
 	}
-
+	var r = &ContributorUpload{
+		Committers: nil,
+	}
 	set := make(map[[2]string]*Contributor)
-	var last *Contributor
 
 	commit, e := repo.CommitObject(head.Hash())
+	if e != nil {
+		return nil, e
+	}
+	r.LastCommitter.CommitterEmail = commit.Author.Email
+	r.LastCommitter.CommitterName = commit.Author.Name
+	r.LastCommitter.CommitDate = commit.Author.When
+	r.LastCommitter.CommitMessage = commit.Message
 	for counter := 0; counter < 2000; counter++ {
 		if errors.Is(e, plumbing.ErrObjectNotFound) || errors.Is(e, object.ErrParentNotFound) {
 			break
@@ -65,18 +78,11 @@ func CollectDir(ctx context.Context, dir string) (*ContributorUpload, error) {
 				CommitCount:    0,
 			}
 			set[key] = contributor
-			if last == nil {
-				last = contributor
-			}
 		}
 		set[key].CommitCount++
 		commit, e = commit.Parent(0)
 	}
 
-	var r = &ContributorUpload{
-		LastCommitter: last,
-		Committers:    nil,
-	}
 	for _, contributor := range set {
 		r.Committers = append(r.Committers, *contributor)
 	}
