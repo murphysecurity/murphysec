@@ -20,8 +20,8 @@ type ContributorUpload struct {
 }
 
 type Contributor struct {
-	Name           string    `json:"name"`
-	Email          string    `json:"email"`
+	CommitterName  string    `json:"committer_name"`
+	CommitterEmail string    `json:"committer_email"`
 	LastCommitDate time.Time `json:"last_commit_date"`
 	CommitCount    int       `json:"commit_count"`
 }
@@ -59,8 +59,8 @@ func CollectDir(ctx context.Context, dir string) (*ContributorUpload, error) {
 		key := [2]string{commit.Author.Name, commit.Author.Email}
 		if _, ok := set[key]; !ok {
 			contributor := &Contributor{
-				Name:           commit.Author.Name,
-				Email:          commit.Author.Email,
+				CommitterName:  commit.Author.Name,
+				CommitterEmail: commit.Author.Email,
 				LastCommitDate: commit.Author.When,
 				CommitCount:    0,
 			}
