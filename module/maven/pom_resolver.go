@@ -25,6 +25,9 @@ func (r *PomResolver) fetchPom(ctx context.Context, coordinate Coordinate) (*Unr
 }
 
 func (r *PomResolver) ResolvePom(ctx context.Context, coordinate Coordinate) (*Pom, error) {
+	if coordinate.IsBad() {
+		return nil, ErrBadCoordinate.Detailed(coordinate.String())
+	}
 	if pom, e := r.resolvedCache.get(coordinate); pom != nil || e != nil {
 		return pom, e
 	}

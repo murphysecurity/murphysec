@@ -13,6 +13,7 @@ import (
 type Dependency struct {
 	Coordinate
 	Children []Dependency `json:"children,omitempty"`
+	Scope    string       `json:"scope"`
 }
 
 func (d Dependency) IsZero() bool {
@@ -98,6 +99,11 @@ func _convDep(dep Dependency) *model.DependencyItem {
 			CompVersion: dep.Version,
 			EcoRepo:     EcoRepo,
 		},
+		IsOnline:   true,
+		MavenScope: dep.Scope,
+	}
+	if d.MavenScope == "test" || d.MavenScope == "provided" || d.MavenScope == "system" {
+		d.IsOnline = false
 	}
 	for _, it := range dep.Children {
 		dd := _convDep(it)

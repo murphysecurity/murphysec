@@ -36,6 +36,7 @@ func (d *depAnalyzer) analyze(coordinate Coordinate) *Dependency {
 		Exclusion            *exclusionMap
 		DependencyManagement *dependencyManagementMap
 		Parent               *item
+		Scope                string
 	}
 
 	var _convToTree func(it *item) *Dependency
@@ -46,6 +47,7 @@ func (d *depAnalyzer) analyze(coordinate Coordinate) *Dependency {
 		d := &Dependency{
 			Coordinate: it.Coordinate,
 			Children:   []Dependency{},
+			Scope:      it.Scope,
 		}
 		if d.Coordinate.IsBad() {
 			d.Coordinate.Version = ""
@@ -67,20 +69,19 @@ func (d *depAnalyzer) analyze(coordinate Coordinate) *Dependency {
 	r := &item{Coordinate: coordinate}
 	q.PushBack(r)
 
+	// avoid circular dependencies
+	var visited = make(map[Coordinate]struct{})
 outer:
 	for q.Len() > 0 {
 		cur := q.Front().Value
 		q.Remove(q.Front())
 
-		// circular
+		// trim
 		{
-			var p = cur.Parent
-			for p != nil {
-				if p.Coordinate == cur.Coordinate {
-					continue outer
-				}
-				p = p.Parent
+			if _, ok := visited[cur.Coordinate]; ok {
+				continue outer
 			}
+			visited[cur.Coordinate] = struct{}{}
 		}
 
 		pom, e := d.resolver.ResolvePom(d.Context, cur.Coordinate)
@@ -112,6 +113,7 @@ outer:
 				Exclusion:            newExclusionMap(cur.Exclusion, dep.Exclusions),
 				DependencyManagement: dm,
 				Parent:               cur,
+				Scope:                dep.Scope,
 			}
 			cur.Children = append(cur.Children, child)
 			q.PushBack(child)
