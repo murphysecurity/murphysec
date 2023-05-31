@@ -19,6 +19,9 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 	}
 	var result = make([]model.ComponentCodeFragment, 0)
 	for _, component := range components {
+		if component.Ecosystem != "maven" {
+			continue
+		}
 		var param = fix.FixParams{
 			ShowOnly: true,
 			CompList: []fix.Comp{{
