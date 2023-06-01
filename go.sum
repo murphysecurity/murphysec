@@ -128,8 +128,8 @@ github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/muesli/termenv v0.15.1 h1:UzuTb/+hhlBugQz28rpzey4ZuKcZ03MeKsoG7IJZIxs=
 github.com/muesli/termenv v0.15.1/go.mod h1:HeAQPTzpfs016yGtA4g00CsdYnVLJvxsS4ANqrZs2sQ=
-github.com/murphysecurity/fix-tools v0.1.4 h1:zB5+JHcpcmZIjewEjFCVZ3hukUn5fyfE1KGWynHZYVo=
-github.com/murphysecurity/fix-tools v0.1.4/go.mod h1:kT8m7iheNmbYfHLPqI2cbcYS/2Cp9mGaSqZaHQe3Ok0=
+github.com/murphysecurity/fix-tools v0.1.5 h1:qENUiBD1poyrA5npbZ5Kzfy6sciesSjtwOtyMHWcWA4=
+github.com/murphysecurity/fix-tools v0.1.5/go.mod h1:kT8m7iheNmbYfHLPqI2cbcYS/2Cp9mGaSqZaHQe3Ok0=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pelletier/go-buffruneio v0.2.0/go.mod h1:JkE26KsDizTr40EUHkXVtNPvgGtbSNq5BcowyYOWdKo=
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
