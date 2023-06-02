@@ -37,7 +37,7 @@ func CollectDir(ctx context.Context, dir string) (*ContributorUpload, error) {
 	repo, e := git.PlainOpen(dir)
 	if errors.Is(e, git.ErrRepositoryNotExists) {
 		logger.Debugf("no repository found")
-		return nil, nil
+		return nil, git.ErrRepositoryNotExists
 	}
 	if e != nil {
 		logger.Debugf("open repository failed: %s", e.Error())
