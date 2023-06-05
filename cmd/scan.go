@@ -72,6 +72,7 @@ func scanCmd() *cobra.Command {
 	c.Flags().StringVar(&env.SpecificProjectName, "project-name", "", "force specific project name")
 	c.Flags().BoolVar(&env.DisableGit, "skip-git", false, "force ignore git info")
 	c.Flags().StringVar(&env.Scope, "scope", "", "specify the scope type (only for maven)\ndefault \"compile,runtime\"\nto specify all scopes, use \"all\"\ncan be multiple, but need to be separated by commas")
+	c.Flags().StringVar(&env.GradleProjects, "gradle-projects", "", "specify the gradle projects, split by ',', like \"model,:app,:app:guide\"")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }

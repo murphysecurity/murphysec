@@ -43,10 +43,22 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		}
 		if useGradle {
 			logger.Info(gradleEnv.Version.String())
-			projects, e := fetchGradleProjects(ctx, dir, gradleEnv)
-			if e != nil {
-				logger.Infof("fetch gradle projects failed: %s", e.Error())
+			var projects []string
+			if env.GradleProjects == "" {
+				projects, e = fetchGradleProjects(ctx, dir, gradleEnv)
+				if e != nil {
+					logger.Infof("fetch gradle projects failed: %s", e.Error())
+				}
+			} else {
+				for _, p := range strings.Split(env.GradleProjects, ",") {
+					p = strings.TrimSpace(p)
+					if p == "" {
+						continue
+					}
+					projects = append(projects, strings.TrimSuffix(p, ":"))
+				}
 			}
+
 			logger.Debugf("Gradle projects: %s", strings.Join(projects, ", "))
 
 			{
