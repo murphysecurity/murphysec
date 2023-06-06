@@ -66,7 +66,6 @@ require (
 	github.com/skeema/knownhosts v1.1.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
-	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/xanzy/go-gitlab v0.84.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
