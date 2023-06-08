@@ -172,10 +172,7 @@ func evalGradleDependencies(ctx context.Context, projectDir string, projectName 
 		logger.Errorf("Gradle output: %s", string(e.(*exec.ExitError).Stderr))
 		return nil, e
 	}
-	var lines []string
-	for _, it := range strings.Split(string(data), "\n") {
-		lines = append(lines, strings.TrimSpace(it))
-	}
+	var lines = fp.Map(strings.TrimSpace)(strings.Split(string(data), "\n"))
 	depInfo := parseGradleDependencies(lines)
 	if depInfo == nil {
 		return nil, errors.New("parse dep info failed.")
