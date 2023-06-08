@@ -46,7 +46,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		PackageManager: "bundler",
 		ModuleName:     tree[0].CompName,
 		Dependencies:   tree,
-		ModulePath:     scanDir,
+		ModulePath:     gemFile,
 	})
 	return nil
 }
