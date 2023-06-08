@@ -1,20 +1,17 @@
 package predata
 
-import "strings"
+import (
+	"github.com/murphysecurity/murphysec/infra/sl"
+	"github.com/repeale/fp-go"
+	"strings"
+)
 
 func ParseString(s string) []string {
-	var r []string
-	for _, it := range strings.Split(s, "\n") {
-		it = strings.TrimSpace(it)
-		if it == "" {
-			continue
-		}
-		if it[0] == '#' {
-			continue
-		}
-		r = append(r, it)
-	}
-	return r
+	return fp.Pipe2(fp.Map(strings.TrimSpace), fp.Filter(sl.NotF1(lineShouldSkip)))(strings.Split(s, "\n"))
+}
+
+func lineShouldSkip(s string) bool {
+	return s == "" || s[0] == '#'
 }
 
 func StringsToMapBool(s []string) map[string]bool {

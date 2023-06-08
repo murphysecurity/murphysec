@@ -2,6 +2,8 @@ package pathignore
 
 import (
 	_ "embed"
+	"github.com/murphysecurity/murphysec/infra/sl"
+	"github.com/repeale/fp-go"
 	"path/filepath"
 	"strings"
 )
@@ -12,13 +14,7 @@ var _dirskipData []byte
 var commonDirSkip []string
 
 func init() {
-	for _, s := range strings.Split(string(_dirskipData), "\n") {
-		s = strings.TrimSpace(s)
-		if s == "" || s[0] == '#' {
-			continue
-		}
-		commonDirSkip = append(commonDirSkip, s)
-	}
+	commonDirSkip = fp.Pipe2(fp.Map(strings.TrimSpace), fp.Filter(sl.NotF1(lineShouldSkip)))(strings.Split(string(_dirskipData), "\n"))
 }
 
 func DirName(s string) bool {
@@ -28,4 +24,8 @@ func DirName(s string) bool {
 		}
 	}
 	return false
+}
+
+func lineShouldSkip(s string) bool {
+	return s == "" || s[0] == '#'
 }
