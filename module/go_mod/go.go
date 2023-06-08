@@ -3,9 +3,11 @@ package go_mod
 import (
 	"context"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/infra/sl"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
+	"github.com/repeale/fp-go"
 	"go.uber.org/zap"
 	"golang.org/x/mod/modfile"
 	"path/filepath"
@@ -48,22 +50,20 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		m.ModuleVersion = f.Module.Mod.Version
 		m.ModuleName = f.Module.Mod.Path
 	}
-
-	for _, it := range f.Require {
-		if it == nil {
-			continue
-		}
-		m.Dependencies = append(m.Dependencies, model.DependencyItem{
-			Component: model.Component{
-				CompName:    it.Mod.Path,
-				CompVersion: it.Mod.Version,
-				EcoRepo:     EcoRepo,
-			},
-			IsDirectDependency: !it.Indirect,
-		})
-	}
+	m.Dependencies = append(m.Dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
 	task.AddModule(m)
 	return nil
+}
+
+func mapRequireToDependencyItem(it *modfile.Require) model.DependencyItem {
+	return model.DependencyItem{
+		Component: model.Component{
+			CompName:    it.Mod.Path,
+			CompVersion: it.Mod.Version,
+			EcoRepo:     EcoRepo,
+		},
+		IsDirectDependency: !it.Indirect,
+	}
 }
 
 var EcoRepo = model.EcoRepo{
