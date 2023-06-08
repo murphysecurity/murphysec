@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/infra/sl"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
+	"github.com/repeale/fp-go"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -50,7 +53,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 			if e != nil {
 				logger.Info("evalGradleDependencies failed. <root> ", e.Error())
 			} else {
-				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+				rs = append(rs, depInfo.BaseModule(dir))
 			}
 		}
 		for _, projectId := range projects {
@@ -58,7 +61,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 			if e != nil {
 				logger.Infof("evalGradleDependencies failed: %s - %s", projectId, e.Error())
 			} else {
-				rs = append(rs, depInfo.BaseModule(filepath.Join(dir, "build.gradle")))
+				rs = append(rs, depInfo.BaseModule(dir))
 			}
 		}
 	}
@@ -74,6 +77,14 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		task.AddModule(it)
 	}
 	return nil
+}
+
+func gradleProjectName2PathComponent(baseDir string, projectName string) string {
+	part2 := strings.Join(fp.Filter(sl.StringNotEmpty)(strings.Split(projectName, ":")), "/")
+	if f := filepath.Join(baseDir, part2, "build.gradle.kts"); utils.IsFile(f) {
+		return f
+	}
+	return filepath.Join(baseDir, part2, "build.gradle")
 }
 
 func backupParser(ctx context.Context, dir string) *GradleDependencyInfo {
@@ -178,12 +189,12 @@ type GradleDependencyInfo struct {
 	Dependencies []DepElement `json:"dependencies,omitempty"`
 }
 
-func (g *GradleDependencyInfo) BaseModule(path string) model.Module {
+func (g *GradleDependencyInfo) BaseModule(basePath string) model.Module {
 	return model.Module{
 		PackageManager: "gradle",
 		ModuleName:     g.ProjectName,
 		Dependencies:   convDep(g.Dependencies),
-		ModulePath:     path,
+		ModulePath:     gradleProjectName2PathComponent(basePath, g.ProjectName),
 	}
 }
 
