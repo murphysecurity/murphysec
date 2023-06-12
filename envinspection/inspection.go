@@ -12,6 +12,7 @@ import (
 	"github.com/murphysecurity/murphysec/version"
 	"github.com/murphysecurity/murphysec/view"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -25,39 +26,40 @@ func InspectEnv(ctx context.Context, projectName string) error {
 	}
 	LOG.Infof("Task created, task id: %s", task.TaskId)
 
-	var kernelVer = readLinuxKernelVersion()
-	osRelease := readOsRelease()
-	osId := osRelease["ID"]
-	osVersion := osRelease["VERSION"]
-
 	var packageManager = "unmanaged"
 	if s, ok := processByRule(version.OsName()); ok {
 		packageManager = s
 	}
 
 	module2 := api.VoModule{Name: "Software Installed", PackageManager: model.PackageManagerType(packageManager)}
-	pkgs, e := inspectDpkgPackage(ctx)
+	var pkgs []model.Dependency
+	var e error
 
-	if e == nil && len(pkgs) > 0 {
-		LOG.Warnf("dpkg inspection succeeded, total %d items", len(pkgs))
-		module2.Dependencies = append(module2.Dependencies, pkgs...)
-	} else if e != nil {
-		LOG.Warnf("dpkg inspection error: %s", e.Error())
-	}
+	if runtime.GOOS == "windows" {
+		pkgs, e = listInstalledSoftwareWindows(ctx)
+		if e == nil && len(pkgs) > 0 {
+			LOG.Warnf("Windows installed software inspection succeeded, total %d items", len(pkgs))
+			module2.Dependencies = append(module2.Dependencies, pkgs...)
+		} else if e != nil {
+			LOG.Warnf("Windows installed software: %s", e.Error())
+		}
 
-	pkgs, e = listInstalledSoftwareWindows(ctx)
-	if e == nil && len(pkgs) > 0 {
-		LOG.Warnf("Windows installed software inspection succeeded, total %d items", len(pkgs))
-		module2.Dependencies = append(module2.Dependencies, pkgs...)
-	} else if e != nil {
-		LOG.Warnf("Windows installed software: %s", e.Error())
-	}
-	pkgs, e = inspectRPMPackage(ctx)
-	if e == nil && len(pkgs) > 0 {
-		LOG.Warnf("RPM inspection succeeded, total %d items", len(pkgs))
-		module2.Dependencies = append(module2.Dependencies, pkgs...)
-	} else if e != nil {
-		LOG.Warnf("RPM inspection error: %s", e.Error())
+	} else {
+		pkgs, e = inspectDpkgPackage(ctx)
+		if e == nil && len(pkgs) > 0 {
+			LOG.Warnf("dpkg inspection succeeded, total %d items", len(pkgs))
+			module2.Dependencies = append(module2.Dependencies, pkgs...)
+		} else if e != nil {
+			LOG.Warnf("dpkg inspection error: %s", e.Error())
+		}
+
+		pkgs, e = inspectRPMPackage(ctx)
+		if e == nil && len(pkgs) > 0 {
+			LOG.Warnf("RPM inspection succeeded, total %d items", len(pkgs))
+			module2.Dependencies = append(module2.Dependencies, pkgs...)
+		} else if e != nil {
+			LOG.Warnf("RPM inspection error: %s", e.Error())
+		}
 	}
 
 	if e := api.SendDetect(&api.SendDetectRequest{
@@ -68,8 +70,7 @@ func InspectEnv(ctx context.Context, projectName string) error {
 			{
 				Name: "OperatingSystem",
 				Dependencies: []model.Dependency{
-					{"kernel", kernelVer, nil},
-					{osId, osVersion, nil},
+					{version.OsName(), "", nil},
 				},
 				PackageManager: model.PackageManagerType(packageManager),
 			}},
