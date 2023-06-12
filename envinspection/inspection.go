@@ -45,6 +45,13 @@ func InspectEnv(ctx context.Context, projectName string) error {
 		LOG.Warnf("dpkg inspection error: %s", e.Error())
 	}
 
+	pkgs, e = listInstalledSoftwareWindows(ctx)
+	if e == nil && len(pkgs) > 0 {
+		LOG.Warnf("Windows installed software inspection succeeded, total %d items", len(pkgs))
+		module2.Dependencies = append(module2.Dependencies, pkgs...)
+	} else if e != nil {
+		LOG.Warnf("Windows installed software: %s", e.Error())
+	}
 	pkgs, e = inspectRPMPackage(ctx)
 	if e == nil && len(pkgs) > 0 {
 		LOG.Warnf("RPM inspection succeeded, total %d items", len(pkgs))
