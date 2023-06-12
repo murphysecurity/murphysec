@@ -62,18 +62,32 @@ func InspectEnv(ctx context.Context, projectName string) error {
 		}
 	}
 
+	voModules := []api.VoModule{
+		module2,
+		{
+			Name: "OperatingSystem",
+			Dependencies: []model.Dependency{
+				{version.OsName(), "", nil},
+			},
+			PackageManager: model.PackageManagerType(packageManager),
+		}}
+
+	pkgs, e = listRunningProcessExecutableFile(ctx)
+	if e == nil && len(pkgs) > 0 {
+		LOG.Warnf("Running process inspection succeeded, total %d items", len(pkgs))
+		var vm = api.VoModule{
+			Name: "Processes",
+		}
+		vm.Dependencies = append(vm.Dependencies, pkgs...)
+		voModules = append(voModules, vm)
+	} else if e != nil {
+		LOG.Warnf("Windows installed software: %s", e.Error())
+	}
+
 	if e := api.SendDetect(&api.SendDetectRequest{
 		TaskInfo: task.TaskId,
 		ApiToken: conf.APIToken(),
-		Modules: []api.VoModule{
-			module2,
-			{
-				Name: "OperatingSystem",
-				Dependencies: []model.Dependency{
-					{version.OsName(), "", nil},
-				},
-				PackageManager: model.PackageManagerType(packageManager),
-			}},
+		Modules:  voModules,
 	}); e != nil {
 		LOG.Errorf("Submitting data failed: %s", e.Error())
 		if e != nil {
