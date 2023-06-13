@@ -176,33 +176,16 @@ curl -fsSL https://s.murphysec.com/release/install.sh | /bin/bash
 powershell -Command "iwr -useb https://s.murphysec.com/release/install.ps1 | iex"
 ```
 
-### 2.创建任务
-
-首先登录到墨菲安全控制台，创建任务的方式有以下三种
-
-- 方式1：在项目页面，点击项目右上角的加号选择接入
-- 方式2：进入指定项目，点击右上角的创建任务按钮接入
-- 方式3：进入指定项目，点击右上角的创建任务按钮，选择其他接入方式通过模板接入
-
-### 3. 获取访问令牌
+### 2. 获取访问令牌
 
 > CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/faqs/project-management/access-token.html)
 
-方式1：
+进入[墨菲安全控制台](https://www.murphysec.com/console)，点击`设置` - `访问令牌`
 
-进入[墨菲安全控制台](https://www.murphysec.com/)，点击`左下角个人设置`，点击`用户token` 复制`访问令牌`
-
-<img alt="scan result" src="./assets/acces-token1.png" width="80%">
+<img alt="scan result" src="./assets/access-token.png" width="80%">
 
 
-
-方式2： 任务创建页面最下方-->复制token 
-
-<img alt="scan result" src="./assets/acces-token2.png" width="80%">
-
-
-
-### 4. 认证
+### 3. 认证
 
 目前有两种认证方式可用：命令行交互认证、命令行参数认证
 
