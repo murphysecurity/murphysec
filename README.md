@@ -51,7 +51,7 @@
 
 Currently supports Java, JavaScript, Golang. Other development languages will be gradually supported in the future.
 
-Want to learn more about language support? [check out our documentation](https://www.murphysec.com/docs/quick-start/language-support/)
+Want to learn more about language support? [check out our documentation](https://www.murphysec.com/docs/faqs/quick-start-for-beginners/programming-language-supported.html)
 
 
 ## How it works
@@ -69,7 +69,7 @@ Want to learn more about language support? [check out our documentation](https:/
 1. To detect security issues in your code locally
 2. To detect security issues in CI/CD pipeline 
 
-[Learn how to integrate MurphySec CLI in Jenkins](https://www.murphysec.com/docs/integrations/jenkins/)
+[Learn how to integrate MurphySec CLI in Jenkins](https://www.murphysec.com/docs/faqs/integration/jenkins.html)
 
 
 
@@ -98,7 +98,7 @@ powershell -Command "iwr -useb https://s.murphysec.com/release/install.ps1 | iex
 
 ### 2. Get access token
 
-> MurphySec CLI requires an access token from your MurphySec account for authentication to work properly. [What is an access token?](https://www.murphysec.com/docs/faq/access-token/) 
+> MurphySec CLI requires an access token from your MurphySec account for authentication to work properly. [What is an access token?](https://www.murphysec.com/docs/faqs/project-management/access-token.html) 
 
 Go to [MurphySec platform - Access Token](https://www.murphysec.com/usr/token), click the copy button after the Token, then the access token is copied to the clipboard.
 
@@ -129,7 +129,7 @@ Available parameters
 - `--json`: Specify the output of the result as json format, not showing the result details by default
 
 ### 5. View results
-MurphySec CLI does not show the result details by default, you can view the results in [MurphySec platform](https://www.murphysec.com/control/project).
+MurphySec CLI does not show the result details by default, you can view the results in [MurphySec platform](https://www.murphysec.com/console).
 
 
 ## Command Introduction
