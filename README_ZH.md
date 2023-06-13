@@ -133,7 +133,7 @@
 
 </table>
 
-详细的支持情况可以[查看文档](https://www.murphysec.com/docs/quick-start/language-support/)
+详细的支持情况可以[查看文档](https://www.murphysec.com/docs/faqs/quick-start-for-beginners/programming-language-supported.html)
 
 ## 工作原理
 
@@ -149,7 +149,7 @@
 1. 希望在本地环境中检测代码文件
 2. 希望集成到 CI 环境中对代码项目进行检测
 
-参考：[墨菲安全 CLI 与 Jenkins CI 的集成](https://www.murphysec.com/docs/integrations/jenkins/)
+参考：[墨菲安全 CLI 与 Jenkins CI 的集成](https://www.murphysec.com/docs/faqs/integration/jenkins.html)
 
 
 
@@ -186,7 +186,7 @@ powershell -Command "iwr -useb https://s.murphysec.com/release/install.ps1 | iex
 
 ### 3. 获取访问令牌
 
-> CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/guides/scan-scene/cli.html)
+> CLI 工具需要使用墨菲安全账户的`访问令牌`进行认证才能正常使用。[访问令牌是什么？（点击查看详情）](https://www.murphysec.com/docs/faqs/project-management/access-token.html)
 
 方式1：
 
@@ -232,7 +232,7 @@ murphysec scan [your-project-path]
 
 ### 5. 查看结果
 
-CLI 工具默认不展示结果详情，可以在[墨菲安全控制台](https://www.murphysec.com/project/list)-`项目`页面查看详细的检测结果
+CLI 工具默认不展示结果详情，可以在[墨菲安全控制台](https://www.murphysec.com/console)-`项目管理`页面查看详细的检测结果
 
 
 
