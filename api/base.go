@@ -80,11 +80,8 @@ func NewClient() *Client {
 }
 
 func (c *Client) POST(relUri string, body io.Reader) *http.Request {
-	u, e := http.NewRequest(http.MethodPost, c.baseUrl+relUri, body)
+	u := must.A(http.NewRequest(http.MethodPost, c.baseUrl+relUri, body))
 	u.Header.Set(HeaderMachineId, machineId)
-	if e != nil {
-		panic(e)
-	}
 	return u
 }
 
