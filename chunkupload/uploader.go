@@ -32,9 +32,25 @@ func fileStreamer(ctx context.Context, path string, writer io.Writer) (e error) 
 		return e
 	}
 	defer func() { utils.LogCloseErr(logger, "file", f) }()
+	info, e := os.Stat(path)
+	if e != nil {
+		return fmt.Errorf("fileStreamer: get fileinfo failed, %w", e)
+	}
 	logger.Infof("begin")
 	defer func() { logger.Warnf("end with error: %v", e) }()
-	_, e = io.Copy(writer, f)
+	gzipWriter := gzip.NewWriter(writer)
+	defer func() { utils.LogCloseErr(logger, "gzip", gzipWriter) }()
+	tarWriter := tar.NewWriter(gzipWriter)
+	defer func() { utils.LogCloseErr(logger, "tar", tarWriter) }()
+	e = tarWriter.WriteHeader(&tar.Header{
+		Name: filepath.Base(path),
+		Mode: 666,
+		Size: info.Size(),
+	})
+	if e != nil {
+		return fmt.Errorf("fileStreamer: write header %w", e)
+	}
+	_, e = io.Copy(tarWriter, f)
 	if e != nil {
 		return e
 	}
