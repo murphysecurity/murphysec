@@ -18,6 +18,8 @@ type CreateSubTaskRequest struct {
 	SubtaskName string           `json:"subtask_name"`
 	Dir         string           `json:"dir"` // 路径
 	CliVersion  string           `json:"cli_version"`
+	IsBuild     bool             `json:"is_build"`
+	IsDeep      bool             `json:"is_deep"`
 }
 
 type CreateSubTaskResponse struct {

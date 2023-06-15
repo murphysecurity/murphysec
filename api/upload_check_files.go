@@ -14,5 +14,7 @@ func UploadCheckFiles(client *Client, taskId string, subTaskId string, chunkId i
 	q.Add("chunk_id", strconv.Itoa(chunkId))
 	q.Add("subtask_id", subTaskId)
 	u.RawQuery = q.Encode()
-	return client.DoJson(client.POST(u, reader), nil)
+	req := client.POST(u, reader)
+	req.Header.Set("content-type", "application/octet-stream")
+	return client.DoJson(req, nil)
 }

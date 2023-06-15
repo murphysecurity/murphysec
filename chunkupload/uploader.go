@@ -20,7 +20,7 @@ type Params struct {
 	SubtaskId string
 }
 
-const _ChunkSize = 16 * 1024 * 1024
+const _ChunkSize = 4 * 1024 * 1024
 
 func fileStreamer(ctx context.Context, path string, writer io.Writer) (e error) {
 	var (
@@ -83,7 +83,7 @@ func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer)
 			return fmt.Errorf("write header: %w", e)
 		}
 
-		_, e = io.Copy(writer, f)
+		_, e = io.Copy(tarWriter, f)
 		if e != nil {
 			return fmt.Errorf("write data: %w", e)
 		}
@@ -97,6 +97,9 @@ func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer)
 		}
 		if d == nil {
 			return fmt.Errorf("fs.DirEntry is nil")
+		}
+		if !d.Type().IsRegular() || d.Type().Type()&os.ModeSymlink == os.ModeSymlink {
+			return nil
 		}
 		var (
 			vote FilterVote
@@ -118,7 +121,12 @@ func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer)
 		if d.IsDir() {
 			return nil
 		} // ignore directory
-		return putFile(path, d)
+		e = putFile(path, d)
+		if e != nil {
+			logger.Errorf("put file error: %s, %v", path, e)
+			return e
+		}
+		return nil
 	})
 	if e != nil {
 		return e

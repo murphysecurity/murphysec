@@ -35,6 +35,8 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.AccessType = accessType
 	createSubtask.ScanMode = mode
 	createSubtask.Dir = dir
+	createSubtask.IsBuild = !noBuild
+	createSubtask.IsDeep = isDeep
 
 	// get git info
 	var gitSummary *gitinfo.Summary
@@ -46,8 +48,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	}
 
 	// call API
-	var createTaskResp *api.CreateSubTaskResponse
-	createTaskResp, e = api.CreateSubTask(api.DefaultClient(), &createSubtask)
+	createTaskResp, e := api.CreateSubTask(api.DefaultClient(), &createSubtask)
 	if errors.Is(e, api.ErrTLSError) {
 		cv.DisplayTLSNotice(ctx)
 		return nil, e
@@ -73,7 +74,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	}
 
 	ctx = model.WithScanTask(ctx, task)
-	if task.Mode == model.ScanModeSource {
+	if task.Mode == model.ScanModeSource && !isDeep {
 		// do scan
 		e = inspector.ManagedInspect(ctx)
 		if e != nil {
@@ -89,7 +90,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		}
 	} else {
 		cv.DisplayUploading(ctx)
-		e = chunkupload.UploadDirectory(ctx, task.ProjectPath, nil, chunkupload.Params{
+		e = chunkupload.UploadDirectory(ctx, task.ProjectPath, chunkupload.DiscardDot, chunkupload.Params{
 			SubtaskId: task.SubtaskId,
 		})
 		if e != nil {

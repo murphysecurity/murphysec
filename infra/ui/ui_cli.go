@@ -5,11 +5,13 @@ import (
 	"github.com/muesli/termenv"
 )
 
-type CLI struct{}
+type cli struct{}
 
-var _ UI = (*CLI)(nil)
+var CLI UI = &cli{}
 
-func (CLI) UpdateStatus(s Status, msg string) {
+var _ UI = (*cli)(nil)
+
+func (cli) UpdateStatus(s Status, msg string) {
 	cliStatus = s
 	cliStatusMsg = msg
 	termenv.ClearLine() //nolint:all
@@ -17,7 +19,7 @@ func (CLI) UpdateStatus(s Status, msg string) {
 	statusRepaint()
 }
 
-func (CLI) Display(level MessageLevel, msg string) {
+func (cli) Display(level MessageLevel, msg string) {
 	termenv.ClearLine() //nolint:all
 	if level == MsgError {
 		fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s] %s", level.String(), msg)))
@@ -27,7 +29,7 @@ func (CLI) Display(level MessageLevel, msg string) {
 	statusRepaint()
 }
 
-func (CLI) ClearStatus() {
+func (cli) ClearStatus() {
 	if cliStatus == StatusIdle {
 		return
 	}

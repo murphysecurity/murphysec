@@ -3,6 +3,7 @@ package murphy
 import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/auth"
+	"github.com/murphysecurity/murphysec/cmd/murphy/internal/binscan"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/internalcmd"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/scan"
@@ -61,10 +62,9 @@ func rootCmd() *cobra.Command {
 	c.AddCommand(auth.Cmd())
 	c.AddCommand(scan.Cmd())
 	c.AddCommand(scan.IdeaScan())
-	//c.AddCommand(binscan.Cmd())
+	c.AddCommand(scan.DfCmd())
+	c.AddCommand(binscan.Cmd())
 	c.AddCommand(internalcmd.Cmd())
-
-	//c.AddCommand(envScanCmd())
 	return c
 }
 

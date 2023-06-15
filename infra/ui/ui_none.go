@@ -1,11 +1,13 @@
 package ui
 
-type None struct{}
+type none struct{}
 
-func (None) UpdateStatus(s Status, msg string) {}
+func (none) UpdateStatus(s Status, msg string) {}
 
-func (None) Display(level MessageLevel, msg string) {}
+func (none) Display(level MessageLevel, msg string) {}
 
-func (None) ClearStatus() {}
+func (none) ClearStatus() {}
 
-var _ UI = (*None)(nil)
+var _ UI = (*none)(nil)
+
+var None UI = &none{}

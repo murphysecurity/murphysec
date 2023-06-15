@@ -4,6 +4,7 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 )
 
 type middlewareWithZapLogger struct {
@@ -13,7 +14,11 @@ type middlewareWithZapLogger struct {
 
 func (m *middlewareWithZapLogger) RoundTrip(request *http.Request) (resp *http.Response, e error) {
 	var dump []byte
-	dump, e = httputil.DumpRequestOut(request, true)
+	dumpBody := true
+	if strings.Contains(request.Header.Get("content-type"), "octet-stream") {
+		dumpBody = false
+	}
+	dump, e = httputil.DumpRequestOut(request, dumpBody)
 	if e != nil {
 		m.Logger.Error("dump request out failed", zap.Error(e))
 	} else {

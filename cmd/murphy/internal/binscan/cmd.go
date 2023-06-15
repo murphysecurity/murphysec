@@ -29,7 +29,7 @@ func Cmd() *cobra.Command {
 func binScanRun(cmd *cobra.Command, args []string) {
 	var (
 		// workaround
-		ctx      = ui.With(context.TODO(), ui.CLI{})
+		ctx      = ui.With(context.TODO(), ui.CLI)
 		scanPath = args[0]
 		e        error
 	)

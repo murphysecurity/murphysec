@@ -29,7 +29,7 @@ func scannerScanCmd() *cobra.Command {
 
 func scannerScanRun(cmd *cobra.Command, args []string) {
 	var (
-		ctx     = ui.With(context.TODO(), ui.None{})
+		ctx     = ui.With(context.TODO(), ui.None)
 		scanDir = args[0]
 		e       error
 	)

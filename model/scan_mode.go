@@ -7,4 +7,6 @@ const (
 	ScanModeSourceDeep ScanMode = "source_deep"
 	ScanModeBinary     ScanMode = "binary"
 	ScanModeIot        ScanMode = "iot"
+	ScanModeStandard   ScanMode = "standard"
+	ScanModeComp       ScanMode = "comp"
 )
