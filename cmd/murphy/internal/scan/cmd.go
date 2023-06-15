@@ -77,7 +77,7 @@ func commonScanPreCheck(ctx context.Context, scanDir string) (string, error) {
 	if !utils.IsDir(scanDir) {
 		cv.DisplayScanInvalidPathMustDir(ctx, nil)
 		exitcode.Set(1)
-		return "", e
+		return "", fmt.Errorf("dir invalid")
 	}
 	return scanDir, nil
 }
