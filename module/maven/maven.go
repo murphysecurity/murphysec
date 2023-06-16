@@ -99,11 +99,11 @@ func _convDep(dep Dependency) *model.DependencyItem {
 			CompVersion: dep.Version,
 			EcoRepo:     EcoRepo,
 		},
-		IsOnline:   true,
+		IsOnline:   model.IsOnlineTrue(),
 		MavenScope: dep.Scope,
 	}
 	if d.MavenScope == "test" || d.MavenScope == "provided" || d.MavenScope == "system" {
-		d.IsOnline = false
+		d.IsOnline.SetOnline(false)
 	}
 	for _, it := range dep.Children {
 		dd := _convDep(it)
