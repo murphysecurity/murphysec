@@ -14,7 +14,7 @@ require (
 	github.com/magiconair/properties v1.8.7
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.15.1
-	github.com/murphysecurity/fix-tools v0.1.7-0.20230616111449-5ea75a014a45
+	github.com/murphysecurity/fix-tools v0.1.7-0.20230616135851-75379b5dc551
 	github.com/pelletier/go-toml/v2 v2.0.8
 	github.com/pkg/errors v0.9.1
 	github.com/repeale/fp-go v0.11.1

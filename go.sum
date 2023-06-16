@@ -126,8 +126,8 @@ github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/muesli/termenv v0.15.1 h1:UzuTb/+hhlBugQz28rpzey4ZuKcZ03MeKsoG7IJZIxs=
 github.com/muesli/termenv v0.15.1/go.mod h1:HeAQPTzpfs016yGtA4g00CsdYnVLJvxsS4ANqrZs2sQ=
-github.com/murphysecurity/fix-tools v0.1.7-0.20230616111449-5ea75a014a45 h1:ONq14rDE4aBtvBZ3vfq8rLqzkCCoK+Lc32NSDasyOUg=
-github.com/murphysecurity/fix-tools v0.1.7-0.20230616111449-5ea75a014a45/go.mod h1:HzCGBPmMI3KuUYVvpW18NeTBOEkIIq3i6PpWDCn22oI=
+github.com/murphysecurity/fix-tools v0.1.7-0.20230616135851-75379b5dc551 h1:663hkZMCgxkb6sRwPgbCnNRQaGiWXdoxXhjtXwIry7g=
+github.com/murphysecurity/fix-tools v0.1.7-0.20230616135851-75379b5dc551/go.mod h1:HzCGBPmMI3KuUYVvpW18NeTBOEkIIq3i6PpWDCn22oI=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pelletier/go-buffruneio v0.2.0/go.mod h1:JkE26KsDizTr40EUHkXVtNPvgGtbSNq5BcowyYOWdKo=
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
