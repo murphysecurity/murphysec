@@ -33,13 +33,13 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 			Dir:            dir,
 		}
 		logger.Sugar().Debugf("fix: %s", string(must.A(json.Marshal(param))))
-		_, previews, e := param.Fix()
-		if e != nil {
-			return nil, fmt.Errorf("scan fragment: %w", e)
+		xdResult := param.Fix()
+		if xdResult.Err != nil {
+			return nil, fmt.Errorf("scan fragment: %w", xdResult.Err)
 		}
 		var r = model.ComponentCodeFragment{
-			Component:     component,
-			CodeFragments: utils.NoNilSlice(previews),
+			Component:          component,
+			CodeFragmentResult: xdResult,
 		}
 		result = append(result, r)
 	}

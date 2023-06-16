@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/murphysecurity/fix-tools/fix"
 	"github.com/murphysecurity/murphysec/utils"
 	"time"
 )
@@ -40,7 +41,7 @@ type PluginComp struct {
 	DependentPath      []string               `json:"dependent_path"`
 	PackageManager     string                 `json:"package_manager"`
 	DirectDependency   []ComponentFixPlanList `json:"direct_dependency"`
-	FixPreviews        []CodeFragment         `json:"fix_previews"`
+	FixPreviews        fix.Response           `json:"fix_previews"`
 }
 
 type ComponentFixPlanList struct {
@@ -49,9 +50,9 @@ type ComponentFixPlanList struct {
 }
 
 func GetIDEAOutput(task *ScanTask) PluginOutput {
-	codeFragments := make(map[Component][]CodeFragment)
+	codeFragments := make(map[Component]fix.Response)
 	for _, it := range task.CodeFragments {
-		codeFragments[it.Component] = it.CodeFragments
+		codeFragments[it.Component] = it.CodeFragmentResult
 	}
 
 	// workaround: 从模块列表里拎包管理器出来
@@ -169,7 +170,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			DependentPath:      utils.NoNilSlice(comp.DependentPath),
 			PackageManager:     pmMap[comp.Component],
 			DirectDependency:   utils.NoNilSlice(directDependencyFixPlan),
-			FixPreviews:        utils.NoNilSlice(codeFragments[comp.Component]),
+			FixPreviews:        codeFragments[comp.Component],
 		}
 
 		// workaround: IDE侧要求我一定加进去，后续他不要求了，就删掉
