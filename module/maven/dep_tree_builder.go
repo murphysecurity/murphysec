@@ -108,9 +108,6 @@ outer:
 				logger.Warn("Resolution version failed", zap.Any("in", coordinate), zap.String("dep", dep.GroupID+":"+dep.ArtifactID))
 				continue
 			}
-			if dep.Optional == "true" || (dep.Scope != "" && dep.Scope != "compile") {
-
-			}
 			child := &item{
 				Coordinate:           depCoordinate,
 				Exclusion:            newExclusionMap(cur.Exclusion, dep.Exclusions),

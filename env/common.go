@@ -17,3 +17,5 @@ const DefaultServerURL = "https://www.murphysec.com"
 
 var ServerURLOverride = os.Getenv("MPS_CLI_SERVER")
 var APITokenOverride = os.Getenv("API_TOKEN")
+var ScannerScan = false
+var ScannerShouldEnableMavenBackupScan = false

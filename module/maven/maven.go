@@ -3,6 +3,7 @@ package maven
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/model"
@@ -48,11 +49,16 @@ func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.
 
 	// analyze pom file
 	if useBackupResolver {
-		ui.Use(ctx).Display(ui.MsgWarn, "通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://murphysec.com/docs/faqs/quick-start-for-beginners/programming-language-supported.html 了解详情")
-		var e error
-		deps, e = BackupResolve(ctx, dir)
-		if e != nil {
-			log.Error("Use backup resolver failed", zap.Error(e))
+		if env.ScannerScan {
+			env.ScannerShouldEnableMavenBackupScan = true
+			return nil, nil
+		} else {
+			ui.Use(ctx).Display(ui.MsgWarn, "通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://murphysec.com/docs/faqs/quick-start-for-beginners/programming-language-supported.html 了解详情")
+			var e error
+			deps, e = BackupResolve(ctx, dir)
+			if e != nil {
+				log.Error("Use backup resolver failed", zap.Error(e))
+			}
 		}
 	}
 	if deps == nil {

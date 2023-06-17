@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/exitcode"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ui"
@@ -33,7 +34,7 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		scanDir = args[0]
 		e       error
 	)
-
+	env.ScannerScan = true
 	common.LogLevel = logger2.LevelDebug
 	ctx, e = common.InitLogger(ctx)
 	if e != nil {
@@ -67,9 +68,14 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 	}
 
 	type wrapper struct {
-		Modules               []model.Module                `json:"modules,omitempty"`
-		ComponentCodeFragment []model.ComponentCodeFragment `json:"component_code_fragment,omitempty"`
+		Modules                            []model.Module                `json:"modules,omitempty"`
+		ComponentCodeFragment              []model.ComponentCodeFragment `json:"component_code_fragment,omitempty"`
+		ScannerShouldEnableMavenBackupScan bool                          `json:"scanner_should_enable_maven_backup_scan"`
 	}
-
-	fmt.Println(string(must.M1(json.MarshalIndent(wrapper{scantask.Modules, scantask.CodeFragments}, "", "  "))))
+	w := wrapper{
+		Modules:                            scantask.Modules,
+		ComponentCodeFragment:              scantask.CodeFragments,
+		ScannerShouldEnableMavenBackupScan: env.ScannerShouldEnableMavenBackupScan,
+	}
+	fmt.Println(string(must.M1(json.MarshalIndent(w, "", "  "))))
 }
