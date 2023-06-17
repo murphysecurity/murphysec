@@ -24,11 +24,9 @@ func authLoginRun(cmd *cobra.Command, args []string) {
 	if len(args) == 1 {
 		token = args[0]
 	} else {
-		fmt.Println("Tips: You can generate a Personal Access Token here https://www.murphysec.com/usr/token")
 		var rs string
 		e := survey.AskOne(&survey.Input{
 			Message: "Input your token",
-			Help:    "Tips: You can generate a Personal Access Token here https://www.murphysec.com/usr/token",
 		}, &rs, survey.WithValidator(survey.Required))
 		if e != nil {
 			fmt.Println("Token setup failed")
