@@ -116,6 +116,9 @@ outer:
 				Scope:                dep.Scope,
 			}
 			cur.Children = append(cur.Children, child)
+			if dep.Optional == "true" || (dep.Scope != "" && dep.Scope != "compile") {
+				continue
+			}
 			q.PushBack(child)
 		}
 	}
