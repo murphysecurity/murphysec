@@ -13,8 +13,8 @@ github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7 h1:uSoVVbwJiQipAclBb
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7/go.mod h1:6zEj6s6u/ghQa61ZWa/C2Aw3RkjiTBOix7dkqa1VLIs=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=
-github.com/antchfx/xmlquery v1.3.16 h1:OCevguHq93z9Y4vb9xpRmU4Cc9lMVoiMkMbBNZVDeBM=
-github.com/antchfx/xmlquery v1.3.16/go.mod h1:Afkq4JIeXut75taLSuI31ISJ/zeq+3jG7TunF7noreA=
+github.com/antchfx/xmlquery v1.3.17 h1:d0qWjPp/D+vtRw7ivCwT5ApH/3CkQU8JOeo3245PpTk=
+github.com/antchfx/xmlquery v1.3.17/go.mod h1:Afkq4JIeXut75taLSuI31ISJ/zeq+3jG7TunF7noreA=
 github.com/antchfx/xpath v1.2.4 h1:dW1HB/JxKvGtJ9WyVGJ0sIoEcqftV3SqIstujI+B9XY=
 github.com/antchfx/xpath v1.2.4/go.mod h1:i54GszH55fYfBmoZXapTHN8T8tkcHfRgLyVwwqzXNcs=
 github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 h1:goHVqTbFX3AIo0tzGr14pgfAW2ZfPChKO21Z9MGf/gk=
