@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/mod/modfile"
 	"path/filepath"
+	"strings"
 )
 
 type Inspector struct{}
@@ -34,7 +35,12 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		return errors.WithMessage(e, "Open GoMod file")
 	}
 	logger.Debug("Parsing go.mod")
-	f, e := modfile.Parse(filepath.Base(modFilePath), data, nil)
+	f, e := modfile.Parse(filepath.Base(modFilePath), data, func(path, version string) (string, error) {
+		if strings.HasPrefix(version, "v") {
+			return version, nil
+		}
+		return "v" + version, nil
+	})
 	if e != nil {
 		return errors.WithMessage(e, "Parse go mod failed")
 	}
