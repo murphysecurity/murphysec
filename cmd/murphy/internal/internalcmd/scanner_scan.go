@@ -68,14 +68,15 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 	}
 
 	type wrapper struct {
-		Modules                            []model.Module                `json:"modules,omitempty"`
-		ComponentCodeFragment              []model.ComponentCodeFragment `json:"component_code_fragment,omitempty"`
+		Modules                            []model.Module                `json:"modules"`
+		ComponentCodeFragment              []model.ComponentCodeFragment `json:"component_code_fragment"`
 		ScannerShouldEnableMavenBackupScan bool                          `json:"scanner_should_enable_maven_backup_scan"`
 	}
 	w := wrapper{
-		Modules:                            scantask.Modules,
-		ComponentCodeFragment:              scantask.CodeFragments,
+		Modules:                            utils.NoNilSlice(scantask.Modules),
+		ComponentCodeFragment:              utils.NoNilSlice(scantask.CodeFragments),
 		ScannerShouldEnableMavenBackupScan: env.ScannerShouldEnableMavenBackupScan,
 	}
+	must.Must(logctx.Use(ctx).Sync())
 	fmt.Println(string(must.M1(json.MarshalIndent(w, "", "  "))))
 }
