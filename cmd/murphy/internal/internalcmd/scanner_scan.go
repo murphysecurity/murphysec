@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func scannerScanCmd() *cobra.Command {
@@ -77,6 +78,6 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ComponentCodeFragment:              utils.NoNilSlice(scantask.CodeFragments),
 		ScannerShouldEnableMavenBackupScan: env.ScannerShouldEnableMavenBackupScan,
 	}
-	must.Must(logctx.Use(ctx).Sync())
+	time.Sleep(time.Second) // todo: workaround
 	fmt.Println(string(must.M1(json.MarshalIndent(w, "", "  "))))
 }
