@@ -3,8 +3,10 @@ package maven
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/logpipe"
+	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"strings"
@@ -36,7 +38,11 @@ func (m PluginGraphCmd) RunC(ctx context.Context) error {
 	}
 	c := m.MavenCmdInfo.Command(ctx, args...)
 	c.Dir = m.ScanDir
-	logStream := logpipe.New(logger, "mvn")
+	utils.SetPGid(c)
+	logStream := logpipe.NewWithOption(logpipe.Option{
+		Logger: logger,
+		Prefix: "mvn",
+	})
 	defer logStream.Close()
 	c.Stderr = logStream
 	c.Stdout = logStream
@@ -45,6 +51,17 @@ func (m PluginGraphCmd) RunC(ctx context.Context) error {
 		logger.Error("Start command failed", zap.Error(e))
 		return errors.WithMessage(ErrMvnCmd, e.Error())
 	}
+
+	go func() {
+		for ctx.Err() == nil {
+			if !logStream.LastLineTimestamp.IsZero() && time.Now().Sub(logStream.LastLineTimestamp) > env.CommandTimeout {
+				logger.Warn("Maven stop print logs, killed")
+				utils.KillProcessGroup(c.Process.Pid)
+				_ = c.Process.Kill()
+			}
+			time.Sleep(time.Second)
+		}
+	}()
 	if e := c.Wait(); e != nil {
 		logger.Error(ErrMvnCmd.Error(), zap.Error(e), zap.Int("exit_code", c.ProcessState.ExitCode()))
 		return errors.WithMessage(ErrMvnCmd, e.Error())

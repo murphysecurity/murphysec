@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"io"
+	"time"
 )
 
 type Pipe struct {
-	w *io.PipeWriter
+	w                 *io.PipeWriter
+	LastLineTimestamp time.Time
 }
 
 func (l *Pipe) Write(data []byte) (int, error) {
@@ -21,7 +23,14 @@ func (l *Pipe) Close() error {
 	return l.w.Close()
 }
 
-func New(logger *zap.Logger, prefix string) *Pipe {
+type Option struct {
+	Logger *zap.Logger
+	Prefix string
+}
+
+func NewWithOption(option Option) *Pipe {
+	logger := option.Logger
+	prefix := option.Prefix
 	if logger == nil {
 		logger = zap.NewNop()
 	}
@@ -35,6 +44,7 @@ func New(logger *zap.Logger, prefix string) *Pipe {
 			if scanner.Err() != nil {
 				break
 			}
+			lp.LastLineTimestamp = time.Now()
 			logger.Debug(fmt.Sprintf("%s: %s", prefix, scanner.Text()))
 		}
 		// drain
@@ -45,4 +55,8 @@ func New(logger *zap.Logger, prefix string) *Pipe {
 		}
 	}()
 	return lp
+}
+
+func New(logger *zap.Logger, prefix string) *Pipe {
+	return NewWithOption(Option{Prefix: prefix, Logger: logger})
 }
