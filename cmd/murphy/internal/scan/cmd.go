@@ -99,12 +99,15 @@ func scanRun(cmd *cobra.Command, args []string) {
 		return
 	}
 	logger := logctx.Use(ctx).Sugar()
-	_, e = scan(ctx, scanDir, model.AccessTypeCli, model.ScanModeStandard)
+	r, e := scan(ctx, scanDir, model.AccessTypeCli, model.ScanModeStandard)
 	if e != nil {
 		logger.Error(e)
 		autoReportIde(ctx, e)
 		exitcode.Set(1)
 		return
+	}
+	if jsonOutput {
+		fmt.Println(string(must.A(json.MarshalIndent(model.GetIDEAOutput(r), "", "  "))))
 	}
 }
 
@@ -125,12 +128,15 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 		return
 	}
 	logger := logctx.Use(ctx).Sugar()
-	_, e = scan(ctx, scanDir, model.AccessTypeCli, model.ScanModeSource)
+	r, e := scan(ctx, scanDir, model.AccessTypeCli, model.ScanModeSource)
 	if e != nil {
 		logger.Error(e)
 		autoReportIde(ctx, e)
 		exitcode.Set(1)
 		return
+	}
+	if jsonOutput {
+		fmt.Println(string(must.A(json.MarshalIndent(model.GetIDEAOutput(r), "", "  "))))
 	}
 }
 
