@@ -23,7 +23,7 @@ require (
 	github.com/vifraa/gopom v0.2.1
 	github.com/wk8/go-ordered-map/v2 v2.1.7
 	go.uber.org/zap v1.24.0
-	golang.org/x/mod v0.11.0
+	golang.org/x/mod v0.12.0
 	golang.org/x/sync v0.3.0
 	golang.org/x/text v0.10.0
 )
