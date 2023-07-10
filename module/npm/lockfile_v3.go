@@ -28,7 +28,7 @@ type v3ParsedLockfile struct {
 	Deps    []model.DependencyItem
 }
 
-func parseLockfileV3(data []byte) (r *v3ParsedLockfile, e error) {
+func processLockfileV3(data []byte) (r *v3ParsedLockfile, e error) {
 	var lockfile v3Lockfile
 	if e := json.Unmarshal(data, &lockfile); e != nil {
 		return nil, fmt.Errorf("parse lockfile failed: %w", e)
