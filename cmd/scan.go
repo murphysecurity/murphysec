@@ -99,6 +99,9 @@ func binScanCmd() *cobra.Command {
 				taskType = model.TaskTypeJenkins
 			}
 			task := model.CreateScanTask(projectDir, model.TaskKindBinary, taskType)
+			if env.SpecificProjectName != "" {
+				task.ProjectName = env.SpecificProjectName
+			}
 			ctx = model.WithScanTask(ctx, task)
 			if e := inspector.BinScan(ctx); e != nil {
 				SetGlobalExitCode(1)
@@ -111,6 +114,7 @@ func binScanCmd() *cobra.Command {
 		Short: "Scan specified binary files and software artifacts, currently supporting .jar, .war, and common binary file formats (The file will be uploaded to the server for analysis.)",
 	}
 	c.Flags().BoolVar(&jsonOutput, "json", false, "json output")
+	c.Flags().StringVar(&env.SpecificProjectName, "project-name", "", "force specific project name")
 	c.Args = cobra.ExactArgs(1)
 	return c
 }
@@ -138,6 +142,9 @@ func iotScanCmd() *cobra.Command {
 				taskType = model.TaskTypeJenkins
 			}
 			task := model.CreateScanTask(projectDir, model.TaskKindIotScan, taskType)
+			if env.SpecificProjectName != "" {
+				task.ProjectName = env.SpecificProjectName
+			}
 			ctx = model.WithScanTask(ctx, task)
 			if e := inspector.BinScan(ctx); e != nil {
 				SetGlobalExitCode(1)
@@ -150,5 +157,6 @@ func iotScanCmd() *cobra.Command {
 	}
 	c.Args = cobra.ExactArgs(1)
 	c.Flags().BoolVar(&jsonOutput, "json", false, "json output")
+	c.Flags().StringVar(&env.SpecificProjectName, "project-name", "", "force specific project name")
 	return c
 }
