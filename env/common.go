@@ -21,6 +21,7 @@ var APITokenOverride = os.Getenv("API_TOKEN")
 var ScannerScan = false
 var ScannerShouldEnableMavenBackupScan = false
 var CommandTimeout time.Duration
+var NoWait bool
 
 func init() {
 	ctm := os.Getenv("COMMAND_TIMEOUT")

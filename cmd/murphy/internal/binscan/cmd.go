@@ -6,9 +6,12 @@ import (
 	"github.com/murphysecurity/murphysec/chunkupload"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/infra/exitcode"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ui"
+	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/spf13/cobra"
@@ -63,6 +66,9 @@ func binScanRun(cmd *cobra.Command, args []string) {
 	}
 
 	e = binScan(ctx, scanPath)
+	if errors.Is(e, inspector.ErrNoWait) {
+		return
+	}
 	if e != nil {
 		logger.Error(e)
 		exitcode.Set(1)
@@ -105,7 +111,9 @@ func binScan(ctx context.Context, scanPath string) error {
 		cv.DisplayScanFailed(ctx, e)
 		return e
 	}
-
+	if env.NoWait {
+		return inspector.ErrNoWait
+	}
 	cv.DisplayWaitingResponse(ctx)
 	// query result
 	var result *model.ScanResultResponse

@@ -7,6 +7,7 @@ import (
 	"github.com/murphysecurity/murphysec/chunkupload"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
 	"github.com/murphysecurity/murphysec/collect"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/gitinfo"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ref"
@@ -106,8 +107,6 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		return nil, e
 	}
 
-	cv.DisplayWaitingResponse(ctx)
-	defer cv.DisplayStatusClear(ctx)
 	// 收集贡献者信息
 	cu, e := collect.CollectDir(ctx, task.ProjectPath)
 	if e != nil {
@@ -117,7 +116,12 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		api.ReportCollectedContributors(ctx, api.DefaultClient(), cu)
 		logger.Info("报送贡献者信息成功")
 	}
+	if env.NoWait {
+		return nil, inspector.ErrNoWait
+	}
 	// query result
+	cv.DisplayWaitingResponse(ctx)
+	defer cv.DisplayStatusClear(ctx)
 	var result *model.ScanResultResponse
 	result, e = api.QueryResult(ctx, api.DefaultClient(), task.SubtaskId)
 	task.Result = result

@@ -7,6 +7,7 @@ import (
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/internalcmd"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/scan"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/module"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -58,6 +59,7 @@ func rootCmd() *cobra.Command {
 	c.PersistentFlags().StringVar(&common.CliTokenOverride, "token", "", "specify API token")
 	c.PersistentFlags().StringVar(&common.CliServerAddressOverride, "server", "", "specify server address")
 	c.PersistentFlags().BoolVarP(&common.AllowInsecure, "allow-insecure", "x", false, "Allow insecure TLS connection")
+	c.PersistentFlags().BoolVar(&env.NoWait, "no-wait", false, "do not wait scan result")
 
 	c.AddCommand(auth.Cmd())
 	c.AddCommand(scan.Cmd())

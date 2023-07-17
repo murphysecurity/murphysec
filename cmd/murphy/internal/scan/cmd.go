@@ -11,6 +11,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/exitcode"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ui"
+	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -100,6 +101,9 @@ func scanRun(cmd *cobra.Command, args []string) {
 	}
 	logger := logctx.Use(ctx).Sugar()
 	r, e := scan(ctx, scanDir, model.AccessTypeCli, model.ScanModeStandard)
+	if errors.Is(e, inspector.ErrNoWait) {
+		return
+	}
 	if e != nil {
 		logger.Error(e)
 		autoReportIde(ctx, e)
@@ -129,6 +133,9 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 	}
 	logger := logctx.Use(ctx).Sugar()
 	r, e := scan(ctx, scanDir, model.AccessTypeCli, model.ScanModeSource)
+	if errors.Is(e, inspector.ErrNoWait) {
+		return
+	}
 	if e != nil {
 		logger.Error(e)
 		autoReportIde(ctx, e)
@@ -187,6 +194,9 @@ func ideascanRun(cmd *cobra.Command, args []string) {
 	}
 
 	task, e := scan(ctx, scanDir, accessType, model.ScanModeSource)
+	if errors.Is(e, inspector.ErrNoWait) {
+		return
+	}
 	if e != nil {
 		autoReportIde(ctx, e)
 		logger.Error(e)
