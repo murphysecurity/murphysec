@@ -54,7 +54,7 @@ func (m PluginGraphCmd) RunC(ctx context.Context) error {
 
 	go func() {
 		for ctx.Err() == nil {
-			if !logStream.LastLineTimestamp.IsZero() && time.Now().Sub(logStream.LastLineTimestamp) > env.CommandTimeout {
+			if !logStream.LastLineTimestamp.IsZero() && time.Since(logStream.LastLineTimestamp) > env.CommandTimeout {
 				logger.Warn("Maven stop print logs, killed")
 				utils.KillProcessGroup(c.Process.Pid)
 				_ = c.Process.Kill()
