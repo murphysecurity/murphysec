@@ -7,7 +7,7 @@ require (
 	github.com/antchfx/xmlquery v1.3.17
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/denisbrodbeck/machineid v1.0.1
-	github.com/go-git/go-git/v5 v5.7.0
+	github.com/go-git/go-git/v5 v5.8.0
 	github.com/iseki0/go-yarnlock v0.0.1
 	github.com/iseki0/osname v0.0.0-20220802070850-5def7ee59aab
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
