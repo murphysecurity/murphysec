@@ -25,6 +25,7 @@ func Cmd() *cobra.Command {
 	c.Use = "binscan <DIR>"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = binScanRun
+	c.Short = "Detects open source vulnerabilities by scanning binary files"
 	c.Flags().BoolVar(&cliIOTScan, "iot", false, "IOT scan mode")
 	return &c
 }

@@ -26,7 +26,7 @@ var noBuild bool
 func Cmd() *cobra.Command {
 	var c cobra.Command
 	c.Use = "scan <DIR>"
-	c.Short = "scan project directory"
+	c.Short = "Detects open source vulnerabilities by scanning various file types within the project"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = scanRun
 	c.Flags().BoolVar(&jsonOutput, "json", false, "")
@@ -40,6 +40,7 @@ func DfCmd() *cobra.Command {
 	c.Use = "dfscan <DIR>"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = dfScanRun
+	c.Short = "Detects open source vulnerabilities by scanning package management files"
 	c.Flags().BoolVar(&jsonOutput, "json", false, "")
 	c.Flags().BoolVar(&isDeep, "deep", false, "")
 	c.Flags().BoolVar(&noBuild, "no-build", false, "")
