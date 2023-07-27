@@ -26,5 +26,5 @@ func IsDir(path string) bool {
 
 func IsFile(path string) bool {
 	s, err := os.Stat(path)
-	return err == nil && !s.IsDir()
+	return err == nil && !s.IsDir() && s.Mode().IsRegular()
 }
