@@ -58,7 +58,6 @@ func (v *v6Lockfile) buildDependencyTree(strict bool) ([]model.DependencyItem, e
 			return nil, fmt.Errorf("buildDependencyTree: devDependencies name is empty")
 		}
 		var version = trimVersionSuffix(pkg.Version)
-		fmt.Println("----", version)
 		if version == "" {
 			if !strict {
 				continue
