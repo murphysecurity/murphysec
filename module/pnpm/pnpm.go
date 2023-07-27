@@ -16,17 +16,17 @@ var EcoRepo = model.EcoRepo{
 	Repository: "",
 }
 
-type _PnpmInspector struct{}
+type Inspector struct{}
 
-func (_PnpmInspector) String() string {
+func (Inspector) String() string {
 	return "PNPMInspector"
 }
 
-func (_PnpmInspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, LockfileName)) && utils.IsFile(filepath.Join(dir, "package.json"))
 }
 
-func (_PnpmInspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	inspectionTask := model.UseInspectionTask(ctx)
 	dir := inspectionTask.Dir()
 	lockfilePath := filepath.Join(dir, LockfileName)
@@ -53,8 +53,8 @@ func (_PnpmInspector) InspectProject(ctx context.Context) error {
 	return nil
 }
 
-func (_PnpmInspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
-var _ model.Inspector = (*_PnpmInspector)(nil)
+var _ model.Inspector = (*Inspector)(nil)
