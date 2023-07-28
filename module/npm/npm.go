@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/samber/lo"
 	"os"
 	"path/filepath"
 )
@@ -76,10 +75,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 
 	module.ModuleName = packageFile.Name
 	module.ModuleVersion = packageFile.Version
-	var requires = lo.Keys(packageFile.Dependencies)
-	requires = append(requires, lo.Keys(packageFile.DevDependencies)...)
-	requires = lo.Uniq(requires)
-	deps, e := processV1Lockfile(data, requires)
+	deps, e := processV1Lockfile(data, packageFile)
 	if e != nil {
 		return nil, e
 	}
