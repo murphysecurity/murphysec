@@ -48,5 +48,6 @@ func ideaScanCmd() *cobra.Command {
 	must.Must(c.MarkFlagRequired("dir"))
 	must.Must(c.MarkFlagDirname("dir"))
 	c.Flags().StringVar(&ProjectId, "project-id", "", "team id")
+	c.Flags().StringVar(&env.GradleProjects, "gradle-projects", "", "")
 	return c
 }
