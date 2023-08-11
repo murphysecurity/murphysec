@@ -146,6 +146,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleEnv) ([]string, error) {
 	c := info.ExecuteContext(ctx, "projects")
 	c.Dir = projectDir
+	fixGradleCommandEnv(ctx, c)
 	pattern := regexp.MustCompile("Project\\s+'(:.+?)'")
 	output, e := c.Output()
 	if e != nil {
@@ -168,6 +169,7 @@ func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleEnv
 func evalGradleDependencies(ctx context.Context, projectDir string, projectName string, info *GradleEnv) (*GradleDependencyInfo, error) {
 	var logger = utils.UseLogger(ctx).Sugar()
 	c := info.ExecuteContext(ctx, fmt.Sprintf("%s:dependencies", projectName))
+	fixGradleCommandEnv(ctx, c)
 	logger.Infof("Execute: %s", c.String())
 	c.Dir = projectDir
 	data, e := c.Output()

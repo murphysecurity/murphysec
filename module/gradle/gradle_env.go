@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils"
 	"os/exec"
 )
@@ -57,6 +59,7 @@ func evalVersion(ctx context.Context, cmdPath string) (_ *GradleVersion, err err
 	}()
 	var log = utils.UseLogger(ctx).Sugar()
 	cmd := exec.CommandContext(ctx, cmdPath, "--version", "--quiet")
+	cmd = fixGradleCommandEnv(ctx, cmd)
 	log.Infof("Execute: %s", cmd.String())
 	data, e := cmd.Output()
 	if e != nil {
@@ -94,6 +97,14 @@ func evalVersionError(e error) error {
 		}
 	}
 	return &EvalVersionError{_Error: e}
+}
+
+func fixGradleCommandEnv(ctx context.Context, cmd *exec.Cmd) *exec.Cmd {
+	if env.IdeaMavenJre != "" {
+		cmd.Env = append(cmd.Env, "JAVA_HOME="+env.IdeaMavenJre)
+		logctx.Use(ctx).Sugar().Debugf("adjust JAVA_HOME environment by IDEA_MAVEN_JRE")
+	}
+	return cmd
 }
 
 type EvalVersionError struct {
