@@ -7,7 +7,9 @@ import (
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils"
+	"os"
 	"os/exec"
+	"strings"
 )
 
 //goland:noinspection GoNameStartsWithPackageName
@@ -101,6 +103,14 @@ func evalVersionError(e error) error {
 
 func fixGradleCommandEnv(ctx context.Context, cmd *exec.Cmd) *exec.Cmd {
 	if env.IdeaMavenJre != "" {
+		if cmd.Env == nil {
+			for _, it := range os.Environ() {
+				if strings.HasPrefix(it, "JAVA_HOME=") {
+					continue
+				}
+				cmd.Env = append(cmd.Env, it)
+			}
+		}
 		cmd.Env = append(cmd.Env, "JAVA_HOME="+env.IdeaMavenJre)
 		logctx.Use(ctx).Sugar().Debugf("adjust JAVA_HOME environment by IDEA_MAVEN_JRE")
 	}
