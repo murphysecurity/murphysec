@@ -38,6 +38,7 @@ type PluginOutput struct {
 	DependenciesCount  int            `json:"dependencies_count"`
 	InspectReportUrl   string         `json:"inspect_report_url"`
 	AnonymousReportUrl string         `json:"anonymous_report_url"`
+	HasGradleProject   bool           `json:"has_gradle_project"`
 }
 type PluginComp struct {
 	CompName           string               `json:"comp_name"`
@@ -154,7 +155,10 @@ func GenerateIdeaOutput(c context.Context) string {
 			fixPlans[k] = v
 		}
 	}
-
+	var hasGradleProject bool
+	for _, it := range i.Modules {
+		hasGradleProject = hasGradleProject || it.PackageManager == string(PMGradle)
+	}
 	p := &PluginOutput{
 		ProjectName: ctx.ProjectName,
 		Username:    ctx.Username,
@@ -170,6 +174,7 @@ func GenerateIdeaOutput(c context.Context) string {
 		AnonymousReportUrl: ctx.AnonymousReportUrl(),
 		ProjectScore:       ctx.ScanResult.ProjectScore,
 		SurpassScore:       fmt.Sprintf("%d%%", ctx.ScanResult.SurpassScore),
+		HasGradleProject:   hasGradleProject,
 	}
 	// merge module comps
 	rs := map[id]PluginComp{}
