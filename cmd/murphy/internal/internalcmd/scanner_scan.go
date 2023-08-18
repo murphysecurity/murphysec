@@ -17,7 +17,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 func scannerScanCmd() *cobra.Command {
@@ -37,7 +36,7 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 	)
 	env.ScannerScan = true
 	common.LogLevel = logger2.LevelDebug
-	ctx, e = common.InitLogger(ctx)
+	ctx, e = common.InitLogger0(ctx, true)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "init logger failed: %v\n", e)
 	}
@@ -78,6 +77,6 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ComponentCodeFragment:              utils.NoNilSlice(scantask.CodeFragments),
 		ScannerShouldEnableMavenBackupScan: env.ScannerShouldEnableMavenBackupScan,
 	}
-	time.Sleep(time.Second) // todo: workaround
+	_ = logger.Sync()
 	fmt.Println(string(must.M1(json.MarshalIndent(w, "", "  "))))
 }

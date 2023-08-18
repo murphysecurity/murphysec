@@ -73,6 +73,10 @@ func InitAPIClient(ctx context.Context) error {
 }
 
 func InitLogger(ctx context.Context) (context.Context, error) {
+	return InitLogger0(ctx, false)
+}
+
+func InitLogger0(ctx context.Context, mergeToStdout bool) (context.Context, error) {
 	if loggerInitialized {
 		panic("loggerInitialized == true")
 	}
@@ -92,7 +96,12 @@ func InitLogger(ctx context.Context) (context.Context, error) {
 	}
 
 	// 有关标准错误流的日志输出
-	var stderr = zapcore.Lock(os.Stderr)
+	var stderr zapcore.WriteSyncer
+	if mergeToStdout {
+		stderr = zapcore.Lock(os.Stdout)
+	} else {
+		stderr = zapcore.Lock(os.Stderr)
+	}
 	if LogLevel > logger.LevelSilent {
 		consoleCore = zapcore.NewCore(logger.ZapConsoleEncoder, stderr, LogLevel.ZapLevel())
 	}
