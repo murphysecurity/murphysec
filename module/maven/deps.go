@@ -38,3 +38,12 @@ func (d *DepsMap) put(coordinate Coordinate, children []Dependency, path string)
 		relativePath: path,
 	}
 }
+
+func (d *DepsMap) allEmpty() bool {
+	for _, it := range d.m {
+		if len(it.children) > 0 {
+			return false
+		}
+	}
+	return true
+}
