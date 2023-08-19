@@ -74,6 +74,13 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 			rs = append(rs, tm)
 		}
 	}
+	env.ScannerShouldEnableGradleBackupScan = true
+	for _, i := range rs {
+		if len(i.Dependencies) == 0 {
+			env.ScannerShouldEnableGradleBackupScan = false
+			break
+		}
+	}
 	for _, it := range rs {
 		task.AddModule(it)
 	}
