@@ -48,9 +48,9 @@ func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.
 	}
 
 	// analyze pom file
+	env.ScannerShouldEnableMavenBackupScan = useBackupResolver || deps == nil || deps.allEmpty()
 	if useBackupResolver {
 		if env.ScannerScan {
-			env.ScannerShouldEnableMavenBackupScan = useBackupResolver || deps == nil || deps.allEmpty()
 			return nil, nil
 		} else {
 			ui.Use(ctx).Display(ui.MsgWarn, "通过 Maven获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://murphysec.com/docs/faqs/quick-start-for-beginners/programming-language-supported.html 了解详情")
