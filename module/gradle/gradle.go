@@ -3,6 +3,7 @@ package gradle
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/sl"
 	"github.com/murphysecurity/murphysec/model"
@@ -65,7 +66,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 			}
 		}
 	}
-	if len(rs) == 0 {
+	if len(rs) == 0 && !env.ScannerScan {
 		// if no module find, use backup solution
 		if m := backupParser(ctx, dir); m != nil {
 			tm := m.BaseModule(dir)
