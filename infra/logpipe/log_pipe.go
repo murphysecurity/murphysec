@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"io"
+	"sync/atomic"
 	"time"
 )
 
 type Pipe struct {
 	w                 *io.PipeWriter
-	LastLineTimestamp time.Time
+	LastLineTimestamp atomic.Pointer[time.Time]
 }
 
 func (l *Pipe) Write(data []byte) (int, error) {
@@ -44,7 +45,8 @@ func NewWithOption(option Option) *Pipe {
 			if scanner.Err() != nil {
 				break
 			}
-			lp.LastLineTimestamp = time.Now()
+			var now = time.Now()
+			lp.LastLineTimestamp.Store(&now)
 			logger.Debug(fmt.Sprintf("%s: %s", prefix, scanner.Text()))
 		}
 		// drain
