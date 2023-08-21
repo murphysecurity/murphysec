@@ -23,7 +23,8 @@ var ScannerShouldEnableMavenBackupScan = false
 var ScannerShouldEnableGradleBackupScan = false
 var CommandTimeout time.Duration
 var NoWait bool
-var TlsAllowInsecure bool
+var envTlsAllowInsecure bool
+var CliTlsAllowInsecure bool
 
 func init() {
 	ctm := os.Getenv("COMMAND_TIMEOUT")
@@ -33,4 +34,12 @@ func init() {
 	} else {
 		CommandTimeout = time.Second * time.Duration(ct)
 	}
+	allowInsecure, e := strconv.ParseBool(os.Getenv("TLS_ALLOW_INSECURE"))
+	if allowInsecure && e == nil {
+		envTlsAllowInsecure = true
+	}
+}
+
+func TlsAllowInsecure() bool {
+	return CliTlsAllowInsecure || envTlsAllowInsecure
 }

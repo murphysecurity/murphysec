@@ -55,7 +55,7 @@ func InitAPIClient(ctx context.Context) error {
 		Logger:             logctx.Use(ctx),
 		EnableNetworkDebug: EnableNetworkLogging,
 		Token:              token,
-		AllowInsecure:      env.TlsAllowInsecure,
+		AllowInsecure:      env.TlsAllowInsecure(),
 	}
 	if env.ServerURLOverride != "" {
 		cf.ServerURL = env.ServerURLOverride
