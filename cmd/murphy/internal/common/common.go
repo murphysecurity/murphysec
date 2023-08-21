@@ -22,7 +22,6 @@ var (
 	CliTokenOverride         string
 	CliServerAddressOverride string
 	EnableNetworkLogging     bool
-	AllowInsecure            bool
 	NoLogFile                bool
 	LogFileOverride          string
 	LogLevel                 logger.Level
@@ -56,7 +55,7 @@ func InitAPIClient(ctx context.Context) error {
 		Logger:             logctx.Use(ctx),
 		EnableNetworkDebug: EnableNetworkLogging,
 		Token:              token,
-		AllowInsecure:      AllowInsecure,
+		AllowInsecure:      env.TlsAllowInsecure,
 	}
 	if env.ServerURLOverride != "" {
 		cf.ServerURL = env.ServerURLOverride

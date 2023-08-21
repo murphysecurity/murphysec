@@ -23,6 +23,7 @@ var ScannerShouldEnableMavenBackupScan = false
 var ScannerShouldEnableGradleBackupScan = false
 var CommandTimeout time.Duration
 var NoWait bool
+var TlsAllowInsecure bool
 
 func init() {
 	ctm := os.Getenv("COMMAND_TIMEOUT")

@@ -32,6 +32,16 @@ func (m PluginGraphCmd) RunC(ctx context.Context) error {
 		defer cancel()
 	}
 	var args = []string{"com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json"}
+	if env.TlsAllowInsecure {
+		// https://stackoverflow.com/questions/21252800/how-to-tell-maven-to-disregard-ssl-errors-and-trusting-all-certs
+		args = append(args,
+			"-Dmaven.wagon.http.ssl.ignore.validity.dates=true",
+			"-Dmaven.resolver.transport=wagon",
+			"-Dmaven.wagon.http.ssl.allowall=true",
+			"-Dmaven.wagon.http.ssl.insecure=true",
+		)
+	}
+
 	if len(m.Profiles) > 0 {
 		args = append(args, "-P")
 		args = append(args, strings.Join(m.Profiles, ","))
