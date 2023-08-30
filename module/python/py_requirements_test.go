@@ -8,31 +8,19 @@ import (
 )
 
 func TestParseRequirements(t *testing.T) {
-	var data = `# development tools
-Werkzeug>=0.6.2
+	var data = `pbr!=2.1.0,>=2.0.0 # Apache-2.0
+docker>=2.4.2 # Apache-2.0
+Jinja2!=2.9.0,!=2.9.1,!=2.9.2,!=2.9.3,!=2.9.4,>=2.8 # BSD License (3 clause)
+gitdb>=0.6.4 # BSD License (3 clause)
+GitPython>=1.0.1 # BSD License (3 clause)
+six>=1.10.0 # MIT
+oslo.config>=5.1.0 # Apache-2.0
+oslo.utils>=3.33.0 # Apache-2.0
+setuptools!=24.0.0,!=34.0.0,!=34.0.1,!=34.0.2,!=34.0.3,!=34.1.0,!=34.1.1,!=34.2.0,!=34.3.0,!=34.3.1,!=34.3.2,!=36.2.0,>=16.0.0 # PSF/ZPL
+netaddr>=0.7.18 # BSD
 
-# Testing dependencies
-mock>=1.0.1
-WebTest>=1.3.4
-django-webtest>=1.5.3
-factory-boy==2.1.1
-httpretty==0.6.3
-ruamel.yaml=1.0.0
-
-# documentation
-Sphinx==1.2b3
-
-# Code style and coverage
-flake8>=0.8
-coveralls>=0.1.1,<0.2
-
-# we need this to make sure that we test against Oscar 0.6
--e git+https://github.com/tangentlabs/django-oscar.git@89d12c8701d293f23afa19c6efac17b249ae1b6d#egg=django-oscar
-
-# Others
-Whoosh>=2.4.1
 `
-	var expect = `Sphinx1.2b3 WebTest1.3.4 Werkzeug0.6.2 Whoosh2.4.1 coveralls0.1.1 django-webtest1.5.3 factory-boy2.1.1 flake80.8 httpretty0.6.3 mock1.0.1 ruamel.yaml1.0.0`
+	var expect = `GitPython1.0.1 Jinja22.8 docker2.4.2 gitdb0.6.4 netaddr0.7.18 oslo.config5.1.0 oslo.utils3.33.0 pbr2.0.0 setuptools16.0.0 six1.10.0`
 	var r []string
 	for k, v := range parseRequirements(data) {
 		r = append(r, k+v)

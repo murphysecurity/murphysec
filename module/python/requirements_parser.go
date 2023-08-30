@@ -1,6 +1,8 @@
 package python
 
 import (
+	"github.com/dlclark/regexp2"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/repeale/fp-go"
 	"regexp"
 	"strings"
@@ -8,10 +10,10 @@ import (
 
 const pyName = `(?:[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9]|[A-Za-z0-9])`
 const pyVersion = `(?:[A-Za-z0-9_.!-]+)`
-const pyVersionOp = `(?:=|<=|==|>=|===)`
-const pyVersionSeg = pyVersionOp + `\s*['"]?(` + pyVersion + `)`
+const pyVersionOp = `(?<![=!<>])(?:=|<=|==|>=|===)`
+const pyVersionSeg = pyVersionOp + `\s*['""]?(` + pyVersion + `)`
 
-var pyVersionSegPattern = regexp.MustCompile(pyVersionSeg)
+var pyVersionSegPattern = regexp2.MustCompile(pyVersionSeg, regexp2.Compiled)
 var pyNamePrefixPattern = regexp.MustCompile("^" + pyName)
 
 func parseRequirements(data string) map[string]string {
@@ -49,9 +51,14 @@ func parseRequirements(data string) map[string]string {
 			continue
 		}
 		var version string
-		versions := pyVersionSegPattern.FindAllStringSubmatch(line, -1)
+		var versions []string
+		match := must.A(pyVersionSegPattern.FindStringMatch(line))
+		for match != nil {
+			versions = append(versions, match.GroupByNumber(1).String())
+			match = must.A(pyVersionSegPattern.FindNextMatch(match))
+		}
 		if len(versions) == 1 {
-			version = versions[0][1]
+			version = versions[0]
 		}
 		m[name] = version
 	}
