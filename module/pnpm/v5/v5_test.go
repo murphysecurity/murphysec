@@ -12,3 +12,13 @@ func TestParseLockfile(t *testing.T) {
 		assert.NotNil(t, lockfile, i)
 	}
 }
+
+func TestAnalyzeDepTree(t *testing.T) {
+	for _, s := range testDataList {
+		lockfile, e := ParseLockfile([]byte(s))
+		assert.NoError(t, e)
+		trees := AnalyzeDepTree(lockfile)
+		t.Log(len(trees))
+		//t.Log(trees)
+	}
+}
