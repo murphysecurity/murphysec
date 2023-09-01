@@ -30,6 +30,10 @@ func processDir(ctx context.Context, dir string) (result processDirResult) {
 	result.lockfile = filepath.Join(dir, LockfileName)
 	LOG := logctx.Use(ctx).Sugar()
 	f, e := openLockfile(ctx, result.lockfile)
+	if e != nil {
+		result.e = e
+		return
+	}
 	LOG.Debugf("reading %s(%s)", LockfileName, result.lockfile)
 	data, e := io.ReadAll(io.LimitReader(f, MaxLockfileSize))
 	if e != nil {
