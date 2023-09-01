@@ -67,6 +67,11 @@ func rootCmd() *cobra.Command {
 	c.AddCommand(scan.DfCmd())
 	c.AddCommand(binscan.Cmd())
 	c.AddCommand(internalcmd.Cmd())
+	c.AddCommand(&cobra.Command{
+		Use:    "machine-id",
+		Run:    func(cmd *cobra.Command, args []string) {},
+		Hidden: true,
+	})
 	return c
 }
 
