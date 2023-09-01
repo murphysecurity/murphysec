@@ -16,7 +16,7 @@ func TestDependencySet(t *testing.T) {
          {
            "GroupID": "org.projectlombok",
            "ArtifactID": "lombok",
-           "Version": "1.18.8",
+           "version": "1.18.8",
            "Type": "",
            "Classifier": "",
            "Scope": "provided",
@@ -27,7 +27,7 @@ func TestDependencySet(t *testing.T) {
          {
            "GroupID": "com.monitorjbl",
            "ArtifactID": "xlsx-streamer",
-           "Version": "2.2.0",
+           "version": "2.2.0",
            "Type": "",
            "Classifier": "",
            "Scope": "",
@@ -51,7 +51,7 @@ func TestDependencySet(t *testing.T) {
          {
            "GroupID": "org.apache.poi",
            "ArtifactID": "poi-ooxml",
-           "Version": "4.1.2",
+           "version": "4.1.2",
            "Type": "",
            "Classifier": "",
            "Scope": "",
@@ -67,7 +67,7 @@ func TestDependencySet(t *testing.T) {
          {
            "GroupID": "org.apache.poi",
            "ArtifactID": "poi-ooxml-schemas",
-           "Version": "4.1.2",
+           "version": "4.1.2",
            "Type": "",
            "Classifier": "",
            "Scope": "",

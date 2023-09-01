@@ -5,16 +5,9 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
-	"os"
 	"path/filepath"
+	"strings"
 )
-
-const LockfileName = "pnpm-lock.yaml"
-
-var EcoRepo = model.EcoRepo{
-	Ecosystem:  "npm",
-	Repository: "",
-}
 
 type Inspector struct{}
 
@@ -29,27 +22,31 @@ func (Inspector) CheckDir(dir string) bool {
 func (Inspector) InspectProject(ctx context.Context) error {
 	inspectionTask := model.UseInspectionTask(ctx)
 	dir := inspectionTask.Dir()
-	lockfilePath := filepath.Join(dir, LockfileName)
-	data, e := os.ReadFile(lockfilePath)
-	if e != nil {
-		return fmt.Errorf("PNPMInspector: read lockfile failed, %w", e)
+	pResult := processDir(ctx, dir)
+	if pResult.e != nil {
+		return fmt.Errorf("PNPMInspector: %w", pResult.e)
 	}
-	lockfile, e := parseV6Lockfile(data, false)
-	if e != nil {
-		return e
+	for _, tree := range pResult.trees {
+		var module = model.Module{
+			ModuleName:     "<pnpm-root-module>",
+			ModulePath:     pResult.lockfile,
+			PackageManager: "pnpm",
+			Dependencies:   tree.Dependencies,
+			ScanStrategy:   model.ScanStrategyNormal,
+		}
+		tree.Name = strings.TrimPrefix(tree.Name, "./")
+		if tree.Name == "" || tree.Name == "." {
+			module.ModulePath = pResult.lockfile
+		} else {
+			if len(tree.Dependencies) == 0 {
+				continue
+			}
+			module.ModuleName = fmt.Sprintf("<pnpm-module>/%s", tree.Name)
+			module.ModulePath = filepath.Join(dir, tree.Name, "<pnpm-module>")
+		}
+		inspectionTask.AddModule(module)
 	}
-	deps, e := lockfile.buildDependencyTree(false)
-	if e != nil {
-		return e
-	}
-	inspectionTask.AddModule(model.Module{
-		ModuleName:     dir,
-		ModuleVersion:  "",
-		ModulePath:     lockfilePath,
-		PackageManager: "pnpm",
-		Dependencies:   deps,
-		ScanStrategy:   model.ScanStrategyNormal,
-	})
+
 	return nil
 }
 

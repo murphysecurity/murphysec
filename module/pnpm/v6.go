@@ -93,7 +93,7 @@ func (v *v6Lockfile) buildDependencyTree0(name, version string, strict bool, vis
 	}
 	pkg, ok := v.Packages[path]
 	if !ok {
-		panic("v.Packages[path] !ok")
+		panic("v.Packages[lockfile] !ok")
 	}
 	r := &model.DependencyItem{
 		Component: model.Component{
@@ -159,7 +159,7 @@ func (v *v6Lockfile) postprocess(strict bool) error {
 }
 
 func postprocessCreateError(path string, e error) error {
-	return fmt.Errorf("postprocess path \"%s\": %w", path, e)
+	return fmt.Errorf("postprocess lockfile \"%s\": %w", path, e)
 }
 
 type v6Package struct {

@@ -46,7 +46,7 @@ func rootCmd() *cobra.Command {
 		},
 	}
 
-	// Version
+	// version
 	c.PersistentFlags().BoolVarP(&versionFlag, "version", "v", false, "show version and exit")
 
 	// Logging
