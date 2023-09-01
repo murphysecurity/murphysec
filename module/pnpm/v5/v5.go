@@ -80,7 +80,6 @@ type treeBuildingCtx struct {
 	cd     *circularDetector
 	cache  map[string]model.DependencyItem
 	pkgSet pkgSet
-	//pathToNameMap map[string][2]string
 }
 
 func _buildTree(ctx treeBuildingCtx, name, version string) *model.DependencyItem {
@@ -139,21 +138,6 @@ func (c *circularDetector) Has(name, version string) bool {
 	}
 	return c.parent.Has(name, version)
 }
-
-//type circularDetectedError struct {
-//	c *circularDetector
-//}
-//
-//func (c circularDetectedError) Error() string {
-//	var r []string
-//	var cc = c.c
-//	for cc != nil {
-//		r = append(r, cc.Name+"/"+cc.Version)
-//		cc = cc.parent
-//	}
-//	slices.Reverse(r)
-//	return "circular dependency detected: " + strings.Join(r, " -> ")
-//}
 
 type pkgSet struct {
 	tree  pathTreeElement

@@ -4,20 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/pnpm/shared"
-	v5 "github.com/murphysecurity/murphysec/module/pnpm/v5"
 	"github.com/murphysecurity/murphysec/utils"
-	"os"
 	"path/filepath"
 	"strings"
 )
-
-const LockfileName = "pnpm-lock.yaml"
-
-var EcoRepo = model.EcoRepo{
-	Ecosystem:  "npm",
-	Repository: "",
-}
 
 type Inspector struct{}
 
@@ -32,37 +22,26 @@ func (Inspector) CheckDir(dir string) bool {
 func (Inspector) InspectProject(ctx context.Context) error {
 	inspectionTask := model.UseInspectionTask(ctx)
 	dir := inspectionTask.Dir()
-	lockfilePath := filepath.Join(dir, LockfileName)
-	data, e := os.ReadFile(lockfilePath)
-	if e != nil {
-		return fmt.Errorf("PNPMInspector: read lockfile failed, %w", e)
+	pResult := processDir(ctx, dir)
+	if pResult.e != nil {
+		return fmt.Errorf("PNPMInspector: %w", pResult.e)
 	}
-	version, e := parseLockfileVersion(data)
-	if e != nil {
-		return fmt.Errorf("PNPMInspector: parse lockfile version failed, %w", e)
-	}
-	versionNumber := matchLockfileVersion(version)
-	var treeList []shared.DepTree
-	if versionNumber == 5 {
-		lockfile, e := v5.ParseLockfile(data)
-		if e != nil {
-			return fmt.Errorf("PNPMInspector(v5): %w", e)
-		}
-		treeList = v5.AnalyzeDepTree(lockfile)
-	} else {
-		return fmt.Errorf("PNPMInspector: unsupported version \"%s\"", version)
-	}
-	for _, tree := range treeList {
+	for _, tree := range pResult.trees {
 		var module = model.Module{
-			ModulePath:     lockfilePath,
+			ModuleName:     "<pnpm-root-module>",
+			ModulePath:     pResult.lockfile,
 			PackageManager: "pnpm",
 			Dependencies:   tree.Dependencies,
 			ScanStrategy:   model.ScanStrategyNormal,
 		}
 		tree.Name = strings.TrimPrefix(tree.Name, "./")
 		if tree.Name == "" || tree.Name == "." {
-			module.ModulePath = lockfilePath
+			module.ModulePath = pResult.lockfile
 		} else {
+			if len(tree.Dependencies) == 0 {
+				continue
+			}
+			module.ModuleName = fmt.Sprintf("<pnpm-module>/%s", tree.Name)
 			module.ModulePath = filepath.Join(dir, tree.Name, "<pnpm-module>")
 		}
 		inspectionTask.AddModule(module)
