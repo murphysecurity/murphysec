@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -81,8 +82,10 @@ var EcoRepo = model.EcoRepo{
 	Repository: "",
 }
 
+var requirementPattern = regexp.MustCompile(`^requirement.*\.txt$`)
+
 func isRequirementsFile(filename string) bool {
-	return strings.Contains(strings.ToLower(filename), "requirement")
+	return requirementPattern.MatchString(strings.ToLower(filename))
 }
 
 func isDockerfile(filename string) bool {
