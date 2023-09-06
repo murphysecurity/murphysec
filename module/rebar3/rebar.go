@@ -2,6 +2,7 @@ package rebar3
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"path/filepath"
@@ -20,6 +21,9 @@ func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "rebar.config"))
 }
 func (Inspector) InspectProject(ctx context.Context) error {
+	if env.DoNotBuild {
+		return nil
+	}
 	task := model.UseInspectionTask(ctx)
 	_, e := GetRebar3Version(ctx)
 	if e != nil {

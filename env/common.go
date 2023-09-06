@@ -25,6 +25,7 @@ var CommandTimeout time.Duration
 var NoWait bool
 var envTlsAllowInsecure bool
 var CliTlsAllowInsecure bool
+var DoNotBuild bool
 
 func init() {
 	ctm := os.Getenv("COMMAND_TIMEOUT")
@@ -38,6 +39,7 @@ func init() {
 	if allowInsecure && e == nil {
 		envTlsAllowInsecure = true
 	}
+	DoNotBuild, _ = strconv.ParseBool(os.Getenv("DO_NOT_BUILD"))
 }
 
 func TlsAllowInsecure() bool {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"go.uber.org/zap"
 	"os/exec"
@@ -57,6 +58,9 @@ func evalPipListJsonFormat(ctx context.Context, pip string, timeout time.Duratio
 }
 
 func selectPip(ctx context.Context) (string, error) {
+	if env.DoNotBuild {
+		return "", fmt.Errorf("pip: do not build")
+	}
 	if checkCmdExists(ctx, "pip3") {
 		return "pip3", nil
 	}

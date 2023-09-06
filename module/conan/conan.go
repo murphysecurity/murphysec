@@ -2,6 +2,7 @@ package conan
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
@@ -28,6 +29,9 @@ func (*Inspector) CheckDir(dir string) bool {
 		utils.IsFile(filepath.Join(dir, "conan.py"))
 }
 func (*Inspector) InspectProject(ctx context.Context) error {
+	if env.DoNotBuild {
+		return nil
+	}
 	task := model.UseInspectionTask(ctx)
 	logger := logctx.Use(ctx)
 	cmdInfo, e := getConanInfo(ctx)

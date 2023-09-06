@@ -3,6 +3,7 @@ package sbt
 import (
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"path/filepath"
@@ -19,6 +20,9 @@ func (i Inspector) CheckDir(dir string) bool {
 }
 
 func (i Inspector) InspectProject(ctx context.Context) error {
+	if env.DoNotBuild {
+		return nil
+	}
 	task := model.UseInspectionTask(ctx)
 	dep, e := sbtDependencyTree(ctx, task.Dir())
 	if e != nil {
