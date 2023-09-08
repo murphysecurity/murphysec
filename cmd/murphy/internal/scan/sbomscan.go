@@ -15,7 +15,7 @@ import (
 func SbomScan() *cobra.Command {
 	var out string
 	cmd := &cobra.Command{
-		Use:  "generate-sbom",
+		Use:  "sbom",
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var ctx = context.TODO()
@@ -39,7 +39,7 @@ func SbomScan() *cobra.Command {
 			if out == "" {
 				out = "spdx.json"
 			}
-			e = os.WriteFile(out, []byte(spdx), 0644)
+			e = os.WriteFile(out, spdx, 0644)
 			if e != nil {
 				exitcode.Set(1)
 				logger.Sugar().Error(e)
@@ -48,6 +48,8 @@ func SbomScan() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&out, "out", "", "")
+	cmd.Flags().String("type", "", "")
+	_ = cmd.Flags().MarkHidden("type")
 	return cmd
 }
 
