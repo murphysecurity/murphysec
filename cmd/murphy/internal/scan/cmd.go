@@ -47,6 +47,18 @@ func DfCmd() *cobra.Command {
 	return &c
 }
 
+func commonInitNoAPI(ctx context.Context) (context.Context, error) {
+	// init logging
+	ctx, e := common.InitLogger(ctx)
+	if e != nil {
+		cv.DisplayInitializeFailed(ctx, e)
+		reportIdeError(ctx, model.IDEStatusLogFileCreationError, e)
+		exitcode.Set(1)
+		return nil, e
+	}
+	return ctx, nil
+}
+
 func commonInit(ctx context.Context) (context.Context, error) {
 	// init logging
 	ctx, e := common.InitLogger(ctx)
