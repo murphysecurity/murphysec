@@ -25,7 +25,7 @@ func SbomScan() *cobra.Command {
 			if e != nil {
 				return
 			}
-			ctx, e = commonInit(ctx)
+			ctx, e = commonInitNoAPI(ctx)
 			if e != nil {
 				return
 			}
