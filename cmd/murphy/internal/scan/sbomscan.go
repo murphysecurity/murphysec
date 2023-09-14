@@ -15,8 +15,9 @@ import (
 func SbomScan() *cobra.Command {
 	var out string
 	cmd := &cobra.Command{
-		Use:  "sbom",
-		Args: cobra.ExactArgs(1),
+		Use:   "sbom <DIR>",
+		Short: "Scan project dependencies and generate SBOM in SPDX-JSON",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var ctx = context.TODO()
 			ctx = ui.With(ctx, ui.None)
@@ -47,7 +48,7 @@ func SbomScan() *cobra.Command {
 			}
 		},
 	}
-	cmd.Flags().StringVar(&out, "out", "", "")
+	cmd.Flags().StringVar(&out, "out", "", "output file path")
 	cmd.Flags().String("type", "", "")
 	_ = cmd.Flags().MarkHidden("type")
 	return cmd

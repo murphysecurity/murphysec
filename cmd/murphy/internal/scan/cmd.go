@@ -29,9 +29,9 @@ func Cmd() *cobra.Command {
 	c.Short = "Detects open source vulnerabilities by scanning various file types within the project"
 	c.Args = cobra.ExactArgs(1)
 	c.Run = scanRun
-	c.Flags().BoolVar(&jsonOutput, "json", false, "")
-	c.Flags().BoolVar(&isDeep, "deep", false, "")
-	c.Flags().BoolVar(&noBuild, "no-build", false, "")
+	c.Flags().BoolVar(&jsonOutput, "json", false, "output in json format")
+	c.Flags().BoolVar(&isDeep, "deep", false, "enable enhanced deep insight, code features identification, vulnerability accessibility analysis")
+	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	return &c
 }
 
@@ -41,9 +41,9 @@ func DfCmd() *cobra.Command {
 	c.Args = cobra.ExactArgs(1)
 	c.Run = dfScanRun
 	c.Short = "Detects open source vulnerabilities by scanning package management files"
-	c.Flags().BoolVar(&jsonOutput, "json", false, "")
-	c.Flags().BoolVar(&isDeep, "deep", false, "")
-	c.Flags().BoolVar(&noBuild, "no-build", false, "")
+	c.Flags().BoolVar(&jsonOutput, "json", false, "output in json format")
+	c.Flags().BoolVar(&isDeep, "deep", false, "enable enhanced deep insight, code features identification, vulnerability accessibility analysis")
+	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	return &c
 }
 

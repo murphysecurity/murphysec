@@ -54,6 +54,7 @@ func rootCmd() *cobra.Command {
 	c.PersistentFlags().StringVar(&common.LogFileOverride, "write-log-to", "", "specify log file path")
 	c.PersistentFlags().StringVar(&consoleLogLevelOverride, "log-level", "silent", "specify log level, must be silent|error|warn|info|debug")
 	c.PersistentFlags().BoolVar(&common.EnableNetworkLogging, "network-log", false, "print network data")
+	_ = c.PersistentFlags().MarkHidden("network-log")
 
 	// API: Authentication & Network
 	c.PersistentFlags().StringVar(&common.CliTokenOverride, "token", "", "specify API token")
