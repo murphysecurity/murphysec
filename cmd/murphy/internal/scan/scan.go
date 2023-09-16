@@ -38,6 +38,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.Dir = dir
 	createSubtask.IsBuild = !noBuild
 	createSubtask.IsDeep = isDeep
+	createSubtask.ProjectName = projectNameCli
 
 	// get git info
 	var gitSummary *gitinfo.Summary

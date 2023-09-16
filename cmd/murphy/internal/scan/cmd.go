@@ -22,6 +22,7 @@ import (
 var jsonOutput bool
 var isDeep bool
 var noBuild bool
+var projectNameCli string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -32,6 +33,7 @@ func Cmd() *cobra.Command {
 	c.Flags().BoolVar(&jsonOutput, "json", false, "output in json format")
 	c.Flags().BoolVar(&isDeep, "deep", false, "enable enhanced deep insight, code features identification, vulnerability accessibility analysis")
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
+	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	return &c
 }
 
@@ -44,6 +46,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().BoolVar(&jsonOutput, "json", false, "output in json format")
 	c.Flags().BoolVar(&isDeep, "deep", false, "enable enhanced deep insight, code features identification, vulnerability accessibility analysis")
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
+	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	return &c
 }
 

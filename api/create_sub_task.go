@@ -20,6 +20,7 @@ type CreateSubTaskRequest struct {
 	CliVersion  string           `json:"cli_version"`
 	IsBuild     bool             `json:"is_build"`
 	IsDeep      bool             `json:"is_deep"`
+	ProjectName string           `json:"project_name"`
 }
 
 type CreateSubTaskResponse struct {
