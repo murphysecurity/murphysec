@@ -46,7 +46,11 @@ func LogFileCleanup() {
 	var staticRefTime = must.A(time.Parse(time.RFC3339, "2020-01-01T00:00:00Z"))
 
 	logFilePattern := regexp.MustCompile(`^(\d+)\.log$`)
-	basePath := filepath.Dir(defaultLogFilePath)
+	home, e := homedir.Dir()
+	if e != nil {
+		return
+	}
+	basePath := filepath.Join(home, defaultLogFilePath)
 	if basePath == "" {
 		return
 	}
