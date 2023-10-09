@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+const M2SettingsFilePathCtxKey = "MavenSettingsFilePathCtxKey"
+
 type MvnCommandInfo struct {
 	Path             string `json:"path"`
 	MvnVersion       string `json:"mvn_version"`
@@ -81,6 +83,9 @@ func CheckMvnCommand(ctx context.Context) (info *MvnCommandInfo, err error) {
 	}
 	info.JavaHome = env.IdeaMavenJre
 	info.UserSettingsPath = env.IdeaMavenConf
+	if r, ok := ctx.Value(M2SettingsFilePathCtxKey).(string); ok {
+		info.UserSettingsPath = r
+	}
 	// check version
 	ver, e := checkMvnVersion(ctx, info.Path, info.JavaHome)
 	if e != nil {

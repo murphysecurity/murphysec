@@ -13,6 +13,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module/maven"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
@@ -23,6 +24,7 @@ var jsonOutput bool
 var isDeep bool
 var noBuild bool
 var projectNameCli string
+var mavenSettingsPath string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -47,6 +49,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().BoolVar(&isDeep, "deep", false, "enable enhanced deep insight, code features identification, vulnerability accessibility analysis")
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
+	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
 	return &c
 }
 
@@ -137,6 +140,9 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 		ctx = ui.With(ctx, ui.IDEA)
 	} else {
 		ctx = ui.With(ctx, ui.CLI)
+	}
+	if mavenSettingsPath != "" {
+		ctx = context.WithValue(ctx, maven.M2SettingsFilePathCtxKey, mavenSettingsPath)
 	}
 	scanDir := args[0]
 	scanDir, e := commonScanPreCheck(ctx, scanDir)
