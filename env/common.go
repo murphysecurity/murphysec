@@ -40,6 +40,8 @@ func init() {
 		envTlsAllowInsecure = true
 	}
 	DoNotBuild, _ = strconv.ParseBool(os.Getenv("DO_NOT_BUILD"))
+	DoNotBuild2, _ := strconv.ParseBool(os.Getenv("MPS_DO_NOT_BUILD"))
+	DoNotBuild = DoNotBuild || DoNotBuild2
 }
 
 func TlsAllowInsecure() bool {
