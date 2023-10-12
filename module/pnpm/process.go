@@ -94,7 +94,7 @@ func openLockfile(ctx context.Context, lockfilePath string) (f *os.File, e error
 	}()
 	stat, e := f.Stat()
 	if e != nil {
-		return nil, fmt.Errorf("retreive file stat failed(%s): %w", lockfilePath, e)
+		return nil, fmt.Errorf("retrieve file stat failed(%s): %w", lockfilePath, e)
 	}
 	if !stat.Mode().IsRegular() {
 		return nil, fmt.Errorf("%s is not a regular file: %w", LockfileName, e)
