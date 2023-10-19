@@ -142,6 +142,7 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 		ctx = ui.With(ctx, ui.CLI)
 	}
 	if mavenSettingsPath != "" {
+		//nolint:all
 		ctx = context.WithValue(ctx, maven.M2SettingsFilePathCtxKey, mavenSettingsPath)
 	}
 	scanDir := args[0]
