@@ -26,6 +26,7 @@ type PluginOutput struct {
 	ProjectScore      int                    `json:"project_score"`
 	LicenseInfoMap    map[string]LicenseItem `json:"license_info_map"`
 	Username          string                 `json:"username"`
+	ProjectId         string                 `json:"project_id"`
 }
 
 type PluginComp struct {
@@ -85,6 +86,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		},
 		TaskId:            r.TaskId,
 		SubtaskId:         r.SubtaskId,
+		ProjectId:         r.ProjectId,
 		InspectErrors:     nil,
 		DependenciesCount: r.RelyNum,
 		SurpassScore:      r.SurpassScore,

@@ -11,7 +11,7 @@ import (
 type ScanResultResponse struct {
 	Complete       bool                               `json:"complete"`
 	SubtaskId      string                             `json:"subtask_id"`
-	ProjectsId     string                             `json:"projects_id"`
+	ProjectId      string                             `json:"project_id"`
 	TeamId         string                             `json:"team_id"`
 	TaskId         string                             `json:"task_id"`
 	UserId         string                             `json:"user_id"`
