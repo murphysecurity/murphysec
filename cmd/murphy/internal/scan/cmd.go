@@ -25,6 +25,7 @@ var isDeep bool
 var noBuild bool
 var projectNameCli string
 var mavenSettingsPath string
+var onlyTaskId bool
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -36,6 +37,7 @@ func Cmd() *cobra.Command {
 	c.Flags().BoolVar(&isDeep, "deep", false, "enable enhanced deep insight, code features identification, vulnerability accessibility analysis")
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
+	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	return &c
 }
 
@@ -50,6 +52,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
+	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	return &c
 }
 
@@ -129,6 +132,9 @@ func scanRun(cmd *cobra.Command, args []string) {
 		exitcode.Set(1)
 		return
 	}
+	if onlyTaskId {
+		return
+	}
 	if jsonOutput {
 		fmt.Println(string(must.A(json.MarshalIndent(model.GetIDEAOutput(r), "", "  "))))
 	}
@@ -138,9 +144,12 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 	var ctx = context.TODO()
 	if jsonOutput {
 		ctx = ui.With(ctx, ui.IDEA)
+	} else if onlyTaskId {
+		ctx = ui.With(ctx, ui.None)
 	} else {
 		ctx = ui.With(ctx, ui.CLI)
 	}
+
 	if mavenSettingsPath != "" {
 		//nolint:all
 		ctx = context.WithValue(ctx, maven.M2SettingsFilePathCtxKey, mavenSettingsPath)
@@ -163,6 +172,9 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 		logger.Error(e)
 		autoReportIde(ctx, e)
 		exitcode.Set(1)
+		return
+	}
+	if onlyTaskId {
 		return
 	}
 	if jsonOutput {

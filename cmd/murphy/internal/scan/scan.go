@@ -3,6 +3,7 @@ package scan
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/chunkupload"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
@@ -60,6 +61,9 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		return nil, e
 	}
 	logger.Infof("subtask created, %s / %s", createTaskResp.TaskID, createTaskResp.SubtaskID)
+	if onlyTaskId {
+		fmt.Println("subtask_id=", createTaskResp.SubtaskID)
+	}
 	cv.DisplayAlertMessage(ctx, createTaskResp.AlertMessage)
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.SubtaskID)
 	cv.DisplayReportUrl(ctx, api.DefaultClient().BaseURLText(), createTaskResp.TaskID, createTaskResp.SubtaskID)
@@ -108,6 +112,9 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		return nil, e
 	}
 
+	if onlyTaskId {
+		return task, nil
+	}
 	// 收集贡献者信息
 	cu, e := collect.CollectDir(ctx, task.ProjectPath)
 	if e != nil {
