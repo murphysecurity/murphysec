@@ -32,7 +32,7 @@ coveralls>=0.1.1,<0.2
 # Others
 Whoosh>=2.4.1
 `
-	var expect = `Sphinx1.2b3 WebTest1.3.4 Werkzeug0.6.2 Whoosh2.4.1 django-webtest1.5.3 factory-boy2.1.1 flake80.8 httpretty0.6.3 mock1.0.1 ruamel.yaml1.0.0`
+	var expect = `Sphinx1.2b3 WebTest1.3.4 Werkzeug0.6.2 Whoosh2.4.1 coveralls0.1.1 django-webtest1.5.3 factory-boy2.1.1 flake80.8 httpretty0.6.3 mock1.0.1 ruamel.yaml1.0.0`
 	var r []string
 	for k, v := range parseRequirements(data) {
 		r = append(r, k+v)
