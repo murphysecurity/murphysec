@@ -7,6 +7,7 @@ require (
 	github.com/antchfx/xmlquery v1.3.17
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/denisbrodbeck/machineid v1.0.1
+	github.com/dlclark/regexp2 v1.10.0
 	github.com/go-git/go-git/v5 v5.8.1
 	github.com/google/uuid v1.3.1
 	github.com/iseki0/go-yarnlock v0.0.1
