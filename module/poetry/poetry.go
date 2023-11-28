@@ -62,7 +62,7 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 	module := model.Module{
 		PackageManager: "poetry",
 		ModuleName:     manifest.Name,
-		ModulePath:     task.Dir(),
+		ModulePath:     pyprojectFile,
 	}
 	for k, v := range cmap {
 		var di model.DependencyItem
