@@ -2,6 +2,7 @@ package poetry
 
 import (
 	"context"
+	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pelletier/go-toml/v2"
@@ -48,6 +49,9 @@ func (i *Inspector) InspectProject(ctx context.Context) error {
 		cmap[it.CompName] = it.CompVersion
 	}
 	poetryFile := filepath.Join(task.Dir(), "poetry.lock.py")
+	if !utils.IsFile(poetryFile) {
+		poetryFile = filepath.Join(task.Dir(), "poetry.lock")
+	}
 	if utils.IsFile(poetryFile) {
 		if deps, e := parsePoetryLock(ctx, poetryFile); e == nil {
 			for _, it := range deps {
@@ -82,13 +86,13 @@ func parsePoetry(input []byte) (*Manifest, error) {
 	if e := toml.Unmarshal(input, &root.v); e != nil {
 		return nil, errors.WithMessage(ErrParsePoetry, "Parse toml failed")
 	}
-	m, ok := root.Get("tool", "poetry", "dependencies").v.(map[string]string)
-	if !ok {
+	m, ok := root.Get("tool", "poetry", "dependencies").v.(map[string]any)
+	if !ok || m == nil {
 		return nil, errors.WithMessage(ErrParsePoetry, "bad toml")
 	}
 	var deps []model.DependencyItem
 	for k, v := range m {
-		v := strings.Trim(v, "~^* ")
+		v := strings.Trim(fmt.Sprint(v), "~^* ")
 		if v == "" {
 			continue
 		}

@@ -17,7 +17,7 @@ func parsePoetryLock(ctx context.Context, f string) (rs []model.DependencyItem, 
 		return nil, e
 	}
 	root := &tomlTree{}
-	if e := toml.Unmarshal(data, &root); e != nil {
+	if e := toml.Unmarshal(data, &root.v); e != nil {
 		logger.Warnf("Parse toml failed. %v %v", e.Error(), f)
 		return nil, e
 	}
