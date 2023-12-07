@@ -80,7 +80,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	}
 
 	ctx = model.WithScanTask(ctx, task)
-	if task.Mode == model.ScanModeSource && !isDeep {
+	if task.Mode == model.ScanModeSource {
 		// do scan
 		e = inspector.ManagedInspect(ctx)
 		if e != nil {
