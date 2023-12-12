@@ -94,7 +94,8 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 			cv.DisplaySubmitSBOMErr(ctx, e)
 			return nil, e
 		}
-	} else {
+	}
+	if task.Mode != model.ScanModeSource || isDeep {
 		cv.DisplayUploading(ctx)
 		e = chunkupload.UploadDirectory(ctx, task.ProjectPath, chunkupload.DiscardDot, chunkupload.Params{
 			SubtaskId: task.SubtaskId,
