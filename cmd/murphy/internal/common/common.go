@@ -20,6 +20,7 @@ var loggerInitialized = false
 
 var (
 	CliTokenOverride         string
+	CliTeamIdOverride        string
 	CliServerAddressOverride string
 	EnableNetworkLogging     bool
 	NoLogFile                bool

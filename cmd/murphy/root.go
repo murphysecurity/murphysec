@@ -58,6 +58,7 @@ func rootCmd() *cobra.Command {
 
 	// API: Authentication & Network
 	c.PersistentFlags().StringVar(&common.CliTokenOverride, "token", "", "specify API token")
+	c.PersistentFlags().StringVar(&common.CliTeamIdOverride, "team-id", "", "specify team id")
 	c.PersistentFlags().StringVar(&common.CliServerAddressOverride, "server", "", "specify server address")
 	c.PersistentFlags().BoolVarP(&env.CliTlsAllowInsecure, "allow-insecure", "x", false, "Allow insecure TLS connection")
 	c.PersistentFlags().BoolVar(&env.NoWait, "no-wait", false, "do not wait scan result")

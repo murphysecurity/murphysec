@@ -92,6 +92,7 @@ func binScan(ctx context.Context, scanPath string) error {
 		SubtaskName: subtaskName,
 		Dir:         filepath.Dir(scanPath),
 		ProjectName: projectNameCli,
+		TeamId:      common.CliTeamIdOverride,
 	})
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)

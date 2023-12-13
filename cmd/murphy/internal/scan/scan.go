@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/chunkupload"
+	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
 	"github.com/murphysecurity/murphysec/collect"
 	"github.com/murphysecurity/murphysec/env"
@@ -39,6 +40,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.Dir = dir
 	createSubtask.IsBuild = !noBuild
 	createSubtask.IsDeep = isDeep
+	createSubtask.TeamId = common.CliTeamIdOverride
 	createSubtask.ProjectName = projectNameCli
 
 	// get git info
