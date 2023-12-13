@@ -21,7 +21,7 @@ type CreateSubTaskRequest struct {
 	IsBuild     bool             `json:"is_build"`
 	IsDeep      bool             `json:"is_deep"`
 	ProjectName string           `json:"project_name"`
-	TeamId      string           `json:"team_id"`
+	TeamId      string           `json:"team_id,omitempty"`
 }
 
 type CreateSubTaskResponse struct {
