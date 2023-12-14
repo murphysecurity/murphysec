@@ -14,7 +14,6 @@ variables:
 compose-build:
   tags:
     - client-build-shell
-  image: golang:1.19.2-bullseye
   stage: build
   artifacts:
     expire_in: 1 day
@@ -41,7 +40,6 @@ compose-build:
 compose-build-with-tag:
   tags:
     - client-build-shell
-  image: golang:1.19.2-bullseye
   stage: build
   artifacts:
     expire_in: 1 day
