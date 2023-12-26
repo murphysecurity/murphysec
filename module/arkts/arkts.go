@@ -89,7 +89,7 @@ func _buildDepTreeVisit(visited map[[2]string]struct{}, next [2]string, root *lo
 		return dep
 	}
 	for n, v := range root.Packages[key].Dependencies {
-		vv := root.Specifiers[n+"@"+v]
+		vv := versionOfSpecifier(root.Specifiers[n+"@"+v])
 		if vv == "" {
 			vv = v
 		}
@@ -113,7 +113,7 @@ func (l lockRoot) findRoots() [][2]string {
 	}
 	for _, pkg := range l.Packages {
 		for n, v := range pkg.Dependencies {
-			vv := l.Specifiers[n+"@"+v]
+			vv := versionOfSpecifier(l.Specifiers[n+"@"+v])
 			if vv == "" {
 				vv = v // I don't know if it's correct, just do it.
 			}
