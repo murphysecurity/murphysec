@@ -16,19 +16,19 @@ const _ComposerLockFileSizeLimit = _ComposerManifestFileSizeLimit
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
-func (i *Inspector) String() string {
+func (Inspector) String() string {
 	return "Composer"
 }
 
-func (i *Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "composer.json"))
 }
 
-func (i *Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	logger := logctx.Use(ctx)
 	task := model.UseInspectionTask(ctx)
 	dir := task.Dir()

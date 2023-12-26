@@ -20,15 +20,15 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
-func (i *Inspector) String() string {
+func (Inspector) String() string {
 	return "Gradle"
 }
 
-func (i *Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	var logger = logctx.Use(ctx).Sugar()
 	var rs []model.Module
 	task := model.UseInspectionTask(ctx)
@@ -136,7 +136,7 @@ func backupParser(ctx context.Context, dir string) *GradleDependencyInfo {
 
 var gradleBuildFiles = []string{"build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"}
 
-func (i *Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	for _, it := range gradleBuildFiles {
 		info, e := os.Stat(filepath.Join(dir, it))
 		if e == nil && !info.IsDir() {

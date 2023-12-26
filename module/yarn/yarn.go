@@ -43,20 +43,20 @@ func _mapToModel(deps []Dep) []model.DependencyItem {
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
-func (i *Inspector) String() string {
+func (Inspector) String() string {
 	return "Yarn"
 }
 
-func (i *Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	info, e := os.Stat(filepath.Join(dir, "yarn.lock"))
 	return e == nil && !info.IsDir()
 }
 
-func (i *Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
 	var logger = logctx.Use(ctx).Sugar()
 	dir := task.Dir()

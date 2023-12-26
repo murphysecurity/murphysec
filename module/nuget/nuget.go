@@ -12,17 +12,17 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
-func (i *Inspector) String() string {
+func (Inspector) String() string {
 	return "Nuget"
 }
-func (i *Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "packages.config"))
 }
-func (i *Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
 	dep, e := inspectPkgConfig(filepath.Join(task.Dir(), "packages.config"))
 	if e != nil {
