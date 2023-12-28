@@ -34,7 +34,9 @@ func (cli) Display(level MessageLevel, msg string) {
 	} else {
 		fmt.Println(Term.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg)
 	}
-	statusRepaint()
+	if IsTerminal {
+		statusRepaint()
+	}
 }
 
 func (cli) ClearStatus() {
@@ -52,9 +54,6 @@ var cliStatus = StatusIdle
 var cliStatusMsg = ""
 
 func statusRepaint() {
-	if !IsTerminal {
-		return
-	}
 	if cliStatus == StatusIdle {
 		return
 	}
