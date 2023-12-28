@@ -13,11 +13,12 @@ var CLI UI = &cli{}
 
 var _ UI = (*cli)(nil)
 var Term = termenv.NewOutput(os.Stdout)
+var IsTerminal = isatty.IsTerminal(os.Stdout.Fd())
 
 func (cli) UpdateStatus(s Status, msg string) {
 	cliStatus = s
 	cliStatusMsg = msg
-	if isatty.IsTerminal(os.Stdout.Fd()) {
+	if IsTerminal {
 		Term.ClearLine()
 	}
 	fmt.Print("\r")
@@ -25,7 +26,7 @@ func (cli) UpdateStatus(s Status, msg string) {
 }
 
 func (cli) Display(level MessageLevel, msg string) {
-	if isatty.IsTerminal(os.Stdout.Fd()) {
+	if IsTerminal {
 		Term.ClearLine()
 	}
 	if level == MsgError {
@@ -42,7 +43,7 @@ func (cli) ClearStatus() {
 	}
 	cliStatus = StatusIdle
 	cliStatusMsg = ""
-	if isatty.IsTerminal(os.Stdout.Fd()) {
+	if IsTerminal {
 		Term.ClearLine()
 	}
 }
@@ -51,6 +52,9 @@ var cliStatus = StatusIdle
 var cliStatusMsg = ""
 
 func statusRepaint() {
+	if !IsTerminal {
+		return
+	}
 	if cliStatus == StatusIdle {
 		return
 	}
