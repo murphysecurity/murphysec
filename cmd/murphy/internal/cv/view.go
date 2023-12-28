@@ -78,11 +78,11 @@ func DisplayScanResultSummary(ctx context.Context, totalDep int, totalVulnDep in
 	var u = ui.Use(ctx)
 	u.Display(ui.MsgNotice, fmt.Sprint(
 		"项目扫描完成，依赖数：",
-		termenv.String(strconv.Itoa(totalDep)).Foreground(termenv.ANSIBrightCyan),
+		ui.Term.String(strconv.Itoa(totalDep)).Foreground(termenv.ANSIBrightCyan),
 		"，缺陷组件数：",
-		termenv.String(strconv.Itoa(totalVulnDep)).Foreground(termenv.ANSIBrightRed),
+		ui.Term.String(strconv.Itoa(totalVulnDep)).Foreground(termenv.ANSIBrightRed),
 		"，漏洞数",
-		termenv.String(strconv.Itoa(totalVuln)).Foreground(termenv.ANSIBrightRed),
+		ui.Term.String(strconv.Itoa(totalVuln)).Foreground(termenv.ANSIBrightRed),
 	))
 }
 func DisplayUploading(ctx context.Context) {

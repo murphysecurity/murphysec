@@ -2,7 +2,9 @@ package ui
 
 import (
 	"fmt"
+	"github.com/mattn/go-isatty"
 	"github.com/muesli/termenv"
+	"os"
 )
 
 type cli struct{}
@@ -10,21 +12,26 @@ type cli struct{}
 var CLI UI = &cli{}
 
 var _ UI = (*cli)(nil)
+var Term = termenv.NewOutput(os.Stdout)
 
 func (cli) UpdateStatus(s Status, msg string) {
 	cliStatus = s
 	cliStatusMsg = msg
-	termenv.ClearLine() //nolint:all
+	if isatty.IsTerminal(os.Stdout.Fd()) {
+		Term.ClearLine()
+	}
 	fmt.Print("\r")
 	statusRepaint()
 }
 
 func (cli) Display(level MessageLevel, msg string) {
-	termenv.ClearLine() //nolint:all
+	if isatty.IsTerminal(os.Stdout.Fd()) {
+		Term.ClearLine()
+	}
 	if level == MsgError {
-		fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s] %s", level.String(), msg)))
+		fmt.Println(Term.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s] %s", level.String(), msg)))
 	} else {
-		fmt.Println(termenv.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg)
+		fmt.Println(Term.String().Foreground(level.fColor()).Styled(fmt.Sprintf("[%s]", level.String())), msg)
 	}
 	statusRepaint()
 }
@@ -35,7 +42,9 @@ func (cli) ClearStatus() {
 	}
 	cliStatus = StatusIdle
 	cliStatusMsg = ""
-	termenv.ClearLine() //nolint:all
+	if isatty.IsTerminal(os.Stdout.Fd()) {
+		Term.ClearLine()
+	}
 }
 
 var cliStatus = StatusIdle
@@ -45,7 +54,7 @@ func statusRepaint() {
 	if cliStatus == StatusIdle {
 		return
 	}
-	fmt.Print(termenv.String().Foreground(cliStatus.fColor()).Styled(cliStatus.String()))
+	fmt.Print(Term.String().Foreground(cliStatus.fColor()).Styled(cliStatus.String()))
 	if cliStatusMsg != "" {
 		fmt.Print(" - ", cliStatusMsg)
 	}
