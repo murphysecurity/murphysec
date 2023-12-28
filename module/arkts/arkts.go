@@ -53,6 +53,7 @@ type lockPkg struct {
 }
 
 type packageRoot struct {
+	Name         string            `json:"name"`
 	Dependencies map[string]string `json:"dependencies"`
 }
 
@@ -170,6 +171,7 @@ func analyze(ctx context.Context) (e error) {
 		}
 	}
 	var m = model.Module{
+		ModuleName:     pkg.Name,
 		ModulePath:     filepath.Join(dir, lockFile),
 		PackageManager: "arkts",
 		Dependencies:   make([]model.DependencyItem, 0),
