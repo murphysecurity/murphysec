@@ -20,7 +20,7 @@ const (
 )
 
 var ecoRepo = model.EcoRepo{
-	Ecosystem: "npm",
+	Ecosystem: "ohpm",
 }
 
 type Inspector struct{}
