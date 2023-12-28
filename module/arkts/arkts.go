@@ -170,7 +170,7 @@ func analyze(ctx context.Context) (e error) {
 		}
 	}
 	var m = model.Module{
-		ModulePath:     dir,
+		ModulePath:     filepath.Join(dir, lockFile),
 		PackageManager: "arkts",
 		Dependencies:   make([]model.DependencyItem, 0),
 		ScanStrategy:   model.ScanStrategyNormal,
