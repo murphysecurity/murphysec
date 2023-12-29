@@ -2,11 +2,12 @@ stages: # List of stages for jobs, and their order of execution
   - build
   - internal-pub
   - notify
+  - test
 
 variables:
   GOPROXY: https://goproxy.cn,direct
-#  GOPATH: "$CI_PROJECT_DIR/.go"
-#  GOBIN: "$CI_PROJECT_DIR/.go/bin"
+  #  GOPATH: "$CI_PROJECT_DIR/.go"
+  #  GOBIN: "$CI_PROJECT_DIR/.go/bin"
   CGO_ENABLED: '0'
 #  DENO_DIR: "$CI_PROJECT_DIR/.deno"
 #  GOCACHE: "$CI_PROJECT_DIR/.go-cache"
@@ -19,11 +20,11 @@ compose-build:
     expire_in: 1 day
     paths:
       - out/bin/*
-#  cache:
-#    key: cli-build-cache-v3
-#    paths:
-#      - .go/pkg/mod/
-#      - .go-cache/
+  #  cache:
+  #    key: cli-build-cache-v3
+  #    paths:
+  #      - .go/pkg/mod/
+  #      - .go-cache/
   before_script:
     - mkdir -p .go-cache
     - mkdir -p .go
@@ -45,11 +46,11 @@ compose-build-with-tag:
     expire_in: 1 day
     paths:
       - out/bin/*
-#  cache:
-#    key: cli-build-cache-v3
-#    paths:
-#      - .go/pkg/mod/
-#      - .go-cache/
+  #  cache:
+  #    key: cli-build-cache-v3
+  #    paths:
+  #      - .go/pkg/mod/
+  #      - .go-cache/
   before_script:
     - mkdir -p .go-cache
     - mkdir -p .go
@@ -90,6 +91,7 @@ internal-cos-upload:
 
 lark-notify:
   image: denoland/deno
+  dependencies: [ ]
   stage: notify
   cache:
     key: cli-deno-cache-1223
@@ -97,4 +99,16 @@ lark-notify:
       - .deno
   script:
     - deno run --allow-all ci/lark-push.ts
+
+test:
+  tags:
+    - client-build-shell
+  stage: test
+  dependencies: [ ]
+  script:
+    - gotestsum --junitfile report.xml --format testname
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
 
