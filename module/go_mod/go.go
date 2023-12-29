@@ -15,19 +15,19 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return model.InspectorFeatureAllowNested&feature > 0
 }
 
-func (i *Inspector) String() string {
+func (Inspector) String() string {
 	return "GoMod"
 }
 
-func (i *Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "go.mod"))
 }
 
-func (i *Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
 	logger := logctx.Use(ctx)
 	modFilePath := filepath.Join(task.Dir(), "go.mod")

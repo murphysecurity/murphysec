@@ -21,19 +21,19 @@ func (p poetryErr) Error() string {
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
-func (i *Inspector) String() string {
+func (Inspector) String() string {
 	return "Poetry"
 }
 
-func (i *Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "pyproject.toml"))
 }
 
-func (i *Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
 	pyprojectFile := filepath.Join(task.Dir(), "pyproject.toml")
 	data, e := utils.ReadFileLimited(pyprojectFile, 1024*1024*4)

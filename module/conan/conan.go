@@ -14,21 +14,21 @@ import (
 
 type Inspector struct{}
 
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
-func (*Inspector) String() string {
+func (Inspector) String() string {
 	return "Conan"
 }
 
-func (*Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "conanfile.txt")) ||
 		utils.IsFile(filepath.Join(dir, "conanfile.py")) ||
 		utils.IsFile(filepath.Join(dir, "conan.txt")) ||
 		utils.IsFile(filepath.Join(dir, "conan.py"))
 }
-func (*Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	if env.DoNotBuild {
 		return nil
 	}

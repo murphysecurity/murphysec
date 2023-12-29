@@ -19,15 +19,15 @@ type Inspector struct{}
 const PackageFileName = "package.json"
 const LockFileName = "package-lock.json"
 
-func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
 }
 
-func (i *Inspector) String() string {
+func (Inspector) String() string {
 	return "Npm"
 }
 
-func (i *Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(dir string) bool {
 	if utils.IsFile(filepath.Join(dir, LockFileName)) {
 		return true
 	}
@@ -43,7 +43,7 @@ func (i *Inspector) CheckDir(dir string) bool {
 	return true
 }
 
-func (i *Inspector) InspectProject(ctx context.Context) error {
+func (Inspector) InspectProject(ctx context.Context) error {
 	m, e := ScanNpmProject(ctx)
 	if e != nil {
 		return e
