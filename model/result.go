@@ -2,7 +2,6 @@ package model
 
 import (
 	"github.com/murphysecurity/murphysec/infra/date"
-	"time"
 )
 
 // ScanResultResponse 服务端输出，字段名比较迷惑，需要注意。
@@ -15,9 +14,6 @@ type ScanResultResponse struct {
 	TeamId         string                             `json:"team_id"`
 	TaskId         string                             `json:"task_id"`
 	UserId         string                             `json:"user_id"`
-	FinishTime     time.Time                          `json:"finish_time"`
-	Addr           string                             `json:"addr"`          // <unknown>
-	FromSource     string                             `json:"from_source"`   // <unknown>
 	OptionalNum    int                                `json:"optional_num"`  // 可选修复数量
 	RecommendNum   int                                `json:"recommend_num"` // 建议修复数量
 	StringNum      int                                `json:"string_num"`    // 强烈建议修复数量
@@ -27,8 +23,6 @@ type ScanResultResponse struct {
 	MediumNum      int                                `json:"medium_num"`    // 中危漏洞数量
 	LowNum         int                                `json:"low_num"`       // 低危漏洞数量
 	CriticalNum    int                                `json:"critical_num"`  // 严重漏洞数量
-	LicenseNum     int                                `json:"license_num"`   // 许可证数量
-	Languages      string                             `json:"languages"`     // 语言，逗号隔开的
 	SurpassScore   int                                `json:"surpass_score"`
 	ProjectScore   int                                `json:"project_score"`
 	CompInfoList   []ScanResultCompInfo               `json:"comp_info_list"`
