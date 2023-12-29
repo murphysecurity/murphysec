@@ -22,7 +22,9 @@ import (
 	"github.com/murphysecurity/murphysec/module/renv"
 	"github.com/murphysecurity/murphysec/module/sbt"
 	"github.com/murphysecurity/murphysec/module/yarn"
+	"os"
 	"sort"
+	"strconv"
 )
 
 var Inspectors []model.Inspector
@@ -46,9 +48,13 @@ func init() {
 	Inspectors = append(Inspectors, composer.Inspector{})
 	Inspectors = append(Inspectors, conan.Inspector{})
 	Inspectors = append(Inspectors, go_mod.Inspector{})
-	Inspectors = append(Inspectors, gradle.Inspector{})
+	if !boolEnv("DO_NOT_SCAN_MAVEN") {
+		Inspectors = append(Inspectors, maven.Inspector{})
+	}
+	if !boolEnv("DO_NOT_SCAN_GRADLE") {
+		Inspectors = append(Inspectors, gradle.Inspector{})
+	}
 	Inspectors = append(Inspectors, ivy.Inspector{})
-	Inspectors = append(Inspectors, maven.Inspector{})
 	Inspectors = append(Inspectors, npm.Inspector{})
 	Inspectors = append(Inspectors, nuget.Inspector{})
 	Inspectors = append(Inspectors, perl.Inspector{})
@@ -59,4 +65,9 @@ func init() {
 	Inspectors = append(Inspectors, renv.Inspector{})
 	Inspectors = append(Inspectors, sbt.Inspector{})
 	Inspectors = append(Inspectors, yarn.Inspector{})
+}
+
+func boolEnv(name string) bool {
+	b, _ := strconv.ParseBool(os.Getenv(name))
+	return b
 }
