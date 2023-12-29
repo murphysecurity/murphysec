@@ -25,6 +25,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 var Inspectors []model.Inspector
@@ -48,10 +49,10 @@ func init() {
 	Inspectors = append(Inspectors, composer.Inspector{})
 	Inspectors = append(Inspectors, conan.Inspector{})
 	Inspectors = append(Inspectors, go_mod.Inspector{})
-	if !boolEnv("DO_NOT_SCAN_MAVEN") {
+	if enableScan("MAVEN") {
 		Inspectors = append(Inspectors, maven.Inspector{})
 	}
-	if !boolEnv("DO_NOT_SCAN_GRADLE") {
+	if enableScan("GRADLE") {
 		Inspectors = append(Inspectors, gradle.Inspector{})
 	}
 	Inspectors = append(Inspectors, ivy.Inspector{})
@@ -65,6 +66,10 @@ func init() {
 	Inspectors = append(Inspectors, renv.Inspector{})
 	Inspectors = append(Inspectors, sbt.Inspector{})
 	Inspectors = append(Inspectors, yarn.Inspector{})
+}
+
+func enableScan(name string) bool {
+	return !boolEnv("DO_NOT_SCAN_" + strings.ToUpper(name))
 }
 
 func boolEnv(name string) bool {
