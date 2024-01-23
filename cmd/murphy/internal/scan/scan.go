@@ -79,6 +79,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		TaskId:      createTaskResp.TaskID,
 		SubtaskId:   createTaskResp.SubtaskID,
 		SubtaskName: createSubtask.SubtaskName,
+		GitUrl:      gitSummary.RemoteAddr,
 	}
 
 	ctx = model.WithScanTask(ctx, task)

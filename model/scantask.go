@@ -16,6 +16,7 @@ type ScanTask struct {
 	CodeFragments []ComponentCodeFragment
 	Result        *ScanResultResponse
 	SubtaskName   string
+	GitUrl        string
 }
 
 func (s *ScanTask) BuildInspectionTask(dir string) *InspectionTask {
