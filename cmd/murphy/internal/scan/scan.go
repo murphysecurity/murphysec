@@ -42,6 +42,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.IsDeep = isDeep
 	createSubtask.TeamId = common.CliTeamIdOverride
 	createSubtask.ProjectName = projectNameCli
+	createSubtask.PackagePrivateId = privateSourceId
 
 	// get git info
 	var gitSummary *gitinfo.Summary
