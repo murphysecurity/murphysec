@@ -47,6 +47,7 @@ type ScanResultCompInfo struct {
 	FixPlans           FixPlanList            `json:"fix_plans"`
 	SuggestLevel       int                    `json:"suggest_level"` // 对应到IDEA的show_level，具体计算规则不明
 	DirectDependency   []Component            `json:"direct_dependency"`
+	IsTriggers         bool                   `json:"is_triggers"`
 }
 
 type ScanResultCompEffect struct {

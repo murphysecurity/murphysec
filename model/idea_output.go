@@ -44,6 +44,7 @@ type PluginComp struct {
 	PackageManager     string                 `json:"package_manager"`
 	DirectDependency   []ComponentFixPlanList `json:"direct_dependency"`
 	FixPreviews        fix.Response           `json:"fix_previews"`
+	IsTriggers         bool                   `json:"is_triggers"`
 }
 
 type ComponentFixPlanList struct {
@@ -117,6 +118,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 				Solutions:       utils.NoNilSlice(effect.Solutions),
 				SuggestLevel:    info.FixSuggestionLevel,
 				Title:           info.Title,
+				VulnType:        info.VulnType,
 			}
 			if time.Time(info.PublishedDate).IsZero() {
 				d.PublishTime = 0
@@ -175,6 +177,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			PackageManager:     pmMap[comp.Component],
 			DirectDependency:   utils.NoNilSlice(directDependencyFixPlan),
 			FixPreviews:        codeFragments[comp.Component],
+			IsTriggers:         comp.IsTriggers,
 		}
 
 		// workaround: IDE侧要求我一定加进去，后续他不要求了，就删掉
@@ -210,4 +213,5 @@ type PluginVulnDetailInfo struct {
 	Solutions       []Solution     `json:"solutions"`
 	SuggestLevel    string         `json:"suggest_level"`
 	Title           string         `json:"title"`
+	VulnType        string         `json:"vuln_type"`
 }
