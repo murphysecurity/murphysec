@@ -39,7 +39,7 @@ func Cmd() *cobra.Command {
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
-	c.Flags().StringVar(&privateSourceId, "private-source-id", "", "")
+	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "")
 	return &c
 }
 
@@ -55,7 +55,6 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
-	c.Flags().StringVar(&privateSourceId, "private-source-id", "", "")
 	return &c
 }
 
