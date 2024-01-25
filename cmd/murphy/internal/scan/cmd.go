@@ -27,6 +27,7 @@ var projectNameCli string
 var mavenSettingsPath string
 var onlyTaskId bool
 var privateSourceId string
+var privateSourceName string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -40,6 +41,7 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "")
+	c.Flags().StringVar(&privateSourceName, "maven-setting-name", "", "")
 	return &c
 }
 
