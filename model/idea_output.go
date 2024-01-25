@@ -119,6 +119,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 				SuggestLevel:    info.FixSuggestionLevel,
 				Title:           info.Title,
 				VulnType:        info.VulnType,
+				RCE:             info.IsRce,
 			}
 			if time.Time(info.PublishedDate).IsZero() {
 				d.PublishTime = 0
@@ -214,4 +215,5 @@ type PluginVulnDetailInfo struct {
 	SuggestLevel    string         `json:"suggest_level"`
 	Title           string         `json:"title"`
 	VulnType        string         `json:"vuln_type"`
+	RCE             bool           `json:"rce"`
 }

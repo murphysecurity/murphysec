@@ -117,6 +117,7 @@ type VulnerabilityDetailInfo struct {
 	Title              string         `json:"title"`                // 漏洞标题
 	TroubleShooting    []string       `json:"trouble_shooting"`     // 排查方式列表
 	VulnType           string         `json:"vuln_type"`            // 漏洞类型
+	IsRce              bool           `json:"is_rce"`
 }
 
 type ReferenceURL struct {
