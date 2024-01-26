@@ -118,7 +118,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	// start check
 	e = api.StartCheck(api.DefaultClient(), task)
 	if e != nil {
-		cv.DisplaySubmitSBOMErr(ctx, e)
+		cv.DisplayStartCheckErr(ctx, e)
 		return nil, e
 	}
 

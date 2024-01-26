@@ -70,6 +70,10 @@ func DisplaySubmitSBOMErr(ctx context.Context, e error) {
 	ui.Use(ctx).Display(ui.MsgError, "上传SBOM信息失败："+e.Error())
 }
 
+func DisplayStartCheckErr(ctx context.Context, e error) {
+	ui.Use(ctx).Display(ui.MsgError, "开始检测失败："+e.Error())
+}
+
 func DisplayStatusClear(ctx context.Context) {
 	ui.Use(ctx).ClearStatus()
 }
