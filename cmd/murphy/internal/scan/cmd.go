@@ -40,8 +40,8 @@ func Cmd() *cobra.Command {
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
-	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "")
-	c.Flags().StringVar(&privateSourceName, "maven-setting-name", "", "")
+	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "specify the id of the Maven settings.xml file used during the scan")
+	c.Flags().StringVar(&privateSourceName, "maven-setting-name", "", "specify the name of the Maven settings.xml file used during the scan")
 	return &c
 }
 
