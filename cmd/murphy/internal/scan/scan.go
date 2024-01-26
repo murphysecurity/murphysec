@@ -74,13 +74,15 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 
 	// create task object
 	task := &model.ScanTask{
-		Ctx:         ctx,
-		Mode:        mode,
-		AccessType:  accessType,
-		ProjectPath: dir,
-		TaskId:      createTaskResp.TaskID,
-		SubtaskId:   createTaskResp.SubtaskID,
-		SubtaskName: createSubtask.SubtaskName,
+		Ctx:             ctx,
+		Mode:            mode,
+		AccessType:      accessType,
+		ProjectPath:     dir,
+		TaskId:          createTaskResp.TaskID,
+		SubtaskId:       createTaskResp.SubtaskID,
+		SubtaskName:     createSubtask.SubtaskName,
+		MavenSourceId:   privateSourceId,
+		MavenSourceName: privateSourceName,
 	}
 	if gitSummary != nil {
 		task.GitUrl = gitSummary.RemoteAddr
@@ -114,7 +116,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	}
 
 	// start check
-	e = api.StartCheck(api.DefaultClient(), task.SubtaskId)
+	e = api.StartCheck(api.DefaultClient(), task)
 	if e != nil {
 		cv.DisplaySubmitSBOMErr(ctx, e)
 		return nil, e
