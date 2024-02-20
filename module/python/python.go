@@ -151,11 +151,12 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 				logger.Warnf("read py: %s %v", path, e)
 				return nil
 			}
-			for _, s := range parsePyImport(string(data)) {
-				if pyPkgBlackList[s] {
-					continue
+			for _, line := range strings.Split(string(data), "\n") {
+				for _, s := range parsePyImport(line) {
+					if !pyPkgBlackList[s] {
+						unknownVersionComps[s] = struct{}{}
+					}
 				}
-				unknownVersionComps[s] = struct{}{}
 			}
 		}
 		return nil
