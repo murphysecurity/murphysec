@@ -293,3 +293,14 @@ var EcoRepo = model.EcoRepo{
 	Ecosystem:  "maven",
 	Repository: "",
 }
+
+type DepElement struct {
+	GroupId    string       `json:"group_id"`
+	ArtifactId string       `json:"artifact_id"`
+	Version    string       `json:"version"`
+	Children   []DepElement `json:"children,omitempty"`
+}
+
+func (d DepElement) CompName() string {
+	return fmt.Sprintf("%s:%s", d.GroupId, d.ArtifactId)
+}
