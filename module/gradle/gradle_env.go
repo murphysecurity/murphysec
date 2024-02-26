@@ -5,7 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"regexp"
+	"sync"
 )
 
 //goland:noinspection GoNameStartsWithPackageName
@@ -14,13 +18,18 @@ type GradleEnv struct {
 	Path                string              `json:"path,omitempty"`
 	GradleWrapperStatus GradleWrapperStatus `json:"gradle_wrapper_status"`
 	GradleWrapperError  error               `json:"gradle_wrapper_error,omitempty"`
+	JavaHome            string              `json:"java_home,omitempty"`
 }
 
 func (g *GradleEnv) ExecuteContext(ctx context.Context, args ...string) *exec.Cmd {
 	var _args = make([]string, 0, len(args)+8)
-	_args = append(_args, "--quiet", "--console", "plain")
+	_args = append(_args, "--info", "--console", "plain", "--stacktrace")
 	_args = append(_args, args...)
 	c := exec.CommandContext(ctx, g.Path, _args...)
+	c.Env = os.Environ()
+	if g.JavaHome != "" {
+		c.Env = append(c.Env, "JAVA_HOME="+g.JavaHome)
+	}
 	logctx.Use(ctx).Sugar().Infof("Prepare: %s", c.String())
 	return c
 }
@@ -28,6 +37,12 @@ func (g *GradleEnv) ExecuteContext(ctx context.Context, args ...string) *exec.Cm
 func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 	var log = logctx.Use(ctx).Sugar()
 	var r = &GradleEnv{GradleWrapperStatus: GradleWrapperStatusNotDetected}
+	var gwv = readGradleVersionFromWrapper(ctx, dir)
+	if os.Getenv("MPS_BUNDLED_GRADLE") == "1" && gwv != "" {
+		r.Path, r.JavaHome = selectGradleAndJavaVersion(gwv)
+		log.Infof("use bundled gradle: %v", r.Path)
+		return r, nil
+	}
 	if script := prepareGradleWrapperScriptFile(ctx, dir); script != "" {
 		gv, e := evalVersion(ctx, script)
 		if e == nil {
@@ -94,6 +109,32 @@ func evalVersionError(e error) error {
 		}
 	}
 	return &EvalVersionError{_Error: e}
+}
+
+var gradlePropertiesWrapperVer *regexp.Regexp
+var gradlePropertiesWrapperVerOnce sync.Once
+
+func readGradleVersionFromWrapper(ctx context.Context, projectDir string) string {
+	gradlePropertiesWrapperVerOnce.Do(func() {
+		gradlePropertiesWrapperVer = regexp.MustCompile(`distributionUrl=.+?gradle-([0-9.]+)(?:-bin|-all|).zip`)
+	})
+	var logger = logctx.Use(ctx).Sugar()
+	var propertiesFilepath = filepath.Join(projectDir, "gradle", "wrapper", "gradle-wrapper.properties")
+	data, e := os.ReadFile(propertiesFilepath)
+	if e != nil {
+		if os.IsNotExist(e) {
+			logger.Debug("gradle-wrapper.properties doesn't exists")
+		} else {
+			logger.Warnf("read gradle-wrapper.properties failed: %e", e)
+		}
+		return ""
+	}
+	var r = gradlePropertiesWrapperVer.FindStringSubmatch(string(data))
+	if len(r) > 0 {
+		logger.Debug("gradle-wrapper gradle version read: %s", r[1])
+		return r[1]
+	}
+	return ""
 }
 
 type EvalVersionError struct {

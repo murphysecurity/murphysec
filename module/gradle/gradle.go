@@ -1,26 +1,30 @@
 package gradle
 
 import (
+	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/sl"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module/gradle/depp"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/pkg/errors"
+	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/repeale/fp-go"
+	"io"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 type Inspector struct{}
 
-func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
+func (Inspector) SupportFeature(_ model.InspectorFeature) bool {
 	return false
 }
 
@@ -169,23 +173,82 @@ func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleEnv
 	return rs, nil
 }
 
+var implTaskNamePattern *regexp.Regexp
+
+// var testTaskNamePattern *regexp.Regexp
+var taskNamePattern sync.Once
+
 func evalGradleDependencies(ctx context.Context, projectDir string, projectName string, info *GradleEnv) (*GradleDependencyInfo, error) {
+	taskNamePattern.Do(func() {
+		implTaskNamePattern = regexp.MustCompile(`(?:release|debug|)(?:[Cc]ompile|[Rr]untime)Classpath`)
+		//testTaskNamePattern = regexp.MustCompile(`(?:release|debug|)(?:[Uu]nit)?[Tt]est(?:[Cc]ompile|[Rr]untime)Classpath`)
+	})
 	var logger = logctx.Use(ctx).Sugar()
 	c := info.ExecuteContext(ctx, fmt.Sprintf("%s:dependencies", projectName))
 	logger.Infof("Execute: %s", c.String())
 	c.Dir = projectDir
-	data, e := c.Output()
-	logger.Debugf("GradleOutput: %s", string(data))
+	reader := must.A(c.StdoutPipe())
+	lr, lw := io.Pipe()
+	pr, pw := io.Pipe()
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		logger.Debug("gradle logs forwarding started.")
+		var scanner = bufio.NewScanner(lr)
+		scanner.Split(bufio.ScanLines)
+		scanner.Buffer(nil, 1024)
+		for scanner.Scan() {
+			if scanner.Err() != nil {
+				logger.Errorf("forwaring gradle logs failed: %v", scanner.Err())
+				_ = lr.CloseWithError(scanner.Err())
+				break
+			}
+			logger.Debugf("g: %s", scanner.Text())
+		}
+		logger.Debugf("gradle logs forwarding stopped.")
+	}()
+	var depInfo GradleDependencyInfo
+	go func() {
+		defer wg.Done()
+		e := depp.Parse(pr, func(project string, task string, data []depp.TreeNode) {
+			if implTaskNamePattern.MatchString(task) {
+				depInfo.ProjectName = project
+				depInfo.Dependencies = convertDepp(data)
+			}
+		})
+		if e != nil {
+			logger.Errorf("parse gradle output failed: %v", e)
+			_ = lr.CloseWithError(e)
+		}
+		logger.Debug("parse gradle output stopped.")
+	}()
+	e := c.Start()
 	if e != nil {
-		logger.Errorf("Gradle output: %s", string(e.(*exec.ExitError).Stderr))
 		return nil, e
 	}
-	var lines = fp.Map(strings.TrimSpace)(strings.Split(string(data), "\n"))
-	depInfo := parseGradleDependencies(lines)
-	if depInfo == nil {
-		return nil, errors.New("parse dep info failed.")
+	_, e = io.Copy(io.MultiWriter(pw, lw), reader)
+	_ = pw.Close()
+	_ = lw.Close()
+	if e != nil {
+		return nil, e
 	}
-	return depInfo, nil
+	if len(depInfo.Dependencies) == 0 {
+		return nil, errors.New("no dependencies found")
+	}
+	return &depInfo, nil
+}
+
+func convertDepp(node []depp.TreeNode) (r []DepElement) {
+	for _, it := range node {
+		r = append(r, DepElement{
+			GroupId:    it.G,
+			ArtifactId: it.A,
+			Version:    it.V,
+			Children:   convertDepp(it.C),
+		})
+	}
+	return
 }
 
 //goland:noinspection GoNameStartsWithPackageName
@@ -224,59 +287,6 @@ func _convDep(input []DepElement) []model.DependencyItem {
 		})
 	}
 	return rs
-}
-
-func parseGradleDependencies(lines []string) *GradleDependencyInfo {
-	info := &GradleDependencyInfo{
-		ProjectName:  "",
-		Dependencies: []DepElement{},
-	}
-	taskPattern := regexp.MustCompile(`^\w+$|^\w+\s-`)
-	projectPattern := regexp.MustCompile("(?:Root project|[Pp]roject) ([':A-Za-z0-9._-]+)")
-	type task struct {
-		name  string
-		lines []string
-	}
-	var tasks []task
-	{
-		var currTaskName string
-		var currTaskLines []string
-		for _, it := range lines {
-			if m := projectPattern.FindStringSubmatch(it); len(m) > 0 && info.ProjectName == "" {
-				info.ProjectName = strings.TrimSpace(strings.Trim(m[1], "'"))
-				continue
-			}
-			if it == "" {
-				if currTaskName != "" {
-					tasks = append(tasks, task{currTaskName, currTaskLines})
-					currTaskLines = nil
-					currTaskName = ""
-				}
-				continue
-			}
-			if m := taskPattern.FindString(it); m != "" {
-				if currTaskName != "" {
-					tasks = append(tasks, task{currTaskName, currTaskLines})
-					currTaskLines = nil
-				}
-				currTaskName = strings.TrimSpace(strings.TrimRight(strings.TrimSpace(m), "-"))
-				continue
-			}
-			if currTaskName == "" {
-				continue
-			}
-			currTaskLines = append(currTaskLines, it)
-		}
-	}
-	{
-		for _, task := range tasks {
-			if task.name == "runtimeClasspath" {
-				parser := blockParser{lines: task.lines}
-				info.Dependencies = parser._parse()
-			}
-		}
-	}
-	return info
 }
 
 var EcoRepo = model.EcoRepo{
