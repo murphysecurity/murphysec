@@ -44,6 +44,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.ProjectName = projectNameCli
 	createSubtask.PackagePrivateId = privateSourceId
 	createSubtask.PackagePrivateName = privateSourceName
+	createSubtask.ProjectTagName = projectTagName
 
 	// get git info
 	var gitSummary *gitinfo.Summary

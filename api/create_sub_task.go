@@ -24,6 +24,7 @@ type CreateSubTaskRequest struct {
 	TeamId             string           `json:"team_id,omitempty"`
 	PackagePrivateId   string           `json:"package_private_id,omitempty"`
 	PackagePrivateName string           `json:"package_private_name,omitempty"`
+	ProjectTagName     string           `json:"project_tag_name,omitempty"`
 }
 
 type CreateSubTaskResponse struct {
