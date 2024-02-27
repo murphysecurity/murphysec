@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"github.com/murphysecurity/fix-tools/fix"
 	"github.com/murphysecurity/murphysec/utils"
 	"time"
@@ -28,6 +29,8 @@ type PluginOutput struct {
 	Username          string                 `json:"username"`
 	ProjectId         string                 `json:"project_id"`
 	GitURL            string                 `json:"git_url"`
+	IsHitProjectRule  bool                   `json:"is_hit_project_rule"`
+	HitProjectRule    json.RawMessage        `json:"hit_project_rule,omitempty"`
 }
 
 type PluginComp struct {
@@ -96,6 +99,8 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		LicenseInfoMap:    r.LicenseInfoMap,
 		Username:          r.Username,
 		GitURL:            task.GitUrl,
+		IsHitProjectRule:  r.IsHitProjectRule,
+		HitProjectRule:    r.HitProjectRule,
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {
