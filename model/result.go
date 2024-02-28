@@ -10,6 +10,7 @@ import (
 // 标注为 <unknown> 的暂时不知道是什么，估计用不上
 type ScanResultResponse struct {
 	Complete         bool                               `json:"complete"`
+	Branch           string                             `json:"branch"`
 	SubtaskId        string                             `json:"subtask_id"`
 	ProjectId        string                             `json:"project_id"`
 	TeamId           string                             `json:"team_id"`

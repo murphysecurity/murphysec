@@ -8,6 +8,7 @@ import (
 )
 
 type PluginOutput struct {
+	Branch           string       `json:"branch"`
 	SubtaskName      string       `json:"subtask_name"`
 	ErrCode          IDEStatus    `json:"err_code"`
 	ErrMsg           string       `json:"err_msg"`
@@ -73,6 +74,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		r.LicenseInfoMap = make(map[string]LicenseItem)
 	}
 	var pluginOutput = PluginOutput{
+		Branch:      r.Branch,
 		ErrCode:     IDEStatusSucceeded,
 		ErrMsg:      IDEStatusSucceeded.String(),
 		SubtaskName: task.SubtaskName,
