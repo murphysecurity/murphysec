@@ -20,7 +20,7 @@ import (
 
 var cliIOTScan bool
 var projectNameCli string
-var projectTagName string
+var projectTagNames []string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -30,7 +30,7 @@ func Cmd() *cobra.Command {
 	c.Short = "Detects open source vulnerabilities by scanning binary files"
 	c.Flags().BoolVar(&cliIOTScan, "iot", false, "IOT scan mode")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
-	c.Flags().StringVar(&projectTagName, "project-tag", "", "specify the tag of the project")
+	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	return &c
 }
 
@@ -89,13 +89,13 @@ func binScan(ctx context.Context, scanPath string) error {
 	}
 	var subtaskName = filepath.Base(scanPath)
 	taskResp, e := api.CreateSubTask(api.DefaultClient(), &api.CreateSubTaskRequest{
-		AccessType:     model.AccessTypeCli,
-		ScanMode:       mode,
-		SubtaskName:    subtaskName,
-		Dir:            scanPath,
-		ProjectName:    projectNameCli,
-		TeamId:         common.CliTeamIdOverride,
-		ProjectTagName: projectTagName,
+		AccessType:      model.AccessTypeCli,
+		ScanMode:        mode,
+		SubtaskName:     subtaskName,
+		Dir:             scanPath,
+		ProjectName:     projectNameCli,
+		TeamId:          common.CliTeamIdOverride,
+		ProjectTagNames: projectTagNames,
 	})
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)

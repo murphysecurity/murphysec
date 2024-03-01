@@ -28,7 +28,7 @@ var mavenSettingsPath string
 var onlyTaskId bool
 var privateSourceId string
 var privateSourceName string
-var projectTagName string
+var projectTagNames []string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -43,7 +43,7 @@ func Cmd() *cobra.Command {
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "specify the id of the Maven settings.xml file used during the scan")
 	c.Flags().StringVar(&privateSourceName, "maven-setting-name", "", "specify the name of the Maven settings.xml file used during the scan")
-	c.Flags().StringVar(&projectTagName, "project-tag", "", "specify the tag of the project")
+	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	return &c
 }
 
@@ -59,7 +59,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
-	c.Flags().StringVar(&projectTagName, "project-tag", "", "specify the tag of the project")
+	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	return &c
 }
 
