@@ -87,11 +87,9 @@ func binScan(ctx context.Context, scanPath string) error {
 	if cliIOTScan {
 		mode = model.ScanModeIot
 	}
-	var subtaskName = filepath.Base(scanPath)
 	taskResp, e := api.CreateSubTask(api.DefaultClient(), &api.CreateSubTaskRequest{
 		AccessType:      model.AccessTypeCli,
 		ScanMode:        mode,
-		SubtaskName:     subtaskName,
 		Dir:             scanPath,
 		ProjectName:     projectNameCli,
 		TeamId:          common.CliTeamIdOverride,

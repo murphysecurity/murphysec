@@ -15,8 +15,7 @@ type CreateSubTaskRequest struct {
 	Commit             *string          `json:"commit,omitempty"`
 	Message            *string          `json:"message,omitempty"`   // 提交信息
 	PushTime           *time.Time       `json:"push_time,omitempty"` // 提交时间
-	SubtaskName        string           `json:"subtask_name"`
-	Dir                string           `json:"dir"` // 路径
+	Dir                string           `json:"dir"`                 // 路径
 	CliVersion         string           `json:"cli_version"`
 	IsBuild            bool             `json:"is_build"`
 	IsDeep             bool             `json:"is_deep"`

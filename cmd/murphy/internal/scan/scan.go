@@ -34,7 +34,6 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	defer cv.DisplayStatusClear(ctx)
 
 	var createSubtask api.CreateSubTaskRequest
-	createSubtask.SubtaskName = filepath.Base(dir)
 	createSubtask.AccessType = accessType
 	createSubtask.ScanMode = mode
 	createSubtask.Dir = dir
@@ -84,7 +83,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		ProjectPath:     dir,
 		TaskId:          createTaskResp.TaskID,
 		SubtaskId:       createTaskResp.SubtaskID,
-		SubtaskName:     createSubtask.SubtaskName,
+		SubtaskName:     createSubtask.ProjectName,
 		MavenSourceId:   privateSourceId,
 		MavenSourceName: privateSourceName,
 	}
