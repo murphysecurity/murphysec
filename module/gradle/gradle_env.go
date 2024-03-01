@@ -38,9 +38,15 @@ func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 	var log = logctx.Use(ctx).Sugar()
 	var r = &GradleEnv{GradleWrapperStatus: GradleWrapperStatusNotDetected}
 	var gwv = readGradleVersionFromWrapper(ctx, dir)
-	if os.Getenv("MPS_BUNDLED_GRADLE") == "1" && gwv != "" {
+	if os.Getenv("MPS_BUNDLED_GRADLE") == "1" {
+		if gwv != "" {
+			// no version read, use default latest
+			log.Info("use default gradle version")
+			gwv = "8.6"
+		}
 		r.Path, r.JavaHome = selectGradleAndJavaVersion(gwv)
 		log.Infof("use bundled gradle: %v", r.Path)
+		log.Infof("use bundled java: %v", r.JavaHome)
 		return r, nil
 	}
 	if script := prepareGradleWrapperScriptFile(ctx, dir); script != "" {
