@@ -47,6 +47,13 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	if createSubtask.ProjectTagNames == nil {
 		createSubtask.ProjectTagNames = make([]string, 0)
 	}
+	for _, it := range createSubtask.ProjectTagNames {
+		if len([]rune(it)) > 10 {
+			e = errors.New("请输入10个字符以内的项目标签")
+			cv.DisplayInitializeFailed(ctx, e)
+			return nil, e
+		}
+	}
 
 	// get git info
 	var gitSummary *gitinfo.Summary

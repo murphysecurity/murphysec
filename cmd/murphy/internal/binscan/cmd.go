@@ -51,7 +51,12 @@ func binScanRun(cmd *cobra.Command, args []string) {
 		exitcode.Set(1)
 		return
 	}
-
+	for _, it := range projectTagNames {
+		if len([]rune(it)) > 10 {
+			cv.DisplayInitializeFailed(ctx, errors.New("请输入10个字符以内的项目标签"))
+			exitcode.Set(1)
+		}
+	}
 	// init logging
 	ctx, e = common.InitLogger(ctx)
 	if e != nil {
