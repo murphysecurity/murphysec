@@ -80,7 +80,6 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	}
 	cv.DisplayAlertMessage(ctx, createTaskResp.AlertMessage)
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.SubtaskID)
-	cv.DisplayReportUrl(ctx, api.DefaultClient().BaseURLText(), createTaskResp.TaskID, createTaskResp.SubtaskID)
 
 	// create task object
 	task := &model.ScanTask{
@@ -157,6 +156,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		cv.DisplayScanFailed(ctx, e)
 		return nil, e
 	}
+	cv.DisplayReportUrl(ctx, *result)
 	cv.DisplayStatusClear(ctx)
 	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum, len(result.VulnInfoMap))
 

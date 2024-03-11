@@ -32,6 +32,8 @@ type PluginOutput struct {
 	GitURL            string                 `json:"git_url"`
 	IsHitProjectRule  bool                   `json:"is_hit_project_rule"`
 	HitProjectRule    json.RawMessage        `json:"hit_project_rule,omitempty"`
+	ShareURL          string                 `json:"share_url,omitempty"`
+	DetailURL         string                 `json:"detail_url,omitempty"`
 }
 
 type PluginComp struct {
@@ -103,6 +105,8 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		GitURL:            task.GitUrl,
 		IsHitProjectRule:  r.IsHitProjectRule,
 		HitProjectRule:    r.HitProjectRule,
+		ShareURL:          r.ShareURL,
+		DetailURL:         r.DetailURL,
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {

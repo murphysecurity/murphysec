@@ -33,6 +33,10 @@ type ScanResultResponse struct {
 	Username         string                             `json:"username"`
 	IsHitProjectRule bool                               `json:"is_hit_project_rule"`
 	HitProjectRule   json.RawMessage                    `json:"hit_project_rule,omitempty"`
+	ShareURL         string                             `json:"share_url"`
+	DetailURL        string                             `json:"detail_url"`
+	AllowAction      int                                `json:"allow_action"`
+	ExpireDay        int                                `json:"expire_day"`
 }
 
 type ScanResultCompInfo struct {
