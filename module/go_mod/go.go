@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/sl"
 	"github.com/murphysecurity/murphysec/model"
@@ -46,16 +47,19 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	if e != nil {
 		return errors.WithMessage(e, "Parse go mod failed")
 	}
-	// try command go list
-	dependencies, e := doGoList(ctx, task.Dir())
-	if e != nil {
-		if errors.Is(e, _ErrGoNotFound) {
-			logger.Debug("Go not found, skip GoList")
-		} else {
-			// log it and go on
-			logger.Warn("GoList failed", zap.Error(e))
+	var dependencies []model.DependencyItem
+	if !env.DoNotBuild {
+		// try command go list
+		dependencies, e = doGoList(ctx, task.Dir())
+		if e != nil {
+			if errors.Is(e, _ErrGoNotFound) {
+				logger.Debug("Go not found, skip GoList")
+			} else {
+				// log it and go on
+				logger.Warn("GoList failed", zap.Error(e))
+			}
+			dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
 		}
-		dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
 	}
 	m := model.Module{
 		PackageManager: "gomod",
