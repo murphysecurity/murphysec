@@ -60,6 +60,8 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			}
 			dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
 		}
+	} else {
+		dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
 	}
 	m := model.Module{
 		PackageManager: "gomod",
