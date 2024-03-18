@@ -163,6 +163,9 @@ func getDepGraph(input string) ([]model.DependencyItem, error) {
 		name := m[1]
 		version := m[2]
 		versionMap[name] = version
+		if graph[name] == nil {
+			graph[name] = []string{}
+		}
 		for _, right := range left.children {
 			rightName := p2.FindString(right.line)
 			if rightName == "" {

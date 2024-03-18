@@ -15,3 +15,23 @@ func TestParseGemLock(t *testing.T) {
 	assert.EqualValues(t, 3, len(tree.get("GIT").children))
 	assert.EqualValues(t, "GIT", tree.get("GIT").line)
 }
+
+func Test_getDepGraph(t *testing.T) {
+	var data = `
+GEM
+  remote: http://rubygems.org/
+  specs:
+    rake (12.3.3)
+    test-unit (2.5.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rake
+  test-unit (~> 2.4)
+`
+	tree, e := getDepGraph(data)
+	assert.NoError(t, e)
+	t.Log(tree)
+}
