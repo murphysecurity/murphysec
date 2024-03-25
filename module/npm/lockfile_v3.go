@@ -104,5 +104,18 @@ func (v *v3Lockfile) _v3Conv(rp string, name string, visited map[string]struct{}
 			item.Dependencies = append(item.Dependencies, *r)
 		}
 	}
+	if pkg.DevDependencies != nil {
+		for s := range pkg.DevDependencies {
+			if s == "" {
+				continue
+			}
+			r := v._v3Conv(key, s, visited)
+			if r == nil {
+				continue
+			}
+			r.IsOnline.SetOnline(false)
+			item.Dependencies = append(item.Dependencies, *r)
+		}
+	}
 	return item
 }

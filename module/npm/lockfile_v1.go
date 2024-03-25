@@ -16,7 +16,7 @@ func processV1Lockfile(data []byte, pkg *pkgFile) ([]model.DependencyItem, error
 	entries := pkg.DependenciesEntries()
 	entries = append(entries, pkg.DevDependenciesEntries()...)
 	lo.Uniq(entries)
-	nodes, e := lf.Build(pkg.DependenciesEntries(), false)
+	nodes, e := lf.Build(entries, false)
 	if e != nil {
 		return nil, fmt.Errorf("build dependencies tree: %w", e)
 	}
