@@ -3,6 +3,7 @@ package npm
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -18,6 +19,8 @@ type Inspector struct{}
 
 const PackageFileName = "package.json"
 const LockFileName = "package-lock.json"
+
+var autoBuildDisabled = errors.New("auto build disabled")
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 	return false
@@ -73,6 +76,8 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	if e != nil {
 		return nil, e
 	}
+	module.ModuleName = packageFile.Name
+	module.ModuleVersion = packageFile.Version
 	lockfilePath := filepath.Join(dir, LockFileName)
 	if !utils.IsPathExist(lockfilePath) {
 		if env.DoNotBuild {
@@ -80,7 +85,32 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 			return make([]model.Module, 0), nil
 		}
 		e = doNpmInstallInDir(ctx, dir)
-		if e != nil {
+		if errors.Is(e, autoBuildDisabled) {
+			logger.Warn("fallback to read package.json only")
+			for k, v := range packageFile.Dependencies {
+				module.Dependencies = append(module.Dependencies, model.DependencyItem{
+					Component: model.Component{
+						CompName:    k,
+						CompVersion: v,
+						EcoRepo:     EcoRepo,
+					},
+					IsDirectDependency: true,
+					IsOnline:           model.IsOnlineTrue(),
+				})
+			}
+			for k, v := range packageFile.DevDependencies {
+				module.Dependencies = append(module.Dependencies, model.DependencyItem{
+					Component: model.Component{
+						CompName:    k,
+						CompVersion: v,
+						EcoRepo:     EcoRepo,
+					},
+					IsDirectDependency: true,
+					IsOnline:           model.IsOnlineFalse(),
+				})
+			}
+			return []model.Module{module}, nil
+		} else if e != nil {
 			logger.Warn("npm install failed, skip")
 			return make([]model.Module, 0), nil
 		}
@@ -104,8 +134,6 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 		return []model.Module{module}, nil
 	}
 
-	module.ModuleName = packageFile.Name
-	module.ModuleVersion = packageFile.Version
 	deps, e := processV1Lockfile(data, packageFile)
 	if e != nil {
 		return nil, e
@@ -116,6 +144,10 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 
 func doNpmInstallInDir(ctx context.Context, dir string) error {
 	logger := logctx.Use(ctx)
+	if env.DoNotBuild {
+		logger.Warn("lockfile not found, and auto build is disabled, skip")
+		return autoBuildDisabled
+	}
 	logger.Info("lockfile not found, do npm install...")
 	cmd := exec.CommandContext(ctx, "npm", "i", "--package-lock-only")
 	cmd.Dir = dir
