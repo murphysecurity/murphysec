@@ -27,6 +27,7 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 		}
 		componentCh <- it
 	}
+	close(componentCh)
 	var resultCh = make(chan model.ComponentCodeFragment, len(components))
 	for i := 0; i < runtime.NumCPU(); i++ {
 		wg.Add(1)
