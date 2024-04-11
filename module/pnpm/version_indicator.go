@@ -2,7 +2,7 @@ package pnpm
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
+	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	"regexp"
 )
 
@@ -12,7 +12,7 @@ type lockfileVersionIndicator struct {
 
 func parseLockfileVersion(data []byte) (string, error) {
 	var indicator lockfileVersionIndicator
-	if e := yaml.Unmarshal(data, &indicator); e != nil {
+	if e := shared.ParseYaml(data, &indicator); e != nil {
 		return "", fmt.Errorf("parseLockfileVersion: %w", e)
 	}
 	return indicator.LockfileVersion, nil
