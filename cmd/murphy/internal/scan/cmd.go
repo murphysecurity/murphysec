@@ -63,6 +63,18 @@ func DfCmd() *cobra.Command {
 	return &c
 }
 
+func EnvCmd() *cobra.Command {
+	var c cobra.Command
+	c.Use = "envscan"
+	c.Run = envScanRun
+	c.Short = "Detects open source vulnerabilities environment"
+	c.Flags().BoolVar(&jsonOutput, "json", false, "output in json format")
+	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
+	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
+	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
+	return &c
+}
+
 func commonInitNoAPI(ctx context.Context) (context.Context, error) {
 	// init logging
 	ctx, e := common.InitLogger(ctx)
@@ -130,6 +142,39 @@ func scanRun(cmd *cobra.Command, args []string) {
 	}
 	logger := logctx.Use(ctx).Sugar()
 	r, e := scan(ctx, scanDir, model.AccessTypeCli, model.ScanModeStandard)
+	if errors.Is(e, inspector.ErrNoWait) {
+		return
+	}
+	if e != nil {
+		logger.Error(e)
+		autoReportIde(ctx, e)
+		exitcode.Set(1)
+		return
+	}
+	if onlyTaskId {
+		return
+	}
+	if jsonOutput {
+		fmt.Println(string(must.A(json.MarshalIndent(model.GetIDEAOutput(r), "", "  "))))
+	}
+}
+
+func envScanRun(cmd *cobra.Command, args []string) {
+	var ctx = context.TODO()
+	if jsonOutput {
+		ctx = ui.With(ctx, ui.IDEA)
+	} else if onlyTaskId {
+		ctx = ui.With(ctx, ui.None)
+	} else {
+		ctx = ui.With(ctx, ui.CLI)
+	}
+	var e error
+	ctx, e = commonInit(ctx)
+	if e != nil {
+		return
+	}
+	logger := logctx.Use(ctx).Sugar()
+	r, e := envScan(ctx)
 	if errors.Is(e, inspector.ErrNoWait) {
 		return
 	}
