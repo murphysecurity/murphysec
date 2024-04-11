@@ -1,6 +1,7 @@
 package v5
 
 import (
+	"bytes"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	"gopkg.in/yaml.v3"
@@ -149,7 +150,8 @@ func (c *circleDetector) With(name, version string) *circleDetector {
 
 func ParseLockfile(data []byte) (*Lockfile, error) {
 	var lockfile Lockfile
-	if e := yaml.Unmarshal(data, &lockfile); e != nil {
+	// workaround for unquoted question-mark in inline object
+	if e := yaml.Unmarshal(bytes.ReplaceAll(data, []byte{'?'}, []byte("(QuestionMark)")), &lockfile); e != nil {
 		return nil, e
 	}
 	lockfile.buildIndexes()
