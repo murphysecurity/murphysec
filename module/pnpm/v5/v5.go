@@ -175,6 +175,7 @@ func v5Visitor(visitor shared.DoVisit[*model.DependencyItem], _ *shared.GCompone
 		},
 	}
 	c.IsOnline.SetOnline(!child.Dev)
+	e := visitor(&c)
 	arg.Dependencies = append(arg.Dependencies, c)
-	return visitor(&c)
+	return e
 }

@@ -1,16 +1,21 @@
 lockfileVersion: 5.4
 
 specifiers:
-  is-positive: github:kevva/is-positive
+  combined-stream: 1.0.8
 
-devDependencies:
-  is-positive: github.com/kevva/is-positive/97edff6f525f192a3f83cea1944765f769ae2678
+dependencies:
+  combined-stream: 1.0.8
 
 packages:
 
-  github.com/kevva/is-positive/97edff6f525f192a3f83cea1944765f769ae2678:
-    resolution: {tarball: https://codeload.github.com/kevva/is-positive/tar.gz/97edff6f525f192a3f83cea1944765f769ae2678}
-    name: is-positive
-    version: 3.1.0
-    engines: {node: '>=0.10.0'}
-    dev: true
+  /combined-stream/1.0.8:
+    resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
+    engines: {node: '>= 0.8'}
+    dependencies:
+      delayed-stream: 1.0.0
+    dev: false
+
+  /delayed-stream/1.0.0:
+    resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
+    engines: {node: '>=0.4.0'}
+    dev: false
