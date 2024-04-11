@@ -47,12 +47,11 @@ func processDir(ctx context.Context, dir string) (result processDirResult) {
 	}
 	versionNumber := matchLockfileVersion(version)
 	if versionNumber == 5 {
-		lockfile, e := v5.ParseLockfile(data)
+		result.trees, e = processV5(ctx, data)
 		if e != nil {
 			result.e = fmt.Errorf("v5: %w", e)
 			return
 		}
-		result.trees = v5.AnalyzeDepTree(lockfile)
 	} else if versionNumber == 6 {
 		// todo: v6 support need rewrite
 		lockfile, e := parseV6Lockfile(data, false)
@@ -72,6 +71,22 @@ func processDir(ctx context.Context, dir string) (result processDirResult) {
 	} else {
 		result.e = fmt.Errorf("unsupported version \"%s\"", version)
 		return
+	}
+	return
+}
+
+func processV5(ctx context.Context, data []byte) (trees []shared.DepTree, e error) {
+	lockfile, e := v5.ParseLockfile(data)
+	if e != nil {
+		return nil, fmt.Errorf("v5: %w", e)
+	}
+	if r := v5.BuildDepTree(lockfile, nil, ""); r != nil {
+		trees = append(trees, *r)
+	}
+	for s, i := range lockfile.Importers {
+		if r := v5.BuildDepTree(lockfile, i, s); r != nil {
+			trees = append(trees, *r)
+		}
 	}
 	return
 }

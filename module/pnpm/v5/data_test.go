@@ -14,9 +14,13 @@ var testData3 string
 //go:embed testdata/4.yaml
 var testData4 string
 
+//go:embed testdata/5.yaml
+var testData5 string
+
 var testDataList = []string{
 	testData1,
 	testData2,
 	testData3,
 	testData4,
+	testData5,
 }

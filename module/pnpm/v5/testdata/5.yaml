@@ -1,0 +1,16 @@
+lockfileVersion: 5.4
+
+specifiers:
+  is-positive: github:kevva/is-positive
+
+devDependencies:
+  is-positive: github.com/kevva/is-positive/97edff6f525f192a3f83cea1944765f769ae2678
+
+packages:
+
+  github.com/kevva/is-positive/97edff6f525f192a3f83cea1944765f769ae2678:
+    resolution: {tarball: https://codeload.github.com/kevva/is-positive/tar.gz/97edff6f525f192a3f83cea1944765f769ae2678}
+    name: is-positive
+    version: 3.1.0
+    engines: {node: '>=0.10.0'}
+    dev: true
