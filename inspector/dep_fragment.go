@@ -10,6 +10,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils/must"
 	"runtime"
 	"sync"
+	"unsafe"
 )
 
 func scanFragment(ctx context.Context, dir string, components []model.Component) ([]model.ComponentCodeFragment, error) {
@@ -46,6 +47,10 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 				}
 				logger.Sugar().Debugf("fix: %s", string(must.A(json.Marshal(param))))
 				xdResult := param.Fix()
+				logger.Sugar().Debugf("fix-full: %s", xdLogResult{
+					Resp: &xdResult,
+					Req:  param,
+				})
 				if xdResult.Err != nil {
 					logger.Sugar().Errorf("scan fragment: %s", xdResult.Err)
 				}
@@ -63,4 +68,17 @@ func scanFragment(ctx context.Context, dir string, components []model.Component)
 		result = append(result, ch)
 	}
 	return result, nil
+}
+
+type xdLogResult struct {
+	Resp *fix.Response `json:"resp"`
+	Req  fix.FixParams `json:"req"`
+}
+
+func (x xdLogResult) String() string {
+	var s, e = json.Marshal(x)
+	if e != nil {
+		return "error during serialize, " + e.Error()
+	}
+	return unsafe.String(&s[0], len(s))
 }
