@@ -23,6 +23,7 @@ func mapToModel(deps []Dep) []model.DependencyItem {
 	r := _mapToModel(deps)
 	for i := range r {
 		r[i].IsDirectDependency = true
+		r[i].IsOnline.SetOnline(false)
 	}
 	return r
 }
