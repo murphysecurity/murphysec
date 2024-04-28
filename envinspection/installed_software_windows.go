@@ -33,9 +33,6 @@ func listSubKeys(ctx context.Context, key registry.Key, path string) ([]string, 
 	if e != nil {
 		return nil, &listSubKeysError{e, "get stat failed"}
 	}
-	if ki.SubKeyCount < 0 {
-		return nil, &listSubKeysError{e, "SubKeyCount < 0"}
-	}
 	skList, e := k.ReadSubKeyNames(int(ki.SubKeyCount))
 	if e != nil {
 		return nil, &listSubKeysError{e, "read subkey names failed"}
