@@ -19,9 +19,14 @@ type PluginGraphCmd struct {
 	Timeout      time.Duration
 	ScanDir      string
 	MavenCmdInfo *MvnCommandInfo
+	ErrText      string
 }
 
-func (m PluginGraphCmd) RunC(ctx context.Context) error {
+//func multiWriteCloser(writer ...io.Writer)io.WriteCloser {
+//
+//}
+
+func (m *PluginGraphCmd) RunC(ctx context.Context) error {
 	logger := logctx.Use(ctx)
 	if ctx == nil {
 		ctx = context.TODO()
@@ -34,12 +39,7 @@ func (m PluginGraphCmd) RunC(ctx context.Context) error {
 	var args = []string{"com.github.ferstl:depgraph-maven-plugin:4.0.1:graph", "-DgraphFormat=json"}
 	if env.TlsAllowInsecure() {
 		// https://stackoverflow.com/questions/21252800/how-to-tell-maven-to-disregard-ssl-errors-and-trusting-all-certs
-		args = append(args,
-			"-Dmaven.wagon.http.ssl.ignore.validity.dates=true",
-			"-Dmaven.resolver.transport=wagon",
-			"-Dmaven.wagon.http.ssl.allowall=true",
-			"-Dmaven.wagon.http.ssl.insecure=true",
-		)
+		args = append(args, "-Dmaven.wagon.http.ssl.ignore.validity.dates=true", "-Dmaven.resolver.transport=wagon", "-Dmaven.wagon.http.ssl.allowall=true", "-Dmaven.wagon.http.ssl.insecure=true")
 	}
 
 	if len(m.Profiles) > 0 {
@@ -53,9 +53,12 @@ func (m PluginGraphCmd) RunC(ctx context.Context) error {
 		Logger: logger,
 		Prefix: "mvn",
 	})
-	defer logStream.Close()
-	c.Stderr = logStream
-	c.Stdout = logStream
+	lRecorder := launchERecorder()
+	defer func() { m.ErrText = lRecorder.String() }()
+	var mwriter = utils.MultiWriteCloser(logStream, lRecorder)
+	defer func() { _ = mwriter.Close() }()
+	c.Stderr = mwriter
+	c.Stdout = mwriter
 	logger.Info(fmt.Sprintf("Start command: %s", c.String()), zap.String("dir", c.Dir))
 	if e := c.Start(); e != nil {
 		logger.Error("Start command failed", zap.Error(e))

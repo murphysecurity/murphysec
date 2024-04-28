@@ -75,7 +75,7 @@ func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 		return
 	}
 	// submit SBOM
-	e = api.SubmitSBOM(api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
+	e = api.SubmitSBOM(ctx, api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
 	if e != nil {
 		cv.DisplaySubmitSBOMErr(ctx, e)
 		return
@@ -198,7 +198,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		}
 
 		// submit SBOM
-		e = api.SubmitSBOM(api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
+		e = api.SubmitSBOM(ctx, api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
 		if e != nil {
 			cv.DisplaySubmitSBOMErr(ctx, e)
 			return nil, e

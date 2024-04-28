@@ -2,11 +2,13 @@ package maven
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/scanerr"
 	"go.uber.org/zap"
 	"path/filepath"
 )
@@ -35,6 +37,11 @@ func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.
 	// check maven version, skip maven scan if check fail
 	mvnCmdInfo, e := CheckMvnCommand(ctx)
 	if e != nil {
+		if errors.Is(e, ErrMvnDisabled) {
+			scanerr.Add(ctx, scanerr.Param{Kind: scanerr.KindBuildDisabled})
+		} else if errors.Is(e, ErrMvnNotFound) {
+			scanerr.Add(ctx, scanerr.Param{Kind: scanerr.KindMavenNotFound})
+		}
 		useBackupResolver = true
 		log.Sugar().Warnf("Mvn command not found %v", e)
 	} else {

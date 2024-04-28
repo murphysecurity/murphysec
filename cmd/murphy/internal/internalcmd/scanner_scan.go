@@ -12,6 +12,7 @@ import (
 	"github.com/murphysecurity/murphysec/inspector"
 	logger2 "github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
@@ -34,6 +35,7 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		scanDir = args[0]
 		e       error
 	)
+	ctx = scanerr.WithCtx(ctx)
 	env.ScannerScan = true
 	common.LogLevel = logger2.LevelDebug
 	ctx, e = common.InitLogger0(ctx, true)
@@ -72,12 +74,14 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ComponentCodeFragment               []model.ComponentCodeFragment `json:"component_code_fragment"`
 		ScannerShouldEnableMavenBackupScan  bool                          `json:"scanner_should_enable_maven_backup_scan"`
 		ScannerShouldEnableGradleBackupScan bool                          `json:"scanner_should_enable_gradle_backup_scan"`
+		ScanWarnings                        []scanerr.Param               `json:"scan_warnings"`
 	}
 	w := wrapper{
 		Modules:                             utils.NoNilSlice(scantask.Modules),
 		ComponentCodeFragment:               utils.NoNilSlice(scantask.CodeFragments),
 		ScannerShouldEnableMavenBackupScan:  env.ScannerShouldEnableMavenBackupScan,
 		ScannerShouldEnableGradleBackupScan: env.ScannerShouldEnableGradleBackupScan,
+		ScanWarnings:                        scanerr.GetAll(ctx),
 	}
 	_ = logger.Sync()
 	fmt.Println(string(must.M1(json.MarshalIndent(w, "", "  "))))

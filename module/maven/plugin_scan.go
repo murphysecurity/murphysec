@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/vifraa/gopom"
 	"go.uber.org/zap"
 	"io/fs"
@@ -26,6 +27,13 @@ func ScanDepsByPluginCommand(ctx context.Context, projectDir string, mvnCmdInfo 
 		ScanDir:      projectDir,
 	}
 	if e := c.RunC(ctx); e != nil {
+		if c.ErrText != "" {
+			logger.Sugar().Warnf("error text recorded, size: %d", len(c.ErrText))
+			scanerr.Add(ctx, scanerr.Param{
+				Kind:    scanerr.KindMavenFailed,
+				Content: c.ErrText,
+			})
+		}
 		logger.Sugar().Error("Maven graph command execution failed", zap.Error(e))
 		return nil, e
 	}

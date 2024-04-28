@@ -14,6 +14,7 @@ import (
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/maven"
+	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
@@ -194,6 +195,7 @@ func envScanRun(cmd *cobra.Command, args []string) {
 
 func dfScanRun(cmd *cobra.Command, args []string) {
 	var ctx = context.TODO()
+	ctx = scanerr.WithCtx(ctx)
 	if jsonOutput {
 		ctx = ui.With(ctx, ui.IDEA)
 	} else if onlyTaskId {
