@@ -235,7 +235,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		logger.Info("报送贡献者信息成功")
 	}
 	_, e = postScanHook(ctx)
-	return task, nil
+	return task, e
 }
 
 func assignGitInfoToCreateSubtaskReq(createSubtask *api.CreateSubTaskRequest, gitSummary *gitinfo.Summary) {
