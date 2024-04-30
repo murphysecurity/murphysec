@@ -111,12 +111,6 @@ func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer)
 		if err != nil {
 			return err
 		}
-		if d == nil {
-			return fmt.Errorf("fs.DirEntry is nil")
-		}
-		if !d.Type().IsRegular() || d.Type().Type()&os.ModeSymlink == os.ModeSymlink {
-			return nil
-		}
 		var (
 			vote FilterVote
 			e    error
@@ -133,6 +127,12 @@ func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer)
 		case FilterAdd:
 		default:
 			panic("bad value")
+		}
+		if d == nil {
+			return fmt.Errorf("fs.DirEntry is nil")
+		}
+		if !d.Type().IsRegular() || d.Type().Type()&os.ModeSymlink == os.ModeSymlink {
+			return nil
 		}
 		if d.IsDir() {
 			return nil
