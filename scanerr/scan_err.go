@@ -41,3 +41,4 @@ func GetAll(ctx context.Context) []Param {
 const KindMavenNotFound = "mvn_not_found"
 const KindMavenFailed = "mvn_failed"
 const KindBuildDisabled = "build_disabled"
+const KindMavenTimeout = "mvn_timeout_killed"

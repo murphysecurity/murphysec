@@ -15,11 +15,12 @@ import (
 
 // PluginGraphCmd helper to com.github.ferstl:depgraph-maven-plugin:4.0.1:graph
 type PluginGraphCmd struct {
-	Profiles     []string
-	Timeout      time.Duration
-	ScanDir      string
-	MavenCmdInfo *MvnCommandInfo
-	ErrText      string
+	Profiles      []string
+	Timeout       time.Duration
+	ScanDir       string
+	MavenCmdInfo  *MvnCommandInfo
+	ErrText       string
+	TimeoutKilled bool
 }
 
 //func multiWriteCloser(writer ...io.Writer)io.WriteCloser {
@@ -65,12 +66,17 @@ func (m *PluginGraphCmd) RunC(ctx context.Context) error {
 		return errors.WithMessage(ErrMvnCmd, e.Error())
 	}
 
+	timeoutToKilledCh := make(chan bool, 1)
+	defer func() { m.TimeoutKilled = <-timeoutToKilledCh }()
 	timerCtx, timerCancel := context.WithCancel(ctx)
 	defer func() { timerCancel() }()
 	go func() {
+		var timeoutKilled = false
+		defer func() { timeoutToKilledCh <- timeoutKilled }()
 		for timerCtx.Err() == nil {
 			if logStream.LastLineTimestamp.Load() != nil && time.Since(*logStream.LastLineTimestamp.Load()) > env.CommandTimeout {
 				logger.Warn("Maven stop print logs, killed")
+				timeoutKilled = true
 				utils.KillProcessGroup(c.Process.Pid)
 				_ = c.Process.Kill()
 			}
