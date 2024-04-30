@@ -17,7 +17,8 @@ const (
 type Filter func(path string, entry fs.DirEntry) (FilterVote, error)
 
 var DiscardDot Filter = func(path string, entry fs.DirEntry) (FilterVote, error) {
-	if strings.HasPrefix(entry.Name(), ".") {
+	var name = entry.Name()
+	if strings.HasPrefix(name, ".") || name == "node_modules" {
 		if entry.IsDir() {
 			return FilterSkipDir, nil
 		} else {
