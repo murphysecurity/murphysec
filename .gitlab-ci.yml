@@ -73,6 +73,7 @@ internal-cos-upload:
       - out/zip/*
   script:
     - mkdir out/zip
+    - cd out/bin && (ls -1 | xargs -I {} sh -c "sha256sum {} | grep -Po '^\\w+' > {}.sha256") && cd ../..
     - bash -c "cd out/bin/ && zip ../zip/pro.zip *"
     - cos-uploader --local out/bin/murphysec-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-amd64.exe
     - cos-uploader --local out/bin/murphysec-windows-arm64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-arm64.exe
