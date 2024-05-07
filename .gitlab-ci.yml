@@ -11,7 +11,7 @@ variables:
   DENO_DIR: "$CI_PROJECT_DIR/.deno"
 
 compose-build:
-  image: golang:1.19.2-bullseye
+  image: golang:1.22.2-bullseye
   stage: build
   artifacts:
     expire_in: 1 day
