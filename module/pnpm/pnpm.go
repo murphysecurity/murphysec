@@ -51,7 +51,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 }
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
-	return false
+	return model.InspectorFeatureAllowNested&feature > 0
 }
 
 var _ model.Inspector = (*Inspector)(nil)

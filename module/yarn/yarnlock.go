@@ -17,7 +17,7 @@ import (
 type Inspector struct{}
 
 func (i *Inspector) SupportFeature(feature model.InspectorFeature) bool {
-	return false
+	return model.InspectorFeatureAllowNested&feature > 0
 }
 
 func (i *Inspector) String() string {
