@@ -23,7 +23,7 @@ const LockFileName = "package-lock.json"
 var autoBuildDisabled = errors.New("auto build disabled")
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
-	return false
+	return model.InspectorFeatureAllowNested&feature > 0
 }
 
 func (Inspector) String() string {

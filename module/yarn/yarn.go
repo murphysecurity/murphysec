@@ -45,7 +45,7 @@ func _mapToModel(deps []Dep) []model.DependencyItem {
 type Inspector struct{}
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
-	return false
+	return model.InspectorFeatureAllowNested&feature > 0
 }
 
 func (Inspector) String() string {
