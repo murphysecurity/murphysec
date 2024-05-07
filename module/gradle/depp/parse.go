@@ -21,7 +21,7 @@ func initPatterns() {
 		__prepareProjectPattern = regexp.MustCompile(`^-+$`)
 		__taskPrefixPattern = regexp.MustCompile(`^[A-Za-z0-9.:_-]+\s+-`)
 		__indentPattern = regexp.MustCompile(`^[ |/\\+-]+`)
-		__projectPattern = regexp.MustCompile(`(?:[Rr]oot project|[Pp]roject)\s+([A-Za-z0-9:._-]+|'[A-Za-z0-9:._-]+')`)
+		__projectPattern = regexp.MustCompile(`(?:[Rr]oot project|[Pp]roject)\s*([A-Za-z0-9:._-]+|'[A-Za-z0-9:._-]+')?`)
 		__depPattern = regexp.MustCompile(`[A-Za-z0-9.-]+:[A-Za-z0-9.-]+:[A-Za-z0-9.-]+(?:\s+->\s+[A-Za-z0-9.-]+)?`)
 		__projectDepPattern = regexp.MustCompile(`project [A-Za-z0-9:.-]+`)
 	})
@@ -40,6 +40,7 @@ func Parse(reader io.Reader, commit func(project string, task string, data []Tre
 	scanner.Buffer(nil, 4096)
 	scanner.Split(bufio.ScanLines)
 	var projectName string
+	var projectNameSet bool
 	var prepareProjectName bool
 	var taskName string
 	_ = taskName
@@ -93,11 +94,12 @@ func Parse(reader io.Reader, commit func(project string, task string, data []Tre
 			var projectMatch = __projectPattern.FindStringSubmatch(line)
 			if prepareProjectName && len(projectMatch) > 0 {
 				projectName = strings.Trim(projectMatch[1], "'")
+				projectNameSet = true
 				prepareProjectName = false
 				continue
 			}
 			prepareProjectName = false
-			if projectName == "" {
+			if !projectNameSet {
 				continue
 			}
 		}

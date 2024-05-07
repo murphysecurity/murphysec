@@ -1,0 +1,140 @@
+Initialized native services in: /root/.gradle/native
+The client will now receive all logging from the daemon (pid: 73). The daemon log file: /root/.gradle/daemon/5.0/daemon-73.out.log
+Starting 2nd build in daemon [uptime: 3.656 secs, performance: 99%]
+Using 16 worker leases.
+Starting Build
+Settings evaluated using settings file '/tmp/scan-00001/settings.gradle'.
+Projects loaded. Root project using build file '/tmp/scan-00001/build.gradle'.
+Included projects: [root project 'java-sca-test-4']
+Closing daemon's stdin at end of input.
+The daemon will no longer process any standard input.
+
+> Configure project :
+Evaluating root project 'java-sca-test-4' using build file '/tmp/scan-00001/build.gradle'.
+All projects evaluated.
+Selected primary task ':dependencies' from project :
+Tasks to be executed: [task ':dependencies']
+:dependencies (Thread[Execution worker for ':',5,main]) started.
+
+> Task :dependencies
+Task ':dependencies' is not up-to-date because:
+  Task.upToDateWhen is false.
+
+------------------------------------------------------------
+Root project
+------------------------------------------------------------
+
+annotationProcessor - Annotation processors and their dependencies for source set 'main'.
+No dependencies
+
+apiElements - API elements for main. (n)
+No dependencies
+
+archives - Configuration for archive artifacts.
+No dependencies
+
+compile - Dependencies for source set 'main' (deprecated, use 'implementation' instead).
+No dependencies
+
+compileClasspath - Compile classpath for source set 'main'.
++--- com.alibaba:fastjson:1.2.68
+\--- commons-collections:commons-collections:3.2.1
+
+compileOnly - Compile only dependencies for source set 'main'.
+No dependencies
+
+default - Configuration for default artifacts.
++--- com.alibaba:fastjson:1.2.68
+\--- commons-collections:commons-collections:3.2.1
+
+implementation - Implementation only dependencies for source set 'main'. (n)
++--- com.alibaba:fastjson:1.2.68 (n)
+\--- commons-collections:commons-collections:3.2.1 (n)
+
+runtime - Runtime dependencies for source set 'main' (deprecated, use 'runtimeOnly' instead).
+No dependencies
+
+runtimeClasspath - Runtime classpath of source set 'main'.
++--- com.alibaba:fastjson:1.2.68
+\--- commons-collections:commons-collections:3.2.1
+
+runtimeElements - Elements of runtime for main. (n)
+No dependencies
+
+runtimeOnly - Runtime only dependencies for source set 'main'. (n)
+No dependencies
+
+testAnnotationProcessor - Annotation processors and their dependencies for source set 'test'.
+No dependencies
+
+testCompile - Dependencies for source set 'test' (deprecated, use 'testImplementation' instead).
+No dependencies
+
+testCompileClasspath - Compile classpath for source set 'test'.
+Resource missing. [HTTP HEAD: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.10.0/junit-bom-5.10.0.jar]
++--- com.alibaba:fastjson:1.2.68
++--- commons-collections:commons-collections:3.2.1
++--- org.junit:junit-bom:5.10.0
+|    +--- org.junit.jupiter:junit-jupiter:5.10.0
+|    |    +--- org.junit.jupiter:junit-jupiter-api:5.10.0
+|    |    |    +--- org.opentest4j:opentest4j:1.3.0
+|    |    |    +--- org.junit.platform:junit-platform-commons:1.10.0
+|    |    |    |    \--- org.apiguardian:apiguardian-api:1.1.2
+|    |    |    \--- org.apiguardian:apiguardian-api:1.1.2
+|    |    \--- org.junit.jupiter:junit-jupiter-params:5.10.0
+|    |         +--- org.junit.jupiter:junit-jupiter-api:5.10.0 (*)
+|    |         \--- org.apiguardian:apiguardian-api:1.1.2
+|    +--- org.junit.jupiter:junit-jupiter-api:5.10.0 (*)
+|    +--- org.junit.jupiter:junit-jupiter-params:5.10.0 (*)
+|    \--- org.junit.platform:junit-platform-commons:1.10.0 (*)
+\--- org.junit.jupiter:junit-jupiter -> 5.10.0 (*)
+
+testCompileOnly - Compile only dependencies for source set 'test'.
+No dependencies
+
+testImplementation - Implementation only dependencies for source set 'test'. (n)
++--- org.junit:junit-bom:5.10.0 (n)
+\--- org.junit.jupiter:junit-jupiter (n)
+
+testRuntime - Runtime dependencies for source set 'test' (deprecated, use 'testRuntimeOnly' instead).
+No dependencies
+
+testRuntimeClasspath - Runtime classpath of source set 'test'.
++--- com.alibaba:fastjson:1.2.68
++--- commons-collections:commons-collections:3.2.1
++--- org.junit:junit-bom:5.10.0
+|    +--- org.junit.jupiter:junit-jupiter:5.10.0
+|    |    +--- org.junit.jupiter:junit-jupiter-api:5.10.0
+|    |    |    +--- org.opentest4j:opentest4j:1.3.0
+|    |    |    +--- org.junit.platform:junit-platform-commons:1.10.0
+|    |    |    |    \--- org.apiguardian:apiguardian-api:1.1.2
+|    |    |    \--- org.apiguardian:apiguardian-api:1.1.2
+|    |    +--- org.junit.jupiter:junit-jupiter-params:5.10.0
+|    |    |    +--- org.junit.jupiter:junit-jupiter-api:5.10.0 (*)
+|    |    |    \--- org.apiguardian:apiguardian-api:1.1.2
+|    |    \--- org.junit.jupiter:junit-jupiter-engine:5.10.0
+|    |         +--- org.junit.platform:junit-platform-engine:1.10.0
+|    |         |    +--- org.opentest4j:opentest4j:1.3.0
+|    |         |    +--- org.junit.platform:junit-platform-commons:1.10.0 (*)
+|    |         |    \--- org.apiguardian:apiguardian-api:1.1.2
+|    |         +--- org.junit.jupiter:junit-jupiter-api:5.10.0 (*)
+|    |         \--- org.apiguardian:apiguardian-api:1.1.2
+|    +--- org.junit.jupiter:junit-jupiter-api:5.10.0 (*)
+|    +--- org.junit.jupiter:junit-jupiter-engine:5.10.0 (*)
+|    +--- org.junit.jupiter:junit-jupiter-params:5.10.0 (*)
+|    +--- org.junit.platform:junit-platform-commons:1.10.0 (*)
+|    \--- org.junit.platform:junit-platform-engine:1.10.0 (*)
+\--- org.junit.jupiter:junit-jupiter -> 5.10.0 (*)
+
+testRuntimeOnly - Runtime only dependencies for source set 'test'. (n)
+No dependencies
+
+(*) - dependencies omitted (listed previously)
+
+(n) - Not resolved (configuration is not meant to be resolved)
+
+A web-based, searchable dependency report is available by adding the --scan option.
+:dependencies (Thread[Execution worker for ':',5,main]) completed. Took 21.601 secs.
+
+BUILD SUCCESSFUL in 22s
+1 actionable task: 1 executed
