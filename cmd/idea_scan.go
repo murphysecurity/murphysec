@@ -9,7 +9,10 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
+	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 )
 
 func ideaScanCmd() *cobra.Command {
@@ -44,9 +47,16 @@ func ideaScanCmd() *cobra.Command {
 	}
 	c.Flags().StringVar(&dir, "dir", "", "project base dir")
 	c.Flags().StringVar(&env.Scope, "scope", "", "")
-	c.Args = cobra.NoArgs
-	must.Must(c.MarkFlagRequired("dir"))
-	must.Must(c.MarkFlagDirname("dir"))
+	// compatible with recently version
+	var indexOfIDEASCAN = slices.Index(os.Args, "ideascan")
+	if indexOfIDEASCAN > -1 && len(os.Args) > indexOfIDEASCAN+1 && !strings.HasPrefix(os.Args[indexOfIDEASCAN+1], "-") {
+		dir = os.Args[indexOfIDEASCAN+1]
+		c.Args = cobra.ExactArgs(1)
+	} else {
+		c.Args = cobra.NoArgs
+		must.Must(c.MarkFlagRequired("dir"))
+		must.Must(c.MarkFlagDirname("dir"))
+	}
 	c.Flags().StringVar(&ProjectId, "project-id", "", "team id")
 	c.Flags().StringVar(&env.GradleProjects, "gradle-projects", "", "")
 	return c
