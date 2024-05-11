@@ -5,6 +5,8 @@ import (
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/pathignore"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/repeale/fp-go"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -183,6 +185,14 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 	for k, v := range versionedComps {
 		result = append(result, [2]string{k, v})
 	}
+	// remove component name that match a directory
+	result = fp.Filter(func(it [2]string) bool {
+		var p = it[0]
+		if p == "" {
+			return true
+		}
+		return !utils.IsDir(filepath.Join(dir, p))
+	})(result)
 
 	sort.Slice(result, func(i, j int) bool {
 		return result[i][0] < result[j][0] // sort by name is enough
