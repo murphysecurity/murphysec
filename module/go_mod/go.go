@@ -105,6 +105,20 @@ func doGoList(ctx context.Context, dir string) (result []model.DependencyItem, e
 		logger.Error(e.Error())
 		return
 	}
+	stderr, e := cmd.StderrPipe()
+	if e != nil {
+		e = fmt.Errorf("create stderr pipe failed: %w", e)
+		logger.Error(e.Error())
+		return
+	}
+	go func() {
+		var scanner = bufio.NewScanner(stderr)
+		scanner.Buffer(nil, 1024*4)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			logger.Warn("go: " + scanner.Text())
+		}
+	}()
 	logger.Sugar().Infof("executing command: %s", cmd)
 	var scanner = bufio.NewScanner(stdout)
 	scanner.Buffer(nil, 1024*4)
