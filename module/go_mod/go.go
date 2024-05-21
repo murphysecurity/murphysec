@@ -60,7 +60,11 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			}
 			dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
 		}
-	} else {
+	}
+	if len(dependencies) == 0 {
+		if !env.DoNotBuild {
+			logger.Warn("no dependencies found, backup")
+		}
 		dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
 	}
 	m := model.Module{
