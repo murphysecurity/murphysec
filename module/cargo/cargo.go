@@ -33,15 +33,18 @@ func (Inspector) InspectProject(ctx context.Context) (err error) {
 		}
 	}()
 	task := model.UseInspectionTask(ctx)
-	cargoLockPath := filepath.Join(task.Dir(), "cargo.lock")
+	var cargoLockPath string
 	var data []byte
 	for _, it := range _cargoLockNameList {
 		var e error
-		data, e = os.ReadFile(filepath.Join(task.Dir(), it))
+		cargoLockPath = filepath.Join(task.Dir(), it)
+		data, e = os.ReadFile(cargoLockPath)
+		if e == nil {
+			break
+		}
 		if os.IsNotExist(e) {
 			continue
 		}
-		return e
 	}
 	if data == nil {
 		return fmt.Errorf("CargoInspector: Cargo.lock not found")

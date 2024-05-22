@@ -13,6 +13,7 @@ func Test_analyzeCargoLock(t *testing.T) {
 	tree, e := analyzeCargoLock(__cargo_lock_test)
 	assert.NoError(t, e)
 	assert.NotNil(t, tree)
+	t.Log(tree)
 	tree2, _ := analyzeCargoLock(__cargo_lock_test)
 	assert.Equal(t, tree, tree2)
 }
