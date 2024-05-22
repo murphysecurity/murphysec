@@ -15,8 +15,15 @@ func (Inspector) String() string {
 	return "Cargo"
 }
 
+var _cargoLockNameList = []string{"Cargo.lock", "cargo.lock"}
+
 func (Inspector) CheckDir(dir string) bool {
-	return utils.IsFile(filepath.Join(dir, "cargo.lock"))
+	for _, it := range _cargoLockNameList {
+		if utils.IsFile(filepath.Join(dir, it)) {
+			return true
+		}
+	}
+	return false
 }
 
 func (Inspector) InspectProject(ctx context.Context) (err error) {
@@ -27,9 +34,17 @@ func (Inspector) InspectProject(ctx context.Context) (err error) {
 	}()
 	task := model.UseInspectionTask(ctx)
 	cargoLockPath := filepath.Join(task.Dir(), "cargo.lock")
-	data, e := os.ReadFile(cargoLockPath)
-	if e != nil {
+	var data []byte
+	for _, it := range _cargoLockNameList {
+		var e error
+		data, e = os.ReadFile(filepath.Join(task.Dir(), it))
+		if os.IsNotExist(e) {
+			continue
+		}
 		return e
+	}
+	if data == nil {
+		return fmt.Errorf("CargoInspector: Cargo.lock not found")
 	}
 	tree, e := analyzeCargoLock(data)
 	if e != nil {
