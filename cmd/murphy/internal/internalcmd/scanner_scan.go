@@ -84,5 +84,9 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ScanWarnings:                        scanerr.GetAll(ctx),
 	}
 	_ = logger.Sync()
-	fmt.Println(string(must.M1(json.MarshalIndent(w, "", "  "))))
+	fmt.Println("")
+	var enc = json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	must.M(enc.Encode(w))
+	fmt.Println("")
 }
