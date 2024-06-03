@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"os"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-const defaultLogFilePath = ".murphysec/logs"
+const defaultLogFilePath = env.HomeSubdir + "/logs"
 
 // CreateLogFile create log file. If _filepath is empty, use default log path
 func CreateLogFile(_filepath string) (_ *os.File, err error) {

@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"github.com/mitchellh/go-homedir"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils"
 	"io"
@@ -13,7 +14,7 @@ import (
 )
 
 const (
-	DefaultTokenFile = "~/.murphysec/token"
+	DefaultTokenFile = "~/" + env.HomeSubdir + "/token"
 	TokenFileMaxSize = 1 * 1024
 )
 

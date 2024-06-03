@@ -38,7 +38,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func rootCmd() *cobra.Command {
 	c := &cobra.Command{
-		Use:               "murphysec",
+		Use:               env.RootCommand,
 		PersistentPreRunE: preRun,
 		TraverseChildren:  true,
 		Run: func(cmd *cobra.Command, args []string) {

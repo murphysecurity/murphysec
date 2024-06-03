@@ -3,6 +3,7 @@ package inspector
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"time"
 )
@@ -103,7 +104,7 @@ func BuildSpdx(task *model.ScanTask) []byte {
 			"created":  time.Now(),
 			"creators": []string{"Tool: murphysec-cli"},
 		},
-		"name":          "com.github.murphysecurity/murphysec",
+		"name":          env.SpdxName,
 		"dataLicense":   "CC0-1.0",
 		"packages":      packages,
 		"relationships": relationships,

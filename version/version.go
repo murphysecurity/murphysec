@@ -2,12 +2,13 @@ package version
 
 import (
 	"github.com/iseki0/osname"
+	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/buildinfo"
 	"runtime"
 	"strings"
 )
 
-const name = "murphysec-cli"
+const name = env.UserAgentPrefix
 
 var userAgent string
 
