@@ -9,7 +9,7 @@ require (
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/dlclark/regexp2 v1.10.0
 	github.com/go-git/go-git/v5 v5.11.0
-	github.com/iseki0/go-yarnlock v0.0.1
+	github.com/iseki0/go-yarnlock v0.1.1
 	github.com/iseki0/osname v0.0.0-20220802070850-5def7ee59aab
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 	github.com/magiconair/properties v1.8.7
