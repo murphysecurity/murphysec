@@ -144,3 +144,22 @@ func MapSlice[I any, O any](input []I, mapper func(I) O) []O {
 	}
 	return r
 }
+
+func ToSet[T comparable](input []T) map[T]struct{} {
+	var r = make(map[T]struct{})
+	for _, it := range input {
+		r[it] = struct{}{}
+	}
+	return r
+}
+
+func SplitBy(sep string) func(s string) []string {
+	return func(s string) []string { return strings.Split(s, sep) }
+}
+
+func InSet[T comparable](set map[T]struct{}) func(it T) bool {
+	return func(it T) bool {
+		_, ok := set[it]
+		return ok
+	}
+}

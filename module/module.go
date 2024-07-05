@@ -22,23 +22,21 @@ import (
 	"github.com/murphysecurity/murphysec/module/renv"
 	"github.com/murphysecurity/murphysec/module/sbt"
 	"github.com/murphysecurity/murphysec/module/yarn"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/repeale/fp-go"
+	"github.com/samber/lo"
 	"os"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 )
 
 var Inspectors []model.Inspector
 
-func GetSupportedModuleList() []string {
-	var r []string
-	for _, it := range Inspectors {
-		r = append(r, it.String())
-	}
-	sort.Slice(r, func(i, j int) bool {
-		return r[i] < r[j]
-	})
-	return r
+func GetSupportedModuleList() (r []string) {
+	r = fp.Map(model.Inspector.String)(Inspectors)
+	slices.Sort(r)
+	return
 }
 
 func init() {
@@ -66,6 +64,11 @@ func init() {
 	Inspectors = append(Inspectors, renv.Inspector{})
 	Inspectors = append(Inspectors, sbt.Inspector{})
 	Inspectors = append(Inspectors, yarn.Inspector{})
+
+	var disabled = fp.Pipe6(os.Getenv, utils.SplitBy(","), fp.Map(strings.TrimSpace), fp.Filter(lo.IsNotEmpty[string]), fp.Map(strings.ToLower), utils.ToSet[string])("MPS_DISABLED_INSPECTORS")
+	if len(disabled) > 0 {
+		Inspectors = fp.Filter(fp.Pipe2(model.Inspector.String, utils.InSet(disabled)))(Inspectors)
+	}
 }
 
 func enableScan(name string) bool {
