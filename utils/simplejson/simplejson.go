@@ -33,11 +33,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/murphysecurity/murphysec/utils/must"
 	"io"
 	"log"
 	"reflect"
 	"strconv"
+	"unsafe"
 )
 
 type JSON struct {
@@ -70,7 +70,14 @@ func (j *JSON) MarshalString() string {
 	if s, ok := j.data.(string); ok {
 		return s
 	}
-	return string(must.A(j.MarshalJSON()))
+	var r, e = j.MarshalJSON()
+	if e != nil {
+		panic(e)
+	}
+	if len(r) == 0 {
+		return ""
+	}
+	return unsafe.String(&r[0], len(r))
 }
 
 // NewJSON returns a pointer to a new `JSON` object
