@@ -65,9 +65,9 @@ func init() {
 	Inspectors = append(Inspectors, sbt.Inspector{})
 	Inspectors = append(Inspectors, yarn.Inspector{})
 
-	var disabled = fp.Pipe6(os.Getenv, utils.SplitBy(","), fp.Map(strings.TrimSpace), fp.Filter(lo.IsNotEmpty[string]), fp.Map(strings.ToLower), utils.ToSet[string])("MPS_DISABLED_INSPECTORS")
-	if len(disabled) > 0 {
-		Inspectors = fp.Filter(fp.Pipe2(model.Inspector.String, utils.InSet(disabled)))(Inspectors)
+	var enabled = fp.Pipe6(os.Getenv, utils.SplitBy(","), fp.Map(strings.TrimSpace), fp.Filter(lo.IsNotEmpty[string]), fp.Map(strings.ToLower), utils.ToSet[string])("MPS_ENABLED_INSPECTORS")
+	if len(enabled) > 0 {
+		Inspectors = fp.Filter(fp.Pipe2(model.Inspector.String, utils.InSet(enabled)))(Inspectors)
 	}
 }
 
