@@ -12,7 +12,7 @@ import (
 type Inspector struct{}
 
 func (Inspector) String() string {
-	return "PNPMInspector"
+	return "PNPM"
 }
 
 func (Inspector) CheckDir(dir string) bool {
