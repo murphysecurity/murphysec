@@ -24,9 +24,6 @@ func newFetcher(remotes ...M2Remote) *fetcher {
 }
 
 func (f *fetcher) FetchPom(ctx context.Context, coordinate Coordinate) (*UnresolvedPom, error) {
-	if !coordinate.Complete() {
-		return nil, ErrInvalidCoordinate
-	}
 	if a, b := f.cache.Get(coordinate); a != nil || b != nil {
 		return a, b
 	}

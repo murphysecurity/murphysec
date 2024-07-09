@@ -81,9 +81,6 @@ func (r *resolveContext) visitExit(coordinate Coordinate) {
 }
 
 func (r *resolveContext) _resolve(ctx context.Context, coordinate Coordinate) (*Pom, error) {
-	if coordinate.IsBad() {
-		return nil, ErrBadCoordinate.Detailed(coordinate.String())
-	}
 	if r.visitEnter(coordinate) {
 		return nil, ErrPomCircularDependent.Detailed(coordinate.String())
 	}
@@ -96,9 +93,7 @@ func (r *resolveContext) _resolve(ctx context.Context, coordinate Coordinate) (*
 	builder.pom = rawPom
 	builder.parentCoordinate = rawPom.ParentCoordinate()
 	r.resolveInheritance(ctx, builder)
-	if e := r.resolveCoordinate(builder); e != nil {
-		return nil, e
-	}
+	_ = r.resolveCoordinate(builder)
 	// resolve & merge dependencyManagement.type==import
 	r.resolveDependencyManagementImport(ctx, builder)
 	// merge dependencyManagement into dependencies
@@ -180,9 +175,6 @@ func (r *resolveContext) resolveCoordinate(builder *pomBuilder) error {
 		GroupId:    builder.properties.Resolve(g),
 		ArtifactId: builder.properties.Resolve(a),
 		Version:    builder.properties.Resolve(v),
-	}
-	if !coordinate.Complete() {
-		return ErrCouldNotResolve.Detailed(fmt.Sprintf("bad coordinate: %s", coordinate))
 	}
 	builder.coordinate = coordinate
 	// merge ${project.*} ${${project.artifactId.*}}

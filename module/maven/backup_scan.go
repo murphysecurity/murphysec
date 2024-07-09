@@ -26,10 +26,6 @@ func BackupResolve(ctx context.Context, projectDir string) (*DepsMap, error) {
 	}
 	for _, pom := range poms {
 		coordinate := pom.Coordinate()
-		if !coordinate.Complete() {
-			logger.Warn("Incomplete coordinate, skip", zap.Any("coordinate", coordinate))
-			continue
-		}
 		logger.Sugar().Infof("Build dependency tree: %s", pom.Coordinate())
 		tree := BuildDepTree(ctx, resolver, coordinate)
 		relPath, e := filepath.Rel(projectDir, pom.Path)
