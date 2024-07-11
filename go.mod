@@ -1,10 +1,13 @@
 module github.com/murphysecurity/murphysec
 
-go 1.21
+go 1.22
+
+toolchain go1.22.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/antchfx/xmlquery v1.4.1
+	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/dlclark/regexp2 v1.10.0

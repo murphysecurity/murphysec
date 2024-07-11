@@ -11,6 +11,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/go_mod"
 	"github.com/murphysecurity/murphysec/module/gradle"
 	"github.com/murphysecurity/murphysec/module/ivy"
+	"github.com/murphysecurity/murphysec/module/luarocks"
 	"github.com/murphysecurity/murphysec/module/maven"
 	"github.com/murphysecurity/murphysec/module/npm"
 	"github.com/murphysecurity/murphysec/module/nuget"
@@ -64,6 +65,7 @@ func init() {
 	Inspectors = append(Inspectors, renv.Inspector{})
 	Inspectors = append(Inspectors, sbt.Inspector{})
 	Inspectors = append(Inspectors, yarn.Inspector{})
+	Inspectors = append(Inspectors, luarocks.Inspector{})
 
 	var enabled = fp.Pipe6(os.Getenv, utils.SplitBy(","), fp.Map(strings.TrimSpace), fp.Filter(lo.IsNotEmpty[string]), fp.Map(strings.ToLower), utils.ToSet[string])("MPS_ENABLED_INSPECTORS")
 	if len(enabled) > 0 {
