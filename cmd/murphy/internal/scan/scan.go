@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/chunkupload"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
@@ -19,8 +22,6 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"go.uber.org/zap"
-	"os"
-	"path/filepath"
 )
 
 func envScan(ctx context.Context) (task *model.ScanTask, e error) {
@@ -183,6 +184,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		SubtaskName:     createSubtask.ProjectName,
 		MavenSourceId:   privateSourceId,
 		MavenSourceName: privateSourceName,
+		IsNoBuild:       noBuild,
 	}
 	if gitSummary != nil {
 		task.GitUrl = gitSummary.RemoteAddr

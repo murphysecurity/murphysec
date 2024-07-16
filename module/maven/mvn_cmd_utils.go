@@ -3,9 +3,6 @@ package maven
 import (
 	"context"
 	"fmt"
-	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"go.uber.org/zap"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +10,10 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"go.uber.org/zap"
 )
 
 const M2SettingsFilePathCtxKey = "MavenSettingsFilePathCtxKey"
@@ -53,7 +54,7 @@ type _MvnCommandResult struct {
 	e  error
 }
 
-func CheckMvnCommand(ctx context.Context) (info *MvnCommandInfo, err error) {
+func CheckMvnCommand(ctx context.Context, isNoBuild bool) (info *MvnCommandInfo, err error) {
 	var logger = logctx.Use(ctx)
 	if cachedMvnCommandResult != nil {
 		if cachedMvnCommandResult.e != nil {
@@ -73,7 +74,7 @@ func CheckMvnCommand(ctx context.Context) (info *MvnCommandInfo, err error) {
 	if env.DisableMvnCommand {
 		return nil, ErrMvnDisabled.Detailed("environment variable NO_MVN set")
 	}
-	if env.DoNotBuild {
+	if env.DoNotBuild || isNoBuild {
 		return nil, ErrMvnDisabled.Detailed("environment variable DO_NOT_BUILD set")
 	}
 	info = &MvnCommandInfo{}

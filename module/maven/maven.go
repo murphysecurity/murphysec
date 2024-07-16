@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
+
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/scanerr"
 	"go.uber.org/zap"
-	"path/filepath"
 )
 
 type Dependency struct {
@@ -30,12 +31,13 @@ func (d Dependency) String() string {
 func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.Module, error) {
 	log := logctx.Use(ctx)
 	dir := task.Dir()
+	isNoBuild := task.IsNoBuild()
 	var modules []model.Module
 	var e error
 	var useBackupResolver = false
 	var deps *DepsMap
 	// check maven version, skip maven scan if check fail
-	mvnCmdInfo, e := CheckMvnCommand(ctx)
+	mvnCmdInfo, e := CheckMvnCommand(ctx, isNoBuild)
 	if e != nil {
 		if errors.Is(e, ErrMvnDisabled) {
 			scanerr.Add(ctx, scanerr.Param{Kind: scanerr.KindBuildDisabled})

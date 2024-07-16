@@ -19,6 +19,7 @@ type ScanTask struct {
 	GitUrl          string
 	MavenSourceId   string
 	MavenSourceName string
+	IsNoBuild       bool
 }
 
 func (s *ScanTask) BuildInspectionTask(dir string) *InspectionTask {

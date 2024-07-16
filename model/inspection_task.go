@@ -2,14 +2,20 @@ package model
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/infra/logctx"
 	"path/filepath"
+
+	"github.com/murphysecurity/murphysec/infra/logctx"
 )
 
 type InspectionTask struct {
 	ctx           context.Context
 	scanTask      *ScanTask
 	inspectionDir string
+}
+
+// IsNoBuild返回当前扫描器是否编译
+func (i *InspectionTask) IsNoBuild() bool {
+	return i.scanTask.IsNoBuild
 }
 
 // Dir 返回当前扫描器扫描的路径，绝对路径
