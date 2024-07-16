@@ -31,21 +31,22 @@ func (d Dependency) String() string {
 func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.Module, error) {
 	log := logctx.Use(ctx)
 	dir := task.Dir()
-	isNoBuild := task.IsNoBuild()
+
 	var modules []model.Module
 	var e error
 	var useBackupResolver = false
 	var deps *DepsMap
+
 	// check maven version, skip maven scan if check fail
-	mvnCmdInfo, e := CheckMvnCommand(ctx, isNoBuild)
+	mvnCmdInfo, e := CheckMvnCommand(ctx, task.IsNoBuild())
 	if e != nil {
 		if errors.Is(e, ErrMvnDisabled) {
 			scanerr.Add(ctx, scanerr.Param{Kind: scanerr.KindBuildDisabled})
 		} else if errors.Is(e, ErrMvnNotFound) {
 			scanerr.Add(ctx, scanerr.Param{Kind: scanerr.KindMavenNotFound})
+			log.Sugar().Warnf("Mvn command not found %v", e)
 		}
 		useBackupResolver = true
-		log.Sugar().Warnf("Mvn command not found %v", e)
 	} else {
 		log.Sugar().Infof("Mvn command found: %s", mvnCmdInfo)
 		var e error

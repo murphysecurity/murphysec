@@ -55,6 +55,7 @@ type _MvnCommandResult struct {
 }
 
 func CheckMvnCommand(ctx context.Context, isNoBuild bool) (info *MvnCommandInfo, err error) {
+
 	var logger = logctx.Use(ctx)
 	if cachedMvnCommandResult != nil {
 		if cachedMvnCommandResult.e != nil {
@@ -71,12 +72,16 @@ func CheckMvnCommand(ctx context.Context, isNoBuild bool) (info *MvnCommandInfo,
 			e:  err,
 		}
 	}()
+	if isNoBuild {
+		return nil, ErrMvnDisabled
+	}
 	if env.DisableMvnCommand {
 		return nil, ErrMvnDisabled.Detailed("environment variable NO_MVN set")
 	}
-	if env.DoNotBuild || isNoBuild {
+	if env.DoNotBuild {
 		return nil, ErrMvnDisabled.Detailed("environment variable DO_NOT_BUILD set")
 	}
+
 	info = &MvnCommandInfo{}
 	info.Path = env.IdeaMavenHome
 	if info.Path == "" {
