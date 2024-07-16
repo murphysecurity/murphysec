@@ -2,13 +2,22 @@ package maven
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCheckMvnCommandNoBuild(t *testing.T) {
+	_, e := CheckMvnCommand(context.TODO(), true)
+	assert.ErrorIs(t, e, ErrMvnDisabled)
+}
+
 func TestCheckMvnCommand(t *testing.T) {
-	info, e := CheckMvnCommand(context.TODO(), true)
+	info, e := CheckMvnCommand(context.TODO(), false)
+	if errors.Is(e, ErrMvnNotFound) {
+		t.SkipNow()
+	}
 	assert.NoError(t, e)
 	if e == nil {
 		t.Log(info.String())
