@@ -13,7 +13,7 @@ type LuaLexerBase struct {
 func (l *LuaLexerBase) HandleComment() {
 	l.start_line = l.GetLine()
 	l.start_col = l.GetCharPositionInLine() - 2
-	cs := l.GetInputStream().(antlr.CharStream)
+	cs := l.GetInputStream()
 	if cs.LA(1) == '[' {
 		sep := l.skip_sep(cs)
 		if sep >= 2 {
@@ -73,9 +73,6 @@ func (l *LuaLexerBase) skip_sep(cs antlr.CharStream) int {
 }
 
 func (l *LuaLexerBase) IsLine1Col0() bool {
-	cs := l.GetInputStream().(antlr.CharStream)
-	if cs.Index() == 1 {
-		return true
-	}
-	return false
+	cs := l.GetInputStream()
+	return cs.Index() == 1
 }
