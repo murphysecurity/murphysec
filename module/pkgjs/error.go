@@ -9,7 +9,7 @@ func (e wrapped) Unwrap() error {
 }
 
 func (e wrapped) Error() string {
-	return "pkgjs: " + e.Error()
+	return "pkgjs: " + e.e.Error()
 }
 
 func wrap(e error) error {
