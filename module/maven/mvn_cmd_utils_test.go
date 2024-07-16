@@ -9,11 +9,13 @@ import (
 )
 
 func TestCheckMvnCommandNoBuild(t *testing.T) {
+	cachedMvnCommandResult = nil
 	_, e := CheckMvnCommand(context.TODO(), true)
 	assert.ErrorIs(t, e, ErrMvnDisabled)
 }
 
 func TestCheckMvnCommand(t *testing.T) {
+	cachedMvnCommandResult = nil
 	info, e := CheckMvnCommand(context.TODO(), false)
 	if errors.Is(e, ErrMvnNotFound) {
 		t.SkipNow()
