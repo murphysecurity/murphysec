@@ -54,7 +54,7 @@ jobs:
       - name: Install Go tools
         run: |
           cd /tmp
-          go install golang.org/x/tools/cmd/stringer@v0.2.0
+          go install golang.org/x/tools/cmd/stringer@v0.23.0
 
       - name: Go mod tidy
         run: go mod tidy
