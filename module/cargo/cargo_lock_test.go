@@ -11,19 +11,11 @@ var __cargo_lock_test []byte
 
 func Test_analyzeCargoLock(t *testing.T) {
 	tree, e := analyzeCargoLock(__cargo_lock_test)
+	assert.Equal(t, 1, len(tree))
 	assert.NoError(t, e)
-	assert.NotNil(t, tree)
-	t.Log(tree)
-	tree2, _ := analyzeCargoLock(__cargo_lock_test)
-	assert.Equal(t, tree, tree2)
-}
-
-func Test_buildTree(t *testing.T) {
-	m := cargoLock{
-		"a": cargoItem{
-			Version:      "",
-			Dependencies: []string{"a"},
-		},
+	for i := 0; i < 20; i++ {
+		t2, e := analyzeCargoLock(__cargo_lock_test)
+		assert.NoError(t, e)
+		assert.Equal(t, tree, t2)
 	}
-	assert.NotNil(t, _buildTree(m, "a", map[string]struct{}{}))
 }

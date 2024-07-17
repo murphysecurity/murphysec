@@ -4,94 +4,124 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/simpletoml"
+	"github.com/repeale/fp-go"
+	"github.com/samber/lo"
+	"golang.org/x/exp/maps"
+	"strings"
 )
 
-type cargoLock map[string]cargoItem
-type cargoItem struct {
-	Version      string
-	Dependencies []string
+func splitNameVersionFromDepLine(line string) (name, version string) {
+	var i = strings.Index(line, " ")
+	if i == -1 {
+		name = line
+	} else {
+		name = line[:i]
+		version = line[i+1:]
+	}
+	return
 }
 
-func (c cargoLock) findRoot() string {
-	var set = map[string]struct{}{}
-	for s := range c {
-		set[s] = struct{}{}
-	}
-	for _, i := range c {
-		for _, it := range i.Dependencies {
-			delete(set, it)
-		}
-	}
-	for s := range set {
-		return s
-	}
-	return ""
-}
-
-func parseCargoLock(input []byte) (cargoLock, error) {
+func parseCargoLock2(input []byte) (rs map[[2]string][][2]string, e error) {
 	doc, e := simpletoml.UnmarshalTOML(input)
 	if e != nil {
 		return nil, fmt.Errorf("parseCargoLock: %w", e)
 	}
-	var rs = map[string]cargoItem{}
+	rs = map[[2]string][][2]string{}
+	var singleVersionMap = make(map[string]string)
+	var depsMap = make(map[[2]string][]string)
 	for _, it := range doc.Get("package").TOMLArray() {
 		var name = it.Get("name").String()
 		if name == "" {
 			continue
 		}
-		item := cargoItem{}
-		item.Version = it.Get("version").String()
-		var depsDistinctSet = map[string]struct{}{}
-		for _, it := range it.Get("dependencies").TOMLArray() {
-			if s := it.String(); s != "" {
-				if _, ok := depsDistinctSet[s]; ok {
-					continue
-				}
-				depsDistinctSet[s] = struct{}{}
-				item.Dependencies = append(item.Dependencies, s)
-			}
+		var version = it.Get("version").String()
+		if version == "" {
+			continue
 		}
-		rs[name] = item
+		var key = [2]string{name, version}
+		if _, ok := singleVersionMap[name]; ok {
+			singleVersionMap[name] = ""
+		} else {
+			singleVersionMap[name] = version
+		}
+		depsMap[key] = lo.Uniq(fp.Map(func(t simpletoml.TOML) string { return t.String() })(it.Get("dependencies").TOMLArray()))
 	}
-	return rs, nil
+	for key, deps := range depsMap {
+		var rDeps [][2]string
+		for _, dep := range deps {
+			var dn, dv = splitNameVersionFromDepLine(dep)
+			if dn == "" {
+				continue
+			}
+			if dv == "" {
+				dv = singleVersionMap[dn]
+			}
+			if dv == "" {
+				continue
+			}
+			rDeps = append(rDeps, [2]string{dn, dv})
+		}
+		rs[key] = rDeps
+	}
+	return
 }
 
-func analyzeCargoLock(input []byte) (_ *model.DependencyItem, err error) {
+func findRoots(input map[[2]string][][2]string) (roots [][2]string) {
+	var set = make(map[[2]string]struct{})
+	for i := range input {
+		set[i] = struct{}{}
+	}
+	for _, deps := range input {
+		for _, dep := range deps {
+			delete(set, dep)
+		}
+	}
+	return maps.Keys(set)
+}
+
+func analyzeCargoLock(input []byte) (rs []*model.DependencyItem, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("analyzeCargoLock: %w", err)
 		}
 	}()
-	lock, e := parseCargoLock(input)
+	lock, e := parseCargoLock2(input)
 	if e != nil {
 		return nil, e
 	}
-	rootName := lock.findRoot()
-	if rootName == "" {
+	roots := findRoots(lock)
+	if len(roots) == 0 {
 		return nil, fmt.Errorf("no root found")
 	}
-	return _buildTree(lock, rootName, map[string]struct{}{}), nil
+	for _, root := range roots {
+		var r = _buildTree(lock, root, map[[2]string]struct{}{})
+		if r == nil {
+			continue
+		}
+		rs = append(rs, r)
+	}
+	return
 }
 
-func _buildTree(lock cargoLock, name string, visited map[string]struct{}) *model.DependencyItem {
-	if _, ok := visited[name]; ok {
+func _buildTree(lock map[[2]string][][2]string, key [2]string, visited map[[2]string]struct{}) *model.DependencyItem {
+	if _, ok := visited[key]; ok {
 		return nil
 	}
-	visited[name] = struct{}{}
-	defer delete(visited, name)
-	item, ok := lock[name]
+	visited[key] = struct{}{}
+	defer delete(visited, key)
+	item, ok := lock[key]
 	if !ok {
 		return nil
 	}
 	r := &model.DependencyItem{
 		Component: model.Component{
-			CompName:    name,
-			CompVersion: item.Version,
+			CompName:    key[0],
+			CompVersion: key[1],
 			EcoRepo:     EcoRepo,
 		},
 	}
-	for _, depName := range item.Dependencies {
-		c := _buildTree(lock, depName, visited)
+	for _, dep := range item {
+		c := _buildTree(lock, dep, visited)
 		if c == nil {
 			continue
 		}

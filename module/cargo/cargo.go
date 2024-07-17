@@ -49,18 +49,24 @@ func (Inspector) InspectProject(ctx context.Context) (err error) {
 	if data == nil {
 		return fmt.Errorf("CargoInspector: Cargo.lock not found")
 	}
-	tree, e := analyzeCargoLock(data)
+	trees, e := analyzeCargoLock(data)
 	if e != nil {
 		return e
 	}
-	deps := tree.Dependencies
-	task.AddModule(model.Module{
+	var m = model.Module{
 		PackageManager: "cargo",
-		ModuleName:     tree.CompName,
-		ModuleVersion:  tree.CompVersion,
 		ModulePath:     cargoLockPath,
-		Dependencies:   deps,
-	})
+	}
+	if len(trees) == 1 {
+		m.ModuleName = trees[0].CompName
+		m.ModuleVersion = trees[0].CompVersion
+		m.Dependencies = trees[0].Dependencies
+	} else {
+		for i := range trees {
+			m.Dependencies = append(m.Dependencies, *trees[i])
+		}
+	}
+	task.AddModule(m)
 	return nil
 }
 
