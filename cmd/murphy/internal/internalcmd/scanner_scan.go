@@ -61,6 +61,7 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		SubtaskId:   "",
 		Modules:     nil,
 		Result:      nil,
+		IsNoBuild:   env.DoNotBuild,
 	}
 	ctx = model.WithScanTask(ctx, scantask)
 	e = inspector.ManagedInspect(ctx)
