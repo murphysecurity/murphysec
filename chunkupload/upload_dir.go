@@ -40,10 +40,14 @@ func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params 
 	contextualWriter := ctxio.NewWriter(ec, pw)
 	var writePipeBuffer = bufio.NewWriterSize(contextualWriter, 4*1024*1024)
 	eg.Go(func() error { return chunkUploadRoutine(ctx, params, contextualReader) })
-	eg.Go(func() error {
+	eg.Go(func() (e error) {
 		defer func() {
-			writePipeBuffer.Flush()
-			_ = pw.Close()
+			if ee := writePipeBuffer.Flush(); ee != nil && e == nil {
+				e = ee
+			}
+			if ee := pw.Close(); ee != nil && e == nil {
+				e = pw.Close()
+			}
 		}()
 		return dirPacker(ctx, dir, fileFilter, writePipeBuffer)
 	})
