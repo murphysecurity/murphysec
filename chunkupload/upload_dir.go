@@ -1,13 +1,15 @@
 package chunkupload
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
+	"path/filepath"
+
 	ctxio "github.com/jbenet/go-context/io"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"golang.org/x/sync/errgroup"
-	"io"
-	"path/filepath"
 )
 
 // UploadDirectory will pack files in the directory to tar.gz stream and upload it
@@ -33,13 +35,17 @@ func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params 
 	eg, ec := errgroup.WithContext(ctx)
 	pr, pw := io.Pipe()
 	// create contextual io, avoid deadlock
+
 	contextualReader := ctxio.NewReader(ec, pr)
 	contextualWriter := ctxio.NewWriter(ec, pw)
-
+	var writePipeBuffer = bufio.NewWriterSize(contextualWriter, 4*1024*1024)
 	eg.Go(func() error { return chunkUploadRoutine(ctx, params, contextualReader) })
 	eg.Go(func() error {
-		defer func() { _ = pw.Close() }()
-		return dirPacker(ctx, dir, fileFilter, contextualWriter)
+		defer func() {
+			writePipeBuffer.Flush()
+			_ = pw.Close()
+		}()
+		return dirPacker(ctx, dir, fileFilter, writePipeBuffer)
 	})
 
 	e = eg.Wait()
