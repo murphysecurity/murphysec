@@ -193,7 +193,6 @@ func chunkUploadRoutine(ctx context.Context, params Params, reader io.Reader) er
 			if err == io.EOF {
 				uploading = false
 				logger.Debugf("reader EOF")
-				return nil
 			}
 			bufferInfo["buffer"] = &buf
 			bufferInfo["chunkId"] = chunkId
