@@ -1,15 +1,13 @@
 package chunkupload
 
 import (
-	"bufio"
+	"bytes"
 	"context"
 	"fmt"
-	"io"
+	"github.com/murphysecurity/murphysec/api"
 	"path/filepath"
 
-	ctxio "github.com/jbenet/go-context/io"
 	"github.com/murphysecurity/murphysec/infra/logctx"
-	"golang.org/x/sync/errgroup"
 )
 
 // UploadDirectory will pack files in the directory to tar.gz stream and upload it
@@ -32,30 +30,12 @@ func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params 
 		return fmt.Errorf("eval abs path: %w", e)
 	}
 
-	eg, ec := errgroup.WithContext(ctx)
-	pr, pw := io.Pipe()
-	// create contextual io, avoid deadlock
-
-	contextualReader := ctxio.NewReader(ec, pr)
-	contextualWriter := ctxio.NewWriter(ec, pw)
-	var writePipeBuffer = bufio.NewWriterSize(contextualWriter, 4*1024*1024)
-	eg.Go(func() error { return chunkUploadRoutine(ctx, params, contextualReader) })
-	eg.Go(func() (e error) {
-		defer func() {
-			if ee := writePipeBuffer.Flush(); ee != nil && e == nil {
-				e = ee
-			}
-			if ee := pw.Close(); ee != nil && e == nil {
-				e = pw.Close()
-			}
-		}()
-		return dirPacker(ctx, dir, fileFilter, writePipeBuffer)
+	var uw = NewUploadWriter(ctx, _ChunkSize, 1, func(chunkId int, data []byte) error {
+		return api.UploadCheckFiles(api.DefaultClient(), params.TaskId, params.SubtaskId, chunkId, bytes.NewReader(data))
 	})
-
-	e = eg.Wait()
+	e = dirPacker(ctx, dir, fileFilter, uw)
 	if e != nil {
-		logger.Warnf("UploadDirectory failed, %v", e)
 		return e
 	}
-	return nil
+	return uw.Close()
 }
