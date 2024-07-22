@@ -5,6 +5,7 @@ import (
 	"context"
 	"golang.org/x/sync/errgroup"
 	"io"
+	"sync/atomic"
 )
 
 type uploadWriter struct {
@@ -15,6 +16,7 @@ type uploadWriter struct {
 	eg           *errgroup.Group
 	ec           context.Context
 	closed       bool
+	lastError    atomic.Value
 }
 
 func NewUploadWriter(ctx context.Context, minChunkSize int, concurrency int, uploadFn func(chunkId int, data []byte) error) io.WriteCloser {
@@ -46,12 +48,26 @@ func (u *uploadWriter) ensureInit() {
 	}
 }
 
+func (u *uploadWriter) doUpload(data []byte) {
+	u.chunkId++
+	u.eg.Go(func() (e error) {
+		e = u.UploadFn(u.chunkId, data)
+		if e != nil {
+			u.lastError.CompareAndSwap(nil, e)
+		}
+		return
+	})
+}
+
 func (u *uploadWriter) Write(p []byte) (n int, err error) {
 	if u.closed {
 		return 0, io.ErrClosedPipe
 	}
 	u.ensureInit()
 	if u.ec.Err() != nil {
+		if le, ok := u.lastError.Load().(error); ok {
+			return 0, le
+		}
 		return 0, u.ec.Err()
 	}
 	var dataToSend []byte
@@ -67,10 +83,7 @@ func (u *uploadWriter) Write(p []byte) (n int, err error) {
 		u.buf = nil
 	}
 	if dataToSend != nil {
-		u.chunkId++
-		u.eg.Go(func() error {
-			return u.UploadFn(u.chunkId, dataToSend)
-		})
+		u.doUpload(dataToSend)
 	}
 	return
 }
@@ -80,10 +93,7 @@ func (u *uploadWriter) Close() error {
 	if u.buf.Len() > 0 {
 		var data = u.buf.Bytes()
 		u.buf = nil
-		u.chunkId++
-		u.eg.Go(func() error {
-			return u.UploadFn(u.chunkId, data)
-		})
+		u.doUpload(data)
 	}
 	u.closed = true
 	return u.eg.Wait()
