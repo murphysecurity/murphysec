@@ -158,12 +158,10 @@ func chunkUploadRoutine(ctx context.Context, params Params, reader io.Reader) er
 	goroutineNumber := min(runtime.NumCPU(), 1)
 	var (
 		// e          error
-		eg, _  = errgroup.WithContext(ctx)
-		logger = logctx.Use(ctx).Sugar().Named("chunkUploader")
-
+		eg, ec    = errgroup.WithContext(ctx)
+		logger    = logctx.Use(ctx).Sugar().Named("chunkUploader")
 		uploading = true
-
-		bufferCh = make(chan map[any]any, 1)
+		bufferCh  = make(chan map[any]any, 1)
 	)
 
 	logger.Infof("begin")
@@ -199,7 +197,11 @@ func chunkUploadRoutine(ctx context.Context, params Params, reader io.Reader) er
 			}
 			bufferInfo["buffer"] = &buf
 			bufferInfo["chunkId"] = chunkId
-			bufferCh <- bufferInfo
+			select {
+			case bufferCh <- bufferInfo:
+			case <-ec.Done():
+				break
+			}
 		}
 		return nil
 	})
