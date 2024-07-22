@@ -155,7 +155,7 @@ func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer)
 }
 
 func chunkUploadRoutine(ctx context.Context, params Params, reader io.Reader) error {
-	goroutineNumber := min(runtime.NumCPU(), 1)
+	goroutineNumber := min(runtime.NumCPU(), 4)
 	var (
 		// e          error
 		eg, ec    = errgroup.WithContext(ctx)
