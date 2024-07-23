@@ -72,17 +72,12 @@ func (u *uploadWriter) Write(p []byte) (n int, err error) {
 		return 0, u.ec.Err()
 	}
 	var dataToSend []byte
-	if u.buf.Len() == 0 && len(p) > u.MinChunkSize {
-		// fast-path, avoid memory copy
-		dataToSend = p
-	} else {
-		n, err = u.buf.Write(p)
-		if u.buf.Len() < u.MinChunkSize {
-			return
-		}
-		dataToSend = u.buf.Bytes()
-		u.buf = nil
+	n, err = u.buf.Write(p)
+	if u.buf.Len() < u.MinChunkSize {
+		return
 	}
+	dataToSend = u.buf.Bytes()
+	u.buf = nil
 	if dataToSend != nil {
 		u.doUpload(dataToSend)
 	}
