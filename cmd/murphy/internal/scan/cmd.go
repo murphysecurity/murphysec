@@ -46,7 +46,7 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "specify the id of the Maven settings.xml file used during the scan")
 	c.Flags().StringVar(&privateSourceName, "maven-setting-name", "", "specify the name of the Maven settings.xml file used during the scan")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
-	c.Flags().IntVarP(&concurrentNumber, "max-concurrent-uploads", "j", 4, "Set the maximum number of parallel uploads.")
+	c.Flags().IntVarP(&concurrentNumber, "max-concurrent-uploads", "j", 1, "Set the maximum number of parallel uploads.")
 	return &c
 }
 
