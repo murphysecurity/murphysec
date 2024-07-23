@@ -210,14 +210,14 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		cv.DisplayUploading(ctx)
 		e = chunkupload.UploadDirectory(ctx, task.ProjectPath, chunkupload.DiscardDot, chunkupload.Params{
 			SubtaskId: task.SubtaskId,
-		})
+		}, concurrentNumber)
 		if e != nil {
 			cv.DisplayUploadErr(ctx, e)
 			return nil, e
 		}
 	}
 
-	// start check
+		// start check
 	e = api.StartCheck(api.DefaultClient(), task)
 	if e != nil {
 		cv.DisplayStartCheckErr(ctx, e)

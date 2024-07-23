@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/murphysecurity/murphysec/api"
 	"path/filepath"
-
+    "github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 )
 
 // UploadDirectory will pack files in the directory to tar.gz stream and upload it
-func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params Params) error {
+func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params Params, concurrentNumber int) error {
 	var (
 		e      error
 		logger = logctx.Use(ctx).Sugar()
@@ -30,7 +29,8 @@ func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params 
 		return fmt.Errorf("eval abs path: %w", e)
 	}
 
-	var uw = NewUploadWriter(ctx, _ChunkSize, 1, func(chunkId int, data []byte) error {
+	var uw = NewUploadWriter(ctx, _ChunkSize, concurrentNumber, func(chunkId int, data []byte) error {
+		logger.Error("启动 %d 核执行任务!!!!!!!!!", concurrentNumber)
 		return api.UploadCheckFiles(api.DefaultClient(), params.TaskId, params.SubtaskId, chunkId, bytes.NewReader(data))
 	})
 	e = dirPacker(ctx, dir, fileFilter, uw)
