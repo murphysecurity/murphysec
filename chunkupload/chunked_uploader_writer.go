@@ -50,8 +50,9 @@ func (u *uploadWriter) ensureInit() {
 
 func (u *uploadWriter) doUpload(data []byte) {
 	u.chunkId++
+	var chunkId = u.chunkId
 	u.eg.Go(func() (e error) {
-		e = u.UploadFn(u.chunkId, data)
+		e = u.UploadFn(chunkId, data)
 		if e != nil {
 			u.lastError.CompareAndSwap(nil, e)
 		}
