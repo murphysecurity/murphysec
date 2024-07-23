@@ -30,7 +30,6 @@ func UploadDirectory(ctx context.Context, dir string, fileFilter Filter, params 
 	}
 
 	var uw = NewUploadWriter(ctx, _ChunkSize, concurrentNumber, func(chunkId int, data []byte) error {
-		logger.Error("启动 %d 核执行任务!!!!!!!!!", concurrentNumber)
 		return api.UploadCheckFiles(api.DefaultClient(), params.TaskId, params.SubtaskId, chunkId, bytes.NewReader(data))
 	})
 	e = dirPacker(ctx, dir, fileFilter, uw)
