@@ -46,6 +46,7 @@ func InspectEnv(ctx context.Context) error {
 	for i := range module.Dependencies {
 		module.Dependencies[i].IsOnline.SetOnline(false)
 		module.Dependencies[i].IsDirectDependency = true
+		module.Dependencies[i].EcoRepo.Repository = "unmanaged"
 	}
 	task.Modules = append(task.Modules, module)
 
