@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"path/filepath"
-    "github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"path/filepath"
 )
 
 // UploadDirectory will pack files in the directory to tar.gz stream and upload it

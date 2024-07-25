@@ -217,7 +217,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		}
 	}
 
-		// start check
+	// start check
 	e = api.StartCheck(api.DefaultClient(), task)
 	if e != nil {
 		cv.DisplayStartCheckErr(ctx, e)

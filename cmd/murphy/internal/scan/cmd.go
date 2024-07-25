@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
@@ -19,6 +18,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
+	"path/filepath"
 )
 
 var jsonOutput bool
