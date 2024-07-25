@@ -3,11 +3,12 @@ package chunkupload
 import (
 	"context"
 	"fmt"
+	"io"
+	"path/filepath"
+
 	ctxio "github.com/jbenet/go-context/io"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"golang.org/x/sync/errgroup"
-	"io"
-	"path/filepath"
 )
 
 func UploadFile(ctx context.Context, path string, params Params) error {

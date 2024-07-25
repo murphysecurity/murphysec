@@ -3,16 +3,20 @@ package chunkupload
 import (
 	"archive/tar"
 	"bytes"
-	"compress/gzip"
 	"context"
 	"fmt"
-	"github.com/murphysecurity/murphysec/api"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strconv"
+
+	"github.com/klauspost/pgzip"
+	"github.com/murphysecurity/murphysec/api"
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/utils"
+	"golang.org/x/sync/errgroup"
 )
 
 type Params struct {
@@ -38,7 +42,7 @@ func fileStreamer(ctx context.Context, path string, writer io.Writer) (e error) 
 	}
 	logger.Infof("begin")
 	defer func() { logger.Warnf("end with error: %v", e) }()
-	gzipWriter := gzip.NewWriter(writer)
+	gzipWriter := pgzip.NewWriter(writer)
 	defer func() { utils.LogCloseErr(logger, "gzip", gzipWriter) }()
 	tarWriter := tar.NewWriter(gzipWriter)
 	defer func() { utils.LogCloseErr(logger, "tar", tarWriter) }()
@@ -65,7 +69,7 @@ func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer)
 	logger.Infof("begin")
 	defer func() { logger.Warnf("end with error: %v", _returnErr) }()
 
-	gzipWriter := gzip.NewWriter(writer)
+	gzipWriter := pgzip.NewWriter(writer)
 	defer func() { utils.LogCloseErr(logger, "gzip", gzipWriter) }()
 	tarWriter := tar.NewWriter(gzipWriter)
 	defer func() { utils.LogCloseErr(logger, "tar", tarWriter) }()
@@ -151,44 +155,85 @@ func dirPacker(ctx context.Context, dir string, filter Filter, writer io.Writer)
 }
 
 func chunkUploadRoutine(ctx context.Context, params Params, reader io.Reader) error {
+	goroutineNumber := min(runtime.NumCPU(), 4)
 	var (
-		e         error
+		// e          error
+		eg, ec    = errgroup.WithContext(ctx)
 		logger    = logctx.Use(ctx).Sugar().Named("chunkUploader")
-		buf       = &bytes.Buffer{}
 		uploading = true
-		chunkId   int
+		bufferCh  = make(chan map[any]any, 1)
 	)
-	logger.Infof("begin")
-	defer func() { logger.Infof("end, %v", e) }()
 
-	for uploading {
-		chunkId++
-		e = ctx.Err()
-		if e != nil {
-			return e
-		}
-		_, e = io.CopyN(buf, reader, _ChunkSize)
-		if e == io.EOF {
-			e = nil
-			uploading = false
-			logger.Debugf("reader EOF")
-		}
-		if e != nil {
-			logger.Warnf("error during reading: %v", e)
-			return e
-		}
-		e = ctx.Err()
-		if e != nil {
-			return e
-		}
-		// uploading
-		e = api.UploadCheckFiles(api.DefaultClient(), params.TaskId, params.SubtaskId, chunkId, bytes.NewReader(buf.Bytes()))
-		if e != nil {
-			return e
-		}
-		buf.Reset()
+	logger.Infof("begin")
+	defer func() { logger.Infof("end") }()
+
+	for range goroutineNumber {
+		eg.Go(func() error {
+			for bufInfo := range bufferCh {
+				buffer := bufInfo["buffer"].(*bytes.Buffer)
+				chunkId := bufInfo["chunkId"].(int)
+				logger.Error("chunkId======" + strconv.Itoa(chunkId))
+				err := api.UploadCheckFiles(api.DefaultClient(), params.TaskId, params.SubtaskId, chunkId, bytes.NewReader(buffer.Bytes()))
+				if err != nil {
+					logger.Error("api.UploadCheckFiles error:" + err.Error())
+					return err
+				}
+			}
+			return nil
+		})
 	}
-	return e
+	eg.Go(func() error {
+		defer close(bufferCh)
+		var chunkId = 0
+		for uploading {
+			var buf bytes.Buffer
+			bufferInfo := make(map[any]any)
+			chunkId++
+			_, err := io.CopyN(&buf, reader, _ChunkSize)
+			if err == io.EOF {
+				uploading = false
+				logger.Debugf("reader EOF")
+			}
+			bufferInfo["buffer"] = &buf
+			bufferInfo["chunkId"] = chunkId
+			select {
+			case bufferCh <- bufferInfo:
+			case <-ec.Done():
+				break
+			}
+		}
+		return nil
+	})
+
+	return eg.Wait()
+	// for uploading {
+	// 	chunkId++
+	// 	e = ctx.Err()
+	// 	if e != nil {
+	// 		return e
+	// 	}
+	// 	_, e = io.CopyN(buf, reader, _ChunkSize)
+	// 	if e == io.EOF {
+	// 		e = nil
+	// 		uploading = false
+	// 		logger.Debugf("reader EOF")
+	// 	}
+	// 	if e != nil {
+	// 		logger.Warnf("error during reading: %v", e)
+	// 		return e
+	// 	}
+	// 	e = ctx.Err()
+	// 	if e != nil {
+	// 		return e
+	// 	}
+	// 	// uploading
+	// 	e = api.UploadCheckFiles(api.DefaultClient(), params.TaskId, params.SubtaskId, chunkId, bytes.NewReader(buf.Bytes()))
+	// 	if e != nil {
+	// 		return e
+	// 	}
+	// 	buf.Reset()
+	// }
+	// return e
 }
 
 func checkDirValid(ctx context.Context, dir string) error {

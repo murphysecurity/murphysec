@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
@@ -18,7 +19,6 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
-	"path/filepath"
 )
 
 var jsonOutput bool
@@ -30,6 +30,7 @@ var onlyTaskId bool
 var privateSourceId string
 var privateSourceName string
 var projectTagNames []string
+var concurrentNumber int
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -45,6 +46,7 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "specify the id of the Maven settings.xml file used during the scan")
 	c.Flags().StringVar(&privateSourceName, "maven-setting-name", "", "specify the name of the Maven settings.xml file used during the scan")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
+	c.Flags().IntVarP(&concurrentNumber, "max-concurrent-uploads", "j", 1, "Set the maximum number of parallel uploads.")
 	return &c
 }
 
