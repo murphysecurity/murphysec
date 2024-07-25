@@ -158,7 +158,7 @@ func ParseLockfile(data []byte) (*Lockfile, error) {
 
 func BuildDepTree(l *Lockfile, importer *Importer, importName string) *shared.DepTree {
 	var di model.DependencyItem
-	_ = Visit(l, importer, v5Visitor, &di)
+	_ = Visit(l, importer, v5Visitor(), &di)
 	var d = shared.DepTree{Name: importName, Dependencies: di.Dependencies}
 	if len(d.Dependencies) == 0 {
 		return nil
@@ -166,16 +166,23 @@ func BuildDepTree(l *Lockfile, importer *Importer, importName string) *shared.De
 	return &d
 }
 
-func v5Visitor(visitor shared.DoVisit[*model.DependencyItem], _ *shared.GComponent, child *shared.GComponent, arg *model.DependencyItem) error {
-	var c = model.DependencyItem{
-		Component: model.Component{
-			CompName:    child.Name,
-			CompVersion: child.Version,
-			EcoRepo:     shared.EcoRepo,
-		},
+func v5Visitor() func(visitor shared.DoVisit[*model.DependencyItem], _ *shared.GComponent, child *shared.GComponent, arg *model.DependencyItem) error {
+	var pruneSet = make(map[shared.GComponent]struct{})
+	return func(visitor shared.DoVisit[*model.DependencyItem], _ *shared.GComponent, child *shared.GComponent, arg *model.DependencyItem) error {
+		var c = model.DependencyItem{
+			Component: model.Component{
+				CompName:    child.Name,
+				CompVersion: child.Version,
+				EcoRepo:     shared.EcoRepo,
+			},
+		}
+		c.IsOnline.SetOnline(!child.Dev)
+		var e error
+		if _, ok := pruneSet[*child]; !ok {
+			pruneSet[*child] = struct{}{}
+			e = visitor(&c)
+			arg.Dependencies = append(arg.Dependencies, c)
+		}
+		return e
 	}
-	c.IsOnline.SetOnline(!child.Dev)
-	e := visitor(&c)
-	arg.Dependencies = append(arg.Dependencies, c)
-	return e
 }
