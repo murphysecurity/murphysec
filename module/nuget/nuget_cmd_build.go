@@ -26,7 +26,11 @@ var _ErrDotnetNotFound = errors.New("dotnet not found")
 
 func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 	logger := logctx.Use(ctx)
-	filePath := findCLNList(task.Dir())
+	filePath, err := findCLNList(task.Dir())
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
 	numCPU := min(runtime.NumCPU(), 4)
 	var wg sync.WaitGroup
 	ch := make(chan string, len(filePath))
@@ -52,7 +56,8 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 }
 func buildEntrance(ctx context.Context, task *model.InspectionTask, directory string) error {
 	logger := logctx.Use(ctx)
-	ctx, _ = context.WithTimeout(ctx, 10*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
 	e := listNuget(ctx, task, directory)
 	if e != nil {
 		if errors.Is(e, _ErrDotnetNotFound) {

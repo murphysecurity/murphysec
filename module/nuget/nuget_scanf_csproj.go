@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/xml"
 	"io/fs"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -39,7 +39,7 @@ func analysis(ctx context.Context, path string) (result []model.DependencyItem, 
 	logger := logctx.Use(ctx)
 	var proj Project
 
-	xmlData, err := ioutil.ReadFile(path)
+	xmlData, err := os.ReadFile(path)
 	if err != nil {
 		logger.Debug("read file failed" + path)
 		return nil, err
