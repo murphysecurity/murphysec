@@ -2,8 +2,6 @@ module github.com/murphysecurity/murphysec
 
 go 1.22
 
-toolchain go1.22.4
-
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/antchfx/xmlquery v1.4.1

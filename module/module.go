@@ -27,7 +27,6 @@ import (
 	"github.com/repeale/fp-go"
 	"github.com/samber/lo"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -35,8 +34,7 @@ import (
 var Inspectors []model.Inspector
 
 func GetSupportedModuleList() (r []string) {
-	r = fp.Map(model.Inspector.String)(Inspectors)
-	slices.Sort(r)
+	r = lo.Uniq(fp.Map(model.Inspector.String)(Inspectors))
 	return
 }
 

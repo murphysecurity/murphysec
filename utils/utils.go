@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"go.uber.org/zap"
+	"golang.org/x/exp/constraints"
 	"io"
 	"net"
 	"os"
@@ -41,6 +42,19 @@ func MaxInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func Coerce[T constraints.Ordered](n, min, max T) T {
+	if max < min {
+		panic("max < min")
+	}
+	if n < min {
+		return min
+	}
+	if n > max {
+		return max
+	}
+	return n
 }
 
 func DistinctStringSlice(s []string) []string {

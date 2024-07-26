@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -31,7 +32,7 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 		logger.Error(err.Error())
 		return err
 	}
-	numCPU := min(runtime.NumCPU(), 4)
+	numCPU := utils.Coerce(runtime.NumCPU(), 1, 4)
 	var wg sync.WaitGroup
 	ch := make(chan string, len(filePath))
 	for _, j := range filePath {
@@ -45,7 +46,6 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 			for j := range ch {
 				if err := buildEntrance(ctx, task, j); err != nil {
 					logger.Warn(j + "buildEntrance faild:" + err.Error())
-
 				}
 			}
 		}()
