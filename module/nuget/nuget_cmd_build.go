@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -14,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/murphysecurity/murphysec/utils"
 
 	"sync"
 
@@ -39,7 +40,7 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 		ch <- j
 	}
 	close(ch)
-	for i := 0; i < numCPU || len(ch) == 0; i++ {
+	for i := 0; i < numCPU; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
