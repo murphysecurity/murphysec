@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -40,6 +41,9 @@ func noBuildEntrance(ctx context.Context, task *model.InspectionTask, doOld *boo
 	}
 	return nil
 }
+
+var versionPattern = regexp.MustCompile(`Version=([^,]+)(?:,|$)`)
+
 func analysis(ctx context.Context, path string) (result []model.DependencyItem, err error) {
 	logger := logctx.Use(ctx)
 	var proj Project
@@ -49,10 +53,35 @@ func analysis(ctx context.Context, path string) (result []model.DependencyItem, 
 		logger.Debug("read file failed" + path)
 		return nil, err
 	}
-	strings.ReplaceAll(string(xmlData), "PackageReference", "Reference")
+
 	if err := xml.Unmarshal(xmlData, &proj); err != nil {
 		logger.Debug("analysis failed")
 		return nil, err
+	}
+
+	for _, j := range proj.Reference {
+
+		var mod struct {
+			Include string `xml:"Include,attr"`
+			Version string `xml:"Version,attr"`
+		}
+
+		var includePackage string
+		if index := strings.Index(j.Include, ","); index != -1 && !strings.Contains(j.Include[:1], " ") {
+			includePackage = j.Include[:index]
+
+		} else {
+			continue
+		}
+		versionMatches := versionPattern.FindStringSubmatch(j.Include)
+		if len(versionMatches) == 0 {
+			continue
+		}
+		logger.Error(includePackage)
+		mod.Include = includePackage
+		mod.Version = versionMatches[1]
+		proj.PackageRefs = append(proj.PackageRefs, mod)
+
 	}
 	for _, pkgRef := range proj.PackageRefs {
 		result = append(result, model.DependencyItem{

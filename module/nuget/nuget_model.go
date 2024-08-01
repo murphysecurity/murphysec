@@ -16,6 +16,10 @@ type Project struct {
 	PackageRefs []struct {
 		Include string `xml:"Include,attr"`
 		Version string `xml:"Version,attr"`
+	} `xml:"ItemGroup>PackageReference"`
+	Reference []struct {
+		Include string `xml:"Include,attr"`
+		Version string `xml:"Version,attr"`
 	} `xml:"ItemGroup>Reference"`
 }
 type PkgConfig struct {
