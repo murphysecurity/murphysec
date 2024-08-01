@@ -1,14 +1,16 @@
 package ivy
 
 import (
-	"bytes"
+	"bufio"
 	"context"
 	"fmt"
 	"github.com/antchfx/xmlquery"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Inspector struct{}
@@ -24,22 +26,31 @@ func (Inspector) CheckDir(dir string) bool {
 func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
 	ivyPath := filepath.Join(task.Dir(), "ivy.xml")
-	data, e := os.ReadFile(ivyPath)
+	file, e := os.Open(ivyPath)
 	if e != nil {
-		return fmt.Errorf("open ivy file: %w", e)
+		return fmt.Errorf("open file: %w", e)
 	}
-	root, e := xmlquery.Parse(bytes.NewReader(data))
+	defer func() { _ = file.Close() }()
+	module, e := readIvyXml(ctx, bufio.NewReader(file))
 	if e != nil {
-		return fmt.Errorf("parse xml: %w", e)
+		return fmt.Errorf("read ivy.xml: %w", e)
+	}
+	module.ModulePath = ivyPath
+	task.AddModule(*module)
+	return nil
+}
+
+func readIvyXml(ctx context.Context, reader io.Reader) (*model.Module, error) {
+	root, e := xmlquery.Parse(reader)
+	if e != nil {
+		return nil, fmt.Errorf("parse xml: %w", e)
 	}
 	module := model.Module{
 		PackageManager: "ivy",
 		ModuleName:     "<NoName>",
-		ModulePath:     ivyPath,
 		Dependencies:   make([]model.DependencyItem, 0),
 		ScanStrategy:   model.ScanStrategyBackup,
 	}
-
 	if infoNode := xmlquery.FindOne(root, "//ivy-module/info"); infoNode != nil {
 		org := infoNode.SelectAttr("organisation")
 		name := infoNode.SelectAttr("module")
@@ -54,9 +65,13 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			org = node.SelectAttr("org")
 		}
 		name := node.SelectAttr("name")
-		version := node.SelectAttr("version")
+		version := node.SelectAttr("rev")
 		if org == "" || name == "" {
 			return
+		}
+		// if version is not specified literally, leave it empty
+		if strings.Contains(version, "$") {
+			version = ""
 		}
 		module.Dependencies = append(module.Dependencies, model.DependencyItem{
 			Component: model.Component{
@@ -64,10 +79,11 @@ func (Inspector) InspectProject(ctx context.Context) error {
 				CompVersion: version,
 				EcoRepo:     EcoRepo,
 			},
+			IsOnline:           model.IsOnlineTrue(),
+			IsDirectDependency: true,
 		})
 	})
-	task.AddModule(module)
-	return nil
+	return &module, nil
 }
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
