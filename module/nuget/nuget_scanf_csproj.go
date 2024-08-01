@@ -6,24 +6,28 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 )
 
-func noBuildEntrance(ctx context.Context, task *model.InspectionTask) error {
+func noBuildEntrance(ctx context.Context, task *model.InspectionTask, doOld *bool) error {
 	logger := logctx.Use(ctx)
 	csprojpath, err := findCsproj(task.Dir())
 	if err != nil {
 		logger.Debug("scan csproj failed")
 		return err
 	}
+
 	for _, j := range csprojpath {
+
 		result, err := analysis(ctx, j)
 		if err != nil {
 			logger.Debug("analysis csproj failed")
 			return err
 		}
+
 		m := model.Module{
 			ModuleName:     filepath.Base(j),
 			ModuleVersion:  "",
@@ -31,6 +35,7 @@ func noBuildEntrance(ctx context.Context, task *model.InspectionTask) error {
 			PackageManager: "nuget",
 			Dependencies:   result,
 		}
+		*doOld = true
 		task.AddModule(m)
 	}
 	return nil
@@ -44,6 +49,7 @@ func analysis(ctx context.Context, path string) (result []model.DependencyItem, 
 		logger.Debug("read file failed" + path)
 		return nil, err
 	}
+	strings.ReplaceAll(string(xmlData), "PackageReference", "Reference")
 	if err := xml.Unmarshal(xmlData, &proj); err != nil {
 		logger.Debug("analysis failed")
 		return nil, err

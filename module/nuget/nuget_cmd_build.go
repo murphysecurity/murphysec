@@ -33,6 +33,7 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 		logger.Error(err.Error())
 		return err
 	}
+	logger.Sugar().Debugf("findCLNList: %v", filePath)
 	numCPU := utils.Coerce(runtime.NumCPU(), 1, 4)
 	var wg sync.WaitGroup
 	ch := make(chan string, len(filePath))
