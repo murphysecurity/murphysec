@@ -128,9 +128,9 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 		if e != nil {
 			return nil, fmt.Errorf("v3lockfile: %w", e)
 		}
-		module.ModuleName = parsed.Name
-		module.ModuleVersion = parsed.Version
-		module.Dependencies = parsed.Deps
+		module.ModuleName = parsed.CompName
+		module.ModuleVersion = parsed.CompVersion
+		module.Dependencies = parsed.Dependencies
 		return []model.Module{module}, nil
 	}
 
