@@ -16,11 +16,12 @@ type v3Lockfile struct {
 }
 
 type v3Package struct {
-	Name            string            `json:"name"`
-	Version         string            `json:"version"`
-	Dependencies    map[string]string `json:"dependencies"`
-	DevDependencies map[string]string `json:"devDependencies"`
-	Dev             bool              `json:"dev"`
+	Name                 string            `json:"name"`
+	Version              string            `json:"version"`
+	Dependencies         map[string]string `json:"dependencies"`
+	DevDependencies      map[string]string `json:"devDependencies"`
+	OptionalDependencies map[string]string `json:"optionalDependencies"`
+	Dev                  bool              `json:"dev"`
 }
 
 func processLockfileV3(data []byte) (r *model.DependencyItem, e error) {
@@ -43,7 +44,7 @@ func processLockfileV3(data []byte) (r *model.DependencyItem, e error) {
 		theValue.Dependencies = append(theValue.Dependencies, dep)
 	}
 	var rootNode model.DependencyItem
-	_visitV3[*model.DependencyItem](&lockfile, nil, nil, make(map[string]struct{}), &rootNode, handler, true)
+	_visitV3[*model.DependencyItem](&lockfile, nil, nil, make(map[string]struct{}), &rootNode, handler, make(map[string]struct{}))
 	rootNode.CompName = lockfile.Name
 	rootNode.CompVersion = lockfile.Version
 	for i := range rootNode.Dependencies {
@@ -54,7 +55,7 @@ func processLockfileV3(data []byte) (r *model.DependencyItem, e error) {
 
 type visitV3Handler[T any] func(theValue T, pred, succ [2]string, isDev bool, doNext func(nextValue T))
 
-func _visitV3[T any](lockfile *v3Lockfile, pred *v3Package, rPath []string, pathVisited map[string]struct{}, theValue T, handler visitV3Handler[T], pruneTree bool) {
+func _visitV3[T any](lockfile *v3Lockfile, pred *v3Package, rPath []string, pathVisited map[string]struct{}, theValue T, handler visitV3Handler[T], pruneSet map[string]struct{}) {
 	if pred == nil {
 		var root, ok = lockfile.Packages[""]
 		if ok {
@@ -78,14 +79,19 @@ func _visitV3[T any](lockfile *v3Lockfile, pred *v3Package, rPath []string, path
 			if succV[0] == "" {
 				succV[0] = succName
 			}
-			var doNext = func(v T) { _visitV3(lockfile, &succ, succSegments, pathVisited, v, handler, pruneTree) }
-			handler(theValue, predV, succV, isDev, doNext)
-			if !pruneTree {
-				delete(pathVisited, succPath)
+			var doNext = func(v T) { _visitV3(lockfile, &succ, succSegments, pathVisited, v, handler, pruneSet) }
+			if pruneSet != nil {
+				if _, ok := pruneSet[succPath]; ok {
+					doNext = func(v T) {}
+				}
+				pruneSet[succPath] = struct{}{}
 			}
+			handler(theValue, predV, succV, isDev, doNext)
+			delete(pathVisited, succPath)
 		}
 	}
 	traversalDependencies(false, pred.Dependencies)
+	traversalDependencies(false, pred.OptionalDependencies)
 	traversalDependencies(true, pred.DevDependencies)
 }
 
