@@ -66,9 +66,7 @@ func Parse(reader io.Reader, commit func(project string, task string, data []Tre
 		// Match dependencies
 		if taskName != "" {
 			var cIndent = len(__indentPattern.FindString(line))
-			if cIndent == 0 {
-				doCollect()
-			} else {
+			if cIndent != 0 {
 				var dep = __depPattern.FindString(line)
 				var projDep = __projectDepPattern.FindString(line)
 				if dep != "" {
