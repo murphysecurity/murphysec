@@ -80,7 +80,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	}
 	env.ScannerShouldEnableGradleBackupScan = true
 	for _, i := range rs {
-		if len(i.Dependencies) == 0 {
+		if len(i.Dependencies) != 0 {
 			env.ScannerShouldEnableGradleBackupScan = false
 			break
 		}
