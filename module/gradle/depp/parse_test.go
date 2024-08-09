@@ -4,9 +4,10 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 //go:embed parse_gradle_dep_testcase

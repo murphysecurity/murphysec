@@ -82,7 +82,6 @@ func Parse(reader io.Reader, commit func(project string, task string, data []Tre
 				}
 			}
 		}
-
 		// Match project name
 		{
 			if __prepareProjectPattern.MatchString(line) {
