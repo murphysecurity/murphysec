@@ -1,0 +1,67 @@
+def writeKey(java.io.Writer writer, String indent, boolean first, String k) {
+    writer.write(indent)
+    writer.write(first ? "- " : "  ")
+    writer.write(k)
+    writer.write(":")
+}
+
+def writeEntry(java.io.Writer writer, String indent, boolean first, String k, String v) {
+    writeKey(writer, indent, first, k)
+    writer.write(" \"")
+    writer.write(v)
+    writer.write("\"\n")
+}
+
+def writeDependencyTree(java.io.Writer writer, ResolvedDependency dependency, int depth) {
+    final def indent = "  ".repeat(depth * 2)
+    writeEntry(writer, indent, true, "group", dependency.moduleGroup)
+    writeEntry(writer, indent, false, "name", dependency.moduleName)
+    writeEntry(writer, indent, false, "version", dependency.moduleVersion)
+    final def children = dependency.children
+    if (!children.isEmpty()) {
+        writeKey(writer, indent, false, "children")
+        writer.write("\n")
+        children.forEach { writeDependencyTree(writer, it, depth + 1) }
+    }
+}
+
+def doProject(Project project) {
+    final def logger = project.logger
+    project.childProjects.values().forEach { doProject(it) }
+    logger.info("Begin processing {}...", project)
+    try {
+        final def yamlFile = new File(project.buildDir, "dependency-tree-mp.yaml")
+        logger.info("  file: {}", yamlFile)
+        yamlFile.parentFile.mkdirs()
+        final def writer = yamlFile.newWriter("utf-8")
+        try {
+            writer.write("project: \"${project.name}\"\n")
+            writer.write("configurations:\n")
+            for (final def configuration in project.configurations) {
+                if (!configuration.canBeResolved) continue
+                logger.info("  For {}", configuration)
+                final def resolved = configuration.getResolvedConfiguration()
+                writeEntry(writer, "  ", true, "configuration", configuration.name)
+                final def fld = resolved.firstLevelModuleDependencies
+                if (!fld.isEmpty()) {
+                    writeKey(writer, "  ", false, "dependencies")
+                    writer.write("\n")
+                    resolved.firstLevelModuleDependencies.forEach { writeDependencyTree(writer, it, 1) }
+                }
+            }
+        } finally {
+            writer.close()
+        }
+
+    } finally {
+        logger.info("End processing {}.", project)
+    }
+}
+
+rootProject {
+    tasks.create("generateDependencyFile") {
+        doLast {
+            doProject(project)
+        }
+    }
+}
