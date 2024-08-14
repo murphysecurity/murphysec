@@ -160,7 +160,7 @@ func (d *depRecord) add(indent int, g, a, v string) {
 		d.deepListStack = append(d.deepListStack, lastChildrenList)
 	} else if indent < d.stack[len(d.stack)-1] {
 		// pop
-		for indent < d.stack[len(d.stack)-1] && len(d.stack) > 0 {
+		for len(d.stack) > 0 && indent < d.stack[len(d.stack)-1] {
 			d.stack = d.stack[:len(d.stack)-1]
 			d.deepListStack = d.deepListStack[:len(d.deepListStack)-1]
 		}
