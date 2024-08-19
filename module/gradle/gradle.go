@@ -332,6 +332,9 @@ func decodeGradleScriptOutput(reader io.Reader, dir string) (modules []model.Mod
 		if !strings.Contains(strings.ToLower(configuration.Configuration), "test") {
 			online = model.IsOnlineTrue()
 		}
+		if len(configuration.Dependencies) == 0 {
+			continue
+		}
 		var module = model.Module{
 			PackageManager: "gradle",
 			ModuleName:     data.Project + ":" + configuration.Configuration,
