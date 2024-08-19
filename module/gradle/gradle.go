@@ -18,7 +18,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 )
@@ -129,8 +128,6 @@ func (Inspector) CheckDir(dir string) bool {
 	}
 	return false
 }
-
-var implTaskNamePattern = regexp.MustCompile(`(?i)(?:release|debug|)(?:kotlin)?(?:compile|runtime)Classpath`)
 
 //goland:noinspection GoNameStartsWithPackageName
 type GradleDependencyInfo struct {
