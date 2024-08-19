@@ -48,6 +48,9 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	if useGradle {
 		logger.Info(gradleEnv.Version.String())
 		rs, e = evalGradleDependencies(ctx, dir, gradleEnv)
+		if e != nil {
+			logger.Warnf("gradle failed: %s", e)
+		}
 	}
 	if len(rs) == 0 && !env.ScannerScan {
 		// if no module find, use backup solution
@@ -277,8 +280,7 @@ func walkGradleScriptOutput(ctx context.Context, dir string, handler func(dir st
 			return nil
 		}
 		logger.Debugf("found dependency-tree-mp.yaml: %s", path)
-		e = handler(path)
-		return nil
+		return handler(path)
 	})
 	if e != nil {
 		e = fmt.Errorf("walkGradleScriptOutput: %w", e)
