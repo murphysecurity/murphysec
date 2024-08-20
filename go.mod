@@ -1,16 +1,16 @@
 module github.com/murphysecurity/murphysec
 
-go 1.22
+go 1.22.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/antchfx/xmlquery v1.4.1
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/bahlo/generic-list-go v0.2.0
-	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/dlclark/regexp2 v1.10.0
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/iseki0/go-yarnlock v0.1.1
+	github.com/iseki0/machineid v0.0.0-20240820072516-35aa9673a496
 	github.com/iseki0/osname v0.0.0-20220802070850-5def7ee59aab
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 	github.com/klauspost/pgzip v1.2.6
@@ -32,12 +32,10 @@ require (
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
 	golang.org/x/mod v0.18.0
 	golang.org/x/sync v0.7.0
-	golang.org/x/sys v0.21.0
+	golang.org/x/sys v0.24.0
 	golang.org/x/text v0.16.0
 	gopkg.in/yaml.v3 v3.0.1
 )
-
-replace github.com/denisbrodbeck/machineid v1.0.1 => github.com/iseki0/machineid v0.0.0-20221013085010-5552166865ef
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
