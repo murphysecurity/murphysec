@@ -101,7 +101,7 @@ var _ErrGoNotFound = errors.New("go not found")
 
 func doGoList(ctx context.Context, dir string) (result []model.DependencyItem, e error) {
 	var logger = logctx.Use(ctx)
-	var cmd = exec.CommandContext(ctx, "go", "list", "-json", "all")
+	var cmd = exec.CommandContext(ctx, "go", "list", "-json", "-m", "all")
 	cmd.Dir = dir
 	stdout, e := cmd.StdoutPipe()
 	if e != nil {
