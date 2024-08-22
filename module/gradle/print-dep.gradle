@@ -12,16 +12,21 @@ def writeEntry(java.io.Writer writer, String indent, boolean first, String k, St
     writer.write("\"\n")
 }
 
-def writeDependencyTree(java.io.Writer writer, ResolvedDependency dependency, int depth) {
+def writeDependencyTree(java.io.Writer writer, ResolvedDependency dependency, int depth, HashSet<Object> wrote) {
     final def indent = "  ".repeat(depth * 2)
     writeEntry(writer, indent, true, "group", dependency.moduleGroup)
     writeEntry(writer, indent, false, "name", dependency.moduleName)
     writeEntry(writer, indent, false, "version", dependency.moduleVersion)
     final def children = dependency.children
-    if (!children.isEmpty()) {
-        writeKey(writer, indent, false, "children")
-        writer.write("\n")
-        children.forEach { writeDependencyTree(writer, it, depth + 1) }
+    try {
+        if (!children.isEmpty() && !wrote.contains(dependency)) {
+            wrote.add(dependency)
+            writeKey(writer, indent, false, "children")
+            writer.write("\n")
+            children.forEach { writeDependencyTree(writer, it, depth + 1, wrote) }
+        }
+    } finally {
+        wrote.remove(dependency)
     }
 }
 
@@ -46,7 +51,7 @@ def doProject(Project project) {
                 if (!fld.isEmpty()) {
                     writeKey(writer, "  ", false, "dependencies")
                     writer.write("\n")
-                    resolved.firstLevelModuleDependencies.forEach { writeDependencyTree(writer, it, 1) }
+                    resolved.firstLevelModuleDependencies.forEach { writeDependencyTree(writer, it, 1, new HashSet()) }
                 }
             }
         } finally {
