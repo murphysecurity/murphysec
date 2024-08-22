@@ -3,6 +3,7 @@ package go_mod
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -13,10 +14,9 @@ import (
 	"github.com/repeale/fp-go"
 	"go.uber.org/zap"
 	"golang.org/x/mod/modfile"
+	"io"
 	"os/exec"
 	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 type Inspector struct{}
@@ -101,7 +101,7 @@ var _ErrGoNotFound = errors.New("go not found")
 
 func doGoList(ctx context.Context, dir string) (result []model.DependencyItem, e error) {
 	var logger = logctx.Use(ctx)
-	var cmd = exec.CommandContext(ctx, "go", "list", "-f", `{{with .Module}}{{.Path}} {{.Version}} {{.Indirect}}{{end}}`, "all")
+	var cmd = exec.CommandContext(ctx, "go", "list", "-json", "all")
 	cmd.Dir = dir
 	stdout, e := cmd.StdoutPipe()
 	if e != nil {
@@ -116,6 +116,7 @@ func doGoList(ctx context.Context, dir string) (result []model.DependencyItem, e
 		return
 	}
 	go func() {
+		defer func() { _ = stderr.Close() }()
 		var scanner = bufio.NewScanner(stderr)
 		scanner.Buffer(nil, 1024*4)
 		scanner.Split(bufio.ScanLines)
@@ -124,6 +125,7 @@ func doGoList(ctx context.Context, dir string) (result []model.DependencyItem, e
 		}
 	}()
 	logger.Sugar().Infof("executing command: %s", cmd)
+	var decoder = json.NewDecoder(stdout)
 	var scanner = bufio.NewScanner(stdout)
 	scanner.Buffer(nil, 1024*4)
 	scanner.Split(bufio.ScanLines)
@@ -138,46 +140,41 @@ func doGoList(ctx context.Context, dir string) (result []model.DependencyItem, e
 		logger.Error(e.Error())
 		return
 	}
+	defer func() {
+		if cmd.Process != nil {
+			_ = cmd.Process.Kill()
+			logger.Debug("process killed, waiting...")
+
+			_, _ = cmd.Process.Wait()
+			logger.Debug("after wait.")
+		}
+	}()
 	logger.Debug("start scanning...")
-	for scanner.Scan() {
-		// the text has 3 segment, name version and indirect
-		// we should split them by space
-		var text = scanner.Text()
-		// split
-		var r = strings.Split(text, " ")
-		if len(r) != 3 {
-			// if the length is not 3, we should skip this line
-			logger.Warn("invalid line", zap.String("line", text))
-			continue
-		}
-		// the first segment is the name of the module
-		var name = r[0]
-		// the second segment is the version of the module
-		var version = r[1]
-		// the third segment is the indirect flag
-		var indirect = r[2]
-		// parse indirect flag as strconv
-		var isIndirect, e = strconv.ParseBool(indirect)
+	var m struct {
+		Path     string `json:"path"`
+		Version  string `json:"version"`
+		Indirect bool   `json:"indirect"`
+	}
+	for {
+		e = decoder.Decode(&m)
 		if e != nil {
-			logger.Warn("parse indirect flag failed", zap.String("line", text), zap.Error(e))
-			continue
+			break
 		}
-		// check name is not empty
-		if name == "" {
-			logger.Warn("name is empty", zap.String("line", text))
-			continue
-		}
-		// append to result
 		result = append(result, model.DependencyItem{
 			Component: model.Component{
-				CompName:    name,
-				CompVersion: version,
+				CompName:    m.Path,
+				CompVersion: m.Version,
 				EcoRepo:     EcoRepo,
 			},
-			IsDirectDependency: !isIndirect,
+			IsDirectDependency: !m.Indirect,
 		})
 	}
-	// Thanks to copilot
-	_ = cmd.Wait()
+	if e != io.EOF {
+		e = fmt.Errorf("decode json failed: %w", e)
+		logger.Error(e.Error())
+		return
+	}
+	logger.Debug("done.")
+	_ = stdout.Close()
 	return
 }
