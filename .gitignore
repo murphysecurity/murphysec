@@ -16,3 +16,4 @@ tt
 /.deno
 .murphy.yml
 /.vscode
+.murphy-report
