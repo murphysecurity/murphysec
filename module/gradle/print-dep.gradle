@@ -26,7 +26,6 @@ def writeDependencyTree(java.io.Writer writer, ResolvedDependency dependency, in
             children.forEach { writeDependencyTree(writer, it, depth + 1, wrote) }
         }
     } finally {
-        wrote.remove(dependency)
     }
 }
 
