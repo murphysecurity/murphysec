@@ -54,7 +54,7 @@ func (c *Client) DoJson(req *http.Request, resBody interface{}) (e error) {
 
 	defer func() {
 		if e != nil {
-			logger.Errorf("Request error: %v", e)
+			logger.Warnf("Request error: %v", e)
 		}
 	}()
 
