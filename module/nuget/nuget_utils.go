@@ -1,9 +1,11 @@
 package nuget
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/murphysecurity/murphysec/infra/pathignore"
 	"github.com/murphysecurity/murphysec/utils"
 )
 
@@ -20,6 +22,10 @@ func findCLNList(dir string) (filePath []string, err error) {
 		}
 
 		if info.IsDir() {
+			if pathignore.DirName(info.Name()) {
+				fmt.Println(info.Name())
+				return filepath.SkipDir
+			}
 			return nil
 		}
 		if filepath.Ext(path) == ".sln" {
