@@ -182,7 +182,7 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 		scanner.Buffer(nil, 1024*4)
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
-			logger.Warn("dotnet: " + scanner.Text())
+			logger.Debug("dotnet: " + scanner.Text())
 		}
 	}()
 	logger.Sugar().Infof("executing command: %s", cmd)

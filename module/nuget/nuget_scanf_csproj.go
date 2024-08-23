@@ -77,7 +77,6 @@ func analysis(ctx context.Context, path string) (result []model.DependencyItem, 
 		if len(versionMatches) == 0 {
 			continue
 		}
-		logger.Error(includePackage)
 		mod.Include = includePackage
 		mod.Version = versionMatches[1]
 		proj.PackageRefs = append(proj.PackageRefs, mod)
