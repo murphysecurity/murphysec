@@ -3,14 +3,14 @@ package nuget
 import (
 	"context"
 	"encoding/xml"
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/infra/pathignore"
+	"github.com/murphysecurity/murphysec/model"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/model"
 )
 
 func noBuildEntrance(ctx context.Context, task *model.InspectionTask, doOld *bool) error {
@@ -100,6 +100,12 @@ func findCsproj(path string) ([]string, error) {
 	return csprojPath, filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if d.IsDir() {
+			if pathignore.DirName(d.Name()) {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 		matched, err := filepath.Match("*.csproj", d.Name())
 		if err != nil {
