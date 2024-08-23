@@ -3,21 +3,21 @@ package gradle
 import (
 	"bufio"
 	"context"
-	"errors"
+	_ "embed"
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/sl"
 	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/gradle/depp"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/repeale/fp-go"
+	"golang.org/x/sync/errgroup"
+	"gopkg.in/yaml.v3"
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 )
@@ -47,27 +47,9 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	}
 	if useGradle {
 		logger.Info(gradleEnv.Version.String())
-		projects, e := fetchGradleProjects(ctx, dir, gradleEnv)
+		rs, e = evalGradleDependencies(ctx, dir, gradleEnv)
 		if e != nil {
-			logger.Infof("fetch gradle projects failed: %s", e.Error())
-		}
-		logger.Debugf("Gradle projects: %s", strings.Join(projects, ", "))
-
-		{
-			depInfo, e := evalGradleDependencies(ctx, dir, "", gradleEnv)
-			if e != nil {
-				logger.Info("evalGradleDependencies failed. <root> ", e.Error())
-			} else {
-				rs = append(rs, depInfo.BaseModule(dir))
-			}
-		}
-		for _, projectId := range projects {
-			depInfo, e := evalGradleDependencies(ctx, dir, projectId, gradleEnv)
-			if e != nil {
-				logger.Infof("evalGradleDependencies failed: %s - %s", projectId, e.Error())
-			} else {
-				rs = append(rs, depInfo.BaseModule(dir))
-			}
+			logger.Warnf("gradle failed: %s", e)
 		}
 	}
 	if len(rs) == 0 && !env.ScannerScan {
@@ -80,7 +62,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	}
 	env.ScannerShouldEnableGradleBackupScan = true
 	for _, i := range rs {
-		if len(i.Dependencies) == 0 {
+		if len(i.Dependencies) != 0 {
 			env.ScannerShouldEnableGradleBackupScan = false
 			break
 		}
@@ -150,107 +132,6 @@ func (Inspector) CheckDir(dir string) bool {
 	return false
 }
 
-// fetchGradleProjects evaluate `gradle projects` and parse the result, then returns a project identifier list.
-func fetchGradleProjects(ctx context.Context, projectDir string, info *GradleEnv) ([]string, error) {
-	c := info.ExecuteContext(ctx, "projects")
-	c.Dir = projectDir
-	pattern := regexp.MustCompile(`Project\s+'(:.+?)'`)
-	output, e := c.Output()
-	if e != nil {
-		return nil, e
-	}
-	m := map[string]struct{}{}
-	for _, match := range pattern.FindAllStringSubmatch(string(output), -1) {
-		if len(match) < 2 || match[1] == "" {
-			continue
-		}
-		m[match[1]] = struct{}{}
-	}
-	var rs []string
-	for s := range m {
-		rs = append(rs, s)
-	}
-	return rs, nil
-}
-
-var implTaskNamePattern *regexp.Regexp
-
-// var testTaskNamePattern *regexp.Regexp
-var taskNamePattern sync.Once
-
-func evalGradleDependencies(ctx context.Context, projectDir string, projectName string, info *GradleEnv) (*GradleDependencyInfo, error) {
-	taskNamePattern.Do(func() {
-		implTaskNamePattern = regexp.MustCompile(`(?:release|debug|)(?:[Cc]ompile|[Rr]untime)Classpath`)
-		//testTaskNamePattern = regexp.MustCompile(`(?:release|debug|)(?:[Uu]nit)?[Tt]est(?:[Cc]ompile|[Rr]untime)Classpath`)
-	})
-	var logger = logctx.Use(ctx).Sugar()
-	c := info.ExecuteContext(ctx, fmt.Sprintf("%s:dependencies", projectName))
-	logger.Infof("Execute: %s", c.String())
-	c.Dir = projectDir
-	reader := must.A(c.StdoutPipe())
-	lr, lw := io.Pipe()
-	pr, pw := io.Pipe()
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		logger.Debug("gradle logs forwarding started.")
-		var scanner = bufio.NewScanner(lr)
-		scanner.Split(bufio.ScanLines)
-		scanner.Buffer(nil, 1024)
-		for scanner.Scan() {
-			if scanner.Err() != nil {
-				logger.Errorf("forwaring gradle logs failed: %v", scanner.Err())
-				_ = lr.CloseWithError(scanner.Err())
-				break
-			}
-			logger.Debugf("g: %s", scanner.Text())
-		}
-		logger.Debugf("gradle logs forwarding stopped.")
-	}()
-	var depInfo GradleDependencyInfo
-	go func() {
-		defer wg.Done()
-		e := depp.Parse(pr, func(project string, task string, data []depp.TreeNode) {
-			if implTaskNamePattern.MatchString(task) {
-				depInfo.ProjectName = project
-				depInfo.Dependencies = convertDepp(data)
-			}
-		})
-		if e != nil {
-			logger.Errorf("parse gradle output failed: %v", e)
-			_ = lr.CloseWithError(e)
-		}
-		logger.Debug("parse gradle output stopped.")
-	}()
-	e := c.Start()
-	if e != nil {
-		return nil, e
-	}
-	_, e = io.Copy(io.MultiWriter(pw, lw), reader)
-	_ = pw.Close()
-	_ = lw.Close()
-	if e != nil {
-		return nil, e
-	}
-	if len(depInfo.Dependencies) == 0 {
-		return nil, errors.New("no dependencies found")
-	}
-	return &depInfo, nil
-}
-
-func convertDepp(node []depp.TreeNode) (r []DepElement) {
-	for _, it := range node {
-		r = append(r, DepElement{
-			GroupId:    it.G,
-			ArtifactId: it.A,
-			Version:    it.V,
-			Children:   convertDepp(it.C),
-		})
-	}
-	return
-}
-
 //goland:noinspection GoNameStartsWithPackageName
 type GradleDependencyInfo struct {
 	ProjectName  string       `json:"project_name"`
@@ -303,4 +184,194 @@ type DepElement struct {
 
 func (d DepElement) CompName() string {
 	return fmt.Sprintf("%s:%s", d.GroupId, d.ArtifactId)
+}
+
+//go:embed print-dep.gradle
+var scriptPrintDep string
+
+func evalGradleDependencies(ctx context.Context, dir string, info *GradleEnv) (modules []model.Module, e error) {
+	var logger = logctx.Use(ctx).Sugar()
+	defer func() {
+		if e != nil {
+			e = fmt.Errorf("generateGradleDepFiles: %w", e)
+		}
+	}()
+	td, e := os.MkdirTemp("", "mpsgradle-")
+	if e != nil {
+		e = fmt.Errorf("failed to create temp directory: %w", e)
+		return
+	}
+	var tdf = filepath.Join(td, "print-dep.gradle")
+	e = os.WriteFile(tdf, []byte(scriptPrintDep), 0o644)
+	if e != nil {
+		e = fmt.Errorf("failed to write temp file: %w", e)
+		return
+	}
+	logger.Infof("temp file written, %s", tdf)
+
+	var cmd = info.ExecuteContext(ctx, "-I", tdf, "generateDependencyFile", "--info")
+	cmd.Dir = dir
+	var stdout io.ReadCloser
+	var stderr io.ReadCloser
+	stdout, stderr, e = utils.ExecGetStdOutErr(ctx, cmd)
+	if e != nil {
+		return
+	}
+	e = cmd.Start()
+	if e != nil {
+		e = fmt.Errorf("failed to start gradle: %w", e)
+		return
+	}
+	var wg sync.WaitGroup
+	defer wg.Wait()
+	forwardStdAsync(ctx, "gradle", stdout, &wg)
+	forwardStdAsync(ctx, "gradle[E]", stderr, &wg)
+	e = cmd.Wait()
+	if e != nil {
+		e = fmt.Errorf("gradle failed: %w", e)
+		logger.Desugar().Error(e.Error())
+		return
+	}
+	logger.Info("collecting results...")
+	var handler, collector = parseGradleScriptOutputAsyncBuilder(ctx)
+	e = walkGradleScriptOutput(ctx, dir, handler)
+	if e != nil {
+		return
+	}
+	modules, e = collector()
+	if e != nil {
+		e = fmt.Errorf("collecting results failed: %w", e)
+		return
+	}
+	return
+}
+
+func forwardStdAsync(ctx context.Context, prefix string, reader io.ReadCloser, wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer func() { _ = reader.Close() }()
+		var logger = logctx.Use(ctx).Sugar()
+		var scanner = bufio.NewScanner(reader)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			if scanner.Err() != nil {
+				logger.Errorf("%s: %v", prefix, scanner.Err())
+				break
+			}
+			logger.Debugf("%s: %s", prefix, scanner.Text())
+		}
+	}()
+}
+
+func walkGradleScriptOutput(ctx context.Context, dir string, handler func(dir string) error) error {
+	var logger = logctx.Use(ctx).Sugar()
+	var e = filepath.WalkDir(dir, func(path string, d fs.DirEntry, e error) error {
+		if e != nil {
+			return e
+		}
+		if d.IsDir() {
+			if strings.HasPrefix(d.Name(), ".") || d.Name() == "__MACOSX" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if d.Name() != "dependency-tree-mp.yaml" {
+			return nil
+		}
+		logger.Debugf("found dependency-tree-mp.yaml: %s", path)
+		return handler(path)
+	})
+	if e != nil {
+		e = fmt.Errorf("walkGradleScriptOutput: %w", e)
+	}
+	return e
+}
+
+func parseGradleScriptOutputAsyncBuilder(ctx context.Context) (handler func(path string) error, collector func() ([]model.Module, error)) {
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.SetLimit(16)
+	var mutex sync.Mutex
+	var modules []model.Module
+	handler = func(path string) error {
+		eg.Go(func() (e error) {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			f, e := os.Open(path)
+			if e != nil {
+				return e
+			}
+			defer func() { _ = f.Close() }()
+			var _modules []model.Module
+			_modules, e = decodeGradleScriptOutput(f, path)
+			if e != nil {
+				return
+			}
+			mutex.Lock()
+			modules = append(modules, _modules...)
+			mutex.Unlock()
+			return nil
+		})
+		return nil
+	}
+	return handler, func() ([]model.Module, error) {
+		return modules, eg.Wait()
+	}
+}
+
+func decodeGradleScriptOutput(reader io.Reader, dir string) (modules []model.Module, e error) {
+	var decoder = yaml.NewDecoder(reader)
+	var data dtoProjectData
+	e = decoder.Decode(&data)
+	if e != nil {
+		return
+	}
+	for _, configuration := range data.Configurations {
+		var online = model.IsOnlineFalse()
+		if !strings.Contains(strings.ToLower(configuration.Configuration), "test") {
+			online = model.IsOnlineTrue()
+		}
+		if len(configuration.Dependencies) == 0 {
+			continue
+		}
+		var module = model.Module{
+			PackageManager: "gradle",
+			ModuleName:     data.Project + ":" + configuration.Configuration,
+			Dependencies:   fp.Map(func(it dtoItem) model.DependencyItem { return it.toItem(online) })(configuration.Dependencies),
+			ScanStrategy:   model.ScanStrategyNormal,
+			ModulePath:     path.Join(filepath.Join(dir, "../../build.gradle"), ":"+configuration.Configuration),
+		}
+		modules = append(modules, module)
+	}
+	return
+}
+
+type dtoProjectData struct {
+	Project        string             `yaml:"project" json:"project"`
+	Configurations []dtoConfiguration `yaml:"configurations" json:"configurations"`
+}
+
+type dtoConfiguration struct {
+	Configuration string    `yaml:"configuration" json:"configuration"`
+	Dependencies  []dtoItem `yaml:"dependencies" json:"dependencies"`
+}
+
+type dtoItem struct {
+	Group    string    `yaml:"group" json:"group"`
+	Name     string    `yaml:"name" json:"name"`
+	Version  string    `yaml:"version" json:"version"`
+	Children []dtoItem `yaml:"children" json:"children"`
+}
+
+func (d dtoItem) toItem(online model.IsOnline) model.DependencyItem {
+	return model.DependencyItem{
+		Component: model.Component{
+			CompName:    d.Group + ":" + d.Name,
+			CompVersion: d.Version,
+			EcoRepo:     EcoRepo,
+		},
+		Dependencies: fp.Map(func(t dtoItem) model.DependencyItem { return t.toItem(online) })(d.Children),
+		IsOnline:     online,
+	}
 }
