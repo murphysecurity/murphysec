@@ -122,7 +122,7 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 			return nil
 		}
 		if isDockerfile(filename) {
-			data, e := readFile(path, 64*1024) // Dockerfile max 64K
+			data, e := readTextFile(path, 64*1024) // Dockerfile max 64K
 			if e != nil {
 				logger.Warnf("read dockerfile: %s %v", path, e)
 				return nil
@@ -133,7 +133,7 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 			return nil
 		}
 		if isRequirementsFile(filename) {
-			data, e := readFile(path, 64*1024)
+			data, e := readTextFile(path, 64*1024)
 			if e != nil {
 				logger.Warnf("read requirement: %s %v", path, e)
 				return nil
@@ -148,7 +148,7 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 			return nil
 		}
 		if filepath.Ext(filename) == ".py" {
-			data, e := readFile(path, 256*1024)
+			data, e := readTextFile(path, 256*1024)
 			if e != nil {
 				logger.Warnf("read py: %s %v", path, e)
 				return nil

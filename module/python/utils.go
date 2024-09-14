@@ -1,15 +1,25 @@
 package python
 
 import (
+	"golang.org/x/net/html/charset"
 	"io"
 	"os"
 )
 
-func readFile(path string, maxLength int) ([]byte, error) {
+func readTextFile(path string, maxLength int) ([]byte, error) {
 	f, e := os.Open(path)
 	if e != nil {
 		return nil, e
 	}
 	defer func() { _ = f.Close() }()
-	return io.ReadAll(io.LimitReader(f, int64(maxLength)))
+	r, e := charset.NewReader(f, "")
+	if e != nil {
+		_ = f.Close()
+		f, e = os.Open(path)
+		if e != nil {
+			return nil, e
+		}
+		r = f
+	}
+	return io.ReadAll(io.LimitReader(r, int64(maxLength)))
 }
