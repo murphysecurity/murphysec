@@ -38,7 +38,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			continue
 		}
 		var name = it.Get("Package").String()
-		var version = it.Get("version").String()
+		var version = it.Get("Version").String()
 		var di model.DependencyItem
 		di.CompName = name
 		di.CompVersion = version
