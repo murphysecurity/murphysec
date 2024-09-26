@@ -231,7 +231,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		return fmt.Errorf("parse: %w", e)
 	}
 	var deps, testDeps = analyze(ctx, tree)
-	if len(deps) != 0 || len(testDeps) == 0 {
+	if len(deps) == 0 && len(testDeps) == 0 {
 		return nil
 	}
 	var module = model.Module{
