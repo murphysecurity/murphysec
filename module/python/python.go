@@ -5,6 +5,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/pathignore"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module/python/buildout"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/repeale/fp-go"
 	"io/fs"
@@ -26,6 +27,9 @@ func (i Inspector) String() string {
 }
 
 func (i Inspector) CheckDir(dir string) bool {
+	if buildout.DirHasBuildout(dir) {
+		return true
+	}
 	r, e := os.ReadDir(dir)
 	if e == nil {
 		for _, it := range r {
@@ -49,7 +53,15 @@ func (i Inspector) CheckDir(dir string) bool {
 
 func (i Inspector) InspectProject(ctx context.Context) error {
 	logger := logctx.Use(ctx).Sugar()
-	dir := model.UseInspectionTask(ctx).Dir()
+	task := model.UseInspectionTask(ctx)
+	dir := task.Dir()
+	if !task.IsNoBuild() && buildout.DirHasBuildout(dir) {
+		module, _ := buildout.InspectProject(ctx, dir)
+		if module != nil {
+			task.AddModule(*module)
+			return nil
+		}
+	}
 	info, e := collectDepsInfo(ctx, dir)
 	if e != nil {
 		return e

@@ -1,0 +1,561 @@
+Metadata-Version: 2.1
+Name: ZConfig
+Version: 4.1
+Summary: Structured Configuration Library
+Home-page: https://github.com/zopefoundation/ZConfig/
+Author: Fred L. Drake, Jr.
+Author-email: fred@fdrake.net
+Maintainer: Zope Foundation and Contributors
+License: ZPL 2.1
+Keywords: configuration structured simple flexible typed hierarchy logging
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: Zope Public License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development
+Requires-Python: >=3.7
+License-File: LICENSE.txt
+Provides-Extra: docs
+Requires-Dist: sphinx-rtd-theme ; extra == 'docs'
+Requires-Dist: sphinxcontrib-programoutput ; extra == 'docs'
+Provides-Extra: test
+Requires-Dist: docutils ; extra == 'test'
+Requires-Dist: manuel ; extra == 'test'
+Requires-Dist: zope.exceptions ; extra == 'test'
+Requires-Dist: zope.testrunner ; extra == 'test'
+
+ZConfig: Schema-driven configuration
+====================================
+
+.. image:: https://img.shields.io/pypi/v/ZConfig.svg
+        :target: https://pypi.python.org/pypi/ZConfig/
+        :alt: Latest release
+
+.. image:: https://img.shields.io/pypi/pyversions/ZConfig.svg
+        :target: https://pypi.org/project/ZConfig/
+        :alt: Supported Python versions
+
+.. image:: https://github.com/zopefoundation/ZConfig/actions/workflows/tests.yml/badge.svg
+        :target: https://github.com/zopefoundation/ZConfig/actions/workflows/tests.yml
+
+.. image:: https://coveralls.io/repos/github/zopefoundation/ZConfig/badge.svg?branch=master
+        :target: https://coveralls.io/github/zopefoundation/ZConfig?branch=master
+
+.. image:: https://readthedocs.org/projects/zconfig/badge/?version=latest
+        :target: http://zconfig.readthedocs.org/en/latest/
+        :alt: Documentation Status
+
+ZConfig is a configuration library intended for general use.  It
+supports a hierarchical schema-driven configuration model that allows
+a schema to specify data conversion routines written in Python.
+ZConfig's model is very different from the model supported by the
+ConfigParser module found in Python's standard library, and is more
+suitable to configuration-intensive applications.
+
+ZConfig schema are written in an XML-based language and are able to
+"import" schema components provided by Python packages.  Since
+components are able to bind to conversion functions provided by Python
+code in the package (or elsewhere), configuration objects can be
+arbitrarily complex, with values that have been verified against
+arbitrary constraints.  This makes it easy for applications to
+separate configuration support from configuration loading even with
+configuration data being defined and consumed by a wide range of
+separate packages.
+
+ZConfig is licensed under the Zope Public License, version 2.1.  See
+the file LICENSE.txt in the distribution for the full license text.
+
+Reference documentation is available at https://zconfig.readthedocs.io.
+
+Information on the latest released version of the ZConfig package is
+available at
+
+  https://pypi.org/project/ZConfig/
+
+You may either create an RPM and install this, or install directly from
+the source distribution.
+
+There is a mailing list for discussions and questions about ZConfig;
+more information on the list is available at
+
+  http://mail.zope.org/mailman/listinfo/zconfig/
+
+
+Configuring Logging
+-------------------
+
+One common use of ZConfig is to configure the Python logging
+framework. This is extremely simple to do as the following example
+demonstrates:
+
+    >>> from ZConfig import configureLoggers
+    >>> configureLoggers('''
+    ... <logger>
+    ...    level INFO
+    ...    <logfile>
+    ...       PATH STDOUT
+    ...       format %(levelname)s %(name)s %(message)s
+    ...    </logfile>
+    ... </logger>
+    ... ''')
+
+The above configures the root logger to output messages logged at INFO
+or above to the console, as we can see in the following example:
+
+    >>> from logging import getLogger
+    >>> logger = getLogger()
+    >>> logger.info('An info message')
+    INFO root An info message
+    >>> logger.debug('A debug message')
+
+A more common configuration would see STDOUT replaced with a path to
+the file into which log entries would be written.
+
+For more information, see the `the documentation <https://zconfig.readthedocs.io>`_.
+
+
+Installing from the source distribution
+---------------------------------------
+
+For a simple installation::
+
+  python setup.py install
+
+
+To install to a user's home-dir::
+
+  python setup.py install --home=<dir>
+
+
+To install to another prefix (for example, /usr/local)::
+
+  python setup.py install --prefix=/usr/local
+
+
+For more information on installing packages, please refer to the
+`Python Packaging User Guide <https://packaging.python.org/>`__.
+
+
+============================
+ Change History for ZConfig
+============================
+
+4.1 (2024-05-03)
+================
+
+- Add support for Python 3.12.
+
+
+4.0 (2023-05-05)
+================
+
+
+- Drop support for Python 2.7, 3.5, 3.6.
+
+3.6.1 (2022-12-06)
+==================
+
+- Add support for Python 3.11.
+
+- Drop support for Python 3.4.
+
+
+3.6.0 (2021-05-19)
+==================
+
+- Added support for Python 3.8, 3.9 and 3.10.  This primarily involves
+  avoiding the new-in-3.8 validation of the format string when using the
+  'safe-template' format style, since that's not supported in the Python
+  standard library.
+
+- Added ``ZConfig.pygments`` module containing a lexer compatible with
+  the ``pygments`` library.  Made discoverable via an entry point; use
+  **zconfig** as the highlight language for ``code-block`` directives in
+  Sphinx documents.
+
+
+3.5.0 (2019-06-24)
+==================
+
+- Add support for documenting schema files contained in packages to
+  the Sphinx extension. See `issue 59
+  <https://github.com/zopefoundation/ZConfig/issues/59>`_.
+
+3.4.0 (2019-01-02)
+==================
+
+Many changes have been made in the support for logging configurations:
+
+- The log handler section types defined by the
+  ``ZConfig.components.logger`` package support additional, optional
+  parameters:
+
+  ``style``
+      Used to configure alternate format styles as found in the Python 3
+      standard library.  Four ``style`` values are supported:
+      ``classic`` (the default), ``format`` (equivalent to ``style='{'``
+      in Python 3), ``template`` (equivalent to ``style='$'``), and
+      ``safe-template`` (similar to ``template``, but using the
+      ``string.Template`` method ``safe_substitute`` method).  A
+      best-effort implementation is provided for Python 2.
+
+  ``arbitrary-fields``
+      A Boolean defauting to ``False`` for backward compatibility,
+      allows arbitrary replacement field names to be accepted in the
+      format string (regardless of the ``style`` setting).  This
+      supports applications where log records are known to be generated
+      with additional string or numeric fields, at least for some
+      loggers.  (An exception is still raised at format time if the
+      additional fields are not provided, unless the ``style`` value
+      ``safe-template`` is used.)
+
+- The ``logfile`` section type defined by the ``ZConfig.components.logger``
+  package supports the optional ``delay`` and ``encoding`` parameters.
+  These can only be used for regular files, not the special ``STDOUT``
+  and ``STDERR`` streams.
+
+- More validation on the parameters to the ``logfile`` and
+  ``email-notifier`` sections is performed early (at the construction of
+  the factory, rather than at creation of the ``logging`` handler).
+  This allows more checking of parameter combinations before any log
+  files are opened.
+
+- The ``ZConfig.components.logger.handlers.log_format`` data type
+  function now supports formats that include numeric formatting for
+  ``levelno``, and accept ``funcName`` as a valid log record field
+  (added in Python 2.6 and 3.1).
+
+
+3.3.0 (2018-10-04)
+==================
+
+- Drop support for Python 3.3.
+
+- Add support for Python 3.7.
+
+- Drop support for 'python setup.py test'. See `issue 38
+  <https://github.com/zopefoundation/ZConfig/issues/38>`_.
+
+- Add support for ``example`` in ``section`` and ``multisection``, and
+  include those examples in generated documentation. See
+  https://github.com/zopefoundation/ZConfig/pull/5.
+
+- Fix configuration loaders to decode byte data using UTF-8 instead of
+  the default encoding (usually ASCII). See `issue 37
+  <https://github.com/zopefoundation/ZConfig/issues/37>`_.
+
+3.2.0 (2017-06-22)
+==================
+
+- Drop support for Python 2.6 and 3.2 and add support for Python 3.6.
+
+- Run tests with pypy and pypy3 as well.
+
+- Host docs at https://zconfig.readthedocs.io
+
+- BaseLoader is now an abstract class that cannot be instantiated.
+
+- Allow ``nan``, ``inf`` and ``-inf`` values for floats in
+  configurations. See
+  https://github.com/zopefoundation/ZConfig/issues/16.
+
+- Scripts ``zconfig`` (for schema validation) and
+  ``zconfig_schema2html`` are ported to Python 3.
+
+- A new ``ZConfig.sphinx`` `Sphinx extension
+  <https://zconfig.readthedocs.io/en/latest/documenting-components.html#documenting-components>`_
+  facilitates automatically documenting ZConfig components using their
+  description and examples in Sphinx documentation. See
+  https://github.com/zopefoundation/ZConfig/pull/25.
+
+- Simplify internal schema processing of max and min occurrence
+  values. See https://github.com/zopefoundation/ZConfig/issues/15.
+
+- Almost all uses of ``type`` as a parameter name have been replaced
+  with ``type_`` to avoid shadowing a builtin. These were typically
+  not public APIs and weren't expected to be called with keyword
+  arguments so there should not be any user-visible changes. See
+  https://github.com/zopefoundation/ZConfig/issues/17
+
+3.1.0 (2015-10-17)
+==================
+
+- Add ability to do variable substitution from environment variables using
+  $() syntax.
+
+3.0.4 (2014-03-20)
+==================
+
+- Added Python 3.4 support.
+
+
+3.0.3 (2013-03-02)
+==================
+
+- Added Python 3.2 support.
+
+
+3.0.2 (2013-02-14)
+==================
+
+- Fixed ResourceWarning in BaseLoader.openResource().
+
+
+3.0.1 (2013-02-13)
+==================
+
+- Removed an accidentally left `pdb` statement from the code.
+
+- Fix a bug in Python 3 with the custom string `repr()` function.
+
+
+3.0.0 (2013-02-13)
+==================
+
+- Added Python 3.3 support.
+
+- Dropped Python 2.4 and 2.5 support.
+
+
+2.9.3 (2012-06-25)
+==================
+
+- Fixed: port values of 0 weren't allowed.  Port 0 is used to request
+  an ephemeral port.
+
+
+2.9.2 (2012-02-11)
+==================
+
+- Adjust test classes to avoid base classes being considered separate
+  test cases by (at least) the "nose" test runner.
+
+
+2.9.1 (2012-02-11)
+==================
+
+- Make FileHandler.reopen thread safe.
+
+
+2.9.0 (2011-03-22)
+==================
+
+- Allow identical redefinition of ``%define`` names.
+- Added support for IPv6 addresses.
+
+
+2.8.0 (2010-04-13)
+==================
+
+- Fix relative path recognition.
+  https://bugs.launchpad.net/zconfig/+bug/405687
+
+- Added SMTP authentication support for email logger on Python 2.6.
+
+
+2.7.1 (2009-06-13)
+==================
+
+- Improved documentation
+
+- Fixed tests failures on windows.
+
+
+2.7.0 (2009-06-11)
+==================
+
+- Added a convenience function, ``ZConfig.configureLoggers(text)`` for
+  configuring loggers.
+
+- Relaxed the requirement for a logger name in logger sections,
+  allowing the logger section to be used for both root and non-root
+  loggers.
+
+
+2.6.1 (2008-12-05)
+==================
+
+- Fixed support for schema descriptions that override descriptions from a base
+  schema.  If multiple base schema provide descriptions but the derived schema
+  does not, the first base mentioned that provides a description wins.
+  https://bugs.launchpad.net/zconfig/+bug/259475
+
+- Fixed compatibility bug with Python 2.5.0.
+
+- No longer trigger deprecation warnings under Python 2.6.
+
+
+2.6.0 (2008-09-03)
+==================
+
+- Added support for file rotation by time by specifying when and
+  interval, rather than max-size, for log files.
+
+- Removed dependency on setuptools from the setup.py.
+
+
+2.5.1 (2007-12-24)
+==================
+
+- Made it possible to run unit tests via 'python setup.py test' (requires
+  setuptools on sys.path).
+
+- Added better error messages to test failure assertions.
+
+
+2.5 (2007-08-31)
+================
+
+*A note on the version number:*
+
+Information discovered in the revision control system suggests that some
+past revision has been called "2.4", though it is not clear that any
+actual release was made with that version number.  We're going to skip
+revision 2.4 entirely to avoid potential issues with anyone using
+something claiming to be ZConfig 2.4, and go straight to version 2.5.
+
+- Add support for importing schema components from ZIP archives (including
+  eggs).
+
+- Added a 'formatter' configuration option in the logging handler sections
+  to allow specifying a constructor for the formatter.
+
+- Documented the package: URL scheme that can be used in extending schema.
+
+- Added support for reopening all log files opened via configurations using
+  the ZConfig.components.logger package.  For Zope, this is usable via the
+  ``zc.signalhandler`` package.  ``zc.signalhandler`` is not required for
+  ZConfig.
+
+- Added support for rotating log files internally by size.
+
+- Added a minimal implementation of schema-less parsing; this is mostly
+  intended for applications that want to read several fragments of ZConfig
+  configuration files and assemble a combined configuration.  Used in some
+  ``zc.buildout`` recipes.
+
+- Converted to using ``zc.buildout`` and the standard test runner from
+  ``zope.testing``.
+
+- Added more tests.
+
+
+2.3.1 (2005-08-21)
+==================
+
+- Isolated some of the case-normalization code so it will at least be
+  easier to override.  This remains non-trivial.
+
+
+2.3 (2005-05-18)
+================
+
+- Added "inet-binding-address" and "inet-connection-address" to the
+  set of standard datatypes.  These are similar to the "inet-address"
+  type, but the default hostname is more sensible.  The datatype used
+  should reflect how the value will be used.
+
+- Alternate rotating logfile handler for Windows, to avoid platform
+  limitations on renaming open files.  Contributed by Sidnei da Silva.
+
+- For <section> and <multisection>, if the name attribute is omitted,
+  assume name="*", since this is what is used most often.
+
+
+2.2 (2004-04-21)
+================
+
+- More documentation has been written.
+
+- Added a timedelta datatype function; the input is the same as for
+  the time-interval datatype, but the resulting value is a
+  datetime.timedelta object.
+
+- Make sure keys specified as attributes of the <default> element are
+  converted by the appropriate key type, and are re-checked for
+  derived sections.
+
+- Refactored the ZConfig.components.logger schema components so that a
+  schema can import just one of the "eventlog" or "logger" sections if
+  desired.  This can be helpful to avoid naming conflicts.
+
+- Added a reopen() method to the logger factories.
+
+- Always use an absolute pathname when opening a FileHandler.
+
+- A fix to the logger 'format' key to allow the %(process)d expansion variable
+  that the logging package supports.
+
+- A new timedelta built-in datatype was added.  Similar to time-interval
+  except that it returns a datetime.timedelta object instead.
+
+
+2.1 (2004-04-12)
+================
+
+- Removed compatibility with Python 2.1 and 2.2.
+
+- Schema components must really be in Python packages; the directory
+  search has been modified to perform an import to locate the package
+  rather than incorrectly implementing the search algorithm.
+
+- The default objects use for section values now provide a method
+  getSectionAttributes(); this returns a list of all the attributes of
+  the section object which store configuration-defined data (including
+  information derived from the schema).
+
+- Default information can now be included in a schema for <key
+  name="+"> and <multikey name="+"> by using <default key="...">.
+
+- More documentation has been added to discuss schema extension.
+
+- Support for a Unicode-free Python has been fixed.
+
+- Derived section types now inherit the datatype of the base type if
+  no datatype is identified explicitly.
+
+- Derived section types can now override the keytype instead of always
+  inheriting from their base type.
+
+- <import package='...'/> makes use of the current prefix if the
+  package name begins witha dot.
+
+- Added two standard datatypes:  dotted-name and dotted-suffix.
+
+- Added two standard schema components: ZConfig.components.basic and
+  ZConfig.components.logger.
+
+
+2.0 (2003-10-27)
+================
+
+- Configurations can import additional schema components using a new
+  "%import" directive; this can be used to integrate 3rd-party
+  components into an application.
+
+- Schemas may be extended using a new "extends" attribute on the
+  <schema> element.
+
+- Better error messages when elements in a schema definition are
+  improperly nested.
+
+- The "zconfig" script can now simply verify that a schema definition
+  is valid, if that's all that's needed.
+
+
+1.0 (2003-03-25)
+================
+
+- Initial release.

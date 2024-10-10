@@ -1,0 +1,1735 @@
+Metadata-Version: 2.1
+Name: zc.recipe.egg
+Version: 2.0.7
+Summary: Recipe for installing Python package distributions as eggs
+Home-page: http://cheeseshop.python.org/pypi/zc.recipe.egg
+Author: Jim Fulton
+Author-email: jim@zope.com
+License: ZPL 2.1
+Keywords: development build
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Framework :: Buildout
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Zope Public License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Dist: zc.buildout>=2.12.0
+Requires-Dist: setuptools
+
+********************************
+Buildout Egg-Installation Recipe
+********************************
+
+.. contents::
+
+The egg-installation recipe installs eggs into a buildout eggs
+directory.  It also generates scripts in a buildout bin directory with
+egg paths baked into them.
+
+
+Change History
+**************
+
+2.0.7 (2018-07-02)
+==================
+
+- For the 2.0.6 change, we require zc.buildout 2.12.0. The `install_requires`
+  in `setup.py` now also says that.
+
+
+2.0.6 (2018-07-02)
+==================
+
+- Added extra keyword argument ``allow_unknown_extras`` to support zc.buildout
+  2.12.0.
+
+
+2.0.5 (2017-12-04)
+==================
+
+- Fixed #429: added sorting of working set by priority of different
+  type of paths (develop-eggs-directory, eggs-directory, other paths).
+
+
+2.0.4 (2017-08-17)
+==================
+
+- Fixed #153: buildout should cache working set environments
+  [rafaelbco]
+
+
+2.0.3 (2015-10-02)
+==================
+
+- Releasing zc.recipe.egg as a wheel in addition to only an sdist. No
+  functional changes.
+  [reinout]
+
+2.0.2 (2015-07-01)
+==================
+
+- Fixed: In ``zc.recipe.egg#custom`` recipe's ``rpath`` support, don't
+  assume path elements are buildout-relative if they start with one of the
+  "special" tokens (e.g., ``$ORIGIN``).  See:
+  https://github.com/buildout/buildout/issues/225.
+  [tseaver]
+
+2.0.1 (2013-09-05)
+==================
+
+- Accomodated ``zc.buildout`` switch to post-merge ``setuptools``.
+
+2.0.0 (2013-04-02)
+==================
+
+- Enabled 'prefer-final' option by default.
+
+2.0.0a3 (2012-11-19)
+====================
+
+- Added support for Python 3.2 / 3.3.
+
+- Added 'MANIFEST.in'.
+
+- Support non-entry-point-based scripts.
+
+- Honor exit codes from scripts (https://bugs.launchpad.net/bugs/697913).
+
+2.0.0a2 (2012-05-03)
+====================
+
+- Always unzip installed eggs.
+
+- Switched from using 'setuptools' to 'distribute'.
+
+- Removed multi-python support.
+
+1.3.2 (2010-08-23)
+==================
+
+- Bugfix for the change introduced in 1.3.1.
+
+1.3.1 (2010-08-23)
+==================
+
+- Support recipes that are using zc.recipe.egg by passing in a dict, rather
+  than a zc.buildout.buildout.Options object as was expected/tested.
+
+1.3.0 (2010-08-23)
+==================
+
+- Small further refactorings past 1.2.3b1 to be compatible with
+  zc.buildout 1.5.0.
+
+1.2.3b1 (2010-04-29)
+====================
+
+- Refactored to be used with z3c.recipe.scripts and zc.buildout 1.5.0.
+  No new user-visible features.
+
+1.2.2 (2009-03-18)
+==================
+
+- Fixed a dependency information. zc.buildout >1.2.0 is required.
+
+1.2.1 (2009-03-18)
+==================
+
+- Refactored generation of relative egg paths to generate simpler code.
+
+1.2.0 (2009-03-17)
+==================
+
+- Added the `dependent-scripts` option.  When set to `true`, scripts will
+  be generated for all required eggs in addition to the eggs named
+  specifically.  This idea came from two forks of this recipe,
+  `repoze.recipe.egg` and `pylons_sandbox`, but the option name is
+  spelled with a dash instead of underscore and it defaults to `false`.
+
+- Added a relative-paths option. When true, egg paths in scripts are generated
+  relative to the script names.
+
+1.1.0 (2008-07-19)
+==================
+
+- Refactored to work honor the new buildout-level unzip option.
+
+
+1.1.0b1 (2008-06-27)
+====================
+
+- Added `environment` option to custom extension building options.
+
+1.0.0 (2007-11-03)
+==================
+
+- No code changes from last beta, just some small package meta-data
+  improvements.
+
+1.0.0b5 (2007-02-08)
+====================
+
+Feature Changes
+---------------
+
+- Added support for the buildout newest option.
+
+1.0.0b4 (2007-01-17)
+====================
+
+Feature Changes
+---------------
+
+- Added initialization and arguments options to the scripts recipe.
+
+- Added an eggs recipe that *just* installs eggs.
+
+- Advertized the scripts recipe for creating scripts.
+
+1.0.0b3 (2006-12-04)
+====================
+
+Feature Changes
+---------------
+
+- Added a develop recipe for creating develop eggs.
+
+  This is useful to:
+
+  - Specify custom extension building options,
+
+  - Specify a version of Python to use, and to
+
+  - Cause develop eggs to be created after other parts.
+
+- The develop and build recipes now return the paths created, so that
+  created eggs or egg links are removed when a part is removed (or
+  changed).
+
+
+1.0.0b2 (2006-10-16)
+====================
+
+Updated to work with (not get a warning from) zc.buildout 1.0.0b10.
+
+1.0.0b1
+=======
+
+Updated to work with zc.buildout 1.0.0b3.
+
+1.0.0a3
+=======
+
+- Extra path elements to be included in generated scripts can now be
+  set via the extra-paths option.
+
+- No longer implicitly generate "py\_" scripts for each egg. There is
+  now an interpreter option to generate a script that, when run
+  without arguments, launches the Python interactive interpreter with
+  the path set based on a parts eggs and extra paths.  If this script
+  is run with the name of a Python script and arguments, then the
+  given script is run with the path set.
+
+- You can now specify explicit entry points.  This is useful for use
+  with packages that don't declare their own entry points.
+
+- Added Windows support.
+
+- Now-longer implicitly generate "py\_" scripts for each egg.  You can
+  now generate a script for launching a Python interpreter or for
+  running scripts based on the eggs defined for an egg part.
+
+- You can now specify custom entry points for packages that don't
+  declare their entry points.
+
+- You can now specify extra-paths to be included in generated scripts.
+
+
+1.0.0a2
+=======
+
+Added a custom recipe for building custom eggs using custom distutils
+build_ext arguments.
+
+1.0.0a1
+=======
+
+Initial public version
+
+Detailed Documentation
+**********************
+
+Installation of distributions as eggs
+=====================================
+
+The zc.recipe.egg:eggs recipe can be used to install various types if
+distutils distributions as eggs.  It takes a number of options:
+
+eggs
+    A list of eggs to install given as one or more setuptools
+    requirement strings.  Each string must be given on a separate
+    line.
+
+find-links
+   A list of URLs, files, or directories to search for distributions.
+
+index
+   The URL of an index server, or almost any other valid URL. :)
+
+   If not specified, the Python Package Index,
+   http://cheeseshop.python.org/pypi, is used.  You can specify an
+   alternate index with this option.  If you use the links option and
+   if the links point to the needed distributions, then the index can
+   be anything and will be largely ignored.  In the examples, here,
+   we'll just point to an empty directory on our link server.  This
+   will make our examples run a little bit faster.
+
+We have a link server that has a number of distributions:
+
+    >>> print_(get(link_server), end='')
+    <html><body>
+    <a href="bigdemo-0.1-py2.3.egg">bigdemo-0.1-py2.3.egg</a><br>
+    <a href="demo-0.1-py2.3.egg">demo-0.1-py2.3.egg</a><br>
+    <a href="demo-0.2-py2.3.egg">demo-0.2-py2.3.egg</a><br>
+    <a href="demo-0.3-py2.3.egg">demo-0.3-py2.3.egg</a><br>
+    <a href="demo-0.4rc1-py2.3.egg">demo-0.4rc1-py2.3.egg</a><br>
+    <a href="demoneeded-1.0.zip">demoneeded-1.0.zip</a><br>
+    <a href="demoneeded-1.1.zip">demoneeded-1.1.zip</a><br>
+    <a href="demoneeded-1.2rc1.zip">demoneeded-1.2rc1.zip</a><br>
+    <a href="du_zipped-1.0-pyN.N.egg">du_zipped-1.0-pyN.N.egg</a><br>
+    <a href="extdemo-1.4.zip">extdemo-1.4.zip</a><br>
+    <a href="index/">index/</a><br>
+    <a href="mixedcase-0.5.zip">mixedcase-0.5.zip</a><br>
+    <a href="other-1.0-py2.3.egg">other-1.0-py2.3.egg</a><br>
+    </body></html>
+
+We have a sample buildout.  Let's update it's configuration file to
+install the demo package.
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg:eggs
+    ... eggs = demo<0.3
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... """ % dict(server=link_server))
+
+In this example, we limited ourselves to revisions before 0.3. We also
+specified where to find distributions using the find-links option.
+
+Let's run the buildout:
+
+    >>> import os
+    >>> print_(system(buildout), end='')
+    Installing demo.
+    Getting distribution for 'demo<0.3'.
+    Got demo 0.2.
+    Getting distribution for 'demoneeded'.
+    Got demoneeded 1.1.
+
+Now, if we look at the buildout eggs directory:
+
+    >>> ls(sample_buildout, 'eggs')
+    d  demo-0.2-py2.3.egg
+    d  demoneeded-1.1-py2.3.egg
+    -  setuptools-0.7-py2.3.egg
+    d  zc.buildout-1.0-py2.3.egg
+
+We see that we got an egg for demo that met the requirement, as well
+as the egg for demoneeded, which demo requires.  (We also see an egg
+link for the recipe in the develop-eggs directory.  This egg link was
+actually created as part of the sample buildout setup. Normally, when
+using the recipe, you'll get a regular egg installation.)
+
+Script generation
+-----------------
+
+The demo egg defined a script, but we didn't get one installed:
+
+    >>> ls(sample_buildout, 'bin')
+    -  buildout
+
+If we want scripts provided by eggs to be installed, we should use the
+scripts recipe:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg:scripts
+    ... eggs = demo<0.3
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Uninstalling demo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/demo'.
+
+Now we also see the script defined by the demo script:
+
+    >>> ls(sample_buildout, 'bin')
+    -  buildout
+    -  demo
+
+The scripts recipe defines some additional options:
+
+entry-points
+   A list of entry-point identifiers of the form:
+
+   name=module:attrs
+
+   where name is a script name, module is a dotted name resolving to a
+   module name, and attrs is a dotted name resolving to a callable
+   object within a module.
+
+   This option is useful when working with distributions that don't
+   declare entry points, such as distributions not written to work
+   with setuptools.
+
+   Examples can be seen in the section "Specifying entry points" below.
+
+scripts
+   Control which scripts are generated.  The value should be a list of
+   zero or more tokens.  Each token is either a name, or a name
+   followed by an '=' and a new name.  Only the named scripts are
+   generated.  If no tokens are given, then script generation is
+   disabled.  If the option isn't given at all, then all scripts
+   defined by the named eggs will be generated.
+
+dependent-scripts
+   If set to the string "true", scripts will be generated for all
+   required eggs in addition to the eggs specifically named.
+
+interpreter
+   The name of a script to generate that allows access to a Python
+   interpreter that has the path set based on the eggs installed.
+
+extra-paths
+   Extra paths to include in a generated script.
+
+initialization
+   Specify some Python initialization code.  This is very limited.  In
+   particular, be aware that leading whitespace is stripped from the
+   code given.
+
+arguments
+   Specify some arguments to be passed to entry points as Python source.
+
+relative-paths
+   If set to true, then egg paths will be generated relative to the
+   script path.  This allows a buildout to be moved without breaking
+   egg paths.  This option can be set in either the script section or
+   in the buildout section.
+
+Let's add an interpreter option:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... eggs = demo<0.3
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... interpreter = py-demo
+    ... """ % dict(server=link_server))
+
+Note that we omitted the entry point name from the recipe
+specification. We were able to do this because the scripts recipe is
+the default entry point for the zc.recipe.egg egg.
+
+   >>> print_(system(buildout), end='')
+   Uninstalling demo.
+   Installing demo.
+   Generated script '/sample-buildout/bin/demo'.
+   Generated interpreter '/sample-buildout/bin/py-demo'.
+
+Now we also get a py-demo script for giving us a Python prompt with
+the path for demo and any eggs it depends on included in sys.path.
+This is useful for debugging and testing.
+
+    >>> ls(sample_buildout, 'bin')
+    -  buildout
+    -  demo
+    -  py-demo
+
+If we run the demo script, it prints out some minimal data:
+
+    >>> print_(system(join(sample_buildout, 'bin', 'demo')), end='')
+    2 1
+
+The value it prints out happens to be some values defined in the
+modules installed.
+
+We can also run the py-demo script.  Here we'll just print_(out)
+the bits if the path added to reflect the eggs:
+
+    >>> print_(system(join(sample_buildout, 'bin', 'py-demo'),
+    ... """import os, sys
+    ... for p in sys.path:
+    ...     if 'demo' in p:
+    ...         _ = sys.stdout.write(os.path.basename(p)+'\\n')
+    ...
+    ... """).replace('>>> ', '').replace('... ', ''), end='')
+    ... # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    demo-0.2-py2.4.egg
+    demoneeded-1.1-py2.4.egg...
+
+Egg updating
+------------
+
+The recipe normally gets the most recent distribution that satisfies the
+specification.  It won't do this is the buildout is either in
+non-newest mode or in offline mode.  To see how this works, we'll
+remove the restriction on demo:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... """ % dict(server=link_server))
+
+and run the buildout in non-newest mode:
+
+    >>> print_(system(buildout+' -N'), end='')
+    Uninstalling demo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/demo'.
+
+Note that we removed the eggs option, and the eggs defaulted to the
+part name. Because we removed the eggs option, the demo was
+reinstalled.
+
+We'll also run the buildout in off-line mode:
+
+    >>> print_(system(buildout+' -o'), end='')
+    Updating demo.
+
+We didn't get an update for demo:
+
+    >>> ls(sample_buildout, 'eggs')
+    d  demo-0.2-py2.3.egg
+    d  demoneeded-1.1-py2.3.egg
+    -  setuptools-0.7-py2.3.egg
+    d  zc.buildout-1.0-py2.3.egg
+
+If we run the buildout on the default online and newest modes,
+we'll get an update for demo:
+
+    >>> print_(system(buildout), end='')
+    Updating demo.
+    Getting distribution for 'demo'.
+    Got demo 0.3.
+    Generated script '/sample-buildout/bin/demo'.
+
+Then we'll get a new demo egg:
+
+    >>> ls(sample_buildout, 'eggs')
+    d  demo-0.2-py2.3.egg
+    d  demo-0.3-py2.3.egg
+    d  demoneeded-1.1-py2.3.egg
+    -  setuptools-0.7-py2.4.egg
+    d  zc.buildout-1.0-py2.4.egg
+
+The script is updated too:
+
+    >>> print_(system(join(sample_buildout, 'bin', 'demo')), end='')
+    3 1
+
+Controlling script generation
+-----------------------------
+
+You can control which scripts get generated using the scripts option.
+For example, to suppress scripts, use the scripts option without any
+arguments:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... scripts =
+    ... """ % dict(server=link_server))
+
+
+    >>> print_(system(buildout), end='')
+    Uninstalling demo.
+    Installing demo.
+
+    >>> ls(sample_buildout, 'bin')
+    -  buildout
+
+You can also control the name used for scripts:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... scripts = demo=foo
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Uninstalling demo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/foo'.
+
+    >>> ls(sample_buildout, 'bin')
+    -  buildout
+    -  foo
+
+Specifying extra script paths
+-----------------------------
+
+If we need to include extra paths in a script, we can use the
+extra-paths option:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... scripts = demo=foo
+    ... extra-paths =
+    ...    /foo/bar
+    ...    ${buildout:directory}/spam
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Uninstalling demo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/foo'.
+
+Let's look at the script that was generated:
+
+    >>> cat(sample_buildout, 'bin', 'foo') # doctest: +NORMALIZE_WHITESPACE
+    #!/usr/local/bin/python2.7
+    <BLANKLINE>
+    import sys
+    sys.path[0:0] = [
+      '/sample-buildout/eggs/demo-0.3-py2.4.egg',
+      '/sample-buildout/eggs/demoneeded-1.1-py2.4.egg',
+      '/foo/bar',
+      '/sample-buildout/spam',
+      ]
+    <BLANKLINE>
+    import eggrecipedemo
+    <BLANKLINE>
+    if __name__ == '__main__':
+        sys.exit(eggrecipedemo.main())
+
+Relative egg paths
+------------------
+
+If the relative-paths option is specified with a true value, then
+paths will be generated relative to the script. This is useful when
+you want to be able to move a buildout directory around without
+breaking scripts.
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... scripts = demo=foo
+    ... relative-paths = true
+    ... extra-paths =
+    ...    /foo/bar
+    ...    ${buildout:directory}/spam
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Uninstalling demo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/foo'.
+
+Let's look at the script that was generated:
+
+    >>> cat(sample_buildout, 'bin', 'foo') # doctest: +NORMALIZE_WHITESPACE
+    #!/usr/local/bin/python2.7
+    <BLANKLINE>
+    import os
+    <BLANKLINE>
+    join = os.path.join
+    base = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+    base = os.path.dirname(base)
+    <BLANKLINE>
+    import sys
+    sys.path[0:0] = [
+      join(base, 'eggs/demo-0.3-pyN.N.egg'),
+      join(base, 'eggs/demoneeded-1.1-pyN.N.egg'),
+      '/foo/bar',
+      join(base, 'spam'),
+      ]
+    <BLANKLINE>
+    import eggrecipedemo
+    <BLANKLINE>
+    if __name__ == '__main__':
+        sys.exit(eggrecipedemo.main())
+
+You can specify relative paths in the buildout section, rather than in
+each individual script section:
+
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ... relative-paths = true
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... scripts = demo=foo
+    ... extra-paths =
+    ...    /foo/bar
+    ...    ${buildout:directory}/spam
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Uninstalling demo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/foo'.
+
+    >>> cat(sample_buildout, 'bin', 'foo') # doctest: +NORMALIZE_WHITESPACE
+    #!/usr/local/bin/python2.7
+    <BLANKLINE>
+    import os
+    <BLANKLINE>
+    join = os.path.join
+    base = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+    base = os.path.dirname(base)
+    <BLANKLINE>
+    import sys
+    sys.path[0:0] = [
+      join(base, 'eggs/demo-0.3-pyN.N.egg'),
+      join(base, 'eggs/demoneeded-1.1-pyN.N.egg'),
+      '/foo/bar',
+      join(base, 'spam'),
+      ]
+    <BLANKLINE>
+    import eggrecipedemo
+    <BLANKLINE>
+    if __name__ == '__main__':
+        sys.exit(eggrecipedemo.main())
+
+Specifying initialization code and arguments
+-----------------------------------------------
+
+Sometimes, we need to do more than just calling entry points.  We can
+use the initialization and arguments options to specify extra code
+to be included in generated scripts:
+
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... scripts = demo=foo
+    ... extra-paths =
+    ...    /foo/bar
+    ...    ${buildout:directory}/spam
+    ... initialization = a = (1, 2
+    ...                       3, 4)
+    ... interpreter = py
+    ... arguments = a, 2
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Uninstalling demo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/foo'.
+    Generated interpreter '/sample-buildout/bin/py'.
+
+    >>> cat(sample_buildout, 'bin', 'foo') # doctest: +NORMALIZE_WHITESPACE
+    #!/usr/local/bin/python2.7
+    <BLANKLINE>
+    import sys
+    sys.path[0:0] = [
+      '/sample-buildout/eggs/demo-0.3-py2.4.egg',
+      '/sample-buildout/eggs/demoneeded-1.1-py2.4.egg',
+      '/foo/bar',
+      '/sample-buildout/spam',
+      ]
+    <BLANKLINE>
+    a = (1, 2
+    3, 4)
+    <BLANKLINE>
+    import eggrecipedemo
+    <BLANKLINE>
+    if __name__ == '__main__':
+        sys.exit(eggrecipedemo.main(a, 2))
+
+Here we see that the initialization code we specified was added after
+setting the path.  Note, as mentioned above, that leading whitespace
+has been stripped.  Similarly, the argument code we specified was
+added in the entry point call (to main).
+
+Our interpreter also has the initialization code:
+
+    >>> cat(sample_buildout, 'bin', 'py')
+    ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    #!/usr/local/bin/python2.7
+    <BLANKLINE>
+    import sys
+    <BLANKLINE>
+    sys.path[0:0] = [
+      '/sample-buildout/eggs/demo-0.3-py3.3.egg',
+      '/sample-buildout/eggs/demoneeded-1.1-py3.3.egg',
+      '/foo/bar',
+      '/sample-buildout/spam',
+      ]
+    <BLANKLINE>
+    a = (1, 2
+    3, 4)
+    <BLANKLINE>
+    <BLANKLINE>
+    _interactive = True
+    ...
+
+Specifying entry points
+-----------------------
+
+Scripts can be generated for entry points declared explicitly.  We can
+declare entry points using the entry-points option:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... extra-paths =
+    ...    /foo/bar
+    ...    ${buildout:directory}/spam
+    ... entry-points = alt=eggrecipedemo:alt other=foo.bar:a.b.c
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Uninstalling demo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/demo'.
+    Generated script '/sample-buildout/bin/alt'.
+    Generated script '/sample-buildout/bin/other'.
+
+    >>> ls(sample_buildout, 'bin')
+    -  alt
+    -  buildout
+    -  demo
+    -  other
+
+    >>> cat(sample_buildout, 'bin', 'other')
+    #!/usr/local/bin/python2.7
+    <BLANKLINE>
+    import sys
+    sys.path[0:0] = [
+      '/sample-buildout/eggs/demo-0.3-py2.4.egg',
+      '/sample-buildout/eggs/demoneeded-1.1-py2.4.egg',
+      '/foo/bar',
+      '/sample-buildout/spam',
+      ]
+    <BLANKLINE>
+    import foo.bar
+    <BLANKLINE>
+    if __name__ == '__main__':
+        sys.exit(foo.bar.a.b.c())
+
+Generating all scripts
+----------------------
+
+The `bigdemo` package doesn't have any scripts, but it requires the `demo`
+package, which does have a script.  Specify `dependent-scripts = true` to
+generate all scripts in required packages:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = bigdemo
+    ...
+    ... [bigdemo]
+    ... recipe = zc.recipe.egg
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... dependent-scripts = true
+    ... """ % dict(server=link_server))
+    >>> print_(system(buildout+' -N'), end='')
+    Uninstalling demo.
+    Installing bigdemo.
+    Getting distribution for 'bigdemo'.
+    Got bigdemo 0.1.
+    Generated script '/sample-buildout/bin/demo'.
+
+Offline mode
+------------
+
+If the buildout offline option is set to "true", then no attempt will
+be made to contact an index server:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = demo
+    ... offline = true
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... index = eek!
+    ... scripts = demo=foo
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Uninstalling bigdemo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/foo'.
+
+Creating eggs with extensions needing custom build settings
+=============================================================
+
+Sometimes, It's necessary to provide extra control over how an egg is
+created.  This is commonly true for eggs with extension modules that
+need to access libraries or include files.
+
+The zc.recipe.egg:custom recipe can be used to define an egg with
+custom build parameters.  The currently defined parameters are:
+
+include-dirs
+   A new-line separated list of directories to search for include
+   files.
+
+library-dirs
+   A new-line separated list of directories to search for libraries
+   to link with.
+
+rpath
+   A new-line separated list of directories to search for dynamic libraries
+   at run time.
+
+define
+   A comma-separated list of names of C preprocessor variables to
+   define.
+
+undef
+   A comma-separated list of names of C preprocessor variables to
+   undefine.
+
+libraries
+   The name of an additional library to link with.  Due to limitations
+   in distutils and despite the option name, only a single library
+   can be specified.
+
+link-objects
+   The name of an link object to link against.  Due to limitations
+   in distutils and despite the option name, only a single link object
+   can be specified.
+
+debug
+   Compile/link with debugging information
+
+force
+   Forcibly build everything (ignore file timestamps)
+
+compiler
+   Specify the compiler type
+
+swig
+   The path to the swig executable
+
+swig-cpp
+   Make SWIG create C++ files (default is C)
+
+swig-opts
+   List of SWIG command line options
+
+In addition, the following options can be used to specify the egg:
+
+egg
+    An specification for the egg to be created, to install given as a
+    setuptools requirement string.  This defaults to the part name.
+
+find-links
+   A list of URLs, files, or directories to search for distributions.
+
+index
+   The URL of an index server, or almost any other valid URL. :)
+
+   If not specified, the Python Package Index,
+   http://cheeseshop.python.org/pypi, is used.  You can specify an
+   alternate index with this option.  If you use the links option and
+   if the links point to the needed distributions, then the index can
+   be anything and will be largely ignored.  In the examples, here,
+   we'll just point to an empty directory on our link server.  This
+   will make our examples run a little bit faster.
+
+environment
+   The name of a section with additional environment variables. The
+   environment variables are set before the egg is built.
+
+To illustrate this, we'll define a buildout that builds an egg for a
+package that has a simple extension module::
+
+  #include <Python.h>
+  #include <extdemo.h>
+
+  static PyMethodDef methods[] = {};
+
+  PyMODINIT_FUNC
+  initextdemo(void)
+  {
+      PyObject *m;
+      m = Py_InitModule3("extdemo", methods, "");
+  #ifdef TWO
+      PyModule_AddObject(m, "val", PyInt_FromLong(2));
+  #else
+      PyModule_AddObject(m, "val", PyInt_FromLong(EXTDEMO));
+  #endif
+  }
+
+The extension depends on a system-dependent include file, extdemo.h,
+that defines a constant, EXTDEMO, that is exposed by the extension.
+
+The extension module is available as a source distribution,
+extdemo-1.4.tar.gz, on a distribution server.
+
+We have a sample buildout that we'll add an include directory to with
+the necessary include file:
+
+    >>> mkdir('include')
+    >>> write('include', 'extdemo.h',
+    ... """
+    ... #define EXTDEMO 42
+    ... """)
+
+We'll also update the buildout configuration file to define a part for
+the egg:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = extdemo
+    ...
+    ... [extdemo]
+    ... recipe = zc.recipe.egg:custom
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... include-dirs = include
+    ...
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='') # doctest: +ELLIPSIS
+    Installing extdemo...
+
+We got the zip_safe warning because the source distribution we used
+wasn't setuptools based and thus didn't set the option.
+
+The egg is created in the develop-eggs directory *not* the eggs
+directory because it depends on buildout-specific parameters and the
+eggs directory can be shared across multiple buildouts.
+
+    >>> ls(sample_buildout, 'develop-eggs')
+    d  extdemo-1.4-py2.4-unix-i686.egg
+    -  zc.recipe.egg.egg-link
+
+Note that no scripts or dependencies are installed.  To install
+dependencies or scripts for a custom egg, define another part and use
+the zc.recipe.egg recipe, listing the custom egg as one of the eggs to
+be installed.  The zc.recipe.egg recipe will use the installed egg.
+
+Let's define a script that uses out ext demo:
+
+    >>> mkdir('demo')
+    >>> write('demo', 'demo.py',
+    ... """
+    ... import extdemo, sys
+    ... def print_(*args):
+    ...     sys.stdout.write(' '.join(map(str, args)) + '\\n')
+    ... def main():
+    ...     print_(extdemo.val)
+    ... """)
+
+    >>> write('demo', 'setup.py',
+    ... """
+    ... from setuptools import setup
+    ... setup(name='demo')
+    ... """)
+
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... develop = demo
+    ... parts = extdemo demo
+    ...
+    ... [extdemo]
+    ... recipe = zc.recipe.egg:custom
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... include-dirs = include
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... eggs = demo
+    ...        extdemo
+    ... entry-points = demo=demo:main
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout), end='')
+    Develop: '/sample-buildout/demo'
+    Updating extdemo.
+    Installing demo.
+    Generated script '/sample-buildout/bin/demo'...
+
+When we run the script, we'll 42 printed:
+
+    >>> print_(system(join('bin', 'demo')), end='')
+    42
+
+Updating
+--------
+
+The custom recipe will normally check for new source distributions
+that meet the given specification.  This can be suppressed using the
+buildout non-newest and offline modes.  We'll generate a new source
+distribution for extdemo:
+
+    >>> update_extdemo()
+
+If we run the buildout in non-newest or offline modes:
+
+    >>> print_(system(buildout+' -N'), end='')
+    Develop: '/sample-buildout/demo'
+    Updating extdemo.
+    Updating demo.
+
+    >>> print_(system(buildout+' -o'), end='')
+    Develop: '/sample-buildout/demo'
+    Updating extdemo.
+    Updating demo.
+
+We won't get an update.
+
+    >>> ls(sample_buildout, 'develop-eggs')
+    -  demo.egg-link
+    d  extdemo-1.4-py2.4-unix-i686.egg
+    -  zc.recipe.egg.egg-link
+
+But if we run the buildout in the default on-line and newest modes, we
+will. This time we also get the test-variable message again, because the new
+version is imported:
+
+    >>> print_(system(buildout), end='') # doctest: +ELLIPSIS
+    Develop: '/sample-buildout/demo'
+    Updating extdemo.
+    zip_safe flag not set; analyzing archive contents...
+    Updating demo.
+    ...
+
+    >>> ls(sample_buildout, 'develop-eggs')
+    -  demo.egg-link
+    d  extdemo-1.4-py2.4-linux-i686.egg
+    d  extdemo-1.5-py2.4-linux-i686.egg
+    -  zc.recipe.egg.egg-link
+
+Controlling the version used
+----------------------------
+
+We can specify a specific version using the egg option:
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... develop = demo
+    ... parts = extdemo demo
+    ...
+    ... [extdemo]
+    ... recipe = zc.recipe.egg:custom
+    ... egg = extdemo ==1.4
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... include-dirs = include
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... eggs = demo
+    ...        extdemo ==1.4
+    ... entry-points = demo=demo:main
+    ... """ % dict(server=link_server))
+
+    >>> print_(system(buildout+' -D'), end='') # doctest: +ELLIPSIS
+    Develop: '/sample-buildout/demo'
+    ...
+
+    >>> ls(sample_buildout, 'develop-eggs')
+    -  demo.egg-link
+    d  extdemo-1.4-py2.4-linux-i686.egg
+    -  zc.recipe.egg.egg-link
+
+
+Controlling environment variables
++++++++++++++++++++++++++++++++++
+
+To set additional environment variables, the `environment` option is used.
+
+Let's create a recipe which prints out environment variables. We need this to
+make sure the set environment variables are removed after the egg:custom
+recipe was run.
+
+    >>> mkdir(sample_buildout, 'recipes')
+    >>> write(sample_buildout, 'recipes', 'environ.py',
+    ... """
+    ... import logging, os, zc.buildout
+    ...
+    ... class Environ:
+    ...
+    ...     def __init__(self, buildout, name, options):
+    ...         self.name = name
+    ...
+    ...     def install(self):
+    ...         logging.getLogger(self.name).info(
+    ...             'test-variable left over: %s' % (
+    ...                 'test-variable' in os.environ))
+    ...         return []
+    ...
+    ...     def update(self):
+    ...         self.install()
+    ... """)
+    >>> write(sample_buildout, 'recipes', 'setup.py',
+    ... """
+    ... from setuptools import setup
+    ...
+    ... setup(
+    ...     name = "recipes",
+    ...     entry_points = {'zc.buildout': ['environ = environ:Environ']},
+    ...     )
+    ... """)
+
+
+Create our buildout:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... develop = recipes
+    ... parts = extdemo checkenv
+    ...
+    ... [extdemo-env]
+    ... test-variable = foo
+    ...
+    ... [extdemo]
+    ... recipe = zc.recipe.egg:custom
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... include-dirs = include
+    ... environment = extdemo-env
+    ...
+    ... [checkenv]
+    ... recipe = recipes:environ
+    ...
+    ... """ % dict(server=link_server))
+    >>> print_(system(buildout), end='') # doctest: +ELLIPSIS
+    Develop: '/sample-buildout/recipes'
+    Uninstalling demo.
+    Uninstalling extdemo.
+    Installing extdemo.
+    Have environment test-variable: foo
+    zip_safe flag not set; analyzing archive contents...
+    Installing checkenv.
+    ...
+
+
+The setup.py also printed out that we have set the environment `test-variable`
+to foo. After the buildout the variable is reset to its original value (i.e.
+removed).
+
+When an environment variable has a value before zc.recipe.egg:custom is run,
+the original value will be restored:
+
+    >>> import os
+    >>> os.environ['test-variable'] = 'bar'
+    >>> print_(system(buildout), end='')
+    Develop: '/sample-buildout/recipes'
+    Updating extdemo.
+    Updating checkenv.
+    checkenv: test-variable left over: True
+
+    >>> os.environ['test-variable']
+    'bar'
+
+
+Sometimes it is required to prepend or append to an existing environment
+variable, for instance for adding something to the PATH. Therefore all variables
+are interpolated with os.environ before the're set:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... develop = recipes
+    ... parts = extdemo checkenv
+    ...
+    ... [extdemo-env]
+    ... test-variable = foo:%%(test-variable)s
+    ...
+    ... [extdemo]
+    ... recipe = zc.recipe.egg:custom
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... include-dirs = include
+    ... environment = extdemo-env
+    ...
+    ... [checkenv]
+    ... recipe = recipes:environ
+    ...
+    ... """ % dict(server=link_server))
+    >>> print_(system(buildout), end='') # doctest: +ELLIPSIS
+    Develop: '/sample-buildout/recipes'
+    Uninstalling extdemo.
+    Installing extdemo.
+    Have environment test-variable: foo:bar
+    zip_safe flag not set; analyzing archive contents...
+    Updating checkenv.
+    ...
+
+    >>> os.environ['test-variable']
+    'bar'
+    >>> del os.environ['test-variable']
+
+
+Create a clean buildout.cfg w/o the checkenv recipe, and delete the recipe:
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... develop = recipes
+    ... parts = extdemo
+    ...
+    ... [extdemo]
+    ... recipe = zc.recipe.egg:custom
+    ... find-links = %(server)s
+    ... index = %(server)s/index
+    ... include-dirs = include
+    ...
+    ... """ % dict(server=link_server))
+    >>> print_(system(buildout), end='') # doctest: +ELLIPSIS
+    Develop: '/sample-buildout/recipes'
+    Uninstalling checkenv.
+    Uninstalling extdemo.
+    Installing extdemo...
+
+    >>> rmdir(sample_buildout, 'recipes')
+
+
+Controlling develop-egg generation
+==================================
+
+If you want to provide custom build options for a develop egg, you can
+use the develop recipe.  The recipe has the following options:
+
+setup
+   The path to a setup script or directory containing a startup
+   script. This is required.
+
+include-dirs
+   A new-line separated list of directories to search for include
+   files.
+
+library-dirs
+   A new-line separated list of directories to search for libraries
+   to link with.
+
+rpath
+   A new-line separated list of directories to search for dynamic libraries
+   at run time.
+
+define
+   A comma-separated list of names of C preprocessor variables to
+   define.
+
+undef
+   A comma-separated list of names of C preprocessor variables to
+   undefine.
+
+libraries
+   The name of an additional library to link with.  Due to limitations
+   in distutils and despite the option name, only a single library
+   can be specified.
+
+link-objects
+   The name of an link object to link against.  Due to limitations
+   in distutils and despite the option name, only a single link object
+   can be specified.
+
+debug
+   Compile/link with debugging information
+
+force
+   Forcibly build everything (ignore file timestamps)
+
+compiler
+   Specify the compiler type
+
+swig
+   The path to the swig executable
+
+swig-cpp
+   Make SWIG create C++ files (default is C)
+
+swig-opts
+   List of SWIG command line options
+
+To illustrate this, we'll use a directory containing the extdemo
+example from the earlier section:
+
+    >>> ls(extdemo)
+    -  MANIFEST
+    -  MANIFEST.in
+    -  README
+    -  extdemo.c
+    -  setup.py
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... develop = demo
+    ... parts = extdemo demo
+    ...
+    ... [extdemo]
+    ... setup = %(extdemo)s
+    ... recipe = zc.recipe.egg:develop
+    ... include-dirs = include
+    ... define = TWO
+    ...
+    ... [demo]
+    ... recipe = zc.recipe.egg
+    ... eggs = demo
+    ...        extdemo
+    ... entry-points = demo=demo:main
+    ... """ % dict(extdemo=extdemo))
+
+Note that we added a define option to cause the preprocessor variable
+TWO to be defined.  This will cause the module-variable, 'val', to be
+set with a value of 2.
+
+    >>> print_(system(buildout), end='') # doctest: +ELLIPSIS
+    Develop: '/sample-buildout/demo'
+    Uninstalling extdemo.
+    Installing extdemo.
+    Installing demo.
+    ...
+
+Our develop-eggs now includes an egg link for extdemo:
+
+    >>> ls('develop-eggs')
+    -  demo.egg-link
+    -  extdemo.egg-link
+    -  zc.recipe.egg.egg-link
+
+and the extdemo now has a built extension:
+
+    >>> contents = os.listdir(extdemo)
+    >>> bool([f for f in contents if f.endswith('.so') or f.endswith('.pyd')])
+    True
+
+Because develop eggs take precedence over non-develop eggs, the demo
+script will use the new develop egg:
+
+    >>> print_(system(join('bin', 'demo')), end='')
+    2
+
+Egg Recipe API for other Recipes
+================================
+
+It is common for recipes to accept a collection of egg specifications
+and generate scripts based on the resulting working sets.  The egg
+recipe provides an API that other recipes can use.
+
+A recipe can reuse the egg recipe, supporting the eggs, find-links,
+index, and extra-paths options.  This is done by creating an
+egg recipe instance in a recipes's constructor.  In the recipe's
+install script, the egg-recipe instance's working_set method is used
+to collect the requested eggs and working set.
+
+To illustrate, we create a sample recipe that is a very thin layer
+around the egg recipe:
+
+    >>> mkdir(sample_buildout, 'sample')
+    >>> write(sample_buildout, 'sample', 'sample.py',
+    ... """
+    ... import logging, os, sys
+    ... import zc.recipe.egg
+    ...
+    ... def print_(*args):
+    ...     sys.stdout.write(' '.join(map(str, args)) + '\\n')
+    ...
+    ... class Sample:
+    ...
+    ...     def __init__(self, buildout, name, options):
+    ...         self.egg = zc.recipe.egg.Scripts(buildout, name, options)
+    ...         self.name = name
+    ...         self.options = options
+    ...
+    ...     def install(self):
+    ...         extras = self.options['extras'].split()
+    ...         requirements, ws = self.egg.working_set(extras)
+    ...         print_('Part:', self.name)
+    ...         print_('Egg requirements:')
+    ...         for r in requirements:
+    ...             print_(r)
+    ...         print_('Working set:')
+    ...         for d in ws:
+    ...             print_(d)
+    ...         print_('extra paths:', self.egg.extra_paths)
+    ...         return ()
+    ...
+    ...     update = install
+    ... """)
+
+Here we instantiated the egg recipe in the constructor, saving it in
+an attribute.  This also initialized the options dictionary.
+
+In our install method, we called the working_set method on the
+instance we saved.  The working_set method takes an optional sequence
+of extra requirements to be included in the working set.
+
+    >>> write(sample_buildout, 'sample', 'setup.py',
+    ... """
+    ... from setuptools import setup
+    ...
+    ... setup(
+    ...     name = "sample",
+    ...     entry_points = {'zc.buildout': ['default = sample:Sample']},
+    ...     install_requires = 'zc.recipe.egg',
+    ...     )
+    ... """)
+
+
+    >>> write(sample_buildout, 'sample', 'README.txt', " ")
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... develop = sample
+    ... parts = sample-part
+    ...
+    ... [sample-part]
+    ... recipe = sample
+    ... eggs = demo<0.3
+    ... find-links = %(server)s
+    ... index = %(server)sindex
+    ... extras = other
+    ... """ % dict(server=link_server))
+
+    >>> import os
+    >>> os.chdir(sample_buildout)
+    >>> buildout = os.path.join(sample_buildout, 'bin', 'buildout')
+    >>> print_(system(buildout + ' -q'), end='')
+    Part: sample-part
+    Egg requirements:
+    demo<0.3
+    Working set:
+    demoneeded 1.1
+    other 1.0
+    demo 0.2
+    extra paths: []
+
+We can see that the options were augmented with additional data
+computed by the egg recipe by looking at .installed.cfg:
+
+    >>> cat(sample_buildout, '.installed.cfg')
+    [buildout]
+    installed_develop_eggs = /sample-buildout/develop-eggs/sample.egg-link
+    parts = sample-part
+    <BLANKLINE>
+    [sample-part]
+    __buildout_installed__ =
+    __buildout_signature__ = ...
+    _b = /sample-buildout/bin
+    _d = /sample-buildout/develop-eggs
+    _e = /sample-buildout/eggs
+    bin-directory = /sample-buildout/bin
+    develop-eggs-directory = /sample-buildout/develop-eggs
+    eggs = demo<0.3
+    eggs-directory = /sample-buildout/eggs
+    extras = other
+    find-links = http://localhost:27071/
+    index = http://localhost:27071/index
+    recipe = sample
+
+If we use the extra-paths option:
+
+
+    >>> write(sample_buildout, 'buildout.cfg',
+    ... """
+    ... [buildout]
+    ... develop = sample
+    ... parts = sample-part
+    ...
+    ... [sample-part]
+    ... recipe = sample
+    ... eggs = demo<0.3
+    ... find-links = %(server)s
+    ... index = %(server)sindex
+    ... extras = other
+    ... extra-paths = /foo/bar
+    ...               /spam/eggs
+    ... """ % dict(server=link_server))
+
+Then we'll see that reflected in the extra_paths attribute in the egg
+recipe instance:
+
+    >>> print_(system(buildout + ' -q'), end='')
+    Part: sample-part
+    Egg requirements:
+    demo<0.3
+    Working set:
+    demo 0.2
+    other 1.0
+    demoneeded 1.1
+    extra paths: ['/foo/bar', '/spam/eggs']
+
+
+Working set caching
+===================
+
+Working sets are cached, to improve speed on buildouts with multiple similar
+parts based on ``zc.recipe.egg``.
+
+The egg-recipe instance's ``_working_set`` helper method is used to make
+the caching easier. It does the same job as ``working_set()`` but with some
+differences:
+
+- The signature is different: all information needed to build the working set
+  is passed as parameters.
+- The return value is simpler: only an instance of ``pkg_resources.WorkingSet``
+  is returned.
+
+Here's an example:
+
+    >>> from zc.buildout import testing
+    >>> from zc.recipe.egg.egg import Eggs
+    >>> import os
+    >>> import pkg_resources
+    >>> recipe = Eggs(buildout=testing.Buildout(), name='fake-part', options={})
+    >>> eggs_dir = os.path.join(sample_buildout, 'eggs')
+    >>> develop_eggs_dir = os.path.join(sample_buildout, 'develop-eggs')
+    >>> testing.install_develop('zc.recipe.egg', develop_eggs_dir)
+    >>> ws = recipe._working_set(
+    ...     distributions=['zc.recipe.egg', 'demo<0.3'],
+    ...     eggs_dir=eggs_dir,
+    ...     develop_eggs_dir=develop_eggs_dir,
+    ...     index=link_server,
+    ... )
+    Getting...
+    >>> isinstance(ws, pkg_resources.WorkingSet)
+    True
+    >>> sorted(dist.project_name for dist in ws)
+    ['demo', 'demoneeded', 'setuptools', 'zc.buildout', 'zc.recipe.egg']
+
+We'll monkey patch a method in the ``easy_install`` module in order to verify if
+the cache is working:
+
+    >>> import zc.buildout.easy_install
+    >>> old_install = zc.buildout.easy_install.Installer.install
+    >>> def new_install(*args, **kwargs):
+    ...     print('Building working set.')
+    ...     return old_install(*args, **kwargs)
+    >>> zc.buildout.easy_install.Installer.install = new_install
+
+Now we check if the caching is working by verifying if the same working set is
+built only once.
+
+    >>> ws_args_1 = dict(
+    ...     distributions=['demo>=0.1'],
+    ...     eggs_dir=eggs_dir,
+    ...     develop_eggs_dir=develop_eggs_dir,
+    ...     offline=True,
+    ... )
+    >>> ws_args_2 = dict(ws_args_1)
+    >>> ws_args_2['distributions'] = ['demoneeded']
+    >>> recipe._working_set(**ws_args_1)
+    Building working set.
+    <pkg_resources.WorkingSet object at ...>
+    >>> recipe._working_set(**ws_args_1)
+    <pkg_resources.WorkingSet object at ...>
+    >>> recipe._working_set(**ws_args_2)
+    Building working set.
+    <pkg_resources.WorkingSet object at ...>
+    >>> recipe._working_set(**ws_args_1)
+    <pkg_resources.WorkingSet object at ...>
+    >>> recipe._working_set(**ws_args_2)
+    <pkg_resources.WorkingSet object at ...>
+
+Undo monkey patch:
+
+    >>> zc.buildout.easy_install.Installer.install = old_install
+
+Since ``pkg_resources.WorkingSet`` instances are mutable, we must ensure that
+``working_set()`` always returns a pristine copy. Otherwise callers would be
+able to modify instances inside the cache.
+
+Let's create a working set:
+
+    >>> ws = recipe._working_set(**ws_args_1)
+    >>> sorted(dist.project_name for dist in ws)
+    ['demo', 'demoneeded']
+
+Now we add a distribution to it:
+
+    >>> dist = pkg_resources.get_distribution('zc.recipe.egg')
+    >>> ws.add(dist)
+    >>> sorted(dist.project_name for dist in ws)
+    ['demo', 'demoneeded', 'zc.recipe.egg']
+
+Let's call the working_set function again and see if the result remains valid:
+
+    >>> ws = recipe._working_set(**ws_args_1)
+    >>> sorted(dist.project_name for dist in ws)
+    ['demo', 'demoneeded']
+
+Download
+*********
