@@ -98,6 +98,7 @@ func analyzeCargoLock(input []byte) (rs []*model.DependencyItem, err error) {
 		if r == nil {
 			continue
 		}
+		r.IsDirectDependency = true
 		rs = append(rs, r)
 	}
 	return
