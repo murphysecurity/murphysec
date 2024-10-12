@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	list "github.com/bahlo/generic-list-go"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/repeale/fp-go"
 	"golang.org/x/exp/maps"
@@ -15,9 +17,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"sync"
 )
 
-func doBuildout(ctx context.Context, dir string) (e error) {
+func doBuildout(ctx context.Context, dir string) (errorText string, e error) {
 	var cmd = exec.CommandContext(ctx, "buildout")
 	cmd.Dir = dir
 	cmd.Stdin = nil
@@ -36,9 +39,29 @@ func doBuildout(ctx context.Context, dir string) (e error) {
 		e = fmt.Errorf("failed to start buildout process: %w", e)
 		return
 	}
-	launchPipeForward(ctx, "o", stdout)
-	launchPipeForward(ctx, "e", stderr)
+	var locker sync.Mutex
+	var errLines = list.New[string]()
+	var errAppender = func(prefix string, s string) {
+		locker.Lock()
+		defer locker.Unlock()
+		if s == "" {
+			return
+		}
+		if errLines.Len() > 32 {
+			errLines.Remove(errLines.Front())
+		}
+		errLines.PushBack(prefix + ": " + s)
+	}
+	var wg sync.WaitGroup
+	launchPipeForward(ctx, "o", stdout, errAppender, &wg)
+	launchPipeForward(ctx, "e", stderr, errAppender, &wg)
 	e = cmd.Wait()
+	wg.Wait()
+	var errLineI = errLines.Front()
+	for errLineI != nil {
+		errorText += errLineI.Value + "\n"
+		errLineI = errLineI.Next()
+	}
 	if e != nil {
 		e = fmt.Errorf("buildout process failed: %w", e)
 		return
@@ -46,9 +69,11 @@ func doBuildout(ctx context.Context, dir string) (e error) {
 	return
 }
 
-func launchPipeForward(ctx context.Context, prefix string, reader io.ReadCloser) {
+func launchPipeForward(ctx context.Context, prefix string, reader io.ReadCloser, lineAppender func(prefix, s string), wg *sync.WaitGroup) {
 	var log = logctx.Use(ctx).Sugar()
+	wg.Add(1)
 	go func() {
+		defer func() { wg.Done() }()
 		var scanner = bufio.NewScanner(reader)
 		scanner.Split(bufio.ScanLines)
 		scanner.Buffer(nil, 4096)
@@ -62,7 +87,11 @@ func launchPipeForward(ctx context.Context, prefix string, reader io.ReadCloser)
 				}
 				return
 			}
-			log.Debugf("%s: %s", prefix, scanner.Text())
+			var text = scanner.Text()
+			if lineAppender != nil {
+				lineAppender(prefix, text)
+			}
+			log.Debugf("%s: %s", prefix, text)
 		}
 	}()
 }
@@ -76,12 +105,16 @@ func DirHasBuildout(dir string) bool {
 func InspectProject(ctx context.Context, dir string) (*model.Module, error) {
 	var log = logctx.Use(ctx).Sugar()
 
-	var e = doBuildout(ctx, dir)
+	var errText, e = doBuildout(ctx, dir)
 	if e != nil {
 		log.Warnf("failed to run buildout: %s", e.Error())
-		return nil, e
+		if errText != "" {
+			scanerr.Add(ctx, scanerr.Param{
+				Kind:    "auto_build_error",
+				Content: errText,
+			})
+		}
 	}
-
 	var comps = make(map[[2]string]struct{})
 	_ = filepath.WalkDir(dir, func(path string, d fs.DirEntry, e error) error {
 		if ctx.Err() != nil {

@@ -1,6 +1,7 @@
 package python
 
 import (
+	"bufio"
 	"golang.org/x/net/html/charset"
 	"io"
 	"os"
@@ -12,7 +13,7 @@ func readTextFile(path string, maxLength int) ([]byte, error) {
 		return nil, e
 	}
 	defer func() { _ = f.Close() }()
-	r, e := charset.NewReader(f, "")
+	r, e := charset.NewReader(bufio.NewReader(f), "")
 	if e != nil {
 		_ = f.Close()
 		f, e = os.Open(path)

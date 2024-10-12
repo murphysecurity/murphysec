@@ -57,7 +57,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	dir := task.Dir()
 	if !task.IsNoBuild() && buildout.DirHasBuildout(dir) {
 		module, _ := buildout.InspectProject(ctx, dir)
-		if module != nil {
+		if module != nil && len(module.Dependencies) > 0 {
 			task.AddModule(*module)
 			return nil
 		}
