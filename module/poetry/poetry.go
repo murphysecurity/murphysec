@@ -8,6 +8,7 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"github.com/pkg/errors"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -81,14 +82,31 @@ type Manifest struct {
 	Dependencies []model.DependencyItem
 }
 
+var splitVersionPattern = regexp.MustCompile("[<>=~]?=")
+
 func parsePoetry(input []byte) (*Manifest, error) {
 	root := &tomlTree{}
 	if e := toml.Unmarshal(input, &root.v); e != nil {
 		return nil, errors.WithMessage(ErrParsePoetry, "Parse toml failed")
 	}
-	m, ok := root.Get("tool", "poetry", "dependencies").v.(map[string]any)
-	if !ok || m == nil {
-		return nil, errors.WithMessage(ErrParsePoetry, "bad toml")
+	var m = make(map[string]any)
+	if mm, ok := root.Get("tool", "poetry", "dependencies").v.(map[string]any); ok {
+		for k, v := range mm {
+			m[k] = v
+		}
+	}
+	if mm, ok := root.Get("project", "dependencies").v.([]any); ok {
+		for _, _s := range mm {
+			var s, ok = _s.(string)
+			if !ok {
+				continue
+			}
+			var r = splitVersionPattern.Split(s, 2)
+			if len(r) != 2 || strings.TrimSpace(r[0]) == "" {
+				continue
+			}
+			m[strings.TrimSpace(r[0])] = strings.TrimSpace(r[1])
+		}
 	}
 	var deps []model.DependencyItem
 	for k, v := range m {
