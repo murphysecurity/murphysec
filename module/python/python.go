@@ -59,7 +59,6 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		module, _ := buildout.InspectProject(ctx, dir)
 		if module != nil && len(module.Dependencies) > 0 {
 			task.AddModule(*module)
-			return nil
 		}
 	}
 	info, e := collectDepsInfo(ctx, dir)
