@@ -36,6 +36,7 @@ func doBuildout(ctx context.Context, dir string) (errorText string, e error) {
 	}
 	e = cmd.Start()
 	if e != nil {
+		errorText = e.Error()
 		e = fmt.Errorf("failed to start buildout process: %w", e)
 		return
 	}
