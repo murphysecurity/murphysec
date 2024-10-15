@@ -1,7 +1,7 @@
 stages: # List of stages for jobs, and their order of execution
   - build
-  - internal-pub
-  - notify
+  - after_build
+  - after_pack
   - test
 
 variables:
@@ -20,11 +20,7 @@ compose-build:
     expire_in: 1 day
     paths:
       - out/bin/*
-  #  cache:
-  #    key: cli-build-cache-v3
-  #    paths:
-  #      - .go/pkg/mod/
-  #      - .go-cache/
+      - ci/push
   before_script:
     - mkdir -p .go-cache
     - mkdir -p .go
@@ -37,6 +33,7 @@ compose-build:
     - GOOS=linux GOARCH=arm64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-linux-arm64 .
     - GOOS=darwin GOARCH=amd64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-darwin-amd64 .
     - GOOS=darwin GOARCH=arm64 go build -v -ldflags "-s -w -buildid=" -trimpath -o out/bin/murphysec-darwin-arm64 .
+    - go build -v -ldflags "-s -w" -trimpath -o ci/push ./ci
 
 compose-build-with-tag:
   tags:
@@ -46,11 +43,7 @@ compose-build-with-tag:
     expire_in: 1 day
     paths:
       - out/bin/*
-  #  cache:
-  #    key: cli-build-cache-v3
-  #    paths:
-  #      - .go/pkg/mod/
-  #      - .go-cache/
+      - ci/push
   before_script:
     - mkdir -p .go-cache
     - mkdir -p .go
@@ -63,18 +56,25 @@ compose-build-with-tag:
     - GOOS=linux GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-linux-arm64 .
     - GOOS=darwin GOARCH=amd64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-darwin-amd64 .
     - GOOS=darwin GOARCH=arm64 go build -v -ldflags "-s -w -X github.com/murphysecurity/murphysec/infra/buildinfo.version=$CI_COMMIT_TAG -buildid=" -trimpath -o out/bin/murphysec-darwin-arm64 .
+    - go build -v -ldflags "-s -w" -trimpath -o ci/push ./ci
 
-internal-cos-upload:
-  image: iseki0/cos-uploader:v1.1.3
-  stage: internal-pub
+pack:
+  tags:
+    - client-build-shell
+  stage: after_build
   artifacts:
     expire_in: 1 day
     paths:
-      - out/zip/*
+      - out/zip/pro.zip
   script:
     - mkdir out/zip
     - cd out/bin && (ls -1 | xargs -I {} sh -c "sha256sum {} | grep -Po '^\\w+' > {}.sha256") && cd ../..
     - bash -c "cd out/bin/ && zip ../zip/pro.zip *"
+
+internal-cos-upload:
+  image: iseki0/cos-uploader:v1.1.3
+  stage: after_pack
+  script:
     - cos-uploader --local out/bin/murphysec-windows-amd64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-amd64.exe
     - cos-uploader --local out/bin/murphysec-windows-arm64.exe --remote /client/$CI_BUILD_REF_NAME/murphysec-windows-arm64.exe
     - cos-uploader --local out/bin/murphysec-linux-amd64 --remote /client/$CI_BUILD_REF_NAME/murphysec-linux-amd64
@@ -91,15 +91,15 @@ internal-cos-upload:
     - cos-uploader --local out/zip/pro.zip --remote /client/-/pro.zip
 
 lark-notify:
-  image: denoland/deno
-  dependencies: [ ]
-  stage: notify
+  tags:
+    - client-build-shell
+  stage: after_pack
   cache:
     key: cli-deno-cache-1223
     paths:
       - .deno
   script:
-    - deno run --allow-all ci/lark-push.ts
+    - chmod 755 ci/push && ci/push
 
 test:
   tags:
