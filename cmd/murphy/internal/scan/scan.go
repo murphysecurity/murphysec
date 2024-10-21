@@ -62,7 +62,6 @@ func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.SubtaskID)
 	// create task object
 	task = &model.ScanTask{
-		Ctx:         ctx,
 		Mode:        createSubtask.ScanMode,
 		AccessType:  createSubtask.AccessType,
 		TaskId:      createTaskResp.TaskID,
@@ -175,7 +174,6 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 
 	// create task object
 	task := &model.ScanTask{
-		Ctx:             ctx,
 		Mode:            mode,
 		AccessType:      accessType,
 		ProjectPath:     dir,

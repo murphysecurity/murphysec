@@ -57,7 +57,6 @@ func SbomScan() *cobra.Command {
 func processDir(ctx context.Context, dir string) ([]byte, error) {
 	var e error
 	var task = model.ScanTask{
-		Ctx:         ctx,
 		ProjectPath: dir,
 	}
 	ctx = model.WithScanTask(ctx, &task)

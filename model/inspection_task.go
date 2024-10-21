@@ -3,8 +3,6 @@ package model
 import (
 	"context"
 	"path/filepath"
-
-	"github.com/murphysecurity/murphysec/infra/logctx"
 )
 
 type InspectionTask struct {
@@ -49,13 +47,8 @@ func UseInspectionTask(ctx context.Context) *InspectionTask {
 }
 
 func (i *InspectionTask) AddModule(module Module) {
-	var logger = logctx.Use(i.ctx).Sugar()
-	logger.Infof("add module: %v", module)
 	if filepath.IsAbs(module.ModulePath) {
-		relPath, e := filepath.Rel(i.scanTask.ProjectPath, module.ModulePath)
-		if e != nil {
-			logger.Warnf("get module relative-path: %v", e)
-		}
+		relPath, _ := filepath.Rel(i.scanTask.ProjectPath, module.ModulePath)
 		module.ModulePath = relPath
 	}
 	if module.ModulePath == "." {

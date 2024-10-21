@@ -53,7 +53,6 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 	}
 
 	var scantask = &model.ScanTask{
-		Ctx:         ctx,
 		ProjectPath: scanDir,
 		AccessType:  model.AccessTypeCli,
 		Mode:        model.ScanModeSource,

@@ -6,7 +6,6 @@ import (
 
 // ScanTask 表示当前扫描任务
 type ScanTask struct {
-	Ctx             context.Context
 	ProjectPath     string
 	AccessType      AccessType
 	Mode            ScanMode
@@ -24,7 +23,6 @@ type ScanTask struct {
 
 func (s *ScanTask) BuildInspectionTask(dir string) *InspectionTask {
 	return &InspectionTask{
-		ctx:           s.Ctx,
 		scanTask:      s,
 		inspectionDir: dir,
 	}
