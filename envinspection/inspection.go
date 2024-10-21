@@ -13,7 +13,9 @@ import (
 func InspectEnv(ctx context.Context) error {
 	var LOG = logctx.Use(ctx).Sugar()
 	task := model.UseScanTask(ctx)
-	ctx = model.WithScanTask(ctx, task)
+	if task == nil {
+		panic("task == nil")
+	}
 
 	var packageManager = "unmanaged"
 	var osn, _ = osname.OsName()
