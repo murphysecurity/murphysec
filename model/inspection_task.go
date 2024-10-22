@@ -6,7 +6,6 @@ import (
 )
 
 type InspectionTask struct {
-	ctx           context.Context
 	scanTask      *ScanTask
 	inspectionDir string
 }
