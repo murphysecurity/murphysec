@@ -1,16 +1,19 @@
 package logger
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"time"
+	"unsafe"
 )
 
 const defaultLogFilePath = env.HomeSubdir + "/logs"
@@ -33,7 +36,7 @@ func CreateLogFile(_filepath string) (_ *os.File, err error) {
 	if e := os.MkdirAll(filepath.Dir(logFilepath), 0755); e != nil {
 		return nil, e
 	}
-
+	_ = checkOrCreateCacheDirTag(filepath.Dir(logFilepath))
 	if f, e := os.OpenFile(logFilepath, os.O_CREATE+os.O_RDWR+os.O_APPEND, 0644); e != nil {
 		return nil, e
 	} else {
@@ -77,4 +80,51 @@ func LogFileCleanup() {
 			}
 		}
 	}
+}
+
+const cacheDirTagPrefix = `Signature: 8a477f597d28d172789f06886806bc55`
+const cacheDirTagSuffix = `
+# This file is a cache directory tag created by murphysec.
+# For information about cache directory tags, see:
+#	https://bford.info/cachedir/
+`
+const cacheDirTagFileName = "CACHEDIR.TAG"
+
+func checkOrCreateCacheDirTag(dir string) (e error) {
+	var binaryCDT = unsafe.Slice(unsafe.StringData(cacheDirTagPrefix), len(cacheDirTagPrefix))
+	var f *os.File
+	var ccFp = filepath.Join(dir, cacheDirTagFileName)
+	f, e = os.Open(ccFp)
+	var fileOk = false
+	if e == nil {
+		var buf = make([]byte, len(cacheDirTagPrefix))
+		_, e = io.ReadFull(f, buf)
+		if e == nil && bytes.Compare(binaryCDT, buf) == 0 {
+			fileOk = true
+		}
+		e = f.Close()
+		if e != nil {
+			return
+		}
+	}
+	if fileOk {
+		return
+	}
+	var binaryCDT2 = unsafe.Slice(unsafe.StringData(cacheDirTagSuffix), len(cacheDirTagSuffix))
+	f, e = os.OpenFile(ccFp, os.O_CREATE+os.O_WRONLY+os.O_TRUNC, 0644)
+	if e != nil {
+		return
+	}
+	defer func() {
+		var e2 = f.Close()
+		if e == nil {
+			e = e2
+		}
+	}()
+	_, e = f.Write(binaryCDT)
+	if e != nil {
+		return
+	}
+	_, e = f.Write(binaryCDT2)
+	return
 }
