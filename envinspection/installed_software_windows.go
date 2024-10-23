@@ -45,28 +45,31 @@ func listSubKeys(ctx context.Context, key registry.Key, path string) ([]string, 
 }
 
 func listInstalledSoftwareWindows(ctx context.Context) ([]model.DependencyItem, error) {
-	paths, e := listSubKeys(ctx, registry.LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
-	if e != nil {
-		return nil, e
-	}
+	var rKeys = []registry.Key{registry.CURRENT_USER, registry.LOCAL_MACHINE}
 	var r []model.DependencyItem
-	for _, p := range paths {
-		k, e := registry.OpenKey(registry.LOCAL_MACHINE, p, registry.READ)
+	for _, rKey := range rKeys {
+		paths, e := listSubKeys(ctx, rKey, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
 		if e != nil {
-			continue
+			return nil, e
 		}
-		displayName, _, _ := k.GetStringValue("DisplayName")
-		displayVersion, _, _ := k.GetStringValue("DisplayVersion")
-		_ = k.Close()
-		if displayName == "" {
-			continue
+		for _, p := range paths {
+			k, e := registry.OpenKey(rKey, p, registry.READ)
+			if e != nil {
+				continue
+			}
+			displayName, _, _ := k.GetStringValue("DisplayName")
+			displayVersion, _, _ := k.GetStringValue("DisplayVersion")
+			_ = k.Close()
+			if displayName == "" {
+				continue
+			}
+			r = append(r, model.DependencyItem{
+				Component: model.Component{
+					CompName:    displayName,
+					CompVersion: displayVersion,
+				},
+			})
 		}
-		r = append(r, model.DependencyItem{
-			Component: model.Component{
-				CompName:    displayName,
-				CompVersion: displayVersion,
-			},
-		})
 	}
 	return r, nil
 }
