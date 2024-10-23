@@ -223,8 +223,7 @@ func envScanRun(cmd *cobra.Command, args []string) {
 func dfScanRun(cmd *cobra.Command, args []string) {
 	var ctx = context.TODO()
 	ctx = scanerr.WithCtx(ctx)
-	// todo
-	if sbomOutputConfig != "" && sbomOutputConfig != "-" {
+	if sbomOutputType.Valid {
 		ctx = ui.With(ctx, ui.None)
 	} else if jsonOutput {
 		ctx = ui.With(ctx, ui.IDEA)
