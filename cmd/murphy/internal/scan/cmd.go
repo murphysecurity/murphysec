@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
@@ -18,6 +19,8 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
+	"io"
+	"os"
 	"path/filepath"
 )
 
@@ -31,6 +34,8 @@ var privateSourceId string
 var privateSourceName string
 var projectTagNames []string
 var concurrentNumber int
+var sbomOutputConfig string
+var sbomOutputType common.SBOMFormatFlag
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -63,6 +68,8 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
+	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "", "")
+	c.Flags().Var(&sbomOutputType, "sbom-format", "")
 	return &c
 }
 
@@ -75,6 +82,8 @@ func EnvCmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
+	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "")
+	c.Flags().Var(&sbomOutputType, "sbom-format", "")
 	return &c
 }
 
@@ -164,7 +173,9 @@ func scanRun(cmd *cobra.Command, args []string) {
 
 func envScanRun(cmd *cobra.Command, args []string) {
 	var ctx = context.TODO()
-	if jsonOutput {
+	if sbomOutputType.Valid {
+		ctx = ui.With(ctx, ui.None)
+	} else if jsonOutput {
 		ctx = ui.With(ctx, ui.IDEA)
 	} else if onlyTaskId {
 		ctx = ui.With(ctx, ui.None)
@@ -172,12 +183,26 @@ func envScanRun(cmd *cobra.Command, args []string) {
 		ctx = ui.With(ctx, ui.CLI)
 	}
 	var e error
-	ctx, e = commonInit(ctx)
+	if sbomOutputType.Valid {
+		ctx, e = commonInitNoAPI(ctx)
+	} else {
+		ctx, e = commonInit(ctx)
+	}
 	if e != nil {
 		return
 	}
 	logger := logctx.Use(ctx).Sugar()
-	r, e := envScan(ctx)
+	var r *model.ScanTask
+	if sbomOutputType.Valid {
+		r, e = envScanSbomOnly(ctx)
+		if e != nil {
+			exitcode.Set(1)
+		}
+		doSBOMOnlyPrint(ctx, r)
+		return
+	} else {
+		r, e = envScan(ctx)
+	}
 	if errors.Is(e, inspector.ErrNoWait) {
 		return
 	}
@@ -198,7 +223,10 @@ func envScanRun(cmd *cobra.Command, args []string) {
 func dfScanRun(cmd *cobra.Command, args []string) {
 	var ctx = context.TODO()
 	ctx = scanerr.WithCtx(ctx)
-	if jsonOutput {
+	// todo
+	if sbomOutputConfig != "" && sbomOutputConfig != "-" {
+		ctx = ui.With(ctx, ui.None)
+	} else if jsonOutput {
 		ctx = ui.With(ctx, ui.IDEA)
 	} else if onlyTaskId {
 		ctx = ui.With(ctx, ui.None)
@@ -215,8 +243,16 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 	if e != nil {
 		return
 	}
-	ctx, e = commonInit(ctx)
+	if sbomOutputType.Valid {
+		ctx, e = commonInitNoAPI(ctx)
+	} else {
+		ctx, e = commonInit(ctx)
+	}
 	if e != nil {
+		return
+	}
+	if sbomOutputType.Valid {
+		scanSbomOnly(ctx, scanDir)
 		return
 	}
 	logger := logctx.Use(ctx).Sugar()
@@ -334,4 +370,36 @@ func reportIdeError(ctx context.Context, status model.IDEStatus, e error) {
 		resp.ErrMsg = e.Error()
 	}
 	fmt.Println(string(must.A(json.MarshalIndent(resp, "", "  "))))
+}
+
+func doSBOMOnlyPrint(ctx context.Context, task *model.ScanTask) {
+	var logger = logctx.Use(ctx)
+	_ = logger.Sync()
+	if sbomOutputConfig == "" {
+		panic("sbomOutputConfig == \"\"")
+	}
+	var writer io.Writer
+	if sbomOutputConfig == "-" {
+		writer = os.Stdout
+	} else {
+		f, e := os.OpenFile(sbomOutputConfig, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if e != nil {
+			panic(e)
+		}
+		writer = f
+		defer func() {
+			var e = f.Close()
+			if e != nil {
+				panic(e)
+			}
+		}()
+	}
+	var bufioWriter = bufio.NewWriter(writer)
+	var enc = json.NewEncoder(bufioWriter)
+	must.M(bufioWriter.Flush())
+	enc.SetIndent("", "    ")
+	if task.Modules == nil {
+		task.Modules = make([]model.Module, 0)
+	}
+	must.M(enc.Encode(map[string]any{"modules": task.Modules}))
 }

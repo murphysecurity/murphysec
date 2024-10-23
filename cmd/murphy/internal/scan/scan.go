@@ -24,6 +24,13 @@ import (
 	"go.uber.org/zap"
 )
 
+func envScanSbomOnly(ctx context.Context) (task *model.ScanTask, e error) {
+	task = &model.ScanTask{}
+	ctx = model.WithScanTask(ctx, task)
+	e = envinspection.InspectEnv(ctx)
+	return
+}
+
 func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 	logger := logctx.Use(ctx).Sugar()
 	cv.DisplayScanning(ctx)
@@ -109,6 +116,15 @@ func postScanHook(ctx context.Context) (a any, e error) {
 	cv.DisplayStatusClear(ctx)
 	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum, len(result.VulnInfoMap))
 	return
+}
+
+func scanSbomOnly(ctx context.Context, dir string) {
+	var task = &model.ScanTask{
+		ProjectPath: dir,
+	}
+	ctx = model.WithScanTask(ctx, task)
+	_ = inspector.ManagedInspect(ctx)
+	doSBOMOnlyPrint(ctx, task)
 }
 
 func scan(ctx context.Context, dir string, accessType model.AccessType, mode model.ScanMode) (*model.ScanTask, error) {
