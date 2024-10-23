@@ -10,7 +10,6 @@ import (
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/inspector"
-	logger2 "github.com/murphysecurity/murphysec/logger"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
@@ -37,7 +36,7 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 	)
 	ctx = scanerr.WithCtx(ctx)
 	env.ScannerScan = true
-	common.LogLevel = logger2.LevelDebug
+	must.Must(common.LogLevel.Set("debug"))
 	ctx, e = common.InitLogger0(ctx, true)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "init logger failed: %v\n", e)

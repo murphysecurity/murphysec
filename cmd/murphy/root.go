@@ -18,7 +18,6 @@ import (
 )
 
 var versionFlag bool
-var consoleLogLevelOverride string
 
 func preRun(cmd *cobra.Command, args []string) error {
 	if versionFlag {
@@ -28,10 +27,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	logger.LogFileCleanup()
-
-	if e := common.LogLevel.Of(consoleLogLevelOverride); e != nil {
-		return e
-	}
 
 	return nil
 }
@@ -52,7 +47,7 @@ func rootCmd() *cobra.Command {
 	// Logging
 	c.PersistentFlags().BoolVar(&common.NoLogFile, "no-log-file", false, "do not write log file")
 	c.PersistentFlags().StringVar(&common.LogFileOverride, "write-log-to", "", "specify log file path")
-	c.PersistentFlags().StringVar(&consoleLogLevelOverride, "log-level", "silent", "specify log level, must be silent|error|warn|info|debug")
+	c.PersistentFlags().Var(&common.LogLevel, "log-level", "specify log level, must be silent|error|warn|info|debug")
 	c.PersistentFlags().BoolVar(&common.EnableNetworkLogging, "network-log", false, "print network data")
 	_ = c.PersistentFlags().MarkHidden("network-log")
 

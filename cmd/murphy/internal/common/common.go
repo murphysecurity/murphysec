@@ -25,7 +25,10 @@ var (
 	EnableNetworkLogging     bool
 	NoLogFile                bool
 	LogFileOverride          string
-	LogLevel                 logger.Level
+	LogLevel                 = LogLevelFlag{
+		Level: logger.LevelSilent,
+		Valid: true,
+	}
 )
 
 func GetToken(ctx context.Context) (string, error) {
@@ -102,8 +105,8 @@ func InitLogger0(ctx context.Context, mergeToStdout bool) (context.Context, erro
 	} else {
 		stderr = zapcore.Lock(os.Stderr)
 	}
-	if LogLevel > logger.LevelSilent {
-		consoleCore = zapcore.NewCore(logger.ZapConsoleEncoder, stderr, LogLevel.ZapLevel())
+	if LogLevel.Level > logger.LevelSilent {
+		consoleCore = zapcore.NewCore(logger.ZapConsoleEncoder, stderr, LogLevel.Level.ZapLevel())
 	}
 
 	loggerCore := zapcore.NewTee(consoleCore, jsonCore)
