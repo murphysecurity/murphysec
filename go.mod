@@ -24,6 +24,7 @@ require (
 	github.com/repeale/fp-go v0.11.1
 	github.com/samber/lo v1.39.0
 	github.com/spf13/cobra v1.8.0
+	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.9.0
 	github.com/titanous/json5 v1.0.0
 	github.com/vifraa/gopom v0.2.2
@@ -72,7 +73,6 @@ require (
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/skeema/knownhosts v1.2.2 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
 	github.com/xanzy/go-gitlab v0.93.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
