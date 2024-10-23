@@ -68,8 +68,8 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
-	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "", "")
-	c.Flags().Var(&sbomOutputType, "sbom-format", "")
+	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "Specify the SBOM output file path, use \"-\" to output to stdout")
+	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) Specify the SBOM format, currently supports: murphysec1.1+json")
 	return &c
 }
 
@@ -82,8 +82,8 @@ func EnvCmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
-	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "")
-	c.Flags().Var(&sbomOutputType, "sbom-format", "")
+	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "Specify the SBOM output file path, use \"-\" to output to stdout")
+	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) Specify the SBOM format, currently supports: murphysec1.1+json")
 	return &c
 }
 
