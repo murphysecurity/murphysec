@@ -99,7 +99,7 @@ func checkOrCreateCacheDirTag(dir string) (e error) {
 	if e == nil {
 		var buf = make([]byte, len(cacheDirTagPrefix))
 		_, e = io.ReadFull(f, buf)
-		if e == nil && bytes.Compare(binaryCDT, buf) == 0 {
+		if e == nil && bytes.Equal(binaryCDT, buf) {
 			fileOk = true
 		}
 		e = f.Close()
