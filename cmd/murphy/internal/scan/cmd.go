@@ -69,7 +69,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "Specify the SBOM output file path, use \"-\" to output to stdout")
-	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) Specify the SBOM format, currently supports: murphysec1.1+json")
+	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) Specify the SBOM format, currently supports: msdx1.1+json")
 	return &c
 }
 
@@ -83,7 +83,7 @@ func EnvCmd() *cobra.Command {
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "Specify the SBOM output file path, use \"-\" to output to stdout")
-	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) Specify the SBOM format, currently supports: murphysec1.1+json")
+	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) Specify the SBOM format, currently supports: msdx1.1+json")
 	return &c
 }
 
