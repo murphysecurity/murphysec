@@ -1,12 +1,14 @@
 package pnpm
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	v5 "github.com/murphysecurity/murphysec/module/pnpm/v5"
+	v9 "github.com/murphysecurity/murphysec/module/pnpm/v9"
 	"io"
 	"os"
 	"path/filepath"
@@ -68,6 +70,12 @@ func processDir(ctx context.Context, dir string) (result processDirResult) {
 			Name:         "",
 			Dependencies: items,
 		}}
+	} else if versionNumber == 9 {
+		result.trees, e = v9.Parse(ctx, bytes.NewReader(data))
+		if e != nil {
+			result.e = fmt.Errorf("v9: %w", e)
+			return
+		}
 	} else {
 		result.e = fmt.Errorf("unsupported version \"%s\"", version)
 		return
