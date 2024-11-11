@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	"regexp"
+	"strconv"
 )
 
 type lockfileVersionIndicator struct {
@@ -19,11 +20,10 @@ func parseLockfileVersion(data []byte) (string, error) {
 }
 
 func matchLockfileVersion(s string) int {
-	if regexp.MustCompile(`^v?5\.`).MatchString(s) {
-		return 5
-	}
-	if regexp.MustCompile(`^v?6\.`).MatchString(s) {
-		return 6
+	d := regexp.MustCompile(`^v?(\d+)(\.|$)`).FindStringSubmatch(s)
+	if d != nil {
+		n, _ := strconv.Atoi(d[1])
+		return n
 	}
 	return 0
 }
