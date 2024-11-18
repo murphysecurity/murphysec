@@ -105,11 +105,7 @@ func analyzeCargoLock(input []byte) (rs []*model.DependencyItem, err error) {
 }
 
 func _buildTree(lock map[[2]string][][2]string, key [2]string, visited map[[2]string]struct{}) *model.DependencyItem {
-	if _, ok := visited[key]; ok {
-		return nil
-	}
 	visited[key] = struct{}{}
-	defer delete(visited, key)
 	item, ok := lock[key]
 	if !ok {
 		return nil
@@ -121,6 +117,10 @@ func _buildTree(lock map[[2]string][][2]string, key [2]string, visited map[[2]st
 			EcoRepo:     EcoRepo,
 		},
 	}
+	if _, ok := visited[key]; ok {
+		return r
+	}
+
 	for _, dep := range item {
 		c := _buildTree(lock, dep, visited)
 		if c == nil {
