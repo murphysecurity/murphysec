@@ -36,6 +36,9 @@ var projectTagNames []string
 var concurrentNumber int
 var sbomOutputConfig string
 var sbomOutputType common.SBOMFormatFlag
+var webhookAddr string
+var webhookMode common.WebhookModeFlag
+var extraData string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -52,6 +55,9 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&privateSourceName, "maven-setting-name", "", "specify the name of the Maven settings.xml file used during the scan")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().IntVarP(&concurrentNumber, "max-concurrent-uploads", "j", 1, "Set the maximum number of parallel uploads.")
+	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "Specify the webhook address")
+	c.Flags().Var(&webhookMode, "webhook-mode", "Specify the webhook mode, currently supports: simple, full(default)")
+	c.Flags().StringVar(&extraData, "extra-data", "", "Specify the extra data")
 	return &c
 }
 
@@ -70,6 +76,9 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "Specify the SBOM output file path, use \"-\" to output to stdout")
 	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) Specify the SBOM format, currently supports: msdx1.1+json")
+	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "Specify the webhook address")
+	c.Flags().Var(&webhookMode, "webhook-mode", "Specify the webhook mode, currently supports: simple, full(default)")
+	c.Flags().StringVar(&extraData, "extra-data", "", "Specify the extra data")
 	return &c
 }
 
@@ -84,6 +93,9 @@ func EnvCmd() *cobra.Command {
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "Specify the SBOM output file path, use \"-\" to output to stdout")
 	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) Specify the SBOM format, currently supports: msdx1.1+json")
+	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "Specify the webhook address")
+	c.Flags().Var(&webhookMode, "webhook-mode", "Specify the webhook mode, currently supports: simple, full(default)")
+	c.Flags().StringVar(&extraData, "extra-data", "", "Specify the extra data")
 	return &c
 }
 

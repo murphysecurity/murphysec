@@ -24,6 +24,9 @@ type CreateSubTaskRequest struct {
 	PackagePrivateId   string           `json:"package_private_id,omitempty"`
 	PackagePrivateName string           `json:"package_private_name,omitempty"`
 	ProjectTagNames    []string         `json:"project_tag_names,omitempty"`
+	WebhookAddr        *string          `json:"webhook_addr,omitempty"`
+	WebhookMode        *string          `json:"webhook_mode,omitempty"`
+	ExtraData          *string          `json:"extra_data,omitempty"`
 }
 
 type CreateSubTaskResponse struct {

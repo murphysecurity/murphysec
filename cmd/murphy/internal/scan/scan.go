@@ -161,6 +161,11 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 			return nil, e
 		}
 	}
+	if webhookAddr != "" {
+		createSubtask.WebhookAddr = ref.OmitZero(webhookAddr)
+		createSubtask.WebhookMode = ref.OmitZero(webhookMode.String())
+	}
+	createSubtask.ExtraData = ref.OmitZero(extraData)
 
 	// get git info
 	var gitSummary *gitinfo.Summary
