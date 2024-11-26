@@ -17,9 +17,9 @@ func (w *WebhookModeFlag) IsSimple() bool {
 
 func (w *WebhookModeFlag) String() string {
 	if w.simple {
-		return "webhook_mode:simple"
+		return "simple"
 	}
-	return "webhook_mode:full"
+	return "full"
 }
 
 func (w *WebhookModeFlag) Set(s string) error {
