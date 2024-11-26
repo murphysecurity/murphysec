@@ -28,8 +28,10 @@ func (w *WebhookModeFlag) Set(s string) error {
 		w.simple = true
 	} else if s == "" || s == "full" {
 		w.simple = false
+	} else {
+		return fmt.Errorf("invalid webhook mode: %s", strconv.Quote(s))
 	}
-	return fmt.Errorf("invalid webhook mode: %s", strconv.Quote(s))
+	return nil
 }
 
 func (w *WebhookModeFlag) Type() string {
