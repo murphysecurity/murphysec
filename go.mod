@@ -4,6 +4,7 @@ go 1.22.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
+	github.com/Masterminds/semver v1.5.0
 	github.com/antchfx/xmlquery v1.4.1
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/bahlo/generic-list-go v0.2.0
@@ -37,6 +38,7 @@ require (
 	golang.org/x/sys v0.24.0
 	golang.org/x/text v0.16.0
 	gopkg.in/yaml.v3 v3.0.1
+	gorm.io/gorm v1.25.12
 )
 
 require (
