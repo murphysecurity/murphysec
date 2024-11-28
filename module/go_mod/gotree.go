@@ -32,6 +32,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	}
 	var dependencies []model.DependencyItem
 	var packageToPackageUsed = make(map[string]string)
+	var isUsed = make(map[string]bool)
 	for _, j := range rootList {
 		dependencie := model.DependencyItem{
 			Component: model.Component{
@@ -42,7 +43,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			IsDirectDependency: true,
 		}
 		logger.Debug("buildTree  start : " + j)
-		buildingDependencyTree(nameVersionMp, &dependencie, sonTree, packageToPackageUsed, logger)
+		buildingDependencyTree(nameVersionMp, &dependencie, sonTree, &packageToPackageUsed, &isUsed, logger)
 
 		dependencies = append(dependencies, dependencie)
 	}
@@ -56,24 +57,29 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	task.AddModule(m)
 	return nil
 }
-func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, sonTree map[string][]string, packageToPackageUsed map[string]string, logger *zap.Logger) {
+func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, sonTree map[string][]string, packageToPackageUsed *map[string]string, isUsed *map[string]bool, logger *zap.Logger) {
 	for name, list := range sonTree {
 		if d.CompName == name {
 			for _, j := range list {
-				if n, ok := packageToPackageUsed[j]; ok && n == d.CompName {
+				if n, ok := (*packageToPackageUsed)[j]; ok && n == d.CompName && (*isUsed)[j] {
 					continue
 				}
 				mod := model.DependencyItem{
 					Component: model.Component{
 						CompName:    j,
 						CompVersion: dInfo[j],
+						EcoRepo:     EcoRepo,
 					},
 					IsDirectDependency: false,
 				}
 				d.Dependencies = append(d.Dependencies, mod)
-				packageToPackageUsed[j] = d.CompName
-				packageToPackageUsed[d.CompName] = j
-				buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, logger)
+				(*packageToPackageUsed)[j] = d.CompName
+				(*packageToPackageUsed)[d.CompName] = j
+				if _, ok := (*isUsed)[j]; !ok {
+					(*isUsed)[j] = true
+					buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, isUsed, logger)
+				}
+
 			}
 		}
 	}
@@ -86,7 +92,6 @@ func readCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]st
 		dInfo    = make(map[string]string)
 		rootList []string
 		sonTree  = make(map[string][]string)
-		isUsed   = make(map[string]bool)
 	)
 	cmd.Dir = dir
 	modName, _, err = getModInfo(dir)
@@ -160,19 +165,15 @@ func readCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]st
 				continue
 			}
 			//如果是子树级就构建子树
-			//避免 环
-			if _, ok := isUsed[n]; !ok {
-				name, _, err := ParseDependencyLine(t[0])
-				if err != nil {
-					return nil, nil, nil, err
-				}
-				isUsed[n] = true
-				sonTree[name] = append(sonTree[name], n)
+			name, _, err := ParseDependencyLine(t[0])
+			if err != nil {
+				return nil, nil, nil, err
 			}
-
+			sonTree[name] = append(sonTree[name], n)
 		}
 		logger.Debug("go: " + text)
 	}
+
 	stdout.Close()
 	cmd.Wait()
 	return dInfo, rootList, sonTree, nil
