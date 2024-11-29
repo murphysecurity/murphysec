@@ -24,16 +24,17 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
 	modName, _, err := getModInfo(modFilePath)
 	if err != nil {
+		logger.Error("get mod info error :", zap.Error(err))
 		return err
 	}
 	nameVersionMp, rootList, sonTree, err := readCmd(ctx, task.Dir(), logger)
 	if err != nil {
+		logger.Error("read cmd info error :", zap.Error(err))
 		return err
 	}
 	var dependencies []model.DependencyItem
-	var packageToPackageUsed = make(map[string]string)
-	var isUsed = make(map[string]bool)
 	for _, j := range rootList {
+		var packageToPackageUsed = make(map[string][]string)
 		dependencie := model.DependencyItem{
 			Component: model.Component{
 				CompName:    j,
@@ -43,8 +44,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			IsDirectDependency: true,
 		}
 		logger.Debug("buildTree  start : " + j)
-		buildingDependencyTree(nameVersionMp, &dependencie, sonTree, &packageToPackageUsed, &isUsed, logger)
-
+		buildingDependencyTree(nameVersionMp, &dependencie, sonTree, &packageToPackageUsed, logger)
 		dependencies = append(dependencies, dependencie)
 	}
 	m := model.Module{
@@ -57,11 +57,17 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	task.AddModule(m)
 	return nil
 }
-func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, sonTree map[string][]string, packageToPackageUsed *map[string]string, isUsed *map[string]bool, logger *zap.Logger) {
+func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, sonTree map[string][]string, packageToPackageUsed *map[string][]string, logger *zap.Logger) {
 	for name, list := range sonTree {
 		if d.CompName == name {
 			for _, j := range list {
-				if n, ok := (*packageToPackageUsed)[j]; ok && n == d.CompName && (*isUsed)[j] {
+				check := false
+				for _, v := range (*packageToPackageUsed)[d.CompName] {
+					if v == j {
+						check = true
+					}
+				}
+				if check {
 					continue
 				}
 				mod := model.DependencyItem{
@@ -73,13 +79,8 @@ func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, so
 					IsDirectDependency: false,
 				}
 				d.Dependencies = append(d.Dependencies, mod)
-				(*packageToPackageUsed)[j] = d.CompName
-				(*packageToPackageUsed)[d.CompName] = j
-				if _, ok := (*isUsed)[j]; !ok {
-					(*isUsed)[j] = true
-					buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, isUsed, logger)
-				}
-
+				(*packageToPackageUsed)[d.CompName] = append((*packageToPackageUsed)[d.CompName], j)
+				buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, logger)
 			}
 		}
 	}
@@ -94,8 +95,9 @@ func readCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]st
 		sonTree  = make(map[string][]string)
 	)
 	cmd.Dir = dir
-	modName, _, err = getModInfo(dir)
+	modName, _, err = getModInfo(filepath.Join(dir, "go.mod"))
 	if err != nil {
+		logger.Error("get mod info error :", zap.Error(err))
 		return nil, nil, nil, err
 	}
 	stdout, err := cmd.StdoutPipe()
@@ -167,6 +169,7 @@ func readCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]st
 			//如果是子树级就构建子树
 			name, _, err := ParseDependencyLine(t[0])
 			if err != nil {
+				logger.Error(err.Error())
 				return nil, nil, nil, err
 			}
 			sonTree[name] = append(sonTree[name], n)
@@ -199,9 +202,16 @@ func comperVersion(version1, version2 string) (string, error) {
 	}
 	return version2, nil
 }
-func getModInfo(filepath string) (string, string, error) {
-	by, _ := os.ReadFile("./go.mod")
-	f, _ := modfile.Parse("./go.mod", by, nil)
+
+func getModInfo(filepaths string) (string, string, error) {
+	by, err := os.ReadFile(filepaths)
+	if err != nil {
+		return "", "", err
+	}
+	f, err := modfile.ParseLax(filepaths, by, nil)
+	if err != nil {
+		return "", "", err
+	}
 	return f.Module.Mod.Path, f.Go.Version, nil
 }
 func ParseDependencyLine(line string) (string, string, error) {
