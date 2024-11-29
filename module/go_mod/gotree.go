@@ -22,7 +22,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	logger := logctx.Use(ctx)
 	modFilePath := filepath.Join(task.Dir(), "go.mod")
 	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
-	modName, _, err := getModInfo(modFilePath)
+	modName, err := getModInfo(modFilePath)
 	if err != nil {
 		logger.Error("get mod info error :", zap.Error(err))
 		return err
@@ -95,7 +95,7 @@ func readCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]st
 		sonTree  = make(map[string][]string)
 	)
 	cmd.Dir = dir
-	modName, _, err = getModInfo(filepath.Join(dir, "go.mod"))
+	modName, err = getModInfo(filepath.Join(dir, "go.mod"))
 	if err != nil {
 		logger.Error("get mod info error :", zap.Error(err))
 		return nil, nil, nil, err
@@ -203,16 +203,16 @@ func comperVersion(version1, version2 string) (string, error) {
 	return version2, nil
 }
 
-func getModInfo(filepaths string) (string, string, error) {
+func getModInfo(filepaths string) (string, error) {
 	by, err := os.ReadFile(filepaths)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	f, err := modfile.ParseLax(filepaths, by, nil)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
-	return f.Module.Mod.Path, f.Go.Version, nil
+	return f.Module.Mod.Path, nil
 }
 func ParseDependencyLine(line string) (string, string, error) {
 	parts := strings.Split(line, "@")
