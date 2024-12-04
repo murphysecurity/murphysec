@@ -27,13 +27,19 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		logger.Error("get mod info error :", zap.Error(err))
 		return err
 	}
-	nameVersionMp, rootList, sonTree, err := readCmd(ctx, task.Dir(), logger)
+	directDependencyList, err := readListCmd(ctx, task.Dir(), logger)
 	if err != nil {
-		logger.Error("read cmd info error :", zap.Error(err))
+		logger.Error("read list cmd info error :", zap.Error(err))
 		return err
 	}
+	nameVersionMp, indeterminacyRootList, sonTree, err := readGraphCmd(ctx, task.Dir(), directDependencyList, logger)
+	if err != nil {
+		logger.Error("read graph cmd info error :", zap.Error(err))
+		return err
+	}
+
 	var dependencies []model.DependencyItem
-	for _, j := range rootList {
+	for _, j := range indeterminacyRootList {
 		var packageToPackageUsed = make(map[string][]string)
 		dependencie := model.DependencyItem{
 			Component: model.Component{
@@ -44,8 +50,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			IsDirectDependency: true,
 		}
 		logger.Debug("buildTree  start : " + j)
-		buildingDependencyTree(nameVersionMp, &dependencie, sonTree, &packageToPackageUsed, logger)
-		dependencies = append(dependencies, dependencie)
+		dependencies = append(dependencies, buildingDependencyTree(nameVersionMp, &dependencie, sonTree, &packageToPackageUsed, logger))
 	}
 	m := model.Module{
 		PackageManager: "gomod",
@@ -57,7 +62,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	task.AddModule(m)
 	return nil
 }
-func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, sonTree map[string][]string, packageToPackageUsed *map[string][]string, logger *zap.Logger) {
+func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, sonTree map[string][]string, packageToPackageUsed *map[string][]string, logger *zap.Logger) model.DependencyItem {
 	for name, list := range sonTree {
 		if d.CompName == name {
 			for _, j := range list {
@@ -78,14 +83,71 @@ func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, so
 					},
 					IsDirectDependency: false,
 				}
-				d.Dependencies = append(d.Dependencies, mod)
 				(*packageToPackageUsed)[d.CompName] = append((*packageToPackageUsed)[d.CompName], j)
-				buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, logger)
+				d.Dependencies = append(d.Dependencies, buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, logger))
 			}
 		}
 	}
+	return *d
 }
-func readCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]string, []string, map[string][]string, error) {
+func readListCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]bool, error) {
+	var (
+		err error
+		cmd = exec.CommandContext(ctx, "go", "list", "-mod=readonly", "-m", "-f", "'{{if not (or .Indirect .Main)}}{{.Path}}@{{.Version}}{{end}}'", "all")
+	)
+	cmd.Dir = dir
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		err = fmt.Errorf("create stdout pipe failed: %w", err)
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		err = fmt.Errorf("create stderr pipe failed: %w", err)
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	go func() {
+		defer stderr.Close()
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			logger.Warn("go: " + scanner.Text())
+		}
+	}()
+
+	if err := cmd.Start(); err != nil {
+		// if the command is not found, we should not return error
+		if errors.Is(err, exec.ErrNotFound) {
+			err = _ErrGoNotFound
+			return nil, err
+		}
+		err = fmt.Errorf("start command failed: %w", err)
+		logger.Error(err.Error())
+		return nil, err
+	}
+	scanner := bufio.NewScanner(stdout)
+	var rootList = make(map[string]bool)
+	for scanner.Scan() {
+		text := strings.TrimSpace(scanner.Text())
+		text = strings.ReplaceAll(text, "'", "")
+		if text == "" {
+			continue
+		}
+
+		n, _, err := ParseDependencyLine(text)
+		if err != nil {
+			continue
+		}
+		rootList[n] = true
+		logger.Debug("direct dependency list: " + n)
+	}
+
+	return rootList, nil
+}
+func readGraphCmd(ctx context.Context, dir string, directDependencyList map[string]bool, logger *zap.Logger) (map[string]string, []string, map[string][]string, error) {
 	var (
 		err      error
 		cmd      = exec.CommandContext(ctx, "go", "mod", "graph")
@@ -163,7 +225,9 @@ func readCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]st
 			//对比前面的字符 是不是等于包名
 			//如果是包名就是根节点
 			if strings.TrimSpace(t[0]) == modName {
-				rootList = append(rootList, n)
+				if _, ok := directDependencyList[n]; ok {
+					rootList = append(rootList, n)
+				}
 				continue
 			}
 			//如果是子树级就构建子树
@@ -176,7 +240,6 @@ func readCmd(ctx context.Context, dir string, logger *zap.Logger) (map[string]st
 		}
 		logger.Debug("go: " + text)
 	}
-
 	stdout.Close()
 	cmd.Wait()
 	return dInfo, rootList, sonTree, nil
