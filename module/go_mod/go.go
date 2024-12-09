@@ -5,6 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/infra/sl"
+	"github.com/repeale/fp-go"
+	"go.uber.org/zap"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -30,53 +34,53 @@ func (Inspector) CheckDir(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "go.mod"))
 }
 
-// func (Inspector) InspectProject(ctx context.Context) error {
-// 	task := model.UseInspectionTask(ctx)
-// 	logger := logctx.Use(ctx)
-// 	modFilePath := filepath.Join(task.Dir(), "go.mod")
-// 	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
-// 	data, e := utils.ReadFileLimited(modFilePath, 1024*1024*4)
-// 	if e != nil {
-// 		return errors.WithMessage(e, "Open GoMod file")
-// 	}
-// 	logger.Debug("Parsing go.mod")
-// 	f, e := modfile.ParseLax(filepath.Base(modFilePath), data, nil)
-// 	if e != nil {
-// 		return errors.WithMessage(e, "Parse go mod failed")
-// 	}
-// 	var dependencies []model.DependencyItem
-// 	if !env.DoNotBuild {
-// 		// try command go list
-// 		dependencies, e = doGoList(ctx, task.Dir())
-// 		if e != nil {
-// 			if errors.Is(e, _ErrGoNotFound) {
-// 				logger.Debug("Go not found, skip GoList")
-// 			} else {
-// 				// log it and go on
-// 				logger.Warn("GoList failed", zap.Error(e))
-// 			}
-// 			dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
-// 		}
-// 	}
-// 	if len(dependencies) == 0 {
-// 		if !env.DoNotBuild {
-// 			logger.Warn("no dependencies found, backup")
-// 		}
-// 		dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
-// 	}
-// 	m := model.Module{
-// 		PackageManager: "gomod",
-// 		ModulePath:     modFilePath,
-// 		ModuleName:     "<NoNameModule>",
-// 		Dependencies:   dependencies,
-// 	}
-// 	if f.Module != nil {
-// 		m.ModuleVersion = f.Module.Mod.Version
-// 		m.ModuleName = f.Module.Mod.Path
-// 	}
-// 	task.AddModule(m)
-// 	return nil
-// }
+func (Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectionTask(ctx)
+	logger := logctx.Use(ctx)
+	modFilePath := filepath.Join(task.Dir(), "go.mod")
+	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
+	data, e := utils.ReadFileLimited(modFilePath, 1024*1024*4)
+	if e != nil {
+		return errors.WithMessage(e, "Open GoMod file")
+	}
+	logger.Debug("Parsing go.mod")
+	f, e := modfile.ParseLax(filepath.Base(modFilePath), data, nil)
+	if e != nil {
+		return errors.WithMessage(e, "Parse go mod failed")
+	}
+	var dependencies []model.DependencyItem
+	if !env.DoNotBuild {
+		// try command go list
+		dependencies, e = doGoList(ctx, task.Dir())
+		if e != nil {
+			if errors.Is(e, _ErrGoNotFound) {
+				logger.Debug("Go not found, skip GoList")
+			} else {
+				// log it and go on
+				logger.Warn("GoList failed", zap.Error(e))
+			}
+			dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
+		}
+	}
+	if len(dependencies) == 0 {
+		if !env.DoNotBuild {
+			logger.Warn("no dependencies found, backup")
+		}
+		dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
+	}
+	m := model.Module{
+		PackageManager: "gomod",
+		ModulePath:     modFilePath,
+		ModuleName:     "<NoNameModule>",
+		Dependencies:   dependencies,
+	}
+	if f.Module != nil {
+		m.ModuleVersion = f.Module.Mod.Version
+		m.ModuleName = f.Module.Mod.Path
+	}
+	task.AddModule(m)
+	return nil
+}
 
 func mapRequireToDependencyItem(it *modfile.Require) model.DependencyItem {
 	return model.DependencyItem{
