@@ -4,7 +4,6 @@ go 1.22.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/Masterminds/semver v1.5.0
 	github.com/antchfx/xmlquery v1.4.1
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/bahlo/generic-list-go v0.2.0
