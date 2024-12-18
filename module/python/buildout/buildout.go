@@ -117,6 +117,8 @@ func InspectProject(ctx context.Context, dir string) (*model.Module, error) {
 		}
 	}
 	var comps = make(map[[2]string]struct{})
+	MetadataComps := make(map[string]string)
+	BuildoutCfgComps := make(map[string]string)
 	_ = filepath.WalkDir(dir, func(path string, d fs.DirEntry, e error) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -134,9 +136,22 @@ func InspectProject(ctx context.Context, dir string) (*model.Module, error) {
 				return nil
 			}
 			comps[[2]string{n, v}] = struct{}{}
+			MetadataComps[n] = v
+		}
+		if d.Name() == "buildout.cfg" {
+			if err := base(ctx, path, BuildoutCfgComps); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
+
+	for k, v := range BuildoutCfgComps {
+		if METADATAv, ok := MetadataComps[k]; !ok || METADATAv == "" {
+			comps[[2]string{k, v}] = struct{}{}
+			MetadataComps[k] = v
+		}
+	}
 	var compList = maps.Keys(comps)
 	if len(compList) == 0 {
 		return nil, nil
