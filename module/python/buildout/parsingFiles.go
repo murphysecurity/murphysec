@@ -44,7 +44,7 @@ func NoCurrentDirectoryCfg(ctx context.Context, NowPath string, path string, res
 	if filepath.Dir(path) == NowPath {
 		return nil
 	}
-	if strings.Contains(path, "http") {
+	if strings.Contains(path, "http://") || strings.Contains(path, "https://") {
 		resp, err := http.Get(path)
 		if err != nil {
 			log.Error("http get failed", zap.Error(err))
@@ -61,7 +61,6 @@ func NoCurrentDirectoryCfg(ctx context.Context, NowPath string, path string, res
 			return e
 		}
 	} else {
-		// 如果不是远程连接 则尝试打开读取
 		extends, e = parseBuildoutCfgFile(ctx, path, result)
 		if e != nil {
 			return e
@@ -77,8 +76,8 @@ func findVersionsFile(ctx context.Context, path string, result map[string]string
 	var log = logctx.Use(ctx).Sugar()
 	var extends string
 	var e error
-	// 如果事远程链接 则读取
-	if strings.Contains(path, "http") {
+	// 如果是远程链接 则读取
+	if strings.Contains(path, "http://") || strings.Contains(path, "https://") {
 		resp, err := http.Get(path)
 		if err != nil {
 			log.Error("http get failed", zap.Error(err))
@@ -95,7 +94,7 @@ func findVersionsFile(ctx context.Context, path string, result map[string]string
 			return e
 		}
 	} else {
-		// 如果不是远程连接 则尝试打开读取
+		// 如果不是远程链接 则尝试打开读取
 		extends, e = parseBuildoutCfgFile(ctx, path, result)
 		if e != nil {
 			return e
@@ -139,6 +138,7 @@ func parseBuildoutCfgFile(ctx context.Context, path string, result map[string]st
 		log.Error("Fail to read file: ", zap.Error(err))
 		return "", err
 	}
+
 	for _, section := range cfg.Sections() {
 		if section.Name() == "version" || section.Name() == "dependencies" || section.Name() == "versions" {
 			for _, key := range section.Keys() {
