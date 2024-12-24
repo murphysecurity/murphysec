@@ -139,6 +139,7 @@ func parseBuildoutBytes(ctx context.Context, by []byte, result map[string]string
 		if section.Name() == "version" || section.Name() == "dependencies" || section.Name() == "versions" {
 			for _, key := range section.Keys() {
 				if key.Name() != "" && key.Value() != "" {
+					log.Debug("buildout bytes :", zap.String(key.Name(), key.Value()))
 					result[key.Name()] = key.Value()
 				}
 			}
@@ -175,6 +176,7 @@ func parseBuildoutCfgFile(ctx context.Context, path string, result map[string]st
 		if section.Name() == "version" || section.Name() == "dependencies" || section.Name() == "versions" {
 			for _, key := range section.Keys() {
 				if key.Name() != "" && key.Value() != "" {
+					log.Debug("from path:", zap.String(path, key.Name()))
 					result[key.Name()] = key.Value()
 				}
 			}
