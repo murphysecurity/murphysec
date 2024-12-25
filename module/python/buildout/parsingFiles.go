@@ -2,6 +2,7 @@ package buildout
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/model"
 	"io"
 	"net/http"
 	"os"
@@ -13,9 +14,9 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func base(ctx context.Context, path string, result map[string]string) error {
+func base(ctx context.Context, path string) error {
 	var log = logctx.Use(ctx).Sugar()
-	e := findVersionsFile(ctx, path, result)
+	e := findVersionsFile(ctx, path)
 	if e != nil {
 		return e
 	}
@@ -29,13 +30,13 @@ func base(ctx context.Context, path string, result map[string]string) error {
 		if j == "buildout.cfg" {
 			continue
 		}
-		if err := NoCurrentDirectoryCfg(ctx, filepath.Dir(j), j, result); err != nil {
+		if err := NoCurrentDirectoryCfg(ctx, filepath.Dir(j), j); err != nil {
 			return err
 		}
 	}
 	return nil
 }
-func NoCurrentDirectoryCfg(ctx context.Context, NowPath string, path string, result map[string]string) error {
+func NoCurrentDirectoryCfg(ctx context.Context, NowPath string, path string) error {
 	var log = logctx.Use(ctx).Sugar()
 	var e error
 	var extends []string
@@ -57,12 +58,19 @@ func NoCurrentDirectoryCfg(ctx context.Context, NowPath string, path string, res
 			log.Error("read body failed", zap.Error(err))
 			return err
 		}
-		extends, e = parseBuildoutBytes(ctx, by, result)
+		var urlPath = ""
+		if strings.Contains(path, "http://") {
+			urlPath = strings.ReplaceAll(path, "http://", "")
+		}
+		if strings.Contains(path, "https://") {
+			urlPath = strings.ReplaceAll(path, "https://", "")
+		}
+		extends, e = parseBuildoutBytes(ctx, by, urlPath)
 		if e != nil {
 			return e
 		}
 	} else {
-		extends, e = parseBuildoutCfgFile(ctx, path, result)
+		extends, e = parseBuildoutCfgFile(ctx, path)
 		if e != nil {
 			return e
 		}
@@ -70,12 +78,12 @@ func NoCurrentDirectoryCfg(ctx context.Context, NowPath string, path string, res
 	for _, j := range extends {
 		if j != "" {
 			log.Debug("find extends", zap.String("path", j))
-			e = findVersionsFile(ctx, j, result)
+			e = findVersionsFile(ctx, j)
 			if e != nil {
 				return e
 			}
 		} else {
-			e = NoCurrentDirectoryCfg(ctx, NowPath, j, result)
+			e = NoCurrentDirectoryCfg(ctx, NowPath, j)
 			if e != nil {
 				return e
 			}
@@ -84,7 +92,7 @@ func NoCurrentDirectoryCfg(ctx context.Context, NowPath string, path string, res
 
 	return nil
 }
-func findVersionsFile(ctx context.Context, path string, result map[string]string) error {
+func findVersionsFile(ctx context.Context, path string) error {
 	var log = logctx.Use(ctx).Sugar()
 	var extends []string
 	var e error
@@ -101,13 +109,20 @@ func findVersionsFile(ctx context.Context, path string, result map[string]string
 			log.Error("read body failed", zap.Error(err))
 			return err
 		}
-		extends, e = parseBuildoutBytes(ctx, by, result)
+		var urlPath = ""
+		if strings.Contains(path, "http://") {
+			urlPath = strings.ReplaceAll(path, "http://", "")
+		}
+		if strings.Contains(path, "https://") {
+			urlPath = strings.ReplaceAll(path, "https://", "")
+		}
+		extends, e = parseBuildoutBytes(ctx, by, "[Remote]/"+urlPath)
 		if e != nil {
 			return e
 		}
 	} else {
 		// 如果不是远程链接 则尝试打开读取
-		extends, e = parseBuildoutCfgFile(ctx, path, result)
+		extends, e = parseBuildoutCfgFile(ctx, path)
 		if e != nil {
 			return e
 		}
@@ -116,7 +131,7 @@ func findVersionsFile(ctx context.Context, path string, result map[string]string
 		for _, j := range extends {
 			if j != "" {
 				log.Debug("find extends", zap.String("path", j))
-				e = findVersionsFile(ctx, j, result)
+				e = findVersionsFile(ctx, j)
 				if e != nil {
 					log.Error("find file error:", zap.Error(e))
 					continue
@@ -126,8 +141,10 @@ func findVersionsFile(ctx context.Context, path string, result map[string]string
 	}
 	return nil
 }
-func parseBuildoutBytes(ctx context.Context, by []byte, result map[string]string) ([]string, error) {
+func parseBuildoutBytes(ctx context.Context, by []byte, path string) ([]string, error) {
 	var log = logctx.Use(ctx).Sugar()
+	var task = model.UseInspectionTask(ctx)
+	var dep []model.DependencyItem
 	cfg, err := ini.LoadSources(ini.LoadOptions{
 		AllowPythonMultilineValues: true,
 	}, by)
@@ -140,11 +157,28 @@ func parseBuildoutBytes(ctx context.Context, by []byte, result map[string]string
 			for _, key := range section.Keys() {
 				if key.Name() != "" && key.Value() != "" {
 					log.Debug("buildout bytes :", zap.String(key.Name(), key.Value()))
-					result[key.Name()] = key.Value()
+					dep = append(dep, model.DependencyItem{
+						Component: model.Component{
+							CompName:    key.Name(),
+							CompVersion: key.Value(),
+							EcoRepo: model.EcoRepo{
+								Ecosystem:  "pypi",
+								Repository: "",
+							},
+						},
+						IsOnline: model.IsOnlineTrue(),
+					})
 				}
 			}
 		}
 	}
+	task.AddModule(model.Module{
+		ModuleName:     task.Dir(),
+		ModulePath:     path,
+		PackageManager: "Buildout",
+		Dependencies:   dep,
+		ScanStrategy:   model.ScanStrategyNormal,
+	})
 	var resultStrings []string
 	extends := cfg.Section("buildout").Key("extends").Strings("\n")
 	if len(extends) == 0 {
@@ -157,8 +191,10 @@ func parseBuildoutBytes(ctx context.Context, by []byte, result map[string]string
 	}
 	return resultStrings, nil
 }
-func parseBuildoutCfgFile(ctx context.Context, path string, result map[string]string) ([]string, error) {
+func parseBuildoutCfgFile(ctx context.Context, path string) ([]string, error) {
 	var log = logctx.Use(ctx).Sugar()
+	var dep []model.DependencyItem
+	var task = model.UseInspectionTask(ctx)
 	by, err := os.ReadFile(path)
 	if err != nil {
 		log.Error("read file failed", zap.Error(err))
@@ -177,11 +213,28 @@ func parseBuildoutCfgFile(ctx context.Context, path string, result map[string]st
 			for _, key := range section.Keys() {
 				if key.Name() != "" && key.Value() != "" {
 					log.Debug("from path:", zap.String(path, key.Name()))
-					result[key.Name()] = key.Value()
+					dep = append(dep, model.DependencyItem{
+						Component: model.Component{
+							CompName:    key.Name(),
+							CompVersion: key.Value(),
+							EcoRepo: model.EcoRepo{
+								Ecosystem:  "pypi",
+								Repository: "",
+							},
+						},
+						IsOnline: model.IsOnlineTrue(),
+					})
 				}
 			}
 		}
 	}
+	task.AddModule(model.Module{
+		ModuleName:     task.Dir(),
+		ModulePath:     path,
+		PackageManager: "Buildout",
+		Dependencies:   dep,
+		ScanStrategy:   model.ScanStrategyNormal,
+	})
 	var resultStrings []string
 	extends := cfg.Section("buildout").Key("extends").Strings("\n")
 	if len(extends) == 0 {

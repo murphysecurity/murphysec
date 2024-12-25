@@ -17,8 +17,6 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
-	"github.com/repeale/fp-go"
-	"golang.org/x/exp/maps"
 )
 
 func doBuildout(ctx context.Context, dir string) (errorText string, e error) {
@@ -104,9 +102,9 @@ func DirHasBuildout(dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "buildout.cfg"))
 }
 
-func InspectProject(ctx context.Context, dir string) (*model.Module, error) {
+func InspectProject(ctx context.Context, dir string) error {
 	var log = logctx.Use(ctx).Sugar()
-
+	var task = model.UseInspectionTask(ctx)
 	var errText, e = doBuildout(ctx, dir)
 	if e != nil {
 		log.Warnf("failed to run buildout: %s", e.Error())
@@ -117,9 +115,6 @@ func InspectProject(ctx context.Context, dir string) (*model.Module, error) {
 			})
 		}
 	}
-	var comps = make(map[[2]string]struct{})
-	MetadataComps := make(map[string]string)
-	BuildoutCfgComps := make(map[string]string)
 	_ = filepath.WalkDir(dir, func(path string, d fs.DirEntry, e error) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -136,48 +131,35 @@ func InspectProject(ctx context.Context, dir string) (*model.Module, error) {
 			if e != nil || n == "" {
 				return nil
 			}
-			comps[[2]string{n, v}] = struct{}{}
-			MetadataComps[n] = v
+			task.AddModule(model.Module{
+				ModuleName:     filepath.Base(path),
+				ModulePath:     filepath.Join(dir, "METADATA"),
+				PackageManager: "Buildout",
+				Dependencies: []model.DependencyItem{
+					{
+						Component: model.Component{
+							CompName:    n,
+							CompVersion: v,
+							EcoRepo: model.EcoRepo{
+								Ecosystem:  "pypi",
+								Repository: "",
+							},
+						},
+						IsOnline: model.IsOnlineTrue(),
+					},
+				},
+				ScanStrategy: model.ScanStrategyNormal,
+			})
 		}
 		if d.Name() == "buildout.cfg" {
-			if err := base(ctx, path, BuildoutCfgComps); err != nil {
+			if err := base(ctx, path); err != nil {
 				return err
 			}
 		}
 		return nil
 	})
 
-	for k, v := range BuildoutCfgComps {
-		if METADATAv, ok := MetadataComps[k]; !ok || METADATAv == "" {
-			comps[[2]string{k, v}] = struct{}{}
-			MetadataComps[k] = v
-		}
-	}
-	var compList = maps.Keys(comps)
-	if len(compList) == 0 {
-		return nil, nil
-	}
-	var module = model.Module{
-		ModuleName:     filepath.Base(dir),
-		ModulePath:     filepath.Join(dir, "buildout.cfg"),
-		PackageManager: "Buildout",
-		Dependencies: fp.Map(func(it [2]string) model.DependencyItem {
-			return model.DependencyItem{
-				Component: model.Component{
-					CompName:    it[0],
-					CompVersion: it[1],
-					EcoRepo: model.EcoRepo{
-						Ecosystem:  "pypi",
-						Repository: "",
-					},
-				},
-				IsOnline: model.IsOnlineTrue(),
-			}
-		})(compList),
-		ScanStrategy: model.ScanStrategyNormal,
-	}
-
-	return &module, nil
+	return nil
 }
 
 func parseMetadataFile(ctx context.Context, path string) (name, version string, e error) {
