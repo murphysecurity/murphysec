@@ -4,13 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	list "github.com/bahlo/generic-list-go"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/scanerr"
-	"github.com/murphysecurity/murphysec/utils"
-	"github.com/repeale/fp-go"
-	"golang.org/x/exp/maps"
 	"io"
 	"io/fs"
 	"os"
@@ -18,6 +11,14 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
+
+	list "github.com/bahlo/generic-list-go"
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/scanerr"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/repeale/fp-go"
+	"golang.org/x/exp/maps"
 )
 
 func doBuildout(ctx context.Context, dir string) (errorText string, e error) {
