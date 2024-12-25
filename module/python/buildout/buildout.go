@@ -158,7 +158,7 @@ func InspectProject(ctx context.Context, dir string) (*model.Module, error) {
 		return nil, nil
 	}
 	var module = model.Module{
-		ModuleName:     filepath.Dir(dir),
+		ModuleName:     filepath.Base(dir),
 		ModulePath:     filepath.Join(dir, "buildout.cfg"),
 		PackageManager: "Buildout",
 		Dependencies: fp.Map(func(it [2]string) model.DependencyItem {
