@@ -173,7 +173,7 @@ func parseBuildoutBytes(ctx context.Context, by []byte, path string) ([]string, 
 		}
 	}
 	task.AddModule(model.Module{
-		ModuleName:     task.Dir(),
+		ModuleName:     filepath.Base(task.Dir()),
 		ModulePath:     path,
 		PackageManager: "Buildout",
 		Dependencies:   dep,
@@ -229,7 +229,7 @@ func parseBuildoutCfgFile(ctx context.Context, path string) ([]string, error) {
 		}
 	}
 	task.AddModule(model.Module{
-		ModuleName:     task.Dir(),
+		ModuleName:     filepath.Base(task.Dir()),
 		ModulePath:     path,
 		PackageManager: "Buildout",
 		Dependencies:   dep,
