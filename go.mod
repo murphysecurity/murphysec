@@ -36,6 +36,7 @@ require (
 	golang.org/x/sync v0.7.0
 	golang.org/x/sys v0.24.0
 	golang.org/x/text v0.16.0
+	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -81,7 +82,6 @@ require (
 	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/term v0.21.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
