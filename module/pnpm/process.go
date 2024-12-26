@@ -8,6 +8,7 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	v5 "github.com/murphysecurity/murphysec/module/pnpm/v5"
+	v6 "github.com/murphysecurity/murphysec/module/pnpm/v6"
 	v9 "github.com/murphysecurity/murphysec/module/pnpm/v9"
 	"io"
 	"os"
@@ -55,21 +56,11 @@ func processDir(ctx context.Context, dir string) (result processDirResult) {
 			return
 		}
 	} else if versionNumber == 6 {
-		// todo: v6 support need rewrite
-		lockfile, e := parseV6Lockfile(data, false)
+		result.trees, e = v6.Process(ctx, data, false)
 		if e != nil {
 			result.e = fmt.Errorf("v6: %w", e)
 			return
 		}
-		items, e := lockfile.buildDependencyTree(false)
-		if e != nil {
-			result.e = fmt.Errorf("v6: %w", e)
-			return
-		}
-		result.trees = []shared.DepTree{{
-			Name:         "",
-			Dependencies: items,
-		}}
 	} else if versionNumber == 9 {
 		result.trees, e = v9.Parse(ctx, bytes.NewReader(data))
 		if e != nil {
