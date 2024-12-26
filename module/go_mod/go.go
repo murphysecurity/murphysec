@@ -5,10 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/infra/sl"
-	"github.com/repeale/fp-go"
-	"go.uber.org/zap"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -17,6 +13,7 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"golang.org/x/mod/modfile"
 )
 
@@ -35,50 +32,24 @@ func (Inspector) CheckDir(dir string) bool {
 }
 
 func (Inspector) InspectProject(ctx context.Context) error {
-	task := model.UseInspectionTask(ctx)
 	logger := logctx.Use(ctx)
-	modFilePath := filepath.Join(task.Dir(), "go.mod")
-	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
-	data, e := utils.ReadFileLimited(modFilePath, 1024*1024*4)
-	if e != nil {
-		return errors.WithMessage(e, "Open GoMod file")
-	}
-	logger.Debug("Parsing go.mod")
-	f, e := modfile.ParseLax(filepath.Base(modFilePath), data, nil)
-	if e != nil {
-		return errors.WithMessage(e, "Parse go mod failed")
-	}
-	var dependencies []model.DependencyItem
-	if !env.DoNotBuild {
-		// try command go list
-		dependencies, e = doGoList(ctx, task.Dir())
-		if e != nil {
-			if errors.Is(e, _ErrGoNotFound) {
-				logger.Debug("Go not found, skip GoList")
-			} else {
-				// log it and go on
-				logger.Warn("GoList failed", zap.Error(e))
-			}
-			dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
+	if privatePath, ok := ctx.Value("privateSourceAddr").(string); ok {
+		logger.Debug("Use private path", zap.String("path", privatePath))
+		if err := setPrivatePath(privatePath, logger); err != nil {
+			return err
 		}
 	}
-	if len(dependencies) == 0 {
-		if !env.DoNotBuild {
-			logger.Warn("no dependencies found, backup")
+	if proxyPath, ok := ctx.Value("proxyAddr").(string); ok {
+		logger.Debug("Use proxy path", zap.String("path", proxyPath))
+		if err := setProxyPath(proxyPath, logger); err != nil {
+			return err
 		}
-		dependencies = append(dependencies, fp.Map(mapRequireToDependencyItem)(sl.FilterNotNull(f.Require))...)
 	}
-	m := model.Module{
-		PackageManager: "gomod",
-		ModulePath:     modFilePath,
-		ModuleName:     "<NoNameModule>",
-		Dependencies:   dependencies,
+	if err := buildScan(ctx); err != nil {
+		if err := baseScan(ctx); err != nil {
+			return err
+		}
 	}
-	if f.Module != nil {
-		m.ModuleVersion = f.Module.Mod.Version
-		m.ModuleName = f.Module.Mod.Path
-	}
-	task.AddModule(m)
 	return nil
 }
 
