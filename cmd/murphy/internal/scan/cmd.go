@@ -39,6 +39,8 @@ var sbomOutputType common.SBOMFormatFlag
 var webhookAddr string
 var webhookMode common.WebhookModeFlag
 var extraData string
+var privateSourceAddr string
+var proxyAddr string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -58,6 +60,8 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().StringVar(&privateSourceAddr, "private-source-addr", "", "specify the private source address")
+	c.Flags().StringVar(&proxyAddr, "proxy-addr", "", "specify the proxy address")
 	return &c
 }
 
@@ -79,6 +83,8 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full(default)")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().StringVar(&privateSourceAddr, "private-source-addr", "", "specify the private source address")
+	c.Flags().StringVar(&proxyAddr, "proxy-addr", "", "specify the proxy address")
 	return &c
 }
 
