@@ -55,6 +55,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	logger := logctx.Use(ctx).Sugar()
 	task := model.UseInspectionTask(ctx)
 	dir := task.Dir()
+	var nvMp = make(map[string]string)
 	if !task.IsNoBuild() && buildout.DirHasBuildout(dir) {
 		if err := buildout.InspectProject(ctx, dir); err != nil {
 			logger.Warnf("buildout inspect project fail: %s", err.Error())
@@ -84,6 +85,16 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		di.CompVersion = v
 		di.EcoRepo = EcoRepo
 		m.Dependencies = append(m.Dependencies, di)
+	}
+	if !task.IsNoBuild() {
+		deps, err := Run(ctx, task.Dir(), logger, nvMp)
+		if err != nil {
+			logger.Warn("construction failed, enable basic scanning")
+			model.UseInspectionTask(ctx).AddModule(m)
+			return err
+		} else {
+			m.Dependencies = append(m.Dependencies, deps...)
+		}
 	}
 	model.UseInspectionTask(ctx).AddModule(m)
 	return nil
