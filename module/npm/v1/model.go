@@ -15,7 +15,7 @@ func (l *Lockfile) Build(requires [][2]string, strict bool) ([]*shared.Node, err
 	for _, require := range requires {
 		name := require[0]
 		versionCons := require[1]
-		n, e := buildTree(name, versionCons, &l.root.lockPkg, nil, strict)
+		n, e := buildTree(name, versionCons, &l.root.lockPkg, nil, strict, map[[2]string]struct{}{})
 		if e != nil {
 			if !strict {
 				continue
@@ -49,7 +49,7 @@ func postprocessPkg(pkg *lockPkg, parent *lockPkg) {
 	}
 }
 
-func buildTree(name string, versionConstraint string, current *lockPkg, visited *shared.Visited, strict bool) (*shared.Node, error) {
+func buildTree(name string, versionConstraint string, current *lockPkg, visited *shared.Visited, strict bool, pruneVisited map[[2]string]struct{}) (*shared.Node, error) {
 	childVisited := visited.CreateSub(name, versionConstraint)
 	if childVisited == nil {
 		return nil, shared.CreateRevisitError(visited)
@@ -72,18 +72,21 @@ func buildTree(name string, versionConstraint string, current *lockPkg, visited 
 		} else {
 			node.Dev = false
 		}
-		for childName, versionCons := range childPkg.Requires {
-			childNode, e := buildTree(childName, versionCons, childPkg, childVisited, strict)
-			if e != nil {
-				if !strict {
-					continue
+		if _, ok := pruneVisited[[2]string{node.Name, node.Version}]; !ok {
+			pruneVisited[[2]string{node.Name, node.Version}] = struct{}{}
+			for childName, versionCons := range childPkg.Requires {
+				childNode, e := buildTree(childName, versionCons, childPkg, childVisited, strict, pruneVisited)
+				if e != nil {
+					if !strict {
+						continue
+					}
+					return nil, e
 				}
-				return nil, e
+				if childNode == nil {
+					panic("childNode == nil")
+				}
+				node.Children = append(node.Children, childNode)
 			}
-			if childNode == nil {
-				panic("childNode == nil")
-			}
-			node.Children = append(node.Children, childNode)
 		}
 		return &node, nil
 	}
