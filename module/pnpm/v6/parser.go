@@ -82,8 +82,9 @@ func Process(_ctx context.Context, data []byte, strict bool) ([]shared.DepTree, 
 		return []shared.DepTree{root}, nil
 	} else {
 		var r []shared.DepTree
-		for _, importer := range lockfile.Importers {
+		for relPath, importer := range lockfile.Importers {
 			var tree shared.DepTree
+			tree.Name = relPath
 			if e := f(importer.Dependencies, false, &tree); e != nil {
 				return nil, e
 			}
