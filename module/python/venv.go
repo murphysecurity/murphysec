@@ -45,7 +45,7 @@ func getVenvPath(basePath string) string {
 func newVenv(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var errout bytes.Buffer
-	cmd := exec.Command("python3.10", "-m", "venv", "virtual_venv")
+	cmd := exec.Command("bash", "-c", "python3.10 -m venv virtual_venv")
 	cmd.Dir = dir
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
