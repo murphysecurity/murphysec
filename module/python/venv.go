@@ -45,9 +45,12 @@ func getVenvPath(basePath string) string {
 func newVenv(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var errout bytes.Buffer
-	cmd := exec.Command("bash", "-c", "python3.10 -m venv virtual_venv")
+	env := os.Environ()
+	logger.Debug(zap.Any("env", env))
+	cmd := exec.Command("bash", "-c", "/usr/local/python3.10/bin/python3.10 -m venv virtual_venv")
 	cmd.Dir = dir
 	cmd.Stdout = &out
+	cmd.Stderr = &errout
 	if err := cmd.Run(); err != nil {
 		logger.Error("new venv error :", zap.String("venv", errout.String()))
 		return err
@@ -79,9 +82,26 @@ func newPipConf(basePath string, privateAddr string) error {
 	}
 	return nil
 }
+func updatePip(dir string, logger *zap.SugaredLogger) error {
+	var out bytes.Buffer
+	var errout bytes.Buffer
+	cmd := exec.Command("./python3.10", "-m", "pip", "install", "--upgrade", "pip")
+	cmd.Stdout = &out
+	cmd.Dir = dir
+	if err := cmd.Run(); err != nil {
+		logger.Error("pip update error :", zap.String("pip", errout.String()))
+		return err
+	}
+	logger.Debug("pip update success ")
+	return nil
+}
+
 func pipreqs(dir string, projectPath, savePath string, logger *zap.SugaredLogger) error {
 	savePath = filepath.Join(savePath, "requirements.txt")
-	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8")
+	logger.Debug(zap.String("pipreqs Path", dir))
+	logger.Debug(zap.String("pipreqs projectPath", projectPath))
+	logger.Debug(zap.String("pipreqs savepath", savePath))
+	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8", "--ignore=virtual_venv")
 	cmd.Dir = dir
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -119,7 +139,7 @@ func pipreqs(dir string, projectPath, savePath string, logger *zap.SugaredLogger
 func installpipreqs(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
-	cmd := exec.Command("./pip3.10", "install", "pipreqs")
+	cmd := exec.Command("./pip", "install", "pipreqs")
 	cmd.Dir = dir
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
@@ -142,9 +162,9 @@ func installRequirements(dir string, textDir string, logger *zap.SugaredLogger) 
 	for k, v := range nvmp {
 		var cmd *exec.Cmd
 		if v != "" {
-			cmd = exec.Command("./pip3.10", "install", k+"=="+v)
+			cmd = exec.Command("./pip", "install", k+"=="+v)
 		} else {
-			cmd = exec.Command("./pip3.10", "install", k)
+			cmd = exec.Command("./pip", "install", k)
 		}
 		cmd.Dir = dir
 		cmd.Stdout = &out
@@ -158,7 +178,7 @@ func installRequirements(dir string, textDir string, logger *zap.SugaredLogger) 
 }
 func installpipdeptree(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
-	cmd := exec.Command("./pip3.10", "install", "pipdeptree")
+	cmd := exec.Command("./pip", "install", "pipdeptree")
 	cmd.Dir = dir
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
@@ -190,7 +210,7 @@ func pipdeptree(dir string, logger *zap.SugaredLogger) ([]PipdeptreeStruct, erro
 }
 func updatePackage(dir string, logger *zap.SugaredLogger, k, v string) {
 	var out bytes.Buffer
-	cmd := exec.Command("./pip3.10", "install", k+"=="+v)
+	cmd := exec.Command("./pip", "install", k+"=="+v)
 	cmd.Stdout = &out
 	cmd.Dir = dir
 	if err := cmd.Run(); err != nil {
@@ -241,6 +261,9 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 			return nil, err
 		}
 	}
+	if err := updatePip(venvPath, logger); err != nil {
+		return nil, err
+	}
 	if err := installpipreqs(venvPath, logger); err != nil {
 		return nil, err
 	}
@@ -257,7 +280,6 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 	data, err := readTextFile(requirementsPath, 64*1024)
 	if err != nil {
 		logger.Warnf("read requirement: %s %v", requirementsPath, err)
-		return nil, err
 	}
 	//  对比原本的 requirements.txt 拿到原本包的版本
 	newRequirements := parseRequirements(string(data))
