@@ -45,7 +45,7 @@ func getVenvPath(basePath string) string {
 func updatePip(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var errout bytes.Buffer
-	cmd := exec.Command("./python", "-m", "pip", "install", "--upgrade", "pip")
+	cmd := exec.Command("./python3.10", "-m", "pip", "install", "--upgrade", "pip")
 	cmd.Stdout = &out
 	cmd.Dir = dir
 	if err := cmd.Run(); err != nil {
@@ -58,7 +58,7 @@ func updatePip(dir string, logger *zap.SugaredLogger) error {
 func newVenv(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var errout bytes.Buffer
-	cmd := exec.Command("python3", "-m", "venv", "virtual_venv")
+	cmd := exec.Command("python3.10", "-m", "venv", "virtual_venv")
 	cmd.Dir = dir
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
@@ -133,7 +133,7 @@ func pipreqs(dir string, projectPath, savePath string, logger *zap.SugaredLogger
 func installpipreqs(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
-	cmd := exec.Command("./pip", "install", "pipreqs")
+	cmd := exec.Command("./pip3.10", "install", "pipreqs")
 	cmd.Dir = dir
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
@@ -156,9 +156,9 @@ func installRequirements(dir string, textDir string, logger *zap.SugaredLogger) 
 	for k, v := range nvmp {
 		var cmd *exec.Cmd
 		if v != "" {
-			cmd = exec.Command("./pip", "install", k+"=="+v)
+			cmd = exec.Command("./pip3.10", "install", k+"=="+v)
 		} else {
-			cmd = exec.Command("./pip", "install", k)
+			cmd = exec.Command("./pip3.10", "install", k)
 		}
 		cmd.Dir = dir
 		cmd.Stdout = &out
@@ -172,7 +172,7 @@ func installRequirements(dir string, textDir string, logger *zap.SugaredLogger) 
 }
 func installpipdeptree(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
-	cmd := exec.Command("./pip", "install", "pipdeptree")
+	cmd := exec.Command("./pip3.10", "install", "pipdeptree")
 	cmd.Dir = dir
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
@@ -204,7 +204,7 @@ func pipdeptree(dir string, logger *zap.SugaredLogger) ([]PipdeptreeStruct, erro
 }
 func updatePackage(dir string, logger *zap.SugaredLogger, k, v string) {
 	var out bytes.Buffer
-	cmd := exec.Command("./pip", "install", k+"=="+v)
+	cmd := exec.Command("./pip3.10", "install", k+"=="+v)
 	cmd.Stdout = &out
 	cmd.Dir = dir
 	if err := cmd.Run(); err != nil {
