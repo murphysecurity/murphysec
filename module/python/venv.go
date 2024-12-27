@@ -42,19 +42,6 @@ func getVenvPath(basePath string) string {
 
 	return ""
 }
-func updatePip(dir string, logger *zap.SugaredLogger) error {
-	var out bytes.Buffer
-	var errout bytes.Buffer
-	cmd := exec.Command("./python3.10", "-m", "pip", "install", "--upgrade", "pip")
-	cmd.Stdout = &out
-	cmd.Dir = dir
-	if err := cmd.Run(); err != nil {
-		logger.Error("pip update error :", zap.String("pip", errout.String()))
-		return err
-	}
-	logger.Debug("pip update success ")
-	return nil
-}
 func newVenv(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var errout bytes.Buffer
@@ -93,7 +80,6 @@ func newPipConf(basePath string, privateAddr string) error {
 	return nil
 }
 func pipreqs(dir string, projectPath, savePath string, logger *zap.SugaredLogger) error {
-
 	savePath = filepath.Join(savePath, "requirements.txt")
 	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8")
 	cmd.Dir = dir
@@ -254,9 +240,6 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 		if err := newPipConf(dir, privatePath); err != nil {
 			return nil, err
 		}
-	}
-	if err := updatePip(venvPath, logger); err != nil {
-		return nil, err
 	}
 	if err := installpipreqs(venvPath, logger); err != nil {
 		return nil, err
