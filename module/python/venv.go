@@ -42,14 +42,27 @@ func getVenvPath(basePath string) string {
 
 	return ""
 }
-
+func updatePip(dir string, logger *zap.SugaredLogger) error {
+	var out bytes.Buffer
+	var errout bytes.Buffer
+	cmd := exec.Command("./python", "-m", "pip", "install", "--upgrade", "pip")
+	cmd.Stdout = &out
+	cmd.Dir = dir
+	if err := cmd.Run(); err != nil {
+		logger.Error("pip update error :", zap.String("pip", errout.String()))
+		return err
+	}
+	logger.Debug("pip update success ")
+	return nil
+}
 func newVenv(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
-	cmd := exec.Command("python", "-m", "venv", "virtual_venv")
+	var errout bytes.Buffer
+	cmd := exec.Command("python3", "-m", "venv", "virtual_venv")
 	cmd.Dir = dir
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
-		logger.Error("new venv error :", zap.Error(err))
+		logger.Error("new venv error :", zap.String("venv", errout.String()))
 		return err
 	}
 	logger.Debug("new venv success ")
@@ -171,12 +184,15 @@ func installpipdeptree(dir string, logger *zap.SugaredLogger) error {
 }
 func pipdeptree(dir string, logger *zap.SugaredLogger) ([]PipdeptreeStruct, error) {
 	var out bytes.Buffer
+	var errout bytes.Buffer
 	var result []PipdeptreeStruct
 	cmd := exec.Command("./pipdeptree", "--json-tree")
 	cmd.Stdout = &out
 	cmd.Dir = dir
+	cmd.Stderr = &errout
 	if err := cmd.Run(); err != nil {
-		logger.Error("pipdeptree error :", zap.Error(err))
+		logger.Debug("pipdeptree path ", zap.String("exec:", dir))
+		logger.Error("pipdeptree error :", zap.String("pipdeptree ", errout.String()))
 		return nil, err
 	}
 	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
@@ -239,7 +255,9 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 			return nil, err
 		}
 	}
-
+	if err := updatePip(venvPath, logger); err != nil {
+		return nil, err
+	}
 	if err := installpipreqs(venvPath, logger); err != nil {
 		return nil, err
 	}
