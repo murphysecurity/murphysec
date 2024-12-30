@@ -271,6 +271,9 @@ func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]strin
 		}
 	}
 }
+func pipenv() string {
+	return os.Getenv("pip_source_addr")
+}
 func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[string]string) ([]model.DependencyItem, error) {
 	var mod []model.DependencyItem
 	var venvDir = filepath.Join(dir, "virtual_venv")
@@ -283,6 +286,12 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 	if privatePath, ok := ctx.Value("privateSourceAddr").(string); ok {
 		logger.Debug("Use private path", zap.String("path", privatePath))
 		if err := newPipConf(dir, privatePath); err != nil {
+			return nil, err
+		}
+	}
+	if envSource := pipenv(); envSource != "" {
+		logger.Debug("Use private path", zap.String("path", envSource))
+		if err := newPipConf(dir, envSource); err != nil {
 			return nil, err
 		}
 	}
