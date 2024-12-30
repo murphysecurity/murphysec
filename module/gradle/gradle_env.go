@@ -41,7 +41,7 @@ func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 	var r = &GradleEnv{GradleWrapperStatus: GradleWrapperStatusNotDetected}
 	var gwv = readGradleVersionFromWrapper(ctx, dir)
 	if os.Getenv("MPS_BUNDLED_GRADLE") == "1" {
-		if gwv != "" {
+		if gwv == "" {
 			// no version read, use default latest
 			log.Info("use default gradle version")
 			gwv = "8.6"
