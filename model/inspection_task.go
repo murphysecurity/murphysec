@@ -14,6 +14,9 @@ type InspectionTask struct {
 func (i *InspectionTask) IsNoBuild() bool {
 	return i.scanTask.IsNoBuild
 }
+func (i *InspectionTask) IsInternalCmd() bool {
+	return i.scanTask.IsInternalCmd
+}
 
 // Dir 返回当前扫描器扫描的路径，绝对路径
 func (i *InspectionTask) Dir() string {

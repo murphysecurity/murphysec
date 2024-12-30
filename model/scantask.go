@@ -19,6 +19,7 @@ type ScanTask struct {
 	MavenSourceId   string
 	MavenSourceName string
 	IsNoBuild       bool
+	IsInternalCmd   bool
 }
 
 func (s *ScanTask) BuildInspectionTask(dir string) *InspectionTask {

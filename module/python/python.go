@@ -73,7 +73,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	m := model.Module{
 		ModuleName:     filepath.ToSlash(model.UseInspectionTask(ctx).RelDir()),
 		PackageManager: "pip",
-		ModulePath:     dir,
+		ModulePath:     "Python",
 	}
 	if m.ModuleName == "." {
 		m.ModuleName = "Python"
@@ -121,6 +121,7 @@ func dirIgnore(name string) bool {
 
 func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 	var logger = logctx.Use(ctx).Sugar()
+	var task = model.UseInspectionTask(ctx)
 	if !filepath.IsAbs(dir) {
 		panic("dir must be absolute")
 	}
@@ -193,7 +194,7 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 			delete(unknownVersionComps, s)
 		}
 	}
-	if is_internalcmd := ctx.Value("is_internalcmd"); is_internalcmd == nil && len(unknownVersionComps) != 0 {
+	if !task.IsInternalCmd() && len(unknownVersionComps) != 0 {
 		// try to resolve version from pip list
 		m, e := getEnvPipListMap(ctx)
 		if e != nil {

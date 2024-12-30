@@ -52,17 +52,17 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 	}
 
 	var scantask = &model.ScanTask{
-		ProjectPath: scanDir,
-		AccessType:  model.AccessTypeCli,
-		Mode:        model.ScanModeSource,
-		TaskId:      "",
-		SubtaskId:   "",
-		Modules:     nil,
-		Result:      nil,
-		IsNoBuild:   env.DoNotBuild,
+		ProjectPath:   scanDir,
+		AccessType:    model.AccessTypeCli,
+		Mode:          model.ScanModeSource,
+		TaskId:        "",
+		SubtaskId:     "",
+		Modules:       nil,
+		Result:        nil,
+		IsNoBuild:     env.DoNotBuild,
+		IsInternalCmd: true,
 	}
 	ctx = model.WithScanTask(ctx, scantask)
-	ctx = context.WithValue(ctx, "is_internalcmd", true)
 	e = inspector.ManagedInspect(ctx)
 	if e != nil {
 		logger.Error(e)
