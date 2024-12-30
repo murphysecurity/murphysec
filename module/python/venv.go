@@ -285,13 +285,13 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 	}
 	if privatePath, ok := ctx.Value("privateSourceAddr").(string); ok {
 		logger.Debug("Use private path", zap.String("path", privatePath))
-		if err := newPipConf(dir, privatePath); err != nil {
+		if err := newPipConf(venvPath, privatePath); err != nil {
 			return nil, err
 		}
 	}
 	if envSource := pipenv(); envSource != "" {
 		logger.Debug("Use private path", zap.String("path", envSource))
-		if err := newPipConf(dir, envSource); err != nil {
+		if err := newPipConf(venvPath, envSource); err != nil {
 			return nil, err
 		}
 	}
