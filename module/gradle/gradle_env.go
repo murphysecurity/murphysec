@@ -31,6 +31,7 @@ func (g *GradleEnv) ExecuteContext(ctx context.Context, args ...string) *exec.Cm
 	c.Env = os.Environ()
 	if g.JavaHome != "" {
 		c.Env = append(c.Env, "JAVA_HOME="+g.JavaHome)
+		c.Env = append(c.Env, "PATH="+filepath.Join(g.JavaHome, "bin")+string(os.PathListSeparator)+os.Getenv("PATH"))
 	}
 	logctx.Use(ctx).Sugar().Infof("Prepare: %s", c.String())
 	return c
