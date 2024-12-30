@@ -272,7 +272,7 @@ func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]strin
 	}
 }
 func pipenv() string {
-	return os.Getenv("pip_source_addr")
+	return os.Getenv("PIP_SOURCE_ADDR")
 }
 func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[string]string) ([]model.DependencyItem, error) {
 	var mod []model.DependencyItem
