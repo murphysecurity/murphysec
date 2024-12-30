@@ -34,6 +34,9 @@ func GetSummary(ctx context.Context, dir string) (*Summary, error) {
 		logger.Warnf("get head: %v", e)
 	} else {
 		summary.BranchName = head.Name().Short()
+		if summary.BranchName == "HEAD" {
+			summary.BranchName = head.Hash().String()[:8]
+		}
 		cinfo, e := getCommitInfo(ctx, repo, head.Hash())
 		if e != nil {
 			logger.Warnf("get commit: %v", e)
