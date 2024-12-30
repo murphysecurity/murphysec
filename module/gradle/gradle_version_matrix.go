@@ -1,5 +1,7 @@
 package gradle
 
+import "github.com/Masterminds/semver"
+
 var versionMatrix = [][3]string{
 	{"5.0", "gradle-5.0", "jdk-11.0.22+7"},
 	{"5.1.1", "gradle-5.1.1", "jdk-11.0.22+7"},
@@ -34,6 +36,20 @@ var versionMatrix = [][3]string{
 	{"8.6", "gradle-8.6", "jdk-17.0.10+7"},
 }
 
+var _GradleVersionFirstTimeAllowJavaWith2XVersionNumber = semver.MustParse("4.7")
+
+func selectJavaVersionOnly(input string) string {
+	ver, e := semver.NewVersion(input)
+	if e != nil || ver.Compare(_GradleVersionFirstTimeAllowJavaWith2XVersionNumber) >= 0 {
+		return "jdk-17.0.10+7"
+	}
+	return "jdk8u402-b06"
+}
+
+func buildJavaHome(ver string) string {
+	return "/opt/openjdk/" + ver
+}
+
 func selectGradleAndJavaVersion(input string) (string, string) {
 	var a = -1
 	var b = -1
@@ -45,7 +61,7 @@ func selectGradleAndJavaVersion(input string) (string, string) {
 		}
 	}
 	if b != -1 {
-		return "/opt/gradle/" + versionMatrix[b][1] + "/bin/gradle", "/opt/openjdk/" + versionMatrix[b][2]
+		return "/opt/gradle/" + versionMatrix[b][1] + "/bin/gradle", buildJavaHome(versionMatrix[b][2])
 	}
 	return "", ""
 }

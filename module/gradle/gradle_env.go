@@ -49,20 +49,25 @@ func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 		log.Infof("use bundled java: %v", r.JavaHome)
 		return r, nil
 	}
+	var chosenJavaHome string
+	if os.Getenv("MPS_BUNDLED_JAVA") == "1" {
+		chosenJavaHome = buildJavaHome(selectJavaVersionOnly(gwv))
+		r.JavaHome = chosenJavaHome
+		log.Infof("use bundled Java eval gradle version(from wrapper): %s", chosenJavaHome)
+	}
 	if script := prepareGradleWrapperScriptFile(ctx, dir); script != "" {
-		gv, e := evalVersion(ctx, script)
+		gv, e := evalVersion(ctx, script, chosenJavaHome)
 		if e == nil {
-			return &GradleEnv{
-				Version:             *gv,
-				Path:                script,
-				GradleWrapperStatus: GradleWrapperStatusUsed,
-			}, nil
+			r.Version = *gv
+			r.Path = script
+			r.GradleWrapperStatus = GradleWrapperStatusUsed
+			return r, nil
 		}
 		log.Errorf("Eval gradle wrapper: %s", e.Error())
 		r.GradleWrapperError = e
 		r.GradleWrapperStatus = GradleWrapperStatusError
 	}
-	gv, e := evalVersion(ctx, "gradle")
+	gv, e := evalVersion(ctx, "gradle", "")
 	if e != nil {
 		log.Errorf("Eval gradle: %s", e.Error())
 		return nil, e
@@ -72,12 +77,16 @@ func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 	return r, nil
 }
 
-func evalVersion(ctx context.Context, cmdPath string) (_ *GradleVersion, err error) {
+func evalVersion(ctx context.Context, cmdPath string, javaHome string) (_ *GradleVersion, err error) {
 	defer func() {
 		err = evalVersionError(err)
 	}()
 	var log = logctx.Use(ctx).Sugar()
 	cmd := exec.CommandContext(ctx, cmdPath, "--version", "--quiet")
+	if javaHome != "" {
+		cmd.Env = os.Environ()
+		cmd.Env = append(cmd.Env, "JAVA_HOME="+javaHome)
+	}
 	log.Infof("Execute: %s", cmd.String())
 	data, e := cmd.Output()
 	if e != nil {
