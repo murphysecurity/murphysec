@@ -88,21 +88,9 @@ func evalVersion(ctx context.Context, cmdPath string, javaHome string) (_ *Gradl
 		cmd.Env = append(cmd.Env, "JAVA_HOME="+javaHome)
 	}
 	log.Infof("Execute: %s", cmd.String())
-	data, e := cmd.Output()
-	if e != nil {
-		var exitErr *exec.ExitError
-		if errors.As(e, &exitErr) {
-			data := exitErr.Stderr
-			if len(data) > 256 {
-				data = data[:256]
-			}
-			return nil, &EvalVersionError{
-				_Error:   e,
-				ExitCode: exitErr.ExitCode(),
-				Stderr:   string(data),
-			}
-		}
-		return nil, e
+	data, err := cmd.Output()
+	if err != nil {
+		return nil, err
 	}
 	return parseGradleVersionOutput(string(data))
 }
