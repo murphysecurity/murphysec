@@ -62,6 +62,7 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		IsNoBuild:   env.DoNotBuild,
 	}
 	ctx = model.WithScanTask(ctx, scantask)
+	ctx = context.WithValue(ctx, "is_internalcmd", true)
 	e = inspector.ManagedInspect(ctx)
 	if e != nil {
 		logger.Error(e)

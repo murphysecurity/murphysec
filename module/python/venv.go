@@ -210,7 +210,11 @@ func pipdeptree(dir string, logger *zap.SugaredLogger) ([]PipdeptreeStruct, erro
 }
 func updatePackage(dir string, logger *zap.SugaredLogger, k, v string) {
 	var out bytes.Buffer
-	cmd := exec.Command("./pip", "install", k+"=="+v)
+	version := k
+	if v != "" {
+		version = version + "==" + v
+	}
+	cmd := exec.Command("./pip", "install", version)
 	cmd.Stdout = &out
 	cmd.Dir = dir
 	if err := cmd.Run(); err != nil {
@@ -245,6 +249,26 @@ func delVenv(dir string, logger *zap.SugaredLogger) {
 		return
 	}
 	logger.Debug("delete venv success ")
+}
+func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]string) {
+	var exist = make(map[string]string)
+	for _, i := range *mod {
+		exist[i.CompName] = exist[i.CompVersion]
+	}
+	for k, v := range nvMp {
+		if _, ok := exist[k]; !ok {
+			*mod = append(*mod, model.DependencyItem{
+				Component: model.Component{
+					CompName:    k,
+					CompVersion: v,
+					EcoRepo: model.EcoRepo{
+						Ecosystem:  "pip",
+						Repository: "",
+					},
+				},
+			})
+		}
+	}
 }
 func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[string]string) ([]model.DependencyItem, error) {
 	var mod []model.DependencyItem
@@ -297,6 +321,8 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 			mod = append(mod, buildTree(j, 0))
 		}
 	}
+	// 对于没有pip install成功的依赖 只加入pipreqs中列出的直接依赖
+	directDependenceSurvival(&mod, newRequirements)
 	defer delVenv(venvDir, logger)
 	return mod, err
 }

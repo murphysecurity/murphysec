@@ -193,7 +193,7 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 			delete(unknownVersionComps, s)
 		}
 	}
-	if len(unknownVersionComps) != 0 {
+	if is_internalcmd := ctx.Value("is_internalcmd"); is_internalcmd == nil && len(unknownVersionComps) != 0 {
 		// try to resolve version from pip list
 		m, e := getEnvPipListMap(ctx)
 		if e != nil {
