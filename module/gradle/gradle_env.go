@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -102,13 +104,16 @@ func evalVersionError(e error) error {
 	var exitErr *exec.ExitError
 	if errors.As(e, &exitErr) {
 		data := exitErr.Stderr
-		if len(data) > 256 {
-			data = data[:256]
+		var s = strings.TrimSpace(string(data))
+		if len(s) == 0 {
+			s = "(no stderr output)"
+		} else if len(s) > 1024 {
+			s = s[:1024]
 		}
 		return &EvalVersionError{
 			_Error:   e,
 			ExitCode: exitErr.ExitCode(),
-			Stderr:   string(data),
+			Stderr:   s,
 		}
 	}
 	return &EvalVersionError{_Error: e}
@@ -154,7 +159,7 @@ func (e *EvalVersionError) Error() string {
 	if e.Stderr == "" {
 		return e._Error.Error()
 	}
-	return fmt.Sprintf("%s, output: \n%s", e._Error.Error(), e.Stderr)
+	return fmt.Sprintf("%s, output: \n%s", e._Error.Error(), strconv.Quote(e.Stderr))
 }
 
 func (e *EvalVersionError) Is(target error) bool {
