@@ -136,6 +136,9 @@ func pipreqs(dir string, projectPath, savePath string, logger *zap.SugaredLogger
 	}
 	return nil
 }
+func setPipTimeout() error {
+	return os.Setenv("PIP_DEFAULT_TIMEOUT", "120")
+}
 func installpipreqs(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
@@ -296,6 +299,9 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 		}
 	}
 	if err := updatePip(venvPath, logger); err != nil {
+		return nil, err
+	}
+	if err := setPipTimeout(); err != nil {
 		return nil, err
 	}
 	if err := installpipreqs(venvPath, logger); err != nil {
