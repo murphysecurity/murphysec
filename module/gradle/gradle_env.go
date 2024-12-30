@@ -137,7 +137,7 @@ func readGradleVersionFromWrapper(ctx context.Context, projectDir string) string
 	}
 	var r = gradlePropertiesWrapperVer.FindStringSubmatch(string(data))
 	if len(r) > 0 {
-		logger.Debug("gradle-wrapper gradle version read: %s", r[1])
+		logger.Debugf("gradle-wrapper gradle version read: %s", r[1])
 		return r[1]
 	}
 	return ""
