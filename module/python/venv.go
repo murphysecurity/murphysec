@@ -253,7 +253,7 @@ func delVenv(dir string, logger *zap.SugaredLogger) {
 func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]string) {
 	var exist = make(map[string]string)
 	for _, i := range *mod {
-		exist[i.CompName] = exist[i.CompVersion]
+		exist[i.CompName] = i.CompVersion
 	}
 	for k, v := range nvMp {
 		if _, ok := exist[k]; !ok {
@@ -266,6 +266,7 @@ func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]strin
 						Repository: "",
 					},
 				},
+				IsDirectDependency: true,
 			})
 		}
 	}
