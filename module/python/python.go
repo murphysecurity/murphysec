@@ -203,6 +203,10 @@ func collectDepsInfo(ctx context.Context, dir string) ([][2]string, error) {
 		for s := range unknownVersionComps {
 			versionedComps[s] = m[s]
 		}
+	} else {
+		for s := range unknownVersionComps {
+			versionedComps[s] = ""
+		}
 	}
 	for s := range noVersionComps {
 		if versionedComps[s] != "" {

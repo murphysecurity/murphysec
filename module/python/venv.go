@@ -15,7 +15,7 @@ import (
 )
 
 const pipConf = `[global]
-index-url = https://%s/simple/
+index-url = %s
 trusted-host = %s`
 
 type PipdeptreeStruct struct {
