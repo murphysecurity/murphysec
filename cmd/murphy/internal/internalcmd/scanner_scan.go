@@ -83,10 +83,16 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ScannerShouldEnableGradleBackupScan: env.ScannerShouldEnableGradleBackupScan,
 		ScanWarnings:                        scanerr.GetAll(ctx),
 	}
+	if env.WaitAfterScannerScan {
+		logger.Warn("client will wait here!")
+	}
 	_ = logger.Sync()
 	fmt.Println("")
 	var enc = json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	must.M(enc.Encode(w))
 	fmt.Println("")
+	if env.WaitAfterScannerScan {
+		select {}
+	}
 }

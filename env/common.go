@@ -24,6 +24,7 @@ var NoWait bool
 var envTlsAllowInsecure bool
 var CliTlsAllowInsecure bool
 var DoNotBuild bool
+var WaitAfterScannerScan bool
 
 func init() {
 	ctm := os.Getenv("COMMAND_TIMEOUT")
@@ -40,6 +41,7 @@ func init() {
 	DoNotBuild, _ = strconv.ParseBool(os.Getenv("DO_NOT_BUILD"))
 	DoNotBuild2, _ := strconv.ParseBool(os.Getenv("MPS_DO_NOT_BUILD"))
 	DoNotBuild = DoNotBuild || DoNotBuild2
+	WaitAfterScannerScan, _ = strconv.ParseBool(os.Getenv("WAIT_AFTER_SCANNER_SCAN"))
 }
 
 func TlsAllowInsecure() bool {
