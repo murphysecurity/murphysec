@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func scannerScanCmd() *cobra.Command {
@@ -93,6 +94,6 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 	must.M(enc.Encode(w))
 	fmt.Println("")
 	if env.WaitAfterScannerScan {
-		select {}
+		time.Sleep(time.Hour)
 	}
 }
