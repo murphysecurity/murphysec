@@ -93,7 +93,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 			model.UseInspectionTask(ctx).AddModule(m)
 			return err
 		} else {
-			m.Dependencies = append(m.Dependencies, deps...)
+			m.Dependencies = deps
 		}
 	}
 	model.UseInspectionTask(ctx).AddModule(m)
