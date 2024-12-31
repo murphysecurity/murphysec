@@ -101,7 +101,11 @@ func pipreqs(dir string, projectPath, savePath string, logger *zap.SugaredLogger
 	logger.Debug(zap.String("pipreqs Path", dir))
 	logger.Debug(zap.String("pipreqs projectPath", projectPath))
 	logger.Debug(zap.String("pipreqs savepath", savePath))
-	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8", "--ignore=virtual_venv", "--pypi-server=https://pypi.tuna.tsinghua.edu.cn/pypi")
+	var pypiserverAddr string
+	if s := getPipreqsServerSourctAddr(); s != "" {
+		pypiserverAddr = "--pypi-server=" + s
+	}
+	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8", "--ignore=virtual_venv", pypiserverAddr)
 	cmd.Dir = dir
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -276,6 +280,9 @@ func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]strin
 }
 func pipenv() string {
 	return os.Getenv("PIP_SOURCE_ADDR")
+}
+func getPipreqsServerSourctAddr() string {
+	return os.Getenv("PIPREQS_SERVER_SOURCE_ADDR")
 }
 func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[string]string) ([]model.DependencyItem, error) {
 	var mod []model.DependencyItem
