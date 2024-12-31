@@ -15,7 +15,7 @@ import (
 )
 
 const pipConf = `[global]
-index-url = %s
+index-url = https://%s/simple/
 trusted-host = %s`
 
 type PipdeptreeStruct struct {
@@ -101,7 +101,7 @@ func pipreqs(dir string, projectPath, savePath string, logger *zap.SugaredLogger
 	logger.Debug(zap.String("pipreqs Path", dir))
 	logger.Debug(zap.String("pipreqs projectPath", projectPath))
 	logger.Debug(zap.String("pipreqs savepath", savePath))
-	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8", "--ignore=virtual_venv")
+	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8", "--ignore=virtual_venv", "--pypi-server=https://pypi.tuna.tsinghua.edu.cn/pypi")
 	cmd.Dir = dir
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -259,7 +259,7 @@ func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]strin
 		exist[i.CompName] = i.CompVersion
 	}
 	for k, v := range nvMp {
-		if _, ok := exist[k]; !ok {
+		if _, ok := exist[k]; !ok && k != "pip" && k != "pipreqs" && k != "pipdeptree" {
 			*mod = append(*mod, model.DependencyItem{
 				Component: model.Component{
 					CompName:    k,
