@@ -48,15 +48,19 @@ rootProject {
                         writer.write("project: \"${project.name}\"\n")
                         writer.write("configurations:\n")
                         for (final def configuration in project.configurations) {
-                            try { if (!configuration.canBeResolved) continue }catch(MissingPropertyException ignored){}
-                            logger.info("  For {}", configuration)
-                            final def resolved = configuration.getResolvedConfiguration()
-                            writeEntry(writer, "  ", true, "configuration", configuration.name)
-                            final def fld = resolved.firstLevelModuleDependencies
-                            if (!fld.isEmpty()) {
-                                writeKey(writer, "  ", false, "dependencies")
-                                writer.write("\n")
-                                resolved.firstLevelModuleDependencies.forEach { writeDependencyTree(writer, it, 1, new HashSet()) }
+                            try {
+                                try { if (!configuration.canBeResolved) continue }catch(MissingPropertyException ignored){}
+                                logger.info("  For {}", configuration)
+                                final def resolved = configuration.getResolvedConfiguration()
+                                writeEntry(writer, "  ", true, "configuration", configuration.name)
+                                final def fld = resolved.firstLevelModuleDependencies
+                                if (!fld.isEmpty()) {
+                                    writeKey(writer, "  ", false, "dependencies")
+                                    writer.write("\n")
+                                    resolved.firstLevelModuleDependencies.forEach { writeDependencyTree(writer, it, 1, new HashSet()) }
+                                }
+                            } catch (Exception e) {
+                                logger.error("Error processing configuration {}", configuration, e)
                             }
                         }
                     } finally {
