@@ -43,13 +43,12 @@ func getVenvPath(basePath string) string {
 
 	return ""
 }
-func newVenv(dir string, pythonVersion string, logger *zap.SugaredLogger) error {
+func newVenv(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var errout bytes.Buffer
 	env := os.Environ()
 	logger.Debug(zap.Any("env", env))
-	pythonVersion = "./" + pythonVersion
-	cmd := exec.Command("bash", "-c", pythonVersion+" -m venv virtual_venv")
+	cmd := exec.Command("bash", "-c", "/usr/local/python3.10/bin/python3.10 -m venv virtual_venv")
 	cmd.Dir = dir
 	cmd.Stdout = &out
 	cmd.Stderr = &errout
@@ -84,11 +83,10 @@ func newPipConf(basePath string, privateAddr string) error {
 	}
 	return nil
 }
-func updatePip(dir string, pythonVersion string, logger *zap.SugaredLogger) error {
+func updatePip(dir string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var errout bytes.Buffer
-	pythonVersion = "./" + pythonVersion
-	cmd := exec.Command(pythonVersion, "-m", "pip", "install", "--upgrade", "pip")
+	cmd := exec.Command("./python3.10", "-m", "pip", "install", "--upgrade", "pip")
 	cmd.Stdout = &out
 	cmd.Dir = dir
 	if err := cmd.Run(); err != nil {
@@ -104,11 +102,7 @@ func pipreqs(dir string, projectPath, savePath string, logger *zap.SugaredLogger
 	logger.Debug(zap.String("pipreqs Path", dir))
 	logger.Debug(zap.String("pipreqs projectPath", projectPath))
 	logger.Debug(zap.String("pipreqs savepath", savePath))
-	var pypiserverAddr string
-	if env.PIPREQS_SERVER_SOURCE_ADDR != "" {
-		pypiserverAddr = "--pypi-server=" + env.PIPREQS_SERVER_SOURCE_ADDR
-	}
-	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8", "--ignore=virtual_venv", pypiserverAddr)
+	cmd := exec.Command("./pipreqs", projectPath, "--savepath", savePath, "--encoding=utf-8", "--ignore=virtual_venv")
 	cmd.Dir = dir
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -160,7 +154,7 @@ func installpipreqs(dir string, logger *zap.SugaredLogger) error {
 	logger.Debug("install pipreqs success ")
 	return nil
 }
-func installRequirements(dir string, textDir string, logger *zap.SugaredLogger) error {
+func installRequirements(dir string, textDir string, oldNvMp map[string]string, logger *zap.SugaredLogger) error {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	by, err := os.ReadFile(textDir)
@@ -168,8 +162,13 @@ func installRequirements(dir string, textDir string, logger *zap.SugaredLogger) 
 		logger.Error("read requirements.txt error :", zap.Error(err))
 		return err
 	}
+	logger.Debug(zap.String("requirements.txt", string(by)))
 	nvmp := parseRequirements(string(by))
 	for k, v := range nvmp {
+		if oldVersion, ok := oldNvMp[k]; ok && oldVersion != "" {
+			logger.Debug(zap.String("skip install user requirements dependencies", k))
+			continue
+		}
 		var cmd *exec.Cmd
 		if v != "" {
 			cmd = exec.Command("./pip", "install", k+"=="+v)
@@ -281,21 +280,14 @@ func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]strin
 		}
 	}
 }
-func getPythonVersion() string {
-	_, err := exec.LookPath("python3.10")
-	if err != nil {
-		return "python"
-	}
-	return "python3.10"
-}
+
 func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[string]string) ([]model.DependencyItem, error) {
 	var mod []model.DependencyItem
 	var venvDir = filepath.Join(dir, "virtual_venv")
 	venvPath := getVenvPath(dir)
 	requirementsPath := filepath.Join(dir, "requirements.txt")
 	venvRequirementsPath := filepath.Join(venvPath, "requirements.txt")
-	pythonVersion := getPythonVersion()
-	if err := newVenv(dir, pythonVersion, logger); err != nil {
+	if err := newVenv(dir, logger); err != nil {
 		return nil, err
 	}
 	if env.PIP_SOURCE_ADDR != "" {
@@ -304,7 +296,7 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 			return nil, err
 		}
 	}
-	if err := updatePip(venvPath, pythonVersion, logger); err != nil {
+	if err := updatePip(venvPath, logger); err != nil {
 		return nil, err
 	}
 	if err := setPipTimeout(); err != nil {
@@ -316,7 +308,7 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 	if err := pipreqs(venvPath, dir, venvPath, logger); err != nil {
 		return nil, err
 	}
-	if err := installRequirements(venvPath, venvRequirementsPath, logger); err != nil {
+	if err := installRequirements(venvPath, venvRequirementsPath, nvMp, logger); err != nil {
 		return nil, err
 	}
 	if err := installpipdeptree(venvPath, logger); err != nil {
@@ -332,6 +324,7 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 	for k, v := range nvMp {
 		if newV, ok := newRequirements[k]; ok && newV != v {
 			updatePackage(venvPath, logger, k, v)
+			newRequirements[k] = v
 		}
 	}
 	result, err := pipdeptree(venvPath, logger)

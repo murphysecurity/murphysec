@@ -84,6 +84,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 		di.CompName = k
 		di.CompVersion = v
 		di.EcoRepo = EcoRepo
+		nvMp[k] = v
 		m.Dependencies = append(m.Dependencies, di)
 	}
 	if !task.IsNoBuild() {
