@@ -244,6 +244,7 @@ func readGraphCmd(ctx context.Context, dir string, directDependencyList map[stri
 	stdout.Close()
 	if err := cmd.Wait(); err != nil {
 		logger.Error(err.Error())
+		return nil, nil, nil, err
 	}
 	return dInfo, rootList, sonTree, nil
 }
