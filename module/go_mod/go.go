@@ -24,9 +24,16 @@ func (Inspector) CheckDir(dir string) bool {
 }
 
 func (Inspector) InspectProject(ctx context.Context) error {
-	if err := buildScan(ctx); err != nil {
+	task := model.UseInspectionTask(ctx)
+	if task.IsNoBuild() {
 		if err := baseScan(ctx); err != nil {
 			return err
+		}
+	} else {
+		if err := buildScan(ctx); err != nil {
+			if err := baseScan(ctx); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

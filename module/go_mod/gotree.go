@@ -18,11 +18,25 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+func goModTidy(path string) error {
+	_, err := os.Stat(path)
+	if err != nil {
+		cmd := exec.Command("go", "mod", "tidy")
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 func buildScan(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
 	logger := logctx.Use(ctx)
 	modFilePath := filepath.Join(task.Dir(), "go.mod")
 	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
+	if err := goModTidy(filepath.Join(task.Dir(), "go.sum")); err != nil {
+		logger.Error("go mod tidy error :", zap.Error(err))
+		return err
+	}
 	modName, err := getModInfo(modFilePath)
 	if err != nil {
 		logger.Error("get mod info error :", zap.Error(err))
