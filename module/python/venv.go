@@ -320,11 +320,11 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 		logger.Warnf("read requirement: %s %v", requirementsPath, err)
 	}
 	//  对比原本的 requirements.txt 拿到原本包的版本
-	newRequirements := parseRequirements(string(data))
+	oldRequirements := parseRequirements(string(data))
 	for k, v := range nvMp {
-		if newV, ok := newRequirements[k]; ok && newV != v {
+		if newV, ok := oldRequirements[k]; ok && newV != v {
 			updatePackage(venvPath, logger, k, v)
-			newRequirements[k] = v
+			oldRequirements[k] = v
 		}
 	}
 	result, err := pipdeptree(venvPath, logger)
@@ -337,7 +337,14 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 		}
 	}
 	// 对于没有pip install成功的依赖 只加入pipreqs中列出的直接依赖
-	directDependenceSurvival(&mod, newRequirements)
+	directDependenceSurvival(&mod, oldRequirements)
+	// 对于pipreqs生成的requirements.txt 中未列出的直接依赖加入到依赖树中直接依赖一层
+	data, err = readTextFile(venvRequirementsPath, 64*1024)
+	if err != nil {
+		logger.Warnf("read requirement: %s %v", requirementsPath, err)
+	}
+	venvRequirements := parseRequirements(string(data))
+	directDependenceSurvival(&mod, venvRequirements)
 	defer delVenv(venvDir, logger)
 	return mod, err
 }
