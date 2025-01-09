@@ -127,11 +127,6 @@ func getDepFromLock(input string) ([]model.DependencyItem, error) {
 }
 
 func _buildTree(graph map[string][]string, versions map[string]string, visited map[string]struct{}, target string) *model.DependencyItem {
-	if _, ok := visited[target]; ok {
-		return nil
-	}
-	visited[target] = struct{}{}
-	defer delete(visited, target)
 
 	r := &model.DependencyItem{
 		Component: model.Component{
@@ -142,6 +137,11 @@ func _buildTree(graph map[string][]string, versions map[string]string, visited m
 		Dependencies: nil,
 	}
 	for _, it := range graph[target] {
+		if _, ok := visited[target]; ok {
+			return r
+		}
+		visited[target] = struct{}{}
+
 		t := _buildTree(graph, versions, visited, it)
 		if t == nil {
 			continue
