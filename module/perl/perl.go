@@ -15,7 +15,7 @@ func (i Inspector) String() string {
 	return "Perl"
 }
 
-func (i Inspector) CheckDir(dir string) bool {
+func (i Inspector) CheckDir(ctx context.Context, dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "MYMETA.json")) ||
 		utils.IsFile(filepath.Join(dir, "META.json"))
 }

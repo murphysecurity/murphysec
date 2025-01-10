@@ -17,7 +17,7 @@ func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 func (Inspector) String() string {
 	return "Rebar3"
 }
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "rebar.config"))
 }
 func (Inspector) InspectProject(ctx context.Context) error {

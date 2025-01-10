@@ -52,7 +52,7 @@ func (Inspector) String() string {
 	return "Yarn"
 }
 
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	info, e := os.Stat(filepath.Join(dir, "yarn.lock"))
 	return e == nil && !info.IsDir()
 }

@@ -26,7 +26,7 @@ func (i Inspector) String() string {
 	return "Python"
 }
 
-func (i Inspector) CheckDir(dir string) bool {
+func (i Inspector) CheckDir(ctx context.Context, dir string) bool {
 	if buildout.DirHasBuildout(dir) {
 		return true
 	}

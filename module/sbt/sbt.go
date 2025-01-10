@@ -15,7 +15,7 @@ func (i Inspector) String() string {
 	return "SBT"
 }
 
-func (i Inspector) CheckDir(dir string) bool {
+func (i Inspector) CheckDir(ctx context.Context, dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "build.sbt"))
 }
 

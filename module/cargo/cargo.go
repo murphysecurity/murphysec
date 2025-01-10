@@ -17,7 +17,7 @@ func (Inspector) String() string {
 
 var _cargoLockNameList = []string{"Cargo.lock", "cargo.lock"}
 
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	for _, it := range _cargoLockNameList {
 		if utils.IsFile(filepath.Join(dir, it)) {
 			return true

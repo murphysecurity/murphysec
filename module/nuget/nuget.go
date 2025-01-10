@@ -20,7 +20,7 @@ func (Inspector) String() string {
 	return "Nuget"
 }
 
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	// return utils.IsFile(filepath.Join(dir, "packages.config"))
 	return utils.IsDir(dir)
 }

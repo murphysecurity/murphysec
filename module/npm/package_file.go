@@ -9,6 +9,7 @@ import (
 type pkgFile struct {
 	Name            string            `json:"name"`
 	Version         string            `json:"version"`
+	Workspaces      []string          `json:"workspaces"`
 	Dependencies    map[string]string `json:"dependencies"`
 	DevDependencies map[string]string `json:"devDependencies"`
 }

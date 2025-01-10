@@ -20,7 +20,7 @@ func (Inspector) String() string {
 	return "Bundler"
 }
 
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "Gemfile")) && utils.IsFile(filepath.Join(dir, "Gemfile.lock"))
 }
 

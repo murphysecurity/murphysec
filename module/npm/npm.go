@@ -30,7 +30,7 @@ func (Inspector) String() string {
 	return "Npm"
 }
 
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	if utils.IsFile(filepath.Join(dir, LockFileName)) {
 		return true
 	}
@@ -43,6 +43,7 @@ func (Inspector) CheckDir(dir string) bool {
 	if utils.IsFile(filepath.Join(dir, "pnpm-lock.yaml")) {
 		return false
 	}
+
 	return true
 }
 
@@ -67,7 +68,10 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 		ModuleVersion:  "",
 		ModulePath:     packagePath,
 	}
-
+	if !skipWorkspaceDirectory(ctx, dir) {
+		logger.Warn("director skip ", zap.String("workspace directory detected", dir))
+		return make([]model.Module, 0), nil
+	}
 	data, e := os.ReadFile(packagePath)
 	if e != nil {
 		return nil, fmt.Errorf("reading package file: %w", e)

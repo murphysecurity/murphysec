@@ -22,7 +22,7 @@ func (Inspector) String() string {
 	return "Conan"
 }
 
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	return utils.IsFile(filepath.Join(dir, "conanfile.txt")) ||
 		utils.IsFile(filepath.Join(dir, "conanfile.py")) ||
 		utils.IsFile(filepath.Join(dir, "conan.txt")) ||

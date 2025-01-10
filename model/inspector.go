@@ -9,7 +9,7 @@ type InspectorFeature int
 
 type Inspector interface {
 	fmt.Stringer
-	CheckDir(dir string) bool
+	CheckDir(ctx context.Context, dir string) bool
 	InspectProject(ctx context.Context) error
 	SupportFeature(feature InspectorFeature) bool
 }

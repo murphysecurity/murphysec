@@ -215,7 +215,7 @@ func (Inspector) String() string {
 	return "LuaRocks"
 }
 
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	return utils.IsFile(filepath.Join(dir, LockfileName))
 }
 

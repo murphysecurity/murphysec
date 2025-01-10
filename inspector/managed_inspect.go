@@ -12,6 +12,11 @@ import (
 	"time"
 )
 
+const BASEPATH = "basePath"
+
+func setBasePath(ctx context.Context, path string) context.Context {
+	return context.WithValue(ctx, BASEPATH, path)
+}
 func ManagedInspect(ctx context.Context) error {
 	var logger = logctx.Use(ctx)
 	scanTask := model.UseScanTask(ctx)
@@ -25,10 +30,10 @@ func ManagedInspect(ctx context.Context) error {
 		inspectors: module.Inspectors,
 		root:       baseDir,
 	}
-	scanner.scan()
+	scanner.scan(ctx)
 
 	logger.Sugar().Infof("Found %d directories", len(scanner.scannedDirs))
-
+	ctx = setBasePath(ctx, baseDir)
 	// 对扫到的内容，逐个开始检查
 	for idx, it := range scanner.scannedDirs {
 		st := time.Now()

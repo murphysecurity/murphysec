@@ -122,7 +122,7 @@ func backupParser(ctx context.Context, dir string) *GradleDependencyInfo {
 
 var gradleBuildFiles = []string{"build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"}
 
-func (Inspector) CheckDir(dir string) bool {
+func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 	for _, it := range gradleBuildFiles {
 		info, e := os.Stat(filepath.Join(dir, it))
 		if e == nil && !info.IsDir() {

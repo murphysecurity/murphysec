@@ -1,6 +1,7 @@
 package inspector
 
 import (
+	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
 	"os"
@@ -22,11 +23,11 @@ func (d *dirScanItem) String() string {
 	return fmt.Sprintf("%s - %s", d.inspector, d.path)
 }
 
-func (d *dirScanner) scan() {
-	d._r(0, d.root, map[model.Inspector]unit{})
+func (d *dirScanner) scan(ctx context.Context) {
+	d._r(ctx, 0, d.root, map[model.Inspector]unit{})
 }
 
-func (d *dirScanner) _r(depth int, p string, usedInspector map[model.Inspector]unit) {
+func (d *dirScanner) _r(ctx context.Context, depth int, p string, usedInspector map[model.Inspector]unit) {
 	if depth > 16 {
 		return
 	}
@@ -41,14 +42,15 @@ func (d *dirScanner) _r(depth int, p string, usedInspector map[model.Inspector]u
 			if !it.SupportFeature(model.InspectorFeatureAllowNested) {
 				continue
 			}
-			if it.CheckDir(p) {
+
+			if it.CheckDir(ctx, p) {
 				d.scannedDirs = append(d.scannedDirs, dirScanItem{
 					path:      p,
 					inspector: it,
 				})
 			}
 		} else {
-			if it.CheckDir(p) {
+			if it.CheckDir(ctx, p) {
 				usedInspector[it] = unit{}
 				// Clear the used flag of the first time using
 				//goland:noinspection ALL
@@ -69,6 +71,6 @@ func (d *dirScanner) _r(depth int, p string, usedInspector map[model.Inspector]u
 		if dirShouldIgnore(entryName) {
 			continue
 		}
-		d._r(depth+1, filepath.Join(p, entryName), usedInspector)
+		d._r(ctx, depth+1, filepath.Join(p, entryName), usedInspector)
 	}
 }
