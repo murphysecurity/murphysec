@@ -115,7 +115,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 			}
 			return []model.Module{module}, nil
 		} else if e != nil {
-			logger.Warn("npm install failed, skip")
+			logger.Warn("npm install failed, skip :" + dir)
 			return make([]model.Module, 0), nil
 		}
 	}
