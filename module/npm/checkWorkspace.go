@@ -49,7 +49,7 @@ func skipWorkspaceDirectory(ctx context.Context, dir string) bool {
 		return false
 	}
 	for k, _ := range mp {
-		if filepath.Clean(k) == filepath.Clean(dir) {
+		if filepath.HasPrefix(k, dir) {
 			return false
 		}
 	}
