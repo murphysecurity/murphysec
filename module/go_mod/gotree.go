@@ -18,7 +18,9 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-func goModTidy(path string) error {
+func goModTidy(ctx context.Context, path string) error {
+	logger := logctx.Use(ctx)
+	logger.Debug("go mod tidy :" + path)
 	_, err := os.Stat(path)
 	if err != nil {
 		cmd := exec.Command("go", "mod", "tidy")
@@ -33,7 +35,7 @@ func buildScan(ctx context.Context) error {
 	logger := logctx.Use(ctx)
 	modFilePath := filepath.Join(task.Dir(), "go.mod")
 	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
-	if err := goModTidy(filepath.Join(task.Dir(), "go.sum")); err != nil {
+	if err := goModTidy(ctx, task.Dir()); err != nil {
 		logger.Error("go mod tidy error :", zap.Error(err))
 		return err
 	}

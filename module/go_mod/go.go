@@ -20,22 +20,31 @@ func (Inspector) String() string {
 }
 
 func (Inspector) CheckDir(ctx context.Context, dir string) bool {
-	return utils.IsFile(filepath.Join(dir, "go.mod"))
+	return utils.IsFile(filepath.Join(dir, "go.mod")) || utils.IsFile(filepath.Join(dir, "Gopkg.lock"))
 }
 
 func (Inspector) InspectProject(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
-	if task.IsNoBuild() {
-		if err := baseScan(ctx); err != nil {
-			return err
-		}
-	} else {
-		if err := buildScan(ctx); err != nil {
+	if utils.IsFile(filepath.Join(task.Dir(), "go.mod")) {
+		// 新版本
+		if task.IsNoBuild() {
 			if err := baseScan(ctx); err != nil {
 				return err
 			}
+		} else {
+			if err := buildScan(ctx); err != nil {
+				if err := baseScan(ctx); err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		// 旧版本Gopkg
+		if err := parserGoPkgLock(ctx); err != nil {
+			return nil
 		}
 	}
+
 	return nil
 }
 
