@@ -7,6 +7,7 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"os"
 	"path/filepath"
 )
 
@@ -21,7 +22,7 @@ func (Inspector) String() string {
 }
 
 func (Inspector) CheckDir(ctx context.Context, dir string) bool {
-	return utils.IsFile(filepath.Join(dir, "Gemfile")) && utils.IsFile(filepath.Join(dir, "Gemfile.lock"))
+	return utils.IsFile(filepath.Join(dir, "Gemfile")) || utils.IsFile(filepath.Join(dir, "Gemfile.lock"))
 }
 
 func (Inspector) InspectProject(ctx context.Context) error {
@@ -30,7 +31,30 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	scanDir := task.Dir()
 	gemFile := filepath.Join(scanDir, "Gemfile")
 	gemLockFile := filepath.Join(scanDir, "Gemfile.lock")
-	if !utils.IsFile(gemFile) || !utils.IsFile(gemLockFile) {
+	if utils.IsFile(gemFile) && !utils.IsFile(gemLockFile) {
+		var m gemfile
+		var dep []model.DependencyItem
+		file, _ := os.Open(gemFile)
+		m.Parse(file)
+		for _, j := range m.Gems {
+			dep = append(dep, model.DependencyItem{
+				Component: model.Component{
+					CompName:    j.Name,
+					CompVersion: j.Version,
+					EcoRepo:     EcoRepo,
+				},
+				IsDirectDependency: true,
+			})
+		}
+		task.AddModule(model.Module{
+			PackageManager: "bundler",
+			ModuleName:     "Gemfile",
+			Dependencies:   dep,
+			ModulePath:     gemFile,
+		})
+		return nil
+	}
+	if !utils.IsFile(gemFile) && !utils.IsFile(gemLockFile) {
 		return nil
 	}
 	logger.Debug("Reading Gemfile.lock", zap.String("path", gemLockFile))

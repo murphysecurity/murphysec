@@ -2,7 +2,9 @@ package bundler
 
 import (
 	_ "embed"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
@@ -34,4 +36,12 @@ DEPENDENCIES
 	tree, e := getDepGraph(data)
 	assert.NoError(t, e)
 	t.Log(tree)
+}
+func TestParseGem(t *testing.T) {
+	var m gemfile
+	file, _ := os.Open("E:\\Desktop\\kubernetes-1.22.1\\cluster\\addons\\fluentd-elasticsearch\\fluentd-es-image\\Gemfile")
+	m.Parse(file)
+	for _, m := range m.Gems {
+		fmt.Printf("%s :%s \n", m.Name, m.Version)
+	}
 }
