@@ -161,10 +161,7 @@ func parseBuildoutBytes(ctx context.Context, by []byte, path string) ([]string, 
 						Component: model.Component{
 							CompName:    key.Name(),
 							CompVersion: key.Value(),
-							EcoRepo: model.EcoRepo{
-								Ecosystem:  "pypi",
-								Repository: "",
-							},
+							EcoRepo:     EcoRepo,
 						},
 						IsOnline: model.IsOnlineTrue(),
 					})
@@ -217,10 +214,7 @@ func parseBuildoutCfgFile(ctx context.Context, path string) ([]string, error) {
 						Component: model.Component{
 							CompName:    key.Name(),
 							CompVersion: key.Value(),
-							EcoRepo: model.EcoRepo{
-								Ecosystem:  "pypi",
-								Repository: "",
-							},
+							EcoRepo:     EcoRepo,
 						},
 						IsOnline: model.IsOnlineTrue(),
 					})

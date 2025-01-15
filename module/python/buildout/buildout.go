@@ -19,6 +19,11 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 )
 
+var EcoRepo = model.EcoRepo{
+	Ecosystem:  "pypi",
+	Repository: "",
+}
+
 func doBuildout(ctx context.Context, dir string) (errorText string, e error) {
 	var cmd = exec.CommandContext(ctx, "buildout")
 	cmd.Dir = dir
@@ -140,10 +145,7 @@ func InspectProject(ctx context.Context, dir string) error {
 						Component: model.Component{
 							CompName:    n,
 							CompVersion: v,
-							EcoRepo: model.EcoRepo{
-								Ecosystem:  "pypi",
-								Repository: "",
-							},
+							EcoRepo:     EcoRepo,
 						},
 						IsOnline: model.IsOnlineTrue(),
 					},
