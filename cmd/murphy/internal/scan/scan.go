@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/murphysecurity/murphysec/codehash"
 	"os"
 	"path/filepath"
 
@@ -151,6 +152,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.PackagePrivateId = privateSourceId
 	createSubtask.PackagePrivateName = privateSourceName
 	createSubtask.ProjectTagNames = projectTagNames
+	createSubtask.IsAutonomous = scanCodeHash
 	if createSubtask.ProjectTagNames == nil {
 		createSubtask.ProjectTagNames = make([]string, 0)
 	}
@@ -204,12 +206,18 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		MavenSourceId:   privateSourceId,
 		MavenSourceName: privateSourceName,
 		IsNoBuild:       noBuild,
+		IsAutonomous:    scanCodeHash,
 	}
 	if gitSummary != nil {
 		task.GitUrl = gitSummary.RemoteAddr
 	}
 
 	ctx = model.WithScanTask(ctx, task)
+	if scanCodeHash && mode == model.ScanModeSource {
+		logger.Infof("code hash scanning begin...")
+		codehash.Scan(ctx)
+		logger.Infof("completed")
+	}
 	if task.Mode == model.ScanModeSource {
 		// do scan
 		e = inspector.ManagedInspect(ctx)

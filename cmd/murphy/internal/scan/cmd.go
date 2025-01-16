@@ -39,6 +39,7 @@ var sbomOutputType common.SBOMFormatFlag
 var webhookAddr string
 var webhookMode common.WebhookModeFlag
 var extraData string
+var scanCodeHash bool
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -58,6 +59,7 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
 	return &c
 }
 
@@ -79,6 +81,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full(default)")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
 	return &c
 }
 

@@ -44,3 +44,19 @@ func (m mwc) Close() error {
 }
 
 var _ io.WriteCloser = (*mwc)(nil)
+
+func NewBufferedReader(reader io.Reader) io.ReadCloser {
+	return &br{Reader: reader}
+}
+
+type br struct {
+	io.Reader
+}
+
+func (b *br) Close() error {
+	rc, ok := b.Reader.(io.Closer)
+	if !ok {
+		return nil
+	}
+	return rc.Close()
+}

@@ -27,6 +27,7 @@ type CreateSubTaskRequest struct {
 	WebhookAddr        *string          `json:"webhook_addr,omitempty"`
 	WebhookMode        *string          `json:"webhook_mode,omitempty"`
 	ExtraData          *string          `json:"extra_data,omitempty"`
+	IsAutonomous       bool             `json:"is_autonomous"`
 }
 
 type CreateSubTaskResponse struct {
