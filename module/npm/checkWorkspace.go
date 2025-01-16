@@ -2,8 +2,10 @@ package npm
 
 import (
 	"context"
+	"github.com/murphysecurity/murphysec/model"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func getWorkspace(packagePath string, mp map[string]bool) error {
@@ -29,7 +31,7 @@ func getWorkspace(packagePath string, mp map[string]bool) error {
 	return nil
 }
 func getGlobPath(ctx context.Context, dir string, mp map[string]bool) error {
-	basePath := ctx.Value("basePath").(string)
+	basePath := ctx.Value(model.BasePathKey).(string)
 	if basePath != "" && filepath.Clean(filepath.Dir(basePath)) == filepath.Clean(dir) {
 		return nil
 	}
@@ -48,8 +50,8 @@ func skipWorkspaceDirectory(ctx context.Context, dir string) bool {
 	if err := getGlobPath(ctx, dir, mp); err != nil {
 		return false
 	}
-	for k, _ := range mp {
-		if filepath.HasPrefix(k, dir) {
+	for k := range mp {
+		if strings.HasPrefix(k, dir) {
 			return false
 		}
 	}

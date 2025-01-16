@@ -12,10 +12,8 @@ import (
 	"time"
 )
 
-const BASEPATH = "basePath"
-
 func setBasePath(ctx context.Context, path string) context.Context {
-	return context.WithValue(ctx, BASEPATH, path)
+	return context.WithValue(ctx, model.BasePathKey, path)
 }
 func ManagedInspect(ctx context.Context) error {
 	var logger = logctx.Use(ctx)

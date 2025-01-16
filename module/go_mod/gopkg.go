@@ -24,7 +24,10 @@ func parseGopkgLock(dir string) (goPkgLock, error) {
 	if err != nil {
 		return m, err
 	}
-	toml.NewDecoder(file).Decode(&m)
+	_, err = toml.NewDecoder(file).Decode(&m)
+	if err != nil {
+		return m, err
+	}
 	return m, nil
 }
 func parserGoPkgLock(ctx context.Context) error {
