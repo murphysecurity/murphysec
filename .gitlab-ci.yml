@@ -14,7 +14,7 @@ variables:
 
 compose-build:
   tags:
-    - client-build-shell
+    - client-build-shell-066
   stage: build
   artifacts:
     expire_in: 1 day
@@ -37,7 +37,7 @@ compose-build:
 
 compose-build-with-tag:
   tags:
-    - client-build-shell
+    - client-build-shell-066
   stage: build
   artifacts:
     expire_in: 1 day
@@ -60,7 +60,7 @@ compose-build-with-tag:
 
 pack:
   tags:
-    - client-build-shell
+    - client-build-shell-066
   stage: after_build
   artifacts:
     expire_in: 1 day
@@ -103,10 +103,11 @@ lark-notify:
 
 test:
   tags:
-    - client-build-shell
+    - client-build-shell-066
   stage: test
   dependencies: [ ]
   script:
+    - golangci-lint run --color always
     - gotestsum --junitfile report.xml --format testname
   artifacts:
     when: always

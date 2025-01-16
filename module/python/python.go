@@ -102,7 +102,7 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 }
 
 var EcoRepo = model.EcoRepo{
-	Ecosystem:  "pip",
+	Ecosystem:  "pypi",
 	Repository: "",
 }
 

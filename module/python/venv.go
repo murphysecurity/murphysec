@@ -240,10 +240,7 @@ func buildTree(pipdeptree PipdeptreeStruct, level int) model.DependencyItem {
 		Component: model.Component{
 			CompName:    pipdeptree.Key,
 			CompVersion: pipdeptree.InstalledVersion,
-			EcoRepo: model.EcoRepo{
-				Ecosystem:  "pip",
-				Repository: "",
-			},
+			EcoRepo:     EcoRepo,
 		},
 		IsDirectDependency: directDependency,
 	}
@@ -270,10 +267,7 @@ func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]strin
 				Component: model.Component{
 					CompName:    k,
 					CompVersion: v,
-					EcoRepo: model.EcoRepo{
-						Ecosystem:  "pip",
-						Repository: "",
-					},
+					EcoRepo:     EcoRepo,
 				},
 				IsDirectDependency: true,
 			})
