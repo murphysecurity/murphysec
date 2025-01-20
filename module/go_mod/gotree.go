@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,6 +19,37 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+func checkNetworkEnvironment(ctx context.Context) bool {
+	var goProxy []string
+
+	if strings.Contains(os.Getenv("GOPROXY"), ",") {
+		goProxy = strings.Split(os.Getenv("GOPROXY"), ",")
+	} else {
+		goProxy = append(goProxy, os.Getenv("GOPROXY"))
+	}
+	networkEnvironment := false
+	for range 3 {
+		for _, j := range goProxy {
+			if j == "direct" {
+				continue
+			}
+			r, e := http.Get(j)
+			if r != nil && r.StatusCode == http.StatusRequestTimeout {
+				logctx.Use(ctx).Warn("test network environment http get timeout :" + j)
+				r.Body.Close()
+				continue
+			}
+			if e != nil {
+				logctx.Use(ctx).Warn("test network environment http get error :" + e.Error())
+				continue
+			}
+			logctx.Use(ctx).Debug("test network environment http get success :" + j)
+			networkEnvironment = true
+			break
+		}
+	}
+	return networkEnvironment
+}
 func goModTidy(ctx context.Context, path string) error {
 	logger := logctx.Use(ctx)
 	logger.Debug("go mod tidy :" + path)
@@ -33,6 +65,10 @@ func goModTidy(ctx context.Context, path string) error {
 func buildScan(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
 	logger := logctx.Use(ctx)
+
+	if !checkNetworkEnvironment(ctx) {
+		return errors.New("network environment error")
+	}
 	modFilePath := filepath.Join(task.Dir(), "go.mod")
 	logger.Debug("Reading go.mod", zap.String("path", modFilePath))
 	if err := goModTidy(ctx, task.Dir()); err != nil {
