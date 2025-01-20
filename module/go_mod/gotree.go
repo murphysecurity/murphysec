@@ -53,22 +53,10 @@ func checkNetworkEnvironment(ctx context.Context) bool {
 	}
 	return false
 }
-func goModTidy(ctx context.Context, path string) error {
-	logger := logctx.Use(ctx)
-	logger.Debug("go mod tidy :" + path)
-	_, err := os.Stat(path)
-	if err != nil {
-		cmd := exec.Command("go", "mod", "tidy")
-		if err := cmd.Start(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+
 func buildScan(ctx context.Context) error {
 	task := model.UseInspectionTask(ctx)
 	logger := logctx.Use(ctx)
-
 	if !checkNetworkEnvironment(ctx) {
 		return errors.New("network environment error")
 	}
@@ -114,7 +102,6 @@ func buildScan(ctx context.Context) error {
 		ModuleName:     modName,
 		Dependencies:   dependencies,
 	}
-
 	task.AddModule(m)
 	return nil
 }
@@ -140,7 +127,9 @@ func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, so
 					IsDirectDependency: false,
 				}
 				(*packageToPackageUsed)[d.CompName] = append((*packageToPackageUsed)[d.CompName], j)
-				d.Dependencies = append(d.Dependencies, buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, logger))
+				t := buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, logger)
+				t.IsDirectDependency = false
+				d.Dependencies = append(d.Dependencies, t)
 			}
 		}
 	}
@@ -294,7 +283,7 @@ func readGraphCmd(ctx context.Context, dir string, directDependencyList map[stri
 			}
 			sonTree[name] = append(sonTree[name], n)
 		}
-		logger.Debug("go: " + text)
+		// logger.Debug("go: " + text)
 	}
 	stdout.Close()
 	if err := cmd.Wait(); err != nil {
