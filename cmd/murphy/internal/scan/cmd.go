@@ -410,10 +410,10 @@ func doSBOMOnlyPrint(ctx context.Context, task *model.ScanTask) {
 	}
 	var bufioWriter = bufio.NewWriter(writer)
 	var enc = json.NewEncoder(bufioWriter)
-	must.M(bufioWriter.Flush())
 	enc.SetIndent("", "    ")
 	if task.Modules == nil {
 		task.Modules = make([]model.Module, 0)
 	}
 	must.M(enc.Encode(map[string]any{"modules": task.Modules}))
+	must.M(bufioWriter.Flush())
 }
