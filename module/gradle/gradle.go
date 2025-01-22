@@ -53,7 +53,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		}
 	}
 	if len(rs) == 0 && !env.ScannerScan {
-		// if no module find, use backup solution
+		// if no module found, use a backup solution
 		if m := backupParser(ctx, dir); m != nil {
 			tm := m.BaseModule(dir)
 			tm.ScanStrategy = model.ScanStrategyBackup
