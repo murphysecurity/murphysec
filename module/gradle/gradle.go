@@ -11,6 +11,7 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/repeale/fp-go"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v3"
 	"io"
@@ -304,7 +305,7 @@ func parseGradleScriptOutputAsyncBuilder(ctx context.Context) (handler func(path
 			}
 			defer func() { _ = f.Close() }()
 			var _modules []model.Module
-			_modules, e = decodeGradleScriptOutput(f, path)
+			_modules, e = decodeGradleScriptOutput(ctx, f, path)
 			if e != nil {
 				return
 			}
@@ -320,11 +321,17 @@ func parseGradleScriptOutputAsyncBuilder(ctx context.Context) (handler func(path
 	}
 }
 
-func decodeGradleScriptOutput(reader io.Reader, dir string) (modules []model.Module, e error) {
+func decodeGradleScriptOutput(ctx context.Context, reader io.Reader, dir string) (modules []model.Module, e error) {
+	var logger = logctx.Use(ctx).Sugar()
 	var decoder = yaml.NewDecoder(reader)
 	var data dtoProjectData
 	e = decoder.Decode(&data)
 	if e != nil {
+		return
+	}
+	pf, ok := ctx.Value(ProjectFilterCtxKey).(ProjectFilter)
+	if ok && len(pf.ProjectNames) > 0 && !slices.Contains(pf.ProjectNames, data.Project) {
+		logger.Infof("project %s not in filter list, skip", data.Project)
 		return
 	}
 	for _, configuration := range data.Configurations {

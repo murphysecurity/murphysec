@@ -14,6 +14,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module/gradle"
 	"github.com/murphysecurity/murphysec/module/maven"
 	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
@@ -40,6 +41,7 @@ var webhookAddr string
 var webhookMode common.WebhookModeFlag
 var extraData string
 var scanCodeHash bool
+var gradleProjectFilter gradle.ProjectFilter
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -82,6 +84,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full(default)")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
+	c.Flags().StringArrayVar(&gradleProjectFilter.ProjectNames, "gradle-project-name", make([]string, 0), "specify the name of the Gradle project")
 	return &c
 }
 
@@ -270,6 +273,7 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 		return
 	}
 	logger := logctx.Use(ctx).Sugar()
+	ctx = context.WithValue(ctx, gradle.ProjectFilterCtxKey, gradleProjectFilter)
 	r, e := scan(ctx, scanDir, model.AccessTypeCli, model.ScanModeSource)
 	if errors.Is(e, inspector.ErrNoWait) {
 		return
