@@ -210,7 +210,7 @@ func evalGradleDependencies(ctx context.Context, dir string, info *GradleEnv) (m
 	}
 	logger.Infof("temp file written, %s", tdf)
 
-	var cmd = info.ExecuteContext(ctx, "-I", tdf, "generateDependencyFile", "--info")
+	var cmd = info.ExecuteContext(ctx, "-I", tdf, "generateDependencyFile", "--info", "--no-configuration-cache")
 	cmd.Dir = dir
 	var stdout io.ReadCloser
 	var stderr io.ReadCloser
