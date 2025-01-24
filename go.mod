@@ -20,7 +20,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.15.2
-	github.com/murphysecurity/fix-tools v0.1.9-0.20241126070956-23ca588dc989
+	github.com/murphysecurity/fix-tools v0.1.9
 	github.com/pelletier/go-toml/v2 v2.1.1
 	github.com/pkg/errors v0.9.1
 	github.com/repeale/fp-go v0.11.1

@@ -129,8 +129,8 @@ github.com/mmcloughlin/avo v0.6.0 h1:QH6FU8SKoTLaVs80GA8TJuLNkUYl4VokHKlPhVDg4YY
 github.com/mmcloughlin/avo v0.6.0/go.mod h1:8CoAGaCSYXtCPR+8y18Y9aB/kxb8JSS6FRI7mSkvD+8=
 github.com/muesli/termenv v0.15.2 h1:GohcuySI0QmI3wN8Ok9PtKGkgkFIk7y6Vpb5PvrY+Wo=
 github.com/muesli/termenv v0.15.2/go.mod h1:Epx+iuz8sNs7mNKhxzH4fWXGNpZwUaJKRS1noLXviQ8=
-github.com/murphysecurity/fix-tools v0.1.9-0.20241126070956-23ca588dc989 h1:4zmMDhiEOhmdH328wDidY+Pbypl6Elk4auS2egxUGt0=
-github.com/murphysecurity/fix-tools v0.1.9-0.20241126070956-23ca588dc989/go.mod h1:UI1rONQtbt95/DWJK9bTPC5aGg/KEa7W4pRZB4J7Ve4=
+github.com/murphysecurity/fix-tools v0.1.9 h1:QF+VyChuriOzq9zjwSo7+4cQfEKT4IPgoOPatgY1gWg=
+github.com/murphysecurity/fix-tools v0.1.9/go.mod h1:8ZYY1yfEI7ygPra9YPoQj77dPopL5wH3TOTl39k/Nvo=
 github.com/onsi/gomega v1.34.1 h1:EUMJIKUjM8sKjYbtxQI9A4z2o+rruxnzNvpknOXie6k=
 github.com/onsi/gomega v1.34.1/go.mod h1:kU1QgUvBDLXBJq618Xvm2LUX6rSAfRaFRTcdOeDLwwY=
 github.com/pelletier/go-toml/v2 v2.1.1 h1:LWAJwfNvjQZCFIDKWYQaM62NcYeYViCmWIwmOStowAI=
