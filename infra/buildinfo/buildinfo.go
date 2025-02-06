@@ -63,7 +63,7 @@ func Commit() string {
 		s = d.CommitHash
 	}
 	if !d.CommitTime.IsZero() {
-		s += " at " + d.CommitTime.Format(time.RFC3339)
+		s += " at " + d.CommitTime.In(time.Local).Format(time.RFC3339)
 	}
 	return s
 }
