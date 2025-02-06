@@ -77,7 +77,7 @@ func UserAgentSuffix() (r string) {
 		return
 	}
 	r += "Commit/"
-	r += d.CommitHash[:7]
+	r += d.CommitHash[:8]
 	if d.Modified {
 		r += "-modified"
 	}
