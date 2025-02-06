@@ -30,7 +30,7 @@ jobs:
       GOARCH: ${{ matrix.goarch }}
       CGO_ENABLED: '0'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Go
         uses: actions/setup-go@v5
