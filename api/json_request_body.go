@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"sync/atomic"
 )
 
 type JsonRequestBody interface {
@@ -20,7 +19,7 @@ func NewJsonRequestBody(V any) JsonRequestBody {
 type jsonReqBody struct {
 	v      any
 	pr     *io.PipeReader
-	closed atomic.Bool
+	closed bool
 }
 
 func (j *jsonReqBody) GetBody() (io.ReadCloser, error) {
@@ -28,7 +27,7 @@ func (j *jsonReqBody) GetBody() (io.ReadCloser, error) {
 }
 
 func (j *jsonReqBody) Read(p []byte) (n int, err error) {
-	if j.closed.Load() {
+	if j.closed {
 		return 0, io.ErrClosedPipe
 	}
 	if j.pr == nil {
@@ -65,10 +64,10 @@ func (j *jsonReqBody) Read(p []byte) (n int, err error) {
 }
 
 func (j *jsonReqBody) Close() error {
-	if j.closed.Load() {
+	if j.closed {
 		return io.ErrClosedPipe
 	}
-	j.closed.Store(true)
+	j.closed = true
 	return j.pr.Close()
 }
 
