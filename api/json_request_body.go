@@ -38,9 +38,9 @@ func (j *jsonReqBody) Read(p []byte) (n int, err error) {
 			defer func() {
 				r := recover()
 				if r != nil {
-					switch r.(type) {
+					switch e := r.(type) {
 					case error:
-						_ = pw.CloseWithError(r.(error))
+						_ = pw.CloseWithError(e)
 					default:
 						_ = pw.CloseWithError(errors.New("panic in json encoding routing"))
 					}
