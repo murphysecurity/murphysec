@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/scanerr"
 	"go.uber.org/zap"
 	"os"
 	"os/exec"
@@ -55,6 +56,10 @@ again:
 	cmd.Wait()
 
 	if againBol {
+		scanerr.Add(ctx, scanerr.Param{
+			Kind:    "auto_build_error",
+			Content: stdErr.String(),
+		})
 		return errors.New(stdErr.String())
 	}
 	if stdErr.Len() > 0 {
