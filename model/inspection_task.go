@@ -10,6 +10,10 @@ type InspectionTask struct {
 	inspectionDir string
 }
 
+func (i *InspectionTask) MavenModuleName() []string {
+	return i.scanTask.MavenModuleName
+}
+
 // IsNoBuild返回当前扫描器是否编译
 func (i *InspectionTask) IsNoBuild() bool {
 	return i.scanTask.IsNoBuild

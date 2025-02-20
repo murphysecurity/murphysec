@@ -23,7 +23,19 @@ type Dependency struct {
 func (d Dependency) IsZero() bool {
 	return len(d.Children) == 0 && d.ArtifactId == "" && d.GroupId == "" && d.Version == ""
 }
-
+func checkMavenModule(ctx context.Context, dir string) bool {
+	task := model.UseInspectionTask(ctx)
+	mavenModule := task.MavenModuleName()
+	if len(mavenModule) == 0 {
+		return true
+	}
+	for _, j := range mavenModule {
+		if j == filepath.Dir(dir) {
+			return true
+		}
+	}
+	return false
+}
 func (d Dependency) String() string {
 	return fmt.Sprintf("%v: %v", d.Coordinate, d.Children)
 }
@@ -80,6 +92,9 @@ func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.
 		strategy = model.ScanStrategyBackup
 	}
 	for _, entry := range deps.ListAllEntries() {
+		if !checkMavenModule(ctx, entry.relativePath) {
+			continue
+		}
 		task.AddModule(model.Module{
 			PackageManager: "maven",
 			ModuleName:     entry.coordinate.Name(),

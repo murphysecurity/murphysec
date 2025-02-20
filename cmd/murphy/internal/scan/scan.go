@@ -153,6 +153,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.PackagePrivateName = privateSourceName
 	createSubtask.ProjectTagNames = projectTagNames
 	createSubtask.IsAutonomous = scanCodeHash
+	createSubtask.Branch = &branch
 	if createSubtask.ProjectTagNames == nil {
 		createSubtask.ProjectTagNames = make([]string, 0)
 	}
@@ -194,7 +195,6 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	}
 	cv.DisplayAlertMessage(ctx, createTaskResp.AlertMessage)
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.SubtaskID)
-
 	// create task object
 	task := &model.ScanTask{
 		Mode:            mode,
@@ -207,6 +207,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		MavenSourceName: privateSourceName,
 		IsNoBuild:       noBuild,
 		IsAutonomous:    scanCodeHash,
+		MavenModuleName: mavenModuleName,
 	}
 	if gitSummary != nil {
 		task.GitUrl = gitSummary.RemoteAddr

@@ -42,6 +42,8 @@ var webhookMode common.WebhookModeFlag
 var extraData string
 var scanCodeHash bool
 var gradleProjectFilter gradle.ProjectFilter
+var branch string
+var mavenModuleName []string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -52,6 +54,7 @@ func Cmd() *cobra.Command {
 	c.Flags().BoolVar(&jsonOutput, "json", false, "output in json format")
 	c.Flags().BoolVar(&isDeep, "deep", false, "enable enhanced deep insight, code features identification, vulnerability accessibility analysis")
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
+	c.Flags().StringVar(&branch, "branch", "", "")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "specify the id of the Maven settings.xml file used during the scan")
@@ -74,6 +77,8 @@ func DfCmd() *cobra.Command {
 	c.Flags().BoolVar(&jsonOutput, "json", false, "output in json format")
 	c.Flags().BoolVar(&isDeep, "deep", false, "enable enhanced deep insight, code features identification, vulnerability accessibility analysis")
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
+	c.Flags().StringVar(&branch, "branch", "", "")
+	c.Flags().StringArrayVar(&mavenModuleName, "maven-module-name", make([]string, 0), "retains module")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
