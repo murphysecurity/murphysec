@@ -42,7 +42,7 @@ func InspectEnv(ctx context.Context) error {
 			module.Dependencies = append(module.Dependencies, pkgs...)
 			LOG.Infof("inspection succeeded(%s), total %d items", fn, len(pkgs))
 		} else {
-			LOG.Warnf("Software inspection error(%s): %s, ", fn, e.Error())
+			LOG.Warnf("Software inspection error(%s): %s, ", fn, e)
 		}
 	}
 	for i := range module.Dependencies {
