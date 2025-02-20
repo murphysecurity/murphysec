@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"github.com/murphysecurity/murphysec/utils/must"
@@ -115,8 +114,10 @@ func (c *Client) POST(url *url.URL, body io.Reader) *http.Request {
 }
 
 func (c *Client) PostJson(url *url.URL, data any) *http.Request {
-	u := c.POST(url, bytes.NewReader(must.A(json.Marshal(data))))
-	u.Header.Set("Content-Type", "application/json")
+	var body = NewJsonRequestBody(data)
+	u := c.POST(url, body)
+	u.GetBody = body.GetBody
+	u.Header.Set("Content-Type", "application/json; charset=utf-8")
 	return u
 }
 
