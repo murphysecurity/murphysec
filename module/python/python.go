@@ -73,11 +73,9 @@ func (i Inspector) InspectProject(ctx context.Context) error {
 	m := model.Module{
 		ModuleName:     filepath.ToSlash(model.UseInspectionTask(ctx).RelDir()),
 		PackageManager: "pip",
-		ModulePath:     "Python",
+		ModulePath:     filepath.Join(dir, "Python"),
 	}
-	if m.ModuleName == "." {
-		m.ModuleName = "Python"
-	}
+
 	for _, it := range info {
 		k, v := it[0], it[1]
 		var di model.DependencyItem
