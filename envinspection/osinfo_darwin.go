@@ -1,3 +1,5 @@
 package envinspection
 
-func getOsInfo() string {}
+func getOsInfo() string {
+	return ""
+}
