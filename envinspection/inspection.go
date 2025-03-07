@@ -19,6 +19,9 @@ func InspectEnv(ctx context.Context) error {
 
 	var packageManager = "unmanaged"
 	var osn, _ = osname.OsName()
+	if runtime.GOOS == "linux" {
+		packageManager = getOsInfo()
+	}
 	if s, ok := processByRule(osn); ok {
 		packageManager = s
 	}
@@ -48,7 +51,7 @@ func InspectEnv(ctx context.Context) error {
 	for i := range module.Dependencies {
 		module.Dependencies[i].IsOnline.SetOnline(false)
 		module.Dependencies[i].IsDirectDependency = true
-		module.Dependencies[i].EcoRepo.Repository = "unmanaged"
+		module.Dependencies[i].EcoRepo.Repository = packageManager
 	}
 	task.Modules = append(task.Modules, module)
 
