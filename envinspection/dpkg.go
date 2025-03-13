@@ -12,12 +12,12 @@ func listDpkgPackage(ctx context.Context) ([]model.DependencyItem, error) {
 	LOG := logctx.Use(ctx)
 	cmd := exec.Command("dpkg-query", "-W", "-f", "${binary:Package} ${Version}\\n")
 	LOG.Sugar().Infof("Execute: %s", cmd.String())
-	data, e := cmd.Output()
+	data, e := handleCmd(ctx, cmd)
 	if e != nil {
 		return nil, e
 	}
 	var rs []model.DependencyItem
-	for _, s := range strings.Split(string(data), "\n") {
+	for _, s := range strings.Split(data, "\n") {
 		s = strings.TrimSpace(s)
 		chunks := strings.Split(s, " ")
 		if len(chunks) != 2 {

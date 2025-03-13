@@ -196,6 +196,7 @@ func scanRun(cmd *cobra.Command, args []string) {
 
 func envScanRun(cmd *cobra.Command, args []string) {
 	var ctx = context.TODO()
+	ctx = scanerr.WithCtx(ctx)
 	if sbomOutputType.Valid {
 		ctx = ui.With(ctx, ui.None)
 	} else if jsonOutput {
