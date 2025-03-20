@@ -57,6 +57,7 @@ func rootCmd() *cobra.Command {
 	c.PersistentFlags().StringVar(&common.CliServerAddressOverride, "server", "", "specify server address")
 	c.PersistentFlags().BoolVarP(&env.CliTlsAllowInsecure, "allow-insecure", "x", false, "Allow insecure TLS connection")
 	c.PersistentFlags().BoolVar(&env.NoWait, "no-wait", false, "do not wait scan result")
+	c.PersistentFlags().StringVar(&env.StorageUploadSBom, "store-upload-sbom", "", "")
 
 	c.AddCommand(auth.Cmd())
 	c.AddCommand(scan.Cmd())

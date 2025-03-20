@@ -25,6 +25,7 @@ var envTlsAllowInsecure bool
 var CliTlsAllowInsecure bool
 var DoNotBuild bool
 var WaitAfterScannerScan bool
+var StorageUploadSBom string
 
 func init() {
 	ctm := os.Getenv("COMMAND_TIMEOUT")
