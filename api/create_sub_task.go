@@ -20,6 +20,7 @@ type CreateSubTaskRequest struct {
 	IsBuild            bool             `json:"is_build"`
 	IsDeep             bool             `json:"is_deep"`
 	ProjectName        string           `json:"project_name"`
+	ProjectsName       string           `json:"projects_name,omitempty"`
 	TeamId             string           `json:"team_id,omitempty"`
 	PackagePrivateId   string           `json:"package_private_id,omitempty"`
 	PackagePrivateName string           `json:"package_private_name,omitempty"`

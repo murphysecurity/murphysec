@@ -40,6 +40,7 @@ func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 	createSubtask.ScanMode = model.ScanModeSource
 	createSubtask.TeamId = common.CliTeamIdOverride
 	createSubtask.ProjectName = projectNameCli
+	createSubtask.ProjectsName = projectsNameCli
 	var hn, _ = os.Hostname()
 	createSubtask.Dir = fmt.Sprintf("HostEnv/%s(%s)", hn, utils.GetOutBoundIP())
 	createSubtask.ProjectTagNames = projectTagNames
@@ -149,6 +150,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.IsDeep = isDeep
 	createSubtask.TeamId = common.CliTeamIdOverride
 	createSubtask.ProjectName = projectNameCli
+	createSubtask.ProjectsName = projectsNameCli
 	createSubtask.PackagePrivateId = privateSourceId
 	createSubtask.PackagePrivateName = privateSourceName
 	createSubtask.ProjectTagNames = projectTagNames

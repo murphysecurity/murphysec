@@ -29,6 +29,7 @@ var jsonOutput bool
 var isDeep bool
 var noBuild bool
 var projectNameCli string
+var projectsNameCli string
 var mavenSettingsPath string
 var onlyTaskId bool
 var privateSourceId string
@@ -56,6 +57,7 @@ func Cmd() *cobra.Command {
 	c.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	c.Flags().StringVar(&branch, "branch", "", "")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
+	c.Flags().StringVar(&projectsNameCli, "projects-name", "", "specify projects name(group)")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringVar(&privateSourceId, "maven-setting-id", "", "specify the id of the Maven settings.xml file used during the scan")
 	c.Flags().StringVar(&privateSourceName, "maven-setting-name", "", "specify the name of the Maven settings.xml file used during the scan")
@@ -80,6 +82,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringVar(&branch, "branch", "", "")
 	c.Flags().StringArrayVar(&mavenModuleName, "maven-module-name", make([]string, 0), "retains module")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
+	c.Flags().StringVar(&projectsNameCli, "projects-name", "", "specify projects name(group)")
 	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
@@ -100,6 +103,7 @@ func EnvCmd() *cobra.Command {
 	c.Short = "Detects open source vulnerabilities environment"
 	c.Flags().BoolVar(&jsonOutput, "json", false, "output in json format")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
+	c.Flags().StringVar(&projectsNameCli, "projects-name", "", "specify projects name(group)")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "Specify the SBOM output file path, use \"-\" to output to stdout")
