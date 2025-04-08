@@ -53,7 +53,10 @@ again:
 		logctx.Use(ctx).Error("Command finished with error" + err.Error())
 		return err
 	}
-	cmd.Wait()
+	if err := cmd.Wait(); err != nil {
+		logctx.Use(ctx).Error("cmd wait error :" + err.Error())
+		return err
+	}
 
 	if againBol {
 		scanerr.Add(ctx, scanerr.Param{
