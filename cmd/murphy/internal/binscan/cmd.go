@@ -21,6 +21,7 @@ import (
 var cliIOTScan bool
 var projectNameCli string
 var projectTagNames []string
+var imageScan bool
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -29,6 +30,20 @@ func Cmd() *cobra.Command {
 	c.Run = binScanRun
 	c.Short = "Detects open source vulnerabilities by scanning binary files"
 	c.Flags().BoolVar(&cliIOTScan, "iot", false, "IOT scan mode")
+	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
+	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
+	return &c
+}
+
+func ImageScanCmd() *cobra.Command {
+	var c cobra.Command
+	c.Use = "imagescan <DIR>"
+	c.Args = cobra.ExactArgs(1)
+	c.Run = func(cmd *cobra.Command, args []string) {
+		imageScan = true
+		binScanRun(cmd, args)
+	}
+	c.Short = "Detects open source vulnerabilities by scanning docker image files"
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	return &c
@@ -91,6 +106,9 @@ func binScan(ctx context.Context, scanPath string) error {
 	var mode = model.ScanModeBinary
 	if cliIOTScan {
 		mode = model.ScanModeIot
+	}
+	if imageScan {
+		mode = model.ScanModeImage
 	}
 	taskResp, e := api.CreateSubTask(api.DefaultClient(), &api.CreateSubTaskRequest{
 		AccessType:      model.AccessTypeCli,

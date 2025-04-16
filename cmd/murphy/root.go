@@ -66,6 +66,7 @@ func rootCmd() *cobra.Command {
 	c.AddCommand(scan.SbomScan())
 	c.AddCommand(scan.EnvCmd())
 	c.AddCommand(binscan.Cmd())
+	c.AddCommand(binscan.ImageScanCmd())
 	c.AddCommand(internalcmd.Cmd())
 	c.AddCommand(internalcmd.MachineIdCmd())
 	return c

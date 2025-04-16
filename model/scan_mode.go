@@ -9,4 +9,5 @@ const (
 	ScanModeIot        ScanMode = "iot"
 	ScanModeStandard   ScanMode = "standard"
 	ScanModeComp       ScanMode = "comp"
+	ScanModeImage      ScanMode = "docker"
 )
