@@ -91,10 +91,10 @@ func parsePoetry(input []byte) (*Manifest, error) {
 		return nil, errors.WithMessage(ErrParsePoetry, "Parse toml failed")
 	}
 	var m = make(map[string]any)
+
+	// 解析 [tool.poetry.dependencies]
 	if mm, ok := root.Get("tool", "poetry", "dependencies").v.(map[string]any); ok {
-		for k, v := range mm {
-			m[k] = v
-		}
+		extractDependencies(mm, m)
 	}
 
 	// 解析 [tool.poetry.group.<group_name>.dependencies]
@@ -102,9 +102,7 @@ func parsePoetry(input []byte) (*Manifest, error) {
 		for _, group := range groups {
 			if groupMap, ok := group.(map[string]any); ok {
 				if deps, ok := groupMap["dependencies"].(map[string]any); ok {
-					for k, v := range deps {
-						m[k] = v
-					}
+					extractDependencies(deps, m)
 				}
 			}
 		}
@@ -124,6 +122,8 @@ func parsePoetry(input []byte) (*Manifest, error) {
 			m[strings.TrimSpace(r[0])] = strings.TrimSpace(r[1])
 		}
 	}
+
+	// 构建依赖项列表
 	var deps []model.DependencyItem
 	for k, v := range m {
 		v := strings.Trim(fmt.Sprint(v), "~^* ")
@@ -140,6 +140,25 @@ func parsePoetry(input []byte) (*Manifest, error) {
 		Name:         root.Get("tool", "poetry", "name").String("<noname>"),
 		Dependencies: deps,
 	}, nil
+}
+
+// 提取依赖项的通用逻辑
+func extractDependencies(source map[string]any, target map[string]any) {
+	for k, v := range source {
+		switch dep := v.(type) {
+		case string:
+			// 直接是版本号
+			target[k] = dep
+		case map[string]any:
+			// 处理带有 extras 的依赖项 如：vanna = { version = "0.7.9", extras = ["postgres", "mysql", "clickhouse", "duckdb"] }
+			if version, ok := dep["version"].(string); ok {
+				target[k] = version
+			}
+		default:
+			// 其他情况，忽略
+			continue
+		}
+	}
 }
 
 type tomlTree struct {
