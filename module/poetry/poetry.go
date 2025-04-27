@@ -3,13 +3,14 @@ package poetry
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"regexp"
+	"strings"
+
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/pkg/errors"
-	"path/filepath"
-	"regexp"
-	"strings"
 )
 
 var ErrParsePoetry = poetryErr("ErrParsePoetry: Bad manifest")
@@ -95,6 +96,21 @@ func parsePoetry(input []byte) (*Manifest, error) {
 			m[k] = v
 		}
 	}
+
+	// 解析 [tool.poetry.group.<group_name>.dependencies]
+	if groups, ok := root.Get("tool", "poetry", "group").v.(map[string]any); ok {
+		for _, group := range groups {
+			if groupMap, ok := group.(map[string]any); ok {
+				if deps, ok := groupMap["dependencies"].(map[string]any); ok {
+					for k, v := range deps {
+						m[k] = v
+					}
+				}
+			}
+		}
+	}
+
+	// 解析 [project.dependencies]（兼容性处理）
 	if mm, ok := root.Get("project", "dependencies").v.([]any); ok {
 		for _, _s := range mm {
 			var s, ok = _s.(string)
