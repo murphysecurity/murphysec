@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.5.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/antchfx/xmlquery v1.4.3
 	github.com/antlr4-go/antlr/v4 v4.13.1
