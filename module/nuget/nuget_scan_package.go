@@ -16,6 +16,9 @@ func (this *PkgConfig) Deps() []model.DependencyItem {
 		if it.DevelopmentDependency {
 			continue
 		}
+		if it.Id == "" {
+			continue
+		}
 		d := model.DependencyItem{
 			Component: model.Component{
 				CompName:    it.Id,

@@ -83,6 +83,9 @@ func analysis(ctx context.Context, path string) (result []model.DependencyItem, 
 
 	}
 	for _, pkgRef := range proj.PackageRefs {
+		if pkgRef.Include == "" {
+			continue
+		}
 		result = append(result, model.DependencyItem{
 			Component: model.Component{
 				CompName:    pkgRef.Include,

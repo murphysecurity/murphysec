@@ -214,6 +214,9 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 		moduleName := filepath.Base(projects.Path)
 		for _, frameworks := range projects.Frameworks {
 			for _, topLevelPackages := range frameworks.TopLevelPackages {
+				if topLevelPackages.Id == "" {
+					continue
+				}
 				result = append(result, model.DependencyItem{
 					Component: model.Component{
 						CompName:    topLevelPackages.Id,
@@ -224,6 +227,9 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 				})
 			}
 			for _, transitivePackages := range frameworks.TransitivePackages {
+				if transitivePackages.Id == "" {
+					continue
+				}
 				result = append(result, model.DependencyItem{
 					Component: model.Component{
 						CompName:    transitivePackages.Id,
