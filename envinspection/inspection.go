@@ -37,7 +37,7 @@ func InspectEnv(ctx context.Context) error {
 	}
 
 	var scanFunc []func(ctx context.Context) ([]model.DependencyItem, error)
-	if runtime.GOOS == "windows1" {
+	if runtime.GOOS == "windows" {
 		scanFunc = append(scanFunc, listInstalledSoftwareWindows /*listRunningProcessExecutableFileWindows*/)
 	} else {
 		scanFunc = append(scanFunc, listDpkgPackage, listRPMPackage /*listRunningProcessExecutableFilePosix*/)
