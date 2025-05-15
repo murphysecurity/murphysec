@@ -44,10 +44,20 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			module.ModuleName = fmt.Sprintf("<pnpm-module>/%s", tree.Name)
 			module.ModulePath = filepath.Join(dir, tree.Name, "<pnpm-module>")
 		}
+		// hotfix for empty string
+		replaceEmptyString(module.Dependencies)
 		inspectionTask.AddModule(module)
 	}
-
 	return nil
+}
+
+func replaceEmptyString(input []model.DependencyItem) {
+	for i := range input {
+		if input[i].CompName == "" {
+			input[i].CompName = "_"
+		}
+		replaceEmptyString(input[i].Dependencies)
+	}
 }
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
