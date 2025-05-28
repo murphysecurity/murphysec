@@ -15,7 +15,6 @@ import (
 )
 
 func InspectEnv(ctx context.Context) error {
-	var LOG = logctx.Use(ctx).Sugar()
 	task := model.UseScanTask(ctx)
 	if task == nil {
 		panic("task == nil")
@@ -35,6 +34,20 @@ func InspectEnv(ctx context.Context) error {
 		Dependencies:   nil,
 		ModulePath:     "/InstalledSoftware", // never be empty, workaround for the platform issue
 	}
+
+	// 获取软件包列表
+	inspectInstalledSoftware(ctx, &module)
+
+	// 获取进程文件列表
+	inspectProcessFiles(ctx)
+
+	return nil
+}
+
+// 检查已安装的软件
+func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
+	LOG := logctx.Use(ctx).Sugar()
+	task := model.UseScanTask(ctx)
 
 	var scanFunc []func(ctx context.Context) ([]model.DependencyItem, error)
 	if runtime.GOOS == "windows" {
@@ -77,9 +90,38 @@ func InspectEnv(ctx context.Context) error {
 	for i := range module.Dependencies {
 		module.Dependencies[i].IsOnline.SetOnline(false)
 		module.Dependencies[i].IsDirectDependency = true
-		module.Dependencies[i].EcoRepo.Repository = packageManager
+		module.Dependencies[i].EcoRepo.Repository = module.PackageManager
 	}
-	task.Modules = append(task.Modules, module)
+	task.Modules = append(task.Modules, *module)
+}
 
-	return nil
+// 检查进程文件
+func inspectProcessFiles(ctx context.Context) {
+	LOG := logctx.Use(ctx).Sugar()
+	task := model.UseScanTask(ctx)
+
+	// 仅在Linux系统上执行进程文件检查
+	if runtime.GOOS != "linux" {
+		LOG.Info("Process file inspection is only supported on Linux, skipping...")
+		return
+	}
+
+	// 获取进程相关的模块列表
+	processModules, err := listProcessFiles(ctx)
+	if err != nil {
+		LOG.Warnf("Process file inspection error: %s", err)
+		scanerr.Add(ctx, scanerr.Param{
+			Kind:    "process_file_inspection_error",
+			Content: err.Error(),
+		})
+		return
+	}
+
+	// 添加进程模块到任务中
+	if len(processModules) > 0 {
+		task.Modules = append(task.Modules, processModules...)
+		LOG.Infof("Process file inspection succeeded, found %d processes", len(processModules))
+	} else {
+		LOG.Info("No process files found")
+	}
 }

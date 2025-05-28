@@ -9,6 +9,9 @@ type Module struct {
 	PackageManager string           `json:"package_manager"`
 	Dependencies   []DependencyItem `json:"dependencies,omitempty"`
 	ScanStrategy   ScanStrategy     `json:"scan_strategy"`
+	MD5Hashes      []MD5Hash        `json:"md5_hashes,omitempty"` // MD5哈希列表
+	SHA1Hashes     []SHA1Hash       `json:"sha1_hashes,omitempty"`
+	SHA256Hashes   []SHA256Hash     `json:"sha256_hashes,omitempty"` // SHA256哈希列表
 }
 
 func (m Module) String() string {

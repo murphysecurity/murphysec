@@ -238,7 +238,11 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	}
 	if task.Mode != model.ScanModeSource || isDeep {
 		cv.DisplayUploading(ctx)
-		e = chunkupload.UploadDirectory(ctx, task.ProjectPath, chunkupload.DiscardDot, chunkupload.Params{
+		var filter = chunkupload.DiscardDot
+		if binaryOnly {
+			filter = chunkupload.BinaryOnly
+		}
+		e = chunkupload.UploadDirectory(ctx, task.ProjectPath, filter, chunkupload.Params{
 			SubtaskId: task.SubtaskId,
 		}, concurrentNumber)
 		if e != nil {

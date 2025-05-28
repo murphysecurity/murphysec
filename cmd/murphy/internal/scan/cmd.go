@@ -45,6 +45,7 @@ var scanCodeHash bool
 var gradleProjectFilter gradle.ProjectFilter
 var branch string
 var mavenModuleName []string
+var binaryOnly bool
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -67,6 +68,7 @@ func Cmd() *cobra.Command {
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
+	c.Flags().BoolVar(&binaryOnly, "binary-only", false, "only scan binary files, skip source code scanning")
 	return &c
 }
 
