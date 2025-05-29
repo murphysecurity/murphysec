@@ -46,6 +46,7 @@ var gradleProjectFilter gradle.ProjectFilter
 var branch string
 var mavenModuleName []string
 var binaryOnly bool
+var scanProcess bool
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -113,6 +114,7 @@ func EnvCmd() *cobra.Command {
 	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full(default)")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().BoolVar(&scanProcess, "scan-process", false, "Enable scanning of process to detect SBOM. Disabled by default")
 	return &c
 }
 

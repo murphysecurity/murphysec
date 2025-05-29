@@ -28,7 +28,7 @@ import (
 func envScanSbomOnly(ctx context.Context) (task *model.ScanTask, e error) {
 	task = &model.ScanTask{}
 	ctx = model.WithScanTask(ctx, task)
-	e = envinspection.InspectEnv(ctx)
+	e = envinspection.InspectEnv(ctx, scanProcess)
 	return
 }
 
@@ -78,7 +78,7 @@ func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 		SubtaskName: createSubtask.ProjectName,
 	}
 	ctx = model.WithScanTask(ctx, task)
-	e = envinspection.InspectEnv(ctx)
+	e = envinspection.InspectEnv(ctx, scanProcess)
 	if e != nil {
 		cv.DisplayScanFailed(ctx, e)
 		return

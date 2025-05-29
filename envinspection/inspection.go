@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-func InspectEnv(ctx context.Context) error {
+func InspectEnv(ctx context.Context, scanProcess bool) error {
 	task := model.UseScanTask(ctx)
 	if task == nil {
 		panic("task == nil")
@@ -38,8 +38,10 @@ func InspectEnv(ctx context.Context) error {
 	// 获取软件包列表
 	inspectInstalledSoftware(ctx, &module)
 
-	// 获取进程文件列表
-	inspectProcessFiles(ctx)
+	if scanProcess {
+		// 获取进程文件列表
+		inspectProcessFiles(ctx)
+	}
 
 	return nil
 }
