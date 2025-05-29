@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -33,6 +34,10 @@ var DiscardDot Filter = func(path string, entry fs.DirEntry) (FilterVote, error)
 
 var BinaryOnly Filter = func(path string, entry fs.DirEntry) (FilterVote, error) {
 	if entry.IsDir() {
+		return FilterAdd, nil
+	}
+	var ext = filepath.Ext(path)
+	if strings.EqualFold(".jar", ext) || strings.EqualFold(".war", ext) {
 		return FilterAdd, nil
 	}
 	eFormat, _ := detectFileFormat(path)
