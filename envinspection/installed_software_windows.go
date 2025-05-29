@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/model"
+	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 	"path/filepath"
 )
@@ -47,6 +48,12 @@ func listSubKeys(ctx context.Context, key registry.Key, path string) ([]string, 
 func listInstalledSoftwareWindows(ctx context.Context) ([]model.DependencyItem, error) {
 	var rKeys = []registry.Key{registry.CURRENT_USER, registry.LOCAL_MACHINE}
 	var r []model.DependencyItem
+	r = append(r, model.DependencyItem{
+		Component: model.Component{
+			CompName:    "Windows",
+			CompVersion: fmt.Sprintf("%d.%d.%d", windows.RtlGetVersion().MajorVersion, windows.RtlGetVersion().MinorVersion, windows.RtlGetVersion().BuildNumber),
+		},
+	})
 	for _, rKey := range rKeys {
 		paths, e := listSubKeys(ctx, rKey, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
 		if e != nil {
