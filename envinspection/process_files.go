@@ -132,7 +132,12 @@ func listProcessFiles(ctx context.Context) ([]model.Module, error) {
 			SHA1Hashes:     lo.Uniq(fp.Map(func(it HashResult) model.SHA1Hash { return it.SHA1 })(hashes)),
 			SHA256Hashes:   lo.Uniq(fp.Map(func(it HashResult) model.SHA256Hash { return it.SHA256 })(hashes)),
 		}
-
+		if len(processModule.MD5Hashes) == 0 && len(processModule.SHA1Hashes) == 0 && len(processModule.SHA256Hashes) == 0 && len(processModule.Dependencies) == 0 {
+			// workaround for empty hashes
+			processModule.MD5Hashes = make([]model.MD5Hash, 1)
+			processModule.SHA1Hashes = make([]model.SHA1Hash, 1)
+			processModule.SHA256Hashes = make([]model.SHA256Hash, 1)
+		}
 		moduleList = append(moduleList, processModule)
 	}
 
