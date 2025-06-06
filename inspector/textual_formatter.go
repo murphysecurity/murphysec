@@ -60,29 +60,29 @@ func BuildSpdx(task *model.ScanTask) []byte {
 			"versionInfo":  node.CompVersion,
 			"fileAnalyzed": false,
 		}
-		var externalRefs map[string]any
+		var externalRefs = make([]map[string]any, 0)
 		if node.Ecosystem == "maven" {
-			externalRefs = map[string]any{
+			externalRefs = append(externalRefs, map[string]any{
 				"referenceCategory": "PACKAGE-MANAGER",
 				"referenceLocator":  node.CompName + ":" + node.CompVersion,
 				"referenceType":     "maven-central",
-			}
+			})
 		}
 		if node.Ecosystem == "npm" {
-			externalRefs = map[string]any{
+			externalRefs = append(externalRefs, map[string]any{
 				"referenceCategory": "PACKAGE-MANAGER",
 				"referenceLocator":  node.CompName + "@" + node.CompVersion,
 				"referenceType":     "npm",
-			}
+			})
 		}
 		if node.Ecosystem == "go" {
-			externalRefs = map[string]any{
+			externalRefs = append(externalRefs, map[string]any{
 				"referenceCategory": "PACKAGE-MANAGER",
 				"referenceLocator":  "pkg:golang/" + node.CompName + "@" + node.CompVersion,
 				"referenceType":     "purl",
-			}
+			})
 		}
-		if externalRefs != nil {
+		if len(externalRefs) != 0 {
 			m["externalRefs"] = externalRefs
 		}
 		packages = append(packages, m)
