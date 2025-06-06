@@ -152,7 +152,7 @@ func binScan(ctx context.Context, scanPath string) error {
 	}
 	cv.DisplayReportUrl(ctx, *result)
 	cv.DisplayStatusClear(ctx)
-	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum, len(result.VulnInfoMap))
+	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum, len(result.VulnInfoMap), result.ScanWarnings)
 
 	return nil
 }

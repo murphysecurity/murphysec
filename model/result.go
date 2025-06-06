@@ -37,6 +37,7 @@ type ScanResultResponse struct {
 	DetailURL        string                             `json:"detail_url"`
 	AllowAction      int                                `json:"allow_action"`
 	ExpireDay        int                                `json:"expire_day"`
+	ScanWarnings     []ScanWarning                      `json:"scan_warnings"`
 }
 
 type ScanResultCompInfo struct {

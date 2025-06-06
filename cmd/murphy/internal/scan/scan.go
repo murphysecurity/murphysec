@@ -116,7 +116,7 @@ func postScanHook(ctx context.Context) (a any, e error) {
 	}
 	cv.DisplayReportUrl(ctx, *result)
 	cv.DisplayStatusClear(ctx)
-	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum, len(result.VulnInfoMap))
+	cv.DisplayScanResultSummary(ctx, result.RelyNum, result.LeakNum, len(result.VulnInfoMap), result.ScanWarnings)
 	return
 }
 

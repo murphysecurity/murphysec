@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"github.com/murphysecurity/fix-tools/fix"
 	"github.com/murphysecurity/murphysec/utils"
+	"github.com/repeale/fp-go"
+	"github.com/samber/lo"
 	"time"
 )
 
@@ -34,6 +36,11 @@ type PluginOutput struct {
 	HitProjectRule    json.RawMessage        `json:"hit_project_rule,omitempty"`
 	ShareURL          string                 `json:"share_url,omitempty"`
 	DetailURL         string                 `json:"detail_url,omitempty"`
+	ScanWarningCodes  []string               `json:"scan_warning_codes,omitempty"`
+}
+
+type ScanWarning struct {
+	Kind string
 }
 
 type PluginComp struct {
@@ -107,6 +114,7 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		HitProjectRule:    r.HitProjectRule,
 		ShareURL:          r.ShareURL,
 		DetailURL:         r.DetailURL,
+		ScanWarningCodes:  lo.Uniq(fp.Map(func(it ScanWarning) string { return it.Kind })(r.ScanWarnings)),
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {

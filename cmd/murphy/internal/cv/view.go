@@ -6,7 +6,10 @@ import (
 	"github.com/muesli/termenv"
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/repeale/fp-go"
+	"github.com/samber/lo"
 	"strconv"
+	"strings"
 )
 
 func DisplayInitializeFailed(ctx context.Context, e error) {
@@ -94,9 +97,12 @@ func DisplayStatusClear(ctx context.Context) {
 	ui.Use(ctx).ClearStatus()
 }
 
-func DisplayScanResultSummary(ctx context.Context, totalDep int, totalVulnDep int, totalVuln int) {
+func DisplayScanResultSummary(ctx context.Context, totalDep int, totalVulnDep int, totalVuln int, warnings []model.ScanWarning) {
 	var u = ui.Use(ctx)
 	u.Display(ui.MsgNotice, fmt.Sprint("项目扫描完成，依赖数：", ui.Term.String(strconv.Itoa(totalDep)).Foreground(termenv.ANSIBrightCyan), "，缺陷组件数：", ui.Term.String(strconv.Itoa(totalVulnDep)).Foreground(termenv.ANSIBrightRed), "，漏洞数", ui.Term.String(strconv.Itoa(totalVuln)).Foreground(termenv.ANSIBrightRed)))
+	if len(warnings) > 0 {
+		u.Display(ui.MsgNotice, "扫描过程中出现了一些警告："+strings.Join(lo.Uniq(fp.Map(func(it model.ScanWarning) string { return it.Kind })(warnings)), ", "))
+	}
 }
 func DisplayUploading(ctx context.Context) {
 	ui.Use(ctx).UpdateStatus(ui.StatusRunning, "正在上传...")
