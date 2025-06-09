@@ -50,6 +50,7 @@ func SbomScan() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&out, "out", "", "output file path")
 	cmd.Flags().String("type", "", "")
+	cmd.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
 	_ = cmd.Flags().MarkHidden("type")
 	return cmd
 }
@@ -58,6 +59,7 @@ func processDir(ctx context.Context, dir string) ([]byte, error) {
 	var e error
 	var task = model.ScanTask{
 		ProjectPath: dir,
+		IsNoBuild:   noBuild,
 	}
 	ctx = model.WithScanTask(ctx, &task)
 	e = inspector.ManagedInspect(ctx)
