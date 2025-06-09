@@ -61,6 +61,11 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		}
 		pkgs = append(pkgs, vendorScan(ctx, filepath.Join(dir, "vendor"))...)
 		for _, it := range pkgs {
+			if isVersionConstrain(it.Version) {
+				if v := lockfilePkgs[it.Name]; v.Version != "" && !isVersionConstrain(it.Version) {
+					continue
+				}
+			}
 			lockfilePkgs[it.Name] = it
 		}
 	}
@@ -76,6 +81,19 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	}
 	task.AddModule(*module)
 	return nil
+}
+
+func isVersionConstrain(v string) bool {
+	if v == "" {
+		return false
+	}
+	if v[0] == '^' || v[0] == '~' || v[0] == '>' || v[0] == '<' || v[0] == '=' {
+		return true
+	}
+	if strings.Contains(v, "||") || strings.Contains(v, ",") {
+		return true
+	}
+	return false
 }
 
 func _buildDepTree(lockfile map[string]Package, visitedDep map[string]struct{}, targetName string, versionConstraint string) *model.DependencyItem {
