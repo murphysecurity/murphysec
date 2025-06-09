@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
+	"strings"
 	"time"
 )
 
@@ -66,6 +67,10 @@ func BuildSpdx(task *model.ScanTask) []byte {
 				"referenceCategory": "PACKAGE-MANAGER",
 				"referenceLocator":  node.CompName + ":" + node.CompVersion,
 				"referenceType":     "maven-central",
+			}, map[string]any{
+				"referenceCategory": "PACKAGE-MANAGER",
+				"referenceLocator":  "pkg:maven/" + strings.ReplaceAll(node.CompName, ":", "/") + "@" + node.CompVersion,
+				"referenceType":     "purl",
 			})
 		}
 		if node.Ecosystem == "npm" {
@@ -73,6 +78,10 @@ func BuildSpdx(task *model.ScanTask) []byte {
 				"referenceCategory": "PACKAGE-MANAGER",
 				"referenceLocator":  node.CompName + "@" + node.CompVersion,
 				"referenceType":     "npm",
+			}, map[string]any{
+				"referenceCategory": "PACKAGE-MANAGER",
+				"referenceLocator":  "pkg:npm/" + node.CompName + "@" + node.CompVersion,
+				"referenceType":     "purl",
 			})
 		}
 		if node.Ecosystem == "go" {
