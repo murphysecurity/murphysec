@@ -61,10 +61,8 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		}
 		pkgs = append(pkgs, vendorScan(ctx, filepath.Join(dir, "vendor"))...)
 		for _, it := range pkgs {
-			if isVersionConstrain(it.Version) {
-				if v := lockfilePkgs[it.Name]; v.Version != "" && !isVersionConstrain(it.Version) {
-					continue
-				}
+			if it.Version == "" || isVersionConstrain(it.Version) {
+				continue
 			}
 			lockfilePkgs[it.Name] = it
 		}
