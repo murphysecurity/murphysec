@@ -68,6 +68,9 @@ func (j *jsonReqBody) Close() error {
 		return io.ErrClosedPipe
 	}
 	j.closed = true
+	if j.pr == nil {
+		return nil
+	}
 	return j.pr.Close()
 }
 
