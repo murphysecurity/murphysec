@@ -230,6 +230,9 @@ func envScanRun(cmd *cobra.Command, args []string) {
 		if e != nil {
 			exitcode.Set(1)
 		}
+		for _, it := range scanerr.GetAll(ctx) {
+			fmt.Printf("scan warning: %s\n", it.Kind)
+		}
 		doSBOMOnlyPrint(ctx, r)
 		return
 	} else {
