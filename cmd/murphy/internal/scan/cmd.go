@@ -19,6 +19,8 @@ import (
 	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/repeale/fp-go"
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"io"
 	"os"
@@ -230,9 +232,6 @@ func envScanRun(cmd *cobra.Command, args []string) {
 		if e != nil {
 			exitcode.Set(1)
 		}
-		for _, it := range scanerr.GetAll(ctx) {
-			fmt.Printf("scan warning: %s\n", it.Kind)
-		}
 		doSBOMOnlyPrint(ctx, r)
 		return
 	} else {
@@ -435,6 +434,9 @@ func doSBOMOnlyPrint(ctx context.Context, task *model.ScanTask) {
 	if task.Modules == nil {
 		task.Modules = make([]model.Module, 0)
 	}
-	must.M(enc.Encode(map[string]any{"modules": task.Modules}))
+	must.M(enc.Encode(map[string]any{
+		"modules":             task.Modules,
+		"scan_warnings_codes": lo.Uniq(fp.Map(func(it scanerr.Param) string { return it.Kind })(scanerr.GetAll(ctx))),
+	}))
 	must.M(bufioWriter.Flush())
 }
