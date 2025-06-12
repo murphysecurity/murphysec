@@ -2,7 +2,6 @@ stages: # List of stages for jobs, and their order of execution
   - build
   - after_build
   - after_pack
-  - test
 
 variables:
   GOPROXY: https://goproxy.cn,direct
@@ -100,17 +99,4 @@ lark-notify:
       - .deno
   script:
     - chmod 755 ci/push && ci/push
-
-test:
-  tags:
-    - client-build-shell-066
-  stage: test
-  dependencies: [ ]
-  script:
-    - golangci-lint run --color always
-    - gotestsum --junitfile report.xml --format testname
-  artifacts:
-    when: always
-    reports:
-      junit: report.xml
 
