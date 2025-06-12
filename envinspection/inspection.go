@@ -68,18 +68,16 @@ func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
 		} else {
 			LOG.Warnf("Software inspection error(%s): %s, ", fn, e)
 		}
-		if errors.Is(e, exec.ErrNotFound) {
-			continue
-		}
 		foundCmd = true
-		var cError cError
-		if errors.As(e, &cError) {
-			if cError.Content == "" {
-				cError.Content = "(no stderr output)"
+		var pError *exec.ExitError
+		if errors.As(e, &pError) {
+			var stderrText = strings.TrimSpace(string(pError.Stderr))
+			if stderrText == "" {
+				stderrText = "(no stderr output)"
 			}
 			scanerr.Add(ctx, scanerr.Param{
 				Kind:    "env_inspection_error",
-				Content: cError.Content,
+				Content: string(pError.Stderr),
 			})
 		}
 	}
