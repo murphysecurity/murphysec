@@ -8,6 +8,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/scanerr"
+	"os"
 	"os/exec"
 	"reflect"
 	"runtime"
@@ -59,27 +60,30 @@ func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
 	}
 	var foundCmd = false
 	for _, f := range scanFunc {
-		pkgs, e := f(ctx)
 		var fn = strings.TrimPrefix(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), "github.com/murphysecurity/murphysec/envinspection.")
-		if e == nil && len(pkgs) > 0 {
-			module.Dependencies = append(module.Dependencies, pkgs...)
-			LOG.Infof("inspection succeeded(%s), total %d items", fn, len(pkgs))
-			continue
-		} else {
+		pkgs, e := f(ctx)
+		if e != nil {
 			LOG.Warnf("Software inspection error(%s): %s, ", fn, e)
-		}
-		foundCmd = true
-		var pError *exec.ExitError
-		if errors.As(e, &pError) {
-			var stderrText = strings.TrimSpace(string(pError.Stderr))
-			if stderrText == "" {
-				stderrText = "(no stderr output)"
+			var pError *exec.ExitError
+			if errors.As(e, &pError) {
+				var stderrText = strings.TrimSpace(string(pError.Stderr))
+				if stderrText == "" {
+					stderrText = "(no stderr output)"
+				}
+				scanerr.Add(ctx, scanerr.Param{
+					Kind:    "env_inspection_error",
+					Content: string(pError.Stderr),
+				})
+				continue
 			}
-			scanerr.Add(ctx, scanerr.Param{
-				Kind:    "env_inspection_error",
-				Content: string(pError.Stderr),
-			})
+			if os.IsNotExist(e) {
+				continue
+			}
+			foundCmd = true
+			continue
 		}
+		module.Dependencies = append(module.Dependencies, pkgs...)
+		foundCmd = true
 	}
 	if !foundCmd {
 		scanerr.Add(ctx, scanerr.Param{
