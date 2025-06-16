@@ -64,7 +64,8 @@ func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
 		pkgs, e := f(ctx)
 		if e != nil {
 			LOG.Warnf("Software inspection error(%s): %s, ", fn, e)
-			if errors.Is(e, fs.ErrNotExist) {
+			if errors.Is(e, fs.ErrNotExist) || errors.Is(e, exec.ErrNotFound) {
+				LOG.Debug("Skipping command due to missing executable: ", fn)
 				continue
 			}
 			var pError *exec.ExitError
