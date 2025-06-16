@@ -8,7 +8,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/scanerr"
-	"os"
+	"io/fs"
 	"os/exec"
 	"reflect"
 	"runtime"
@@ -64,6 +64,9 @@ func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
 		pkgs, e := f(ctx)
 		if e != nil {
 			LOG.Warnf("Software inspection error(%s): %s, ", fn, e)
+			if errors.Is(e, fs.ErrNotExist) {
+				continue
+			}
 			var pError *exec.ExitError
 			if errors.As(e, &pError) {
 				var stderrText = strings.TrimSpace(string(pError.Stderr))
@@ -74,9 +77,6 @@ func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
 					Kind:    "env_inspection_error",
 					Content: string(pError.Stderr),
 				})
-				continue
-			}
-			if os.IsNotExist(e) {
 				continue
 			}
 			foundCmd = true
