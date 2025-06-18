@@ -155,7 +155,6 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.PackagePrivateName = privateSourceName
 	createSubtask.ProjectTagNames = projectTagNames
 	createSubtask.IsAutonomous = scanCodeHash
-	createSubtask.Branch = &branch
 	if createSubtask.ProjectTagNames == nil {
 		createSubtask.ProjectTagNames = make([]string, 0)
 	}
@@ -179,6 +178,9 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		logger.Warnf("get git info failed: %v", e)
 	} else {
 		assignGitInfoToCreateSubtaskReq(&createSubtask, gitSummary)
+	}
+	if branch != "" {
+		createSubtask.Branch = &branch
 	}
 
 	// call API
