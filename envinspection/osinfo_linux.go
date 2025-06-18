@@ -5,5 +5,15 @@ import "github.com/zcalusic/sysinfo"
 func getOsInfo() string {
 	var si sysinfo.SysInfo
 	si.GetSysInfo()
-	return si.OS.Vendor + ":" + si.OS.Version
+	var vendor = si.OS.Vendor
+	var version = si.OS.Version
+	switch vendor {
+	case "opensuse-leap":
+		vendor = "opensuse:leap"
+	case "opensuse-leap-micro":
+		vendor = "opensuse:leap_micro"
+	case "opensuse-tumbleweed":
+		vendor = "opensuse:tumbleweed"
+	}
+	return vendor + ":" + version
 }
