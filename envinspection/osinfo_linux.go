@@ -14,6 +14,11 @@ func getOsInfo() string {
 		vendor = "opensuse:leap_micro"
 	case "opensuse-tumbleweed":
 		vendor = "opensuse:tumbleweed"
+		version = ""
 	}
-	return vendor + ":" + version
+	var s = vendor
+	if version != "" {
+		s += ":" + version
+	}
+	return s
 }
