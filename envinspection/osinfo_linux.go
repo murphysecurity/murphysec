@@ -15,6 +15,8 @@ func getOsInfo() string {
 	case "opensuse-tumbleweed":
 		vendor = "opensuse:tumbleweed"
 		version = ""
+	case "baidulinux":
+		vendor = "baidu"
 	}
 	var s = vendor
 	if version != "" {
