@@ -76,7 +76,7 @@ func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
 				}
 				scanerr.Add(ctx, scanerr.Param{
 					Kind:    "env_inspection_error",
-					Content: string(pError.Stderr),
+					Content: stderrText,
 				})
 				continue
 			}
