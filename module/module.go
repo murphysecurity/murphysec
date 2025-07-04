@@ -67,7 +67,7 @@ func init() {
 
 	var enabled = fp.Pipe6(os.Getenv, utils.SplitBy(","), fp.Map(strings.TrimSpace), fp.Filter(lo.IsNotEmpty[string]), fp.Map(strings.ToLower), utils.ToSet[string])("MPS_ENABLED_INSPECTORS")
 	if len(enabled) > 0 {
-		Inspectors = fp.Filter(fp.Pipe2(model.Inspector.String, utils.InSet(enabled)))(Inspectors)
+		Inspectors = fp.Filter(fp.Pipe3(model.Inspector.String, strings.ToLower, utils.InSet(enabled)))(Inspectors)
 	}
 }
 
