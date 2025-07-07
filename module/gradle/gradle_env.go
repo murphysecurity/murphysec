@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/module/gradle/bundle"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -47,14 +48,14 @@ func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 			log.Info("use default gradle version")
 			gwv = "8.6"
 		}
-		r.Path, r.JavaHome = selectGradleAndJavaVersion(gwv)
+		r.Path, r.JavaHome = bundle.FindOkVersion(gwv)
 		log.Infof("use bundled gradle: %v", r.Path)
 		log.Infof("use bundled java: %v", r.JavaHome)
 		return r, nil
 	}
 	var chosenJavaHome string
 	if os.Getenv("MPS_BUNDLED_JAVA") == "1" {
-		chosenJavaHome = buildJavaHome(selectJavaVersionOnly(gwv))
+		chosenJavaHome = bundle.SelectJavaHome(gwv)
 		r.JavaHome = chosenJavaHome
 		log.Infof("use bundled Java eval gradle version(from wrapper): %s", chosenJavaHome)
 	}
