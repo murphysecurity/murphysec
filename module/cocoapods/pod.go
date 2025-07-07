@@ -18,7 +18,7 @@ func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
 }
 
 func (Inspector) String() string {
-	return "Pod"
+	return "CocoaPods"
 }
 
 func (Inspector) CheckDir(ctx context.Context, dir string) bool {
