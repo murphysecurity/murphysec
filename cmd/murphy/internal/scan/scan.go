@@ -54,6 +54,7 @@ func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 			return
 		}
 	}
+	createSubtask.ExtraData = &extraData
 	createTaskResp, e := api.CreateSubTask(api.DefaultClient(), &createSubtask)
 	if errors.Is(e, api.ErrTLSError) {
 		cv.DisplayTLSNotice(ctx)

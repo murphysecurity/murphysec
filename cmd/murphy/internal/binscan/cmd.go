@@ -22,6 +22,7 @@ var cliIOTScan bool
 var projectNameCli string
 var projectTagNames []string
 var imageScan bool
+var extraData string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -32,6 +33,7 @@ func Cmd() *cobra.Command {
 	c.Flags().BoolVar(&cliIOTScan, "iot", false, "IOT scan mode")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
+	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	return &c
 }
 
@@ -46,6 +48,7 @@ func ImageScanCmd() *cobra.Command {
 	c.Short = "Detects open source vulnerabilities by scanning docker image files"
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
+	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	return &c
 }
 
@@ -117,6 +120,7 @@ func binScan(ctx context.Context, scanPath string) error {
 		ProjectName:     projectNameCli,
 		TeamId:          common.CliTeamIdOverride,
 		ProjectTagNames: projectTagNames,
+		ExtraData:       &extraData,
 	})
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)
