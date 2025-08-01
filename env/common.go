@@ -26,6 +26,7 @@ var CliTlsAllowInsecure bool
 var DoNotBuild bool
 var WaitAfterScannerScan bool
 var StorageUploadSBom string
+var DoNotNpmInstall bool
 
 func init() {
 	ctm := os.Getenv("COMMAND_TIMEOUT")
@@ -43,6 +44,7 @@ func init() {
 	DoNotBuild2, _ := strconv.ParseBool(os.Getenv("MPS_DO_NOT_BUILD"))
 	DoNotBuild = DoNotBuild || DoNotBuild2
 	WaitAfterScannerScan, _ = strconv.ParseBool(os.Getenv("WAIT_AFTER_SCANNER_SCAN"))
+	DoNotNpmInstall, _ = strconv.ParseBool(os.Getenv("DO_NOT_NPM_INSTALL"))
 }
 
 func TlsAllowInsecure() bool {

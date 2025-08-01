@@ -148,7 +148,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 
 func doNpmInstallInDir(ctx context.Context, dir string) error {
 	logger := logctx.Use(ctx)
-	if env.DoNotBuild {
+	if env.DoNotBuild || env.DoNotNpmInstall {
 		logger.Warn("lockfile not found, and auto build is disabled, skip")
 		return autoBuildDisabled
 	}
