@@ -13,7 +13,7 @@ require (
 	github.com/go-git/go-git/v5 v5.13.1
 	github.com/iseki0/go-yarnlock v0.1.1
 	github.com/iseki0/machineid v0.0.0-20240820072516-35aa9673a496
-	github.com/iseki0/osname v0.0.0-20220802070850-5def7ee59aab
+	github.com/iseki0/osname v0.0.0-20250904122211-abb38091bd0b
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 	github.com/klauspost/pgzip v1.2.6
 	github.com/magiconair/properties v1.8.7
