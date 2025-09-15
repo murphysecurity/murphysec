@@ -1,9 +1,10 @@
 package api
 
 import (
+	"time"
+
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/version"
-	"time"
 )
 
 type CreateSubTaskRequest struct {
@@ -29,6 +30,7 @@ type CreateSubTaskRequest struct {
 	WebhookMode        *string          `json:"webhook_mode,omitempty"`
 	ExtraData          *string          `json:"extra_data,omitempty"`
 	IsAutonomous       bool             `json:"is_autonomous"`
+	Distribution       string           `json:"distribution"`
 }
 
 type CreateSubTaskResponse struct {

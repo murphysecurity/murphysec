@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/murphysecurity/murphysec/codehash"
 	"os"
 	"path/filepath"
+
+	"github.com/murphysecurity/murphysec/codehash"
 
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/chunkupload"
@@ -156,6 +157,8 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.PackagePrivateName = privateSourceName
 	createSubtask.ProjectTagNames = projectTagNames
 	createSubtask.IsAutonomous = scanCodeHash
+	createSubtask.Distribution = distribution.String()
+
 	if createSubtask.ProjectTagNames == nil {
 		createSubtask.ProjectTagNames = make([]string, 0)
 	}

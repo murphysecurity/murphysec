@@ -6,6 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/cv"
@@ -22,9 +26,6 @@ import (
 	"github.com/repeale/fp-go"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
-	"io"
-	"os"
-	"path/filepath"
 )
 
 var jsonOutput bool
@@ -49,6 +50,7 @@ var branch string
 var mavenModuleName []string
 var binaryOnly bool
 var scanProcess bool
+var distribution common.DistributionFlag
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -69,6 +71,7 @@ func Cmd() *cobra.Command {
 	c.Flags().IntVarP(&concurrentNumber, "max-concurrent-uploads", "j", 1, "Set the maximum number of parallel uploads.")
 	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full")
+	c.Flags().Var(&distribution, "distribution", "specify the distribution, currently supports: external, internal, saas, open_source")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
 	c.Flags().BoolVar(&binaryOnly, "binary-only", false, "only scan binary files, skip source code scanning")
@@ -95,6 +98,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) specify the SBOM format, currently supports: msdx1.1+json")
 	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full(default)")
+	c.Flags().Var(&distribution, "distribution", "specify the distribution, currently supports: external, internal, saas, open_source")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
 	c.Flags().StringArrayVar(&gradleProjectFilter.ProjectNames, "gradle-project-name", make([]string, 0), "specify the name of the Gradle project")
