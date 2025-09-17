@@ -5,14 +5,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
-	"os"
-	"os/exec"
-	"path/filepath"
 )
 
 type Inspector struct{}
@@ -41,6 +42,12 @@ func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 		return false
 	}
 	if utils.IsFile(filepath.Join(dir, "pnpm-lock.yaml")) {
+		return false
+	}
+	if utils.IsFile(filepath.Join(dir, "pnpm-lock.aml")) {
+		return false
+	}
+	if utils.IsFile(filepath.Join(dir, "oh-package-lock.json5")) {
 		return false
 	}
 
