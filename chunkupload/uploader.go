@@ -24,7 +24,7 @@ type Params struct {
 	SubtaskId string
 }
 
-const _ChunkSize = 4 * 1024 * 1024
+const _ChunkSize = 10 * 1024 * 1024
 
 func fileStreamer(ctx context.Context, path string, writer io.Writer) (e error) {
 	var (
