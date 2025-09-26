@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+
 	"github.com/murphysecurity/murphysec/infra/date"
 )
 
@@ -9,35 +10,38 @@ import (
 //
 // 标注为 <unknown> 的暂时不知道是什么，估计用不上
 type ScanResultResponse struct {
-	Complete         bool                               `json:"complete"`
-	Branch           string                             `json:"branch"`
-	SubtaskId        string                             `json:"subtask_id"`
-	ProjectId        string                             `json:"project_id"`
-	TeamId           string                             `json:"team_id"`
-	TaskId           string                             `json:"task_id"`
-	UserId           string                             `json:"user_id"`
-	OptionalNum      int                                `json:"optional_num"`  // 可选修复数量
-	RecommendNum     int                                `json:"recommend_num"` // 建议修复数量
-	StringNum        int                                `json:"string_num"`    // 强烈建议修复数量
-	RelyNum          int                                `json:"rely_num"`      // 本次扫描依赖组件总数
-	LeakNum          int                                `json:"leak_num"`      // 本次任务包含缺陷组件数量
-	HighNum          int                                `json:"high_num"`      // 高危漏洞数量
-	MediumNum        int                                `json:"medium_num"`    // 中危漏洞数量
-	LowNum           int                                `json:"low_num"`       // 低危漏洞数量
-	CriticalNum      int                                `json:"critical_num"`  // 严重漏洞数量
-	SurpassScore     int                                `json:"surpass_score"`
-	ProjectScore     int                                `json:"project_score"`
-	CompInfoList     []ScanResultCompInfo               `json:"comp_info_list"`
-	VulnInfoMap      map[string]VulnerabilityDetailInfo `json:"vuln_info_map"`
-	LicenseInfoMap   map[string]LicenseItem             `json:"license_info_map"`
-	Username         string                             `json:"username"`
-	IsHitProjectRule bool                               `json:"is_hit_project_rule"`
-	HitProjectRule   json.RawMessage                    `json:"hit_project_rule,omitempty"`
-	ShareURL         string                             `json:"share_url"`
-	DetailURL        string                             `json:"detail_url"`
-	AllowAction      int                                `json:"allow_action"`
-	ExpireDay        int                                `json:"expire_day"`
-	ScanWarnings     []ScanWarning                      `json:"scan_warnings"`
+	Complete            bool                               `json:"complete"`
+	Branch              string                             `json:"branch"`
+	SubtaskId           string                             `json:"subtask_id"`
+	ProjectId           string                             `json:"project_id"`
+	TeamId              string                             `json:"team_id"`
+	TaskId              string                             `json:"task_id"`
+	UserId              string                             `json:"user_id"`
+	OptionalNum         int                                `json:"optional_num"`  // 可选修复数量
+	RecommendNum        int                                `json:"recommend_num"` // 建议修复数量
+	StringNum           int                                `json:"string_num"`    // 强烈建议修复数量
+	RelyNum             int                                `json:"rely_num"`      // 本次扫描依赖组件总数
+	LeakNum             int                                `json:"leak_num"`      // 本次任务包含缺陷组件数量
+	HighNum             int                                `json:"high_num"`      // 高危漏洞数量
+	MediumNum           int                                `json:"medium_num"`    // 中危漏洞数量
+	LowNum              int                                `json:"low_num"`       // 低危漏洞数量
+	CriticalNum         int                                `json:"critical_num"`  // 严重漏洞数量
+	SurpassScore        int                                `json:"surpass_score"`
+	ProjectScore        int                                `json:"project_score"`
+	CompInfoList        []ScanResultCompInfo               `json:"comp_info_list"`
+	VulnInfoMap         map[string]VulnerabilityDetailInfo `json:"vuln_info_map"`
+	LicenseInfoMap      map[string]LicenseItem             `json:"license_info_map"`
+	Username            string                             `json:"username"`
+	IsHitProjectRule    bool                               `json:"is_hit_project_rule"`
+	HitProjectRule      json.RawMessage                    `json:"hit_project_rule,omitempty"`
+	ShareURL            string                             `json:"share_url"`
+	DetailURL           string                             `json:"detail_url"`
+	AllowAction         int                                `json:"allow_action"`
+	ExpireDay           int                                `json:"expire_day"`
+	ScanWarnings        []ScanWarning                      `json:"scan_warnings"`
+	LicenseInfoList     json.RawMessage                    `json:"license_info_list,omitempty"`
+	ProjectDistribution json.RawMessage                    `json:"project_distribution,omitempty"`
+	SystemInfo          json.RawMessage                    `json:"system_info,omitempty"`
 }
 
 type ScanResultCompInfo struct {

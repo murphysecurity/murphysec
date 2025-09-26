@@ -2,11 +2,12 @@ package model
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/murphysecurity/fix-tools/fix"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/repeale/fp-go"
 	"github.com/samber/lo"
-	"time"
 )
 
 type PluginOutput struct {
@@ -22,21 +23,24 @@ type PluginOutput struct {
 		Medium   int `json:"medium,omitempty"`
 		Low      int `json:"low,omitempty"`
 	} `json:"issues_level_count,omitempty"`
-	TaskId            string                 `json:"task_id"`
-	SubtaskId         string                 `json:"subtask_id"`
-	InspectErrors     []InspectError         `json:"inspect_errors,omitempty"`
-	DependenciesCount int                    `json:"dependencies_count"`
-	SurpassScore      int                    `json:"surpass_score"`
-	ProjectScore      int                    `json:"project_score"`
-	LicenseInfoMap    map[string]LicenseItem `json:"license_info_map"`
-	Username          string                 `json:"username"`
-	ProjectId         string                 `json:"project_id"`
-	GitURL            string                 `json:"git_url"`
-	IsHitProjectRule  bool                   `json:"is_hit_project_rule"`
-	HitProjectRule    json.RawMessage        `json:"hit_project_rule,omitempty"`
-	ShareURL          string                 `json:"share_url,omitempty"`
-	DetailURL         string                 `json:"detail_url,omitempty"`
-	ScanWarningCodes  []string               `json:"scan_warning_codes,omitempty"`
+	TaskId              string                 `json:"task_id"`
+	SubtaskId           string                 `json:"subtask_id"`
+	InspectErrors       []InspectError         `json:"inspect_errors,omitempty"`
+	DependenciesCount   int                    `json:"dependencies_count"`
+	SurpassScore        int                    `json:"surpass_score"`
+	ProjectScore        int                    `json:"project_score"`
+	LicenseInfoMap      map[string]LicenseItem `json:"license_info_map"`
+	Username            string                 `json:"username"`
+	ProjectId           string                 `json:"project_id"`
+	GitURL              string                 `json:"git_url"`
+	IsHitProjectRule    bool                   `json:"is_hit_project_rule"`
+	HitProjectRule      json.RawMessage        `json:"hit_project_rule,omitempty"`
+	ShareURL            string                 `json:"share_url,omitempty"`
+	DetailURL           string                 `json:"detail_url,omitempty"`
+	ScanWarningCodes    []string               `json:"scan_warning_codes,omitempty"`
+	LicenseInfoList     json.RawMessage        `json:"license_info_list,omitempty"`
+	ProjectDistribution json.RawMessage        `json:"project_distribution,omitempty"`
+	SystemInfo          json.RawMessage        `json:"system_info,omitempty"`
 }
 
 type ScanWarning struct {
@@ -100,21 +104,24 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 			Medium:   r.MediumNum,
 			Low:      r.LowNum,
 		},
-		TaskId:            r.TaskId,
-		SubtaskId:         r.SubtaskId,
-		ProjectId:         r.ProjectId,
-		InspectErrors:     nil,
-		DependenciesCount: r.RelyNum,
-		SurpassScore:      r.SurpassScore,
-		ProjectScore:      r.ProjectScore,
-		LicenseInfoMap:    r.LicenseInfoMap,
-		Username:          r.Username,
-		GitURL:            task.GitUrl,
-		IsHitProjectRule:  r.IsHitProjectRule,
-		HitProjectRule:    r.HitProjectRule,
-		ShareURL:          r.ShareURL,
-		DetailURL:         r.DetailURL,
-		ScanWarningCodes:  lo.Uniq(fp.Map(func(it ScanWarning) string { return it.Kind })(r.ScanWarnings)),
+		TaskId:              r.TaskId,
+		SubtaskId:           r.SubtaskId,
+		ProjectId:           r.ProjectId,
+		InspectErrors:       nil,
+		DependenciesCount:   r.RelyNum,
+		SurpassScore:        r.SurpassScore,
+		ProjectScore:        r.ProjectScore,
+		LicenseInfoMap:      r.LicenseInfoMap,
+		Username:            r.Username,
+		GitURL:              task.GitUrl,
+		IsHitProjectRule:    r.IsHitProjectRule,
+		HitProjectRule:      r.HitProjectRule,
+		ShareURL:            r.ShareURL,
+		DetailURL:           r.DetailURL,
+		ScanWarningCodes:    lo.Uniq(fp.Map(func(it ScanWarning) string { return it.Kind })(r.ScanWarnings)),
+		LicenseInfoList:     r.LicenseInfoList,
+		ProjectDistribution: r.ProjectDistribution,
+		SystemInfo:          r.SystemInfo,
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {
