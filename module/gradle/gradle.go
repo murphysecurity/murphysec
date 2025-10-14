@@ -5,6 +5,14 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
+	"sync"
+
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/sl"
@@ -14,13 +22,6 @@ import (
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v3"
-	"io"
-	"io/fs"
-	"os"
-	"path"
-	"path/filepath"
-	"strings"
-	"sync"
 )
 
 type Inspector struct{}
@@ -47,9 +48,11 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		useGradle = false
 	}
 	if useGradle {
+		registeredAutoBuild := task.RegisterAutoBuild()
 		logger.Info(gradleEnv.Version.String())
 		rs, e = evalGradleDependencies(ctx, dir, gradleEnv)
 		if e != nil {
+			registeredAutoBuild.MarkFailed()
 			logger.Warnf("gradle failed: %s", e)
 		}
 	}

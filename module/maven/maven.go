@@ -49,12 +49,15 @@ func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.
 	var useBackupResolver = false
 	var deps *DepsMap
 
+	registeredAutoBuild := task.RegisterAutoBuild()
 	// check maven version, skip maven scan if check fail
 	mvnCmdInfo, e := CheckMvnCommand(ctx, task.IsNoBuild())
 	if e != nil {
 		if errors.Is(e, ErrMvnDisabled) {
 			scanerr.Add(ctx, scanerr.Param{Kind: scanerr.KindBuildDisabled})
+			registeredAutoBuild.MarkDisabled()
 		} else if errors.Is(e, ErrMvnNotFound) {
+			registeredAutoBuild.MarkFailed()
 			scanerr.Add(ctx, scanerr.Param{Kind: scanerr.KindMavenNotFound})
 			log.Sugar().Warnf("Mvn command not found %v", e)
 		}
@@ -64,6 +67,7 @@ func ScanMavenProject(ctx context.Context, task *model.InspectionTask) ([]model.
 		var e error
 		deps, e = ScanDepsByPluginCommand(ctx, dir, mvnCmdInfo)
 		if e != nil {
+			registeredAutoBuild.MarkFailed()
 			log.Error("Scan maven dependencies failed", zap.Error(e))
 			useBackupResolver = true
 		}

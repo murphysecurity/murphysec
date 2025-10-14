@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/exitcode"
@@ -15,9 +19,6 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 func scannerScanCmd() *cobra.Command {
@@ -76,6 +77,8 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ScannerShouldEnableMavenBackupScan  bool                          `json:"scanner_should_enable_maven_backup_scan"`
 		ScannerShouldEnableGradleBackupScan bool                          `json:"scanner_should_enable_gradle_backup_scan"`
 		ScanWarnings                        []scanerr.Param               `json:"scan_warnings"`
+		AutoBuildCount                      int                           `json:"auto_build_count"`
+		AutoBuildFailedCount                int                           `json:"auto_build_failed_count"`
 	}
 	w := wrapper{
 		Modules:                             utils.NoNilSlice(scantask.Modules),
@@ -83,6 +86,8 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ScannerShouldEnableMavenBackupScan:  env.ScannerShouldEnableMavenBackupScan,
 		ScannerShouldEnableGradleBackupScan: env.ScannerShouldEnableGradleBackupScan,
 		ScanWarnings:                        scanerr.GetAll(ctx),
+		AutoBuildCount:                      scantask.AutoBuildCount,
+		AutoBuildFailedCount:                scantask.AutoBuildFailedCount,
 	}
 	if env.WaitAfterScannerScan {
 		logger.Warn("client will wait here!")

@@ -8,6 +8,7 @@ import (
 type InspectionTask struct {
 	scanTask      *ScanTask
 	inspectionDir string
+	noCopy
 }
 
 func (i *InspectionTask) MavenModuleName() []string {
@@ -62,4 +63,28 @@ func (i *InspectionTask) AddModule(module Module) {
 	}
 	module.ModulePath = filepath.ToSlash(module.ModulePath)
 	i.scanTask.Modules = append(i.scanTask.Modules, module)
+}
+
+type RegisteredAutoBuild struct {
+	task   *ScanTask
+	marked bool
+	noCopy
+}
+
+func (r *RegisteredAutoBuild) MarkFailed() {
+	if r.marked {
+		return
+	}
+	r.marked = true
+	r.task.AutoBuildFailedCount++
+}
+
+func (r *RegisteredAutoBuild) MarkDisabled() {
+	r.marked = true
+	r.task.AutoBuildCount--
+}
+
+func (i *InspectionTask) RegisterAutoBuild() *RegisteredAutoBuild {
+	i.scanTask.AutoBuildCount++
+	return &RegisteredAutoBuild{task: i.scanTask}
 }
