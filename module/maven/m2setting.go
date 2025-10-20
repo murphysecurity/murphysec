@@ -4,17 +4,19 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/antchfx/xmlquery"
-	"github.com/mitchellh/go-homedir"
-	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/utils"
-	"github.com/murphysecurity/murphysec/utils/must"
-	"go.uber.org/zap"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/antchfx/xmlquery"
+	"github.com/mitchellh/go-homedir"
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/toolver"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/murphysecurity/murphysec/utils/must"
+	"go.uber.org/zap"
 )
 
 type UserConfig struct {
@@ -100,9 +102,10 @@ func locateMvnInstallPath(ctx context.Context) string {
 }
 
 func mavenSettingsPaths(ctx context.Context) (paths []string) {
-	// IDEA specified path
-	if env.IdeaMavenConf != "" {
-		paths = append(paths, env.IdeaMavenConf)
+	// specified path
+	var toolConfig = toolver.Get(ctx)
+	if toolConfig.Maven.MavenSettingPath != "" {
+		paths = append(paths, toolConfig.Maven.MavenSettingPath)
 	}
 	// user path
 	var homeDir = os.Getenv("M2_HOME")

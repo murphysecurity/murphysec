@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"path/filepath"
 )
 
 func IsPathExist(path string) bool {
@@ -21,6 +22,15 @@ func IsDir(path string) bool {
 		return false
 	}
 	return s.IsDir()
+}
+
+func IsDirResolveSymlink(path string) bool {
+	var realPath = path
+	realPath, e := filepath.EvalSymlinks(path)
+	if e == nil {
+		realPath = path
+	}
+	return IsDir(realPath)
 }
 
 func IsFile(path string) bool {

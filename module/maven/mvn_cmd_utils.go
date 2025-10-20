@@ -13,16 +13,19 @@ import (
 
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/toolver"
 	"go.uber.org/zap"
 )
-
-const M2SettingsFilePathCtxKey = "MavenSettingsFilePathCtxKey"
 
 type MvnCommandInfo struct {
 	Path             string `json:"path"`
 	MvnVersion       string `json:"mvn_version"`
 	UserSettingsPath string `json:"user_settings_path"`
 	JavaHome         string `json:"java_home"`
+
+	AdditionalArgs []string `json:"additional_args,omitempty"`
+
+	AdditionalPrependArgs []string `json:"additional_prepend_args,omitempty"`
 }
 
 func (m MvnCommandInfo) String() string {
@@ -33,12 +36,14 @@ func (m MvnCommandInfo) Command(ctx context.Context, args ...string) *exec.Cmd {
 	if ctx == nil {
 		ctx = context.TODO()
 	}
-	var _args = make([]string, 0, len(args)+5)
+	var _args = make([]string, 0)
+	_args = append(_args, m.AdditionalPrependArgs...)
 	if m.UserSettingsPath != "" {
 		_args = append(_args, "--settings", m.UserSettingsPath)
 	}
 	_args = append(_args, "--batch-mode")
 	_args = append(_args, args...)
+	_args = append(_args, m.AdditionalArgs...)
 	cmd := exec.CommandContext(ctx, m.Path, _args...)
 	if m.JavaHome != "" {
 		cmd.Env = os.Environ()
@@ -55,7 +60,7 @@ type _MvnCommandResult struct {
 }
 
 func CheckMvnCommand(ctx context.Context, isNoBuild bool) (info *MvnCommandInfo, err error) {
-
+	var toolVer = toolver.Get(ctx)
 	var logger = logctx.Use(ctx)
 	if cachedMvnCommandResult != nil {
 		if cachedMvnCommandResult.e != nil {
@@ -83,18 +88,15 @@ func CheckMvnCommand(ctx context.Context, isNoBuild bool) (info *MvnCommandInfo,
 	}
 
 	info = &MvnCommandInfo{}
-	info.Path = env.IdeaMavenHome
+	info.Path = toolVer.Maven.MavenCommand
 	if info.Path == "" {
 		info.Path = getMvnCommandOs()
 	}
 	if info.Path == "" {
 		return nil, ErrMvnNotFound
 	}
-	info.JavaHome = env.IdeaMavenJre
-	info.UserSettingsPath = env.IdeaMavenConf
-	if r, ok := ctx.Value(M2SettingsFilePathCtxKey).(string); ok {
-		info.UserSettingsPath = r
-	}
+	info.JavaHome = toolVer.Maven.JavaHome
+	info.UserSettingsPath = toolVer.Maven.MavenSettingPath
 	// check version
 	ver, e := checkMvnVersion(ctx, info.Path, info.JavaHome)
 	if e != nil {

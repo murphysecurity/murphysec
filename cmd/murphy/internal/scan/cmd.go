@@ -19,8 +19,8 @@ import (
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/gradle"
-	"github.com/murphysecurity/murphysec/module/maven"
 	"github.com/murphysecurity/murphysec/scanerr"
+	"github.com/murphysecurity/murphysec/toolver"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/repeale/fp-go"
@@ -33,7 +33,6 @@ var isDeep bool
 var noBuild bool
 var projectNameCli string
 var projectsNameCli string
-var mavenSettingsPath string
 var onlyTaskId bool
 var privateSourceId string
 var privateSourceName string
@@ -91,7 +90,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringArrayVar(&mavenModuleName, "maven-module-name", make([]string, 0), "retains module")
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringVar(&projectsNameCli, "projects-name", "", "specify projects name(group)")
-	c.Flags().StringVar(&mavenSettingsPath, "maven-settings", "", "specify the path of maven settings")
+	c.Flags().StringVar(&toolver.Default.Maven.MavenSettingPath, "maven-settings", "", "specify the path of maven settings")
 	c.Flags().BoolVar(&onlyTaskId, "only-task-id", false, "print task id after task created, the scan result will not be printed")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&sbomOutputConfig, "sbom-output", "-", "Specify the SBOM output file path, use \"-\" to output to stdout")
@@ -271,10 +270,6 @@ func dfScanRun(cmd *cobra.Command, args []string) {
 		ctx = ui.With(ctx, ui.CLI)
 	}
 
-	if mavenSettingsPath != "" {
-		//nolint:all
-		ctx = context.WithValue(ctx, maven.M2SettingsFilePathCtxKey, mavenSettingsPath)
-	}
 	scanDir := args[0]
 	scanDir, e := commonScanPreCheck(ctx, scanDir)
 	if e != nil {
