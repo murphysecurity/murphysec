@@ -91,6 +91,7 @@ func CheckMvnCommand(ctx context.Context, isNoBuild bool) (info *MvnCommandInfo,
 	info.Path = toolVer.Maven.MavenCommand
 	if info.Path == "" {
 		info.Path = getMvnCommandOs()
+		logger.Sugar().Infof("Use system mvn command: %s", info.Path)
 	}
 	if info.Path == "" {
 		return nil, ErrMvnNotFound

@@ -7,17 +7,16 @@ import (
 )
 
 var envOnce sync.Once
-var envConfig *Config
+var envConfig Config
 
 func getFromEnv() *Config {
 	envOnce.Do(func() {
 		var s = os.Getenv("AUTO_BUILD_TOOLCHAIN_CONFIG")
 		if s != "" {
-			var o Config
-			if json.Unmarshal([]byte(s), &o) != nil {
-				envConfig = &o
+			if e := json.Unmarshal([]byte(s), &envConfig); e != nil {
+				panic(e)
 			}
 		}
 	})
-	return envConfig
+	return &envConfig
 }

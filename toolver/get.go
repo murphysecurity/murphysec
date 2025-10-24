@@ -9,7 +9,11 @@ var Default Config
 var postprocessors []func(context.Context, *Config)
 
 func Get(ctx context.Context) *Config {
-	return mergeConfig(mergeConfig(&Default, getIntellijConfig()), getFromEnv())
+	var r = mergeConfig(mergeConfig(&Default, getIntellijConfig()), getFromEnv())
+	for _, it := range postprocessors {
+		it(ctx, r)
+	}
+	return r
 }
 
 func mergeConfig(old *Config, new *Config) *Config {

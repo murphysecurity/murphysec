@@ -2,8 +2,6 @@ package toolver
 
 import (
 	"context"
-
-	"github.com/murphysecurity/murphysec/utils"
 )
 
 func init() {
@@ -29,7 +27,7 @@ func locateJavaHome(version string) string {
 	case "jdk21":
 		javaHome = "/opt/java/21"
 	}
-	if javaHome != "" && utils.IsDirResolveSymlink(javaHome) {
+	if javaHome != "" {
 		return javaHome
 	}
 	return ""
@@ -45,7 +43,7 @@ func locateMvnHome(version string) string {
 	case "maven3.9.5":
 		mvnHome = "/opt/maven/3.9.5"
 	}
-	if mvnHome != "" && utils.IsDirResolveSymlink(mvnHome) {
+	if mvnHome != "" {
 		return mvnHome
 	}
 	return ""
