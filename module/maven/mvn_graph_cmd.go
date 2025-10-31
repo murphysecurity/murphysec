@@ -3,14 +3,15 @@ package maven
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/logpipe"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"strings"
-	"time"
 )
 
 // PluginGraphCmd helper to com.github.ferstl:depgraph-maven-plugin:4.0.1:graph

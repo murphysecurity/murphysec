@@ -98,6 +98,8 @@ func CheckMvnCommand(ctx context.Context, isNoBuild bool) (info *MvnCommandInfo,
 	}
 	info.JavaHome = toolVer.Maven.JavaHome
 	info.UserSettingsPath = toolVer.Maven.MavenSettingPath
+	info.AdditionalArgs = toolVer.Maven.AdditionalArgs
+	info.AdditionalPrependArgs = toolVer.Maven.AdditionalPrependArgs
 	// check version
 	ver, e := checkMvnVersion(ctx, info.Path, info.JavaHome)
 	if e != nil {
