@@ -1,6 +1,9 @@
 package api
 
-import "github.com/murphysecurity/murphysec/model"
+import (
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/toolver"
+)
 
 func StartCheck(client *Client, task *model.ScanTask) error {
 	checkNotNull(client)
@@ -11,6 +14,20 @@ func StartCheck(client *Client, task *model.ScanTask) error {
 	}
 	if task.MavenSourceId != "" {
 		data["package_private_id"] = task.MavenSourceId
+	}
+	var buildOptions = make(map[string]any)
+	data["build_options"] = buildOptions
+	if toolver.Default.Maven.MavenVersion != "" {
+		buildOptions["maven_version"] = "jdk" + toolver.Default.Maven.MavenVersion
+	}
+	if toolver.Default.Maven.JdkVersion != "" {
+		buildOptions["jdk_version"] = "maven" + toolver.Default.Maven.JdkVersion
+	}
+	if len(toolver.Default.Maven.AdditionalArgs) > 0 {
+		buildOptions["arguments"] = toolver.Default.Maven.AdditionalArgs
+	}
+	if len(toolver.Default.Maven.AdditionalPrependArgs) > 0 {
+		buildOptions["prepend_arguments"] = toolver.Default.Maven.AdditionalPrependArgs
 	}
 	return client.DoJson(client.PostJson(joinURL(client.baseUrl, "/platform3/v3/client/start_check"), data), nil)
 }

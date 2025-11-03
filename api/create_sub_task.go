@@ -31,6 +31,10 @@ type CreateSubTaskRequest struct {
 	ExtraData          *string          `json:"extra_data,omitempty"`
 	IsAutonomous       bool             `json:"is_autonomous"`
 	Distribution       string           `json:"distribution"`
+	BuildOptions       struct {
+		MavenVersion string `json:"maven_version,omitempty"`
+		JdkVersion   string `json:"jdk_version,omitempty"`
+	} `json:"build_options"`
 }
 
 type CreateSubTaskResponse struct {
