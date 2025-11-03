@@ -101,6 +101,8 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
 	c.Flags().StringArrayVar(&gradleProjectFilter.ProjectNames, "gradle-project-name", make([]string, 0), "specify the name of the Gradle project")
+	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalPrependArgs, "maven-prepend-arg", []string{}, "Prepend an argument to the Maven command. Can be specified multiple times.")
+	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalArgs, "maven-arg", []string{}, "Append an argument to the Maven command. Can be specified multiple times.")
 	return &c
 }
 
