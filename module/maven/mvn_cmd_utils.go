@@ -145,6 +145,9 @@ func checkMvnVersion(ctx context.Context, mvnPath string, javaHome string) (stri
 			return "", err
 		}
 	}
+	for _, s := range strings.Split(strings.TrimSpace(output), "\n") {
+		logger.Sugar().Infof("> %s", s)
+	}
 	ver := parseMvnVersion(output)
 	if ver == "" {
 		return "", ErrCheckMvnVersion
