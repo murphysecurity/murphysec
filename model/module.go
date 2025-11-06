@@ -12,6 +12,7 @@ type Module struct {
 	MD5Hashes      []MD5Hash        `json:"md5_hashes,omitempty"` // MD5哈希列表
 	SHA1Hashes     []SHA1Hash       `json:"sha1_hashes,omitempty"`
 	SHA256Hashes   []SHA256Hash     `json:"sha256_hashes,omitempty"` // SHA256哈希列表
+	Patches        []string         `json:"patches,omitempty"`
 }
 
 func (m Module) String() string {

@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/iseki0/osname"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/scanerr"
 	"io/fs"
 	"os/exec"
 	"reflect"
 	"runtime"
 	"strings"
+
+	"github.com/iseki0/osname"
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/scanerr"
 )
 
 func InspectEnv(ctx context.Context, scanProcess bool) error {
@@ -25,6 +26,15 @@ func InspectEnv(ctx context.Context, scanProcess bool) error {
 	var osn, _ = osname.OsName()
 	if runtime.GOOS == "linux" {
 		packageManager = getOsInfo()
+	} else if runtime.GOOS == "windows" {
+		version := getWindowsVersion()
+		var m = model.Module{
+			ModuleName:   "5ec239b6-715c-4d36-a3b8-a5a629b898a9",
+			Dependencies: []model.DependencyItem{{Component: version}},
+			Patches:      listPendingPatch(ctx),
+			ModulePath:   "/Windows",
+		}
+		task.Modules = append(task.Modules, m)
 	}
 	if s, ok := processByRule(osn); ok {
 		packageManager = s

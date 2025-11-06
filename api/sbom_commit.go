@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"os"
+
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/murphysecurity/murphysec/utils/must"
-	"os"
 )
 
 func SubmitSBOM(ctx context.Context, client *Client, subtaskId string, modules []model.Module, codeFragments []model.ComponentCodeFragment) error {

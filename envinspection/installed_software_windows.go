@@ -5,10 +5,15 @@ package envinspection
 import (
 	"context"
 	"fmt"
+	"os/exec"
+	"path/filepath"
+	"strings"
+
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/repeale/fp-go"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
-	"path/filepath"
 )
 
 type listSubKeysError struct {
@@ -45,15 +50,16 @@ func listSubKeys(ctx context.Context, key registry.Key, path string) ([]string, 
 	return r, nil
 }
 
+func getWindowsVersion() model.Component {
+	return model.Component{
+		CompName:    "Windows",
+		CompVersion: fmt.Sprintf("%d.%d.%d", windows.RtlGetVersion().MajorVersion, windows.RtlGetVersion().MinorVersion, windows.RtlGetVersion().BuildNumber),
+	}
+}
+
 func listInstalledSoftwareWindows(ctx context.Context) ([]model.DependencyItem, error) {
 	var rKeys = []registry.Key{registry.CURRENT_USER, registry.LOCAL_MACHINE}
 	var r []model.DependencyItem
-	r = append(r, model.DependencyItem{
-		Component: model.Component{
-			CompName:    "Windows",
-			CompVersion: fmt.Sprintf("%d.%d.%d", windows.RtlGetVersion().MajorVersion, windows.RtlGetVersion().MinorVersion, windows.RtlGetVersion().BuildNumber),
-		},
-	})
 	for _, rKey := range rKeys {
 		paths, e := listSubKeys(ctx, rKey, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
 		if e != nil {
@@ -79,4 +85,14 @@ func listInstalledSoftwareWindows(ctx context.Context) ([]model.DependencyItem, 
 		}
 	}
 	return r, nil
+}
+
+func listPendingPatch(ctx context.Context) []string {
+	var logger = logctx.Use(ctx).Sugar()
+	data, e := exec.CommandContext(ctx, "wmic", "qfe", "get", "HotFixID").Output()
+	if e != nil {
+		logger.Warnf("wmic qfe get HotFixID failed: %s", e)
+	}
+	var isKB = func(s string) bool { return strings.HasPrefix(s, "KB") }
+	return fp.Pipe2(fp.Map(strings.TrimSpace), fp.Filter(isKB))(strings.Split(string(data), "\n"))
 }
