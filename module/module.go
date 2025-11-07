@@ -1,6 +1,10 @@
 package module
 
 import (
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/arkts"
 	"github.com/murphysecurity/murphysec/module/bundler"
@@ -18,6 +22,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/perl"
 	"github.com/murphysecurity/murphysec/module/pnpm"
 	"github.com/murphysecurity/murphysec/module/poetry"
+	"github.com/murphysecurity/murphysec/module/pubspec"
 	"github.com/murphysecurity/murphysec/module/python"
 	"github.com/murphysecurity/murphysec/module/rebar3"
 	"github.com/murphysecurity/murphysec/module/renv"
@@ -26,9 +31,6 @@ import (
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/repeale/fp-go"
 	"github.com/samber/lo"
-	"os"
-	"strconv"
-	"strings"
 )
 
 var Inspectors []model.Inspector
@@ -64,6 +66,7 @@ func init() {
 	Inspectors = append(Inspectors, sbt.Inspector{})
 	Inspectors = append(Inspectors, yarn.Inspector{})
 	Inspectors = append(Inspectors, luarocks.Inspector{})
+	Inspectors = append(Inspectors, pubspec.Inspector{})
 
 	var enabled = fp.Pipe6(os.Getenv, utils.SplitBy(","), fp.Map(strings.TrimSpace), fp.Filter(lo.IsNotEmpty[string]), fp.Map(strings.ToLower), utils.ToSet[string])("MPS_ENABLED_INSPECTORS")
 	if len(enabled) > 0 {
