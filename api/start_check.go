@@ -17,17 +17,19 @@ func StartCheck(client *Client, task *model.ScanTask) error {
 	}
 	var buildOptions = make(map[string]any)
 	data["build_options"] = buildOptions
+	var maven = make(map[string]any)
+	buildOptions["maven"] = maven
 	if toolver.Default.Maven.MavenVersion != "" {
-		buildOptions["maven_version"] = "jdk" + toolver.Default.Maven.MavenVersion
+		maven["maven_version"] = "jdk" + toolver.Default.Maven.MavenVersion
 	}
 	if toolver.Default.Maven.JdkVersion != "" {
-		buildOptions["jdk_version"] = "maven" + toolver.Default.Maven.JdkVersion
+		maven["jdk_version"] = "maven" + toolver.Default.Maven.JdkVersion
 	}
 	if len(toolver.Default.Maven.AdditionalArgs) > 0 {
-		buildOptions["arguments"] = toolver.Default.Maven.AdditionalArgs
+		maven["arguments"] = toolver.Default.Maven.AdditionalArgs
 	}
 	if len(toolver.Default.Maven.AdditionalPrependArgs) > 0 {
-		buildOptions["prepend_arguments"] = toolver.Default.Maven.AdditionalPrependArgs
+		maven["prepend_arguments"] = toolver.Default.Maven.AdditionalPrependArgs
 	}
 	return client.DoJson(client.PostJson(joinURL(client.baseUrl, "/platform3/v3/client/start_check"), data), nil)
 }
