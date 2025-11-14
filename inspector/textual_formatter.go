@@ -1,6 +1,7 @@
 package inspector
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -95,7 +96,7 @@ func BuildSpdx(task *model.ScanTask) []byte {
 		}
 		externalRefs = append(externalRefs, map[string]any{
 			"referenceCategory": "PACKAGE-MANAGER",
-			"referenceLocator":  string(must.A(json.Marshal(node))),
+			"referenceLocator":  base64.StdEncoding.EncodeToString(must.A(json.Marshal(node))),
 			"referenceType":     "murphyjson",
 		})
 		if len(externalRefs) != 0 {
