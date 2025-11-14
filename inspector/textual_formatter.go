@@ -3,10 +3,12 @@ package inspector
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/model"
 	"strings"
 	"time"
+
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils/must"
 )
 
 type DependencyGraph struct {
@@ -91,6 +93,11 @@ func BuildSpdx(task *model.ScanTask) []byte {
 				"referenceType":     "purl",
 			})
 		}
+		externalRefs = append(externalRefs, map[string]any{
+			"referenceCategory": "PACKAGE-MANAGER",
+			"referenceLocator":  string(must.A(json.Marshal(node))),
+			"referenceType":     "murphyjson",
+		})
 		if len(externalRefs) != 0 {
 			m["externalRefs"] = externalRefs
 		}
