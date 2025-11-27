@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/murphysecurity/murphysec/codehash"
+	"github.com/murphysecurity/murphysec/projectlicense"
 
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/chunkupload"
@@ -86,7 +87,7 @@ func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 		return
 	}
 	// submit SBOM
-	e = api.SubmitSBOM(ctx, api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
+	e = api.SubmitSBOM(ctx, api.DefaultClient())
 	if e != nil {
 		cv.DisplaySubmitSBOMErr(ctx, e)
 		return
@@ -228,6 +229,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		logger.Infof("completed")
 	}
 	if task.Mode == model.ScanModeSource {
+		_ = projectlicense.ScanDir(ctx)
 		// do scan
 		e = inspector.ManagedInspect(ctx)
 		if e != nil {
@@ -236,7 +238,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		}
 
 		// submit SBOM
-		e = api.SubmitSBOM(ctx, api.DefaultClient(), task.SubtaskId, task.Modules, task.CodeFragments)
+		e = api.SubmitSBOM(ctx, api.DefaultClient())
 		if e != nil {
 			cv.DisplaySubmitSBOMErr(ctx, e)
 			return nil, e

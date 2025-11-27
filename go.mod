@@ -1,12 +1,12 @@
 module github.com/murphysecurity/murphysec
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/BurntSushi/toml v1.5.0
 	github.com/Masterminds/semver v1.5.0
-	github.com/antchfx/xmlquery v1.4.3
+	github.com/antchfx/xmlquery v1.5.0
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/dlclark/regexp2 v1.11.4
@@ -21,24 +21,25 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.15.2
 	github.com/murphysecurity/fix-tools v0.1.9
+	github.com/murphysecurity/licensematcher v0.0.0-20251118073346-403261b404a0
 	github.com/pelletier/go-toml/v2 v2.2.3
 	github.com/pkg/errors v0.9.1
 	github.com/repeale/fp-go v0.11.1
 	github.com/samber/lo v1.39.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/titanous/json5 v1.0.0
 	github.com/vifraa/gopom v0.2.2
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 	github.com/zcalusic/sysinfo v1.1.3
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
-	golang.org/x/mod v0.22.0
-	golang.org/x/net v0.40.0
-	golang.org/x/sync v0.14.0
-	golang.org/x/sys v0.33.0
-	golang.org/x/text v0.25.0
+	golang.org/x/mod v0.29.0
+	golang.org/x/net v0.47.0
+	golang.org/x/sync v0.18.0
+	golang.org/x/sys v0.38.0
+	golang.org/x/text v0.31.0
 	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -47,7 +48,7 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.5 // indirect
-	github.com/antchfx/xpath v1.3.3 // indirect
+	github.com/antchfx/xpath v1.3.5 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
@@ -82,10 +83,10 @@ require (
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/crypto v0.44.0 // indirect
 	golang.org/x/oauth2 v0.25.0 // indirect
-	golang.org/x/term v0.32.0 // indirect
+	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
-	golang.org/x/tools v0.29.0 // indirect
+	golang.org/x/tools v0.38.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )

@@ -26,6 +26,8 @@ type ScanTask struct {
 	AutoBuildCount int
 
 	AutoBuildFailedCount int
+
+	ProjectLicense ProjectLicense
 }
 
 func (s *ScanTask) BuildInspectionTask(dir string) *InspectionTask {
