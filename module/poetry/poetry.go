@@ -205,6 +205,6 @@ func (t tomlTree) String(a ...string) string {
 }
 
 var EcoRepo = model.EcoRepo{
-	Ecosystem:  "pip",
+	Ecosystem:  "pypi",
 	Repository: "",
 }
