@@ -37,7 +37,8 @@ func processLockfileV3(data []byte) (r *model.DependencyItem, e error) {
 	}
 	var handler visitV3Handler[*model.DependencyItem] = func(theValue *model.DependencyItem, pred, succ [2]string, isDev bool, doNext func(nextValue *model.DependencyItem)) {
 		var dep = model.DependencyItem{
-			Component: model.Component{CompName: succ[0], CompVersion: succ[1], EcoRepo: EcoRepo},
+			Component:          model.Component{CompName: succ[0], CompVersion: succ[1], EcoRepo: EcoRepo},
+			DependencyRelation: model.DependencyRelationTransitive,
 		}
 		dep.IsOnline.SetOnline(!isDev)
 		doNext(&dep)
@@ -48,7 +49,7 @@ func processLockfileV3(data []byte) (r *model.DependencyItem, e error) {
 	rootNode.CompName = lockfile.Name
 	rootNode.CompVersion = lockfile.Version
 	for i := range rootNode.Dependencies {
-		rootNode.Dependencies[i].IsDirectDependency = true
+		rootNode.Dependencies[i].DependencyRelation = model.DependencyRelationDirect
 	}
 	return &rootNode, nil
 }

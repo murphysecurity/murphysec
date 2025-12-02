@@ -105,7 +105,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 						CompVersion: v,
 						EcoRepo:     EcoRepo,
 					},
-					IsDirectDependency: true,
+					DependencyRelation: model.DependencyRelationDirect,
 					IsOnline:           model.IsOnlineTrue(),
 				})
 			}
@@ -116,7 +116,7 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 						CompVersion: v,
 						EcoRepo:     EcoRepo,
 					},
-					IsDirectDependency: true,
+					DependencyRelation: model.DependencyRelationDirect,
 					IsOnline:           model.IsOnlineFalse(),
 				})
 			}

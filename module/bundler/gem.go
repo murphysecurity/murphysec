@@ -2,13 +2,14 @@ package bundler
 
 import (
 	"context"
+	"os"
+	"path/filepath"
+
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"os"
-	"path/filepath"
 )
 
 type Inspector struct{}
@@ -43,7 +44,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 					CompVersion: j.Version,
 					EcoRepo:     EcoRepo,
 				},
-				IsDirectDependency: true,
+				DependencyRelation: model.DependencyRelationDirect,
 			})
 		}
 		task.AddModule(model.Module{

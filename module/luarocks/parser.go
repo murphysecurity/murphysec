@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/luarocks/parser"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/repeale/fp-go"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 type ParsingErrors struct {
@@ -112,7 +113,7 @@ func analyzeTc(ctx context.Context, tc parser.ITableconstructorContext) []model.
 				CompVersion: value,
 				EcoRepo:     _EcoRepo,
 			},
-			IsDirectDependency: true,
+			DependencyRelation: model.DependencyRelationDirect,
 			IsOnline:           model.IsOnlineTrue(),
 		})
 	}

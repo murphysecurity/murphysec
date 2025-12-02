@@ -104,7 +104,7 @@ func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
 	}
 	for i := range module.Dependencies {
 		module.Dependencies[i].IsOnline.SetOnline(false)
-		module.Dependencies[i].IsDirectDependency = true
+		module.Dependencies[i].DependencyRelation = model.DependencyRelationDirect
 		module.Dependencies[i].EcoRepo.Repository = module.PackageManager
 	}
 	task.Modules = append(task.Modules, *module)

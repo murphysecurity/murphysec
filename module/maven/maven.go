@@ -118,7 +118,7 @@ func convDeps(deps []Dependency) []model.DependencyItem {
 		if d == nil {
 			continue
 		}
-		d.IsDirectDependency = true
+		d.DependencyRelation = model.DependencyRelationDirect
 		rs = append(rs, *d)
 	}
 	return rs
@@ -134,8 +134,9 @@ func _convDep(dep Dependency) *model.DependencyItem {
 			CompVersion: dep.Version,
 			EcoRepo:     EcoRepo,
 		},
-		IsOnline:   model.IsOnlineTrue(),
-		MavenScope: dep.Scope,
+		IsOnline:           model.IsOnlineTrue(),
+		MavenScope:         dep.Scope,
+		DependencyRelation: model.DependencyRelationTransitive,
 	}
 	if d.MavenScope == "test" || d.MavenScope == "provided" || d.MavenScope == "system" {
 		d.IsOnline.SetOnline(false)

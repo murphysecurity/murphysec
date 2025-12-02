@@ -2,16 +2,17 @@ package arkts
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils"
-	"github.com/samber/lo"
-	"github.com/titanous/json5"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/samber/lo"
+	"github.com/titanous/json5"
 )
 
 const (
@@ -77,7 +78,7 @@ func _buildDepTreeVisit(visited map[[2]string]struct{}, next [2]string, root *lo
 			EcoRepo:     ecoRepo,
 		},
 		Dependencies:       nil,
-		IsDirectDependency: false,
+		DependencyRelation: model.DependencyRelationTransitive,
 	}
 
 	if _, ok := visited[next]; ok {
@@ -181,7 +182,7 @@ func analyze(ctx context.Context) (e error) {
 		m.Dependencies = append(m.Dependencies, _buildDepTreeVisit(map[[2]string]struct{}{}, it, &lock))
 	}
 	for i := range m.Dependencies {
-		m.Dependencies[i].IsDirectDependency = true
+		m.Dependencies[i].DependencyRelation = model.DependencyRelationDirect
 	}
 	task.AddModule(m)
 	return

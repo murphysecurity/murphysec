@@ -223,7 +223,7 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 						CompVersion: topLevelPackages.RequestedVersion,
 						EcoRepo:     EcoRepo,
 					},
-					IsDirectDependency: true,
+					DependencyRelation: model.DependencyRelationDirect,
 				})
 			}
 			for _, transitivePackages := range frameworks.TransitivePackages {
@@ -236,7 +236,7 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 						CompVersion: transitivePackages.ResolvedVersion,
 						EcoRepo:     EcoRepo,
 					},
-					IsDirectDependency: false,
+					DependencyRelation: model.DependencyRelationTransitive,
 				})
 			}
 		}

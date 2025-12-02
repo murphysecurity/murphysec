@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/antchfx/xmlquery"
-	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/antchfx/xmlquery"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
 )
 
 type Inspector struct{}
@@ -80,7 +81,7 @@ func readIvyXml(ctx context.Context, reader io.Reader) (*model.Module, error) {
 				EcoRepo:     EcoRepo,
 			},
 			IsOnline:           model.IsOnlineTrue(),
-			IsDirectDependency: true,
+			DependencyRelation: model.DependencyRelationDirect,
 		})
 	})
 	return &module, nil

@@ -2,12 +2,13 @@ package go_mod
 
 import (
 	"context"
+	"os"
+	"path/filepath"
+
 	"github.com/BurntSushi/toml"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"go.uber.org/zap"
-	"os"
-	"path/filepath"
 )
 
 type goPkgLock struct {
@@ -47,7 +48,7 @@ func parserGoPkgLock(ctx context.Context) error {
 				CompVersion: j.Version,
 				EcoRepo:     EcoRepo,
 			},
-			IsDirectDependency: true,
+			DependencyRelation: model.DependencyRelationDirect,
 		})
 	}
 

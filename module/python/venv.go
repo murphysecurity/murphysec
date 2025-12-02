@@ -5,14 +5,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/murphysecurity/murphysec/env"
-	"github.com/murphysecurity/murphysec/model"
-	"go.uber.org/zap"
-	"golang.org/x/net/context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+
+	"github.com/murphysecurity/murphysec/env"
+	"github.com/murphysecurity/murphysec/model"
+	"go.uber.org/zap"
+	"golang.org/x/net/context"
 )
 
 const pipConf = `[global]
@@ -232,9 +233,9 @@ func updatePackage(dir string, logger *zap.SugaredLogger, k, v string) {
 	logger.Debug("update pip install success :" + k + "==" + v)
 }
 func buildTree(pipdeptree PipdeptreeStruct, level int) model.DependencyItem {
-	directDependency := false
+	directDependency := model.DependencyRelationTransitive
 	if level == 0 {
-		directDependency = true
+		directDependency = model.DependencyRelationDirect
 	}
 	var mod = model.DependencyItem{
 		Component: model.Component{
@@ -242,7 +243,7 @@ func buildTree(pipdeptree PipdeptreeStruct, level int) model.DependencyItem {
 			CompVersion: pipdeptree.InstalledVersion,
 			EcoRepo:     EcoRepo,
 		},
-		IsDirectDependency: directDependency,
+		DependencyRelation: directDependency,
 	}
 	for _, i := range pipdeptree.Dependencies {
 		mod.Dependencies = append(mod.Dependencies, buildTree(i, level+1))
@@ -269,7 +270,7 @@ func directDependenceSurvival(mod *[]model.DependencyItem, nvMp map[string]strin
 					CompVersion: v,
 					EcoRepo:     EcoRepo,
 				},
-				IsDirectDependency: true,
+				DependencyRelation: model.DependencyRelationDirect,
 			})
 		}
 	}

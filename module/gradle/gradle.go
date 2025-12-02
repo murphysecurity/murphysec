@@ -154,7 +154,7 @@ func (g *GradleDependencyInfo) BaseModule(basePath string) model.Module {
 func convDep(input []DepElement) []model.DependencyItem {
 	var r = _convDep(input)
 	for i := range r {
-		r[i].IsDirectDependency = true
+		r[i].DependencyRelation = model.DependencyRelationDirect
 	}
 	return r
 }
@@ -168,7 +168,8 @@ func _convDep(input []DepElement) []model.DependencyItem {
 				CompVersion: it.Version,
 				EcoRepo:     EcoRepo,
 			},
-			Dependencies: _convDep(it.Children),
+			Dependencies:       _convDep(it.Children),
+			DependencyRelation: model.DependencyRelationTransitive,
 		})
 	}
 	return rs

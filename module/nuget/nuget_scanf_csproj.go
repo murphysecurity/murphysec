@@ -3,14 +3,15 @@ package nuget
 import (
 	"context"
 	"encoding/xml"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/infra/pathignore"
-	"github.com/murphysecurity/murphysec/model"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/infra/pathignore"
+	"github.com/murphysecurity/murphysec/model"
 )
 
 func noBuildEntrance(ctx context.Context, task *model.InspectionTask, doOld *bool) error {
@@ -92,7 +93,7 @@ func analysis(ctx context.Context, path string) (result []model.DependencyItem, 
 				CompVersion: pkgRef.Version,
 				EcoRepo:     EcoRepo,
 			},
-			IsDirectDependency: true,
+			DependencyRelation: model.DependencyRelationDirect,
 		})
 	}
 	return

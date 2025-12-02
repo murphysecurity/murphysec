@@ -2,10 +2,11 @@ package yarn
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/model"
 	"os"
 	"path/filepath"
+
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/model"
 )
 
 var EcoRepo = model.EcoRepo{
@@ -22,7 +23,7 @@ type Dep struct {
 func mapToModel(deps []Dep) []model.DependencyItem {
 	r := _mapToModel(deps)
 	for i := range r {
-		r[i].IsDirectDependency = true
+		r[i].DependencyRelation = model.DependencyRelationDirect
 		r[i].IsOnline.SetOnline(false)
 	}
 	return r
@@ -36,7 +37,8 @@ func _mapToModel(deps []Dep) []model.DependencyItem {
 				CompVersion: deps[i].Version,
 				EcoRepo:     EcoRepo,
 			},
-			Dependencies: _mapToModel(deps[i].Children),
+			Dependencies:       _mapToModel(deps[i].Children),
+			DependencyRelation: model.DependencyRelationTransitive,
 		}
 	}
 	return r

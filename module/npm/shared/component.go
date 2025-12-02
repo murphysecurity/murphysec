@@ -2,6 +2,7 @@ package shared
 
 import (
 	"fmt"
+
 	"github.com/murphysecurity/murphysec/model"
 )
 
@@ -29,7 +30,7 @@ func CreateDependencyNotFoundError(name, version string) error {
 func ConvNodes(input []*Node) []model.DependencyItem {
 	var r = _ConvNodes0(input)
 	for i := range r {
-		r[i].IsDirectDependency = true
+		r[i].DependencyRelation = model.DependencyRelationDirect
 	}
 	return r
 }
@@ -43,8 +44,9 @@ func _ConvNodes0(input []*Node) []model.DependencyItem {
 				CompVersion: node.Version,
 				EcoRepo:     EcoRepo,
 			},
-			Dependencies: _ConvNodes0(node.Children),
-			IsOnline:     node.IsOnline,
+			Dependencies:       _ConvNodes0(node.Children),
+			IsOnline:           node.IsOnline,
+			DependencyRelation: model.DependencyRelationTransitive,
 		}
 		if node.Dev {
 			d.IsOnline.SetOnline(false)

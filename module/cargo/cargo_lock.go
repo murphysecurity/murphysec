@@ -2,12 +2,13 @@ package cargo
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils/simpletoml"
 	"github.com/repeale/fp-go"
 	"github.com/samber/lo"
 	"golang.org/x/exp/maps"
-	"strings"
 )
 
 func splitNameVersionFromDepLine(line string) (name, version string) {
@@ -98,7 +99,7 @@ func analyzeCargoLock(input []byte) (rs []*model.DependencyItem, err error) {
 		if r == nil {
 			continue
 		}
-		r.IsDirectDependency = true
+		r.DependencyRelation = model.DependencyRelationDirect
 		rs = append(rs, r)
 	}
 	return
@@ -116,6 +117,7 @@ func _buildTree(lock map[[2]string][][2]string, key [2]string, visited map[[2]st
 			CompVersion: key[1],
 			EcoRepo:     EcoRepo,
 		},
+		DependencyRelation: model.DependencyRelationTransitive,
 	}
 	if _, ok := visited[key]; ok {
 		return r

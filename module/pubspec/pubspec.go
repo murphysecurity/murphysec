@@ -66,14 +66,15 @@ func parseFile(ctx context.Context, reader io.Reader) (r []model.DependencyItem,
 					Ecosystem: "pubspec",
 				},
 			},
-			IsOnline: model.IsOnlineTrue(),
+			IsOnline:           model.IsOnlineTrue(),
+			DependencyRelation: model.DependencyRelationTransitive,
 		}
 		for _, flag := range strings.Split(it.Value.Dependency, " ") {
 			switch flag {
 			case "dev":
 				dep.IsOnline.SetOnline(false)
 			case "direct":
-				dep.IsDirectDependency = true
+				dep.DependencyRelation = model.DependencyRelationDirect
 			}
 		}
 		return dep

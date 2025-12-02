@@ -91,7 +91,7 @@ func buildScan(ctx context.Context) error {
 				CompVersion: nameVersionMp[j],
 				EcoRepo:     EcoRepo,
 			},
-			IsDirectDependency: true,
+			DependencyRelation: model.DependencyRelationDirect,
 		}
 		logger.Debug("buildTree  start : " + j)
 		dependencies = append(dependencies, buildingDependencyTree(nameVersionMp, &dependencie, sonTree, &packageToPackageUsed, logger))
@@ -124,11 +124,11 @@ func buildingDependencyTree(dInfo map[string]string, d *model.DependencyItem, so
 						CompVersion: dInfo[j],
 						EcoRepo:     EcoRepo,
 					},
-					IsDirectDependency: false,
+					DependencyRelation: model.DependencyRelationTransitive,
 				}
 				(*packageToPackageUsed)[d.CompName] = append((*packageToPackageUsed)[d.CompName], j)
 				t := buildingDependencyTree(dInfo, &mod, sonTree, packageToPackageUsed, logger)
-				t.IsDirectDependency = false
+				t.DependencyRelation = model.DependencyRelationTransitive
 				d.Dependencies = append(d.Dependencies, t)
 			}
 		}
@@ -365,9 +365,9 @@ func baseScan(ctx context.Context) error {
 		}
 		modName := file.Module.Mod.Path
 		for _, req := range file.Require {
-			isDirectDependency := true
+			isDirectDependency := model.DependencyRelationDirect
 			if _, ok := indirectMp[req.Mod.Path]; ok {
-				isDirectDependency = false
+				isDirectDependency = model.DependencyRelationTransitive
 			}
 			dependencies = append(dependencies, model.DependencyItem{
 				Component: model.Component{
@@ -375,7 +375,7 @@ func baseScan(ctx context.Context) error {
 					CompVersion: req.Mod.Version,
 					EcoRepo:     EcoRepo,
 				},
-				IsDirectDependency: isDirectDependency,
+				DependencyRelation: isDirectDependency,
 				IsOnline:           model.IsOnline{Value: true, Valid: true},
 			})
 		}
