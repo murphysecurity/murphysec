@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"errors"
-	"io/fs"
 	"os"
 	"path/filepath"
 )
@@ -11,7 +9,7 @@ func IsPathExist(path string) bool {
 	var err error
 	_, err = os.Stat(path)
 	if err != nil {
-		return errors.Is(err, fs.ErrExist)
+		return false
 	}
 	return true
 }
