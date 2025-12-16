@@ -2,14 +2,17 @@ package yarn
 
 import (
 	"context"
-	"github.com/iseki0/go-yarnlock"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/module/pkgjs"
-	"github.com/pkg/errors"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
+
+	"github.com/iseki0/go-yarnlock"
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/module/pkgjs"
+	"github.com/murphysecurity/murphysec/module/pnpm/shared"
+	"github.com/pkg/errors"
 )
 
 func readModuleName(dir string) (string, string) {
@@ -43,7 +46,7 @@ func yarnFallback(dir string) ([]Dep, error) {
 	return rs, nil
 }
 
-func analyzeYarnDep(ctx context.Context, dir string) ([]Dep, error) {
+func analyzeYarnDep(ctx context.Context, dir string) (r []Dep, e error) {
 	var logger = logctx.Use(ctx).Sugar()
 	f, e := os.Open(filepath.Join(dir, "yarn.lock"))
 	if e != nil {
@@ -55,7 +58,15 @@ func analyzeYarnDep(ctx context.Context, dir string) ([]Dep, error) {
 	if e != nil {
 		return nil, errors.Wrap(e, "Read yarn.lock failed.")
 	}
-	lockfile, e := yarnlock.ParseLockFileData(data)
+	var lockfile yarnlock.LockFile
+	var newLock = false
+	if strings.Contains(string(data), "__metadata:") {
+		lockfile, e = parseYarnLockYaml(string(data))
+		delete(lockfile, "__metadata")
+		newLock = true
+	} else {
+		lockfile, e = yarnlock.ParseLockFileData(data)
+	}
 	if e != nil {
 		return nil, errors.Wrap(e, "Parse lockfile failed.")
 	}
@@ -63,7 +74,37 @@ func analyzeYarnDep(ctx context.Context, dir string) ([]Dep, error) {
 	if e != nil {
 		return nil, e
 	}
+	if newLock {
+		for name, ver := range pkg.Dependencies {
+			pkg.Dependencies[name] = "npm:" + ver
+		}
+		for name, ver := range pkg.DevDependencies {
+			pkg.DevDependencies[name] = "npm:" + ver
+		}
+	}
 	return buildDepTree(lockfile, pkg), nil
+}
+
+func parseYarnLockYaml(text string) (r yarnlock.LockFile, e error) {
+	type Element struct {
+		Version      string            `yaml:"version"`
+		Dependencies map[string]string `yaml:"dependencies"`
+	}
+	var pkgs map[string]Element
+	e = shared.ParseYaml([]byte(text), &pkgs)
+	if e != nil {
+		return
+	}
+	r = make(yarnlock.LockFile)
+	for key, value := range pkgs {
+		for keyEl := range strings.SplitSeq(key, ", ") {
+			r[keyEl] = yarnlock.LockFileEntry{
+				Version:      value.Version,
+				Dependencies: value.Dependencies,
+			}
+		}
+	}
+	return
 }
 
 func buildDepTree(lkFile yarnlock.LockFile, pkg *pkgjs.Pkg) []Dep {
