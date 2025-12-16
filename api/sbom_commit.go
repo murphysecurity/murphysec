@@ -18,6 +18,11 @@ func SubmitSBOM(ctx context.Context, client *Client) error {
 	task := model.UseScanTask(ctx)
 	var subtaskId = task.SubtaskId
 	var modules = task.Modules
+	for i := range modules {
+		for j := range modules[i].Dependencies {
+			modules[i].Dependencies[j].Postprocess()
+		}
+	}
 	var codeFragments = task.CodeFragments
 	must.NotZero(subtaskId)
 	var req = map[string]any{
