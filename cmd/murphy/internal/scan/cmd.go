@@ -412,6 +412,11 @@ func reportIdeError(ctx context.Context, status model.IDEStatus, e error) {
 }
 
 func doSBOMOnlyPrint(ctx context.Context, task *model.ScanTask) {
+	for i := range task.Modules {
+		for j := range task.Modules[i].Dependencies {
+			task.Modules[i].Dependencies[j].Postprocess()
+		}
+	}
 	var logger = logctx.Use(ctx)
 	_ = logger.Sync()
 	if sbomOutputConfig == "" {
