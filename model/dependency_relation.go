@@ -29,6 +29,7 @@ func (i *DependencyRelation) UnmarshalText(text []byte) error {
 }
 
 const (
+	DependencyRelationEmptyStr   DependencyRelation = 0 //
 	DependencyRelationUnknown    DependencyRelation = 1 // Unknown
 	DependencyRelationDirect     DependencyRelation = 2 // Direct
 	DependencyRelationTransitive DependencyRelation = 3 // Transitive

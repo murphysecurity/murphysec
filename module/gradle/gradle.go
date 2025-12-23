@@ -353,6 +353,9 @@ func decodeGradleScriptOutput(ctx context.Context, reader io.Reader, dir string)
 			ScanStrategy:   model.ScanStrategyNormal,
 			ModulePath:     path.Join(filepath.Join(dir, "../../build.gradle"), ":"+configuration.Configuration),
 		}
+		for i := range module.Dependencies {
+			module.Dependencies[i].DependencyRelation = model.DependencyRelationDirect
+		}
 		modules = append(modules, module)
 	}
 	return
@@ -382,7 +385,8 @@ func (d dtoItem) toItem(online model.IsOnline) model.DependencyItem {
 			CompVersion: d.Version,
 			EcoRepo:     EcoRepo,
 		},
-		Dependencies: fp.Map(func(t dtoItem) model.DependencyItem { return t.toItem(online) })(d.Children),
-		IsOnline:     online,
+		Dependencies:       fp.Map(func(t dtoItem) model.DependencyItem { return t.toItem(online) })(d.Children),
+		IsOnline:           online,
+		DependencyRelation: model.DependencyRelationTransitive,
 	}
 }

@@ -8,6 +8,7 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
+	_ = x[DependencyRelationEmptyStr-0]
 	_ = x[DependencyRelationUnknown-1]
 	_ = x[DependencyRelationDirect-2]
 	_ = x[DependencyRelationTransitive-3]
@@ -15,12 +16,11 @@ func _() {
 
 const _DependencyRelation_name = "UnknownDirectTransitive"
 
-var _DependencyRelation_index = [...]uint8{0, 7, 13, 23}
+var _DependencyRelation_index = [...]uint8{0, 0, 7, 13, 23}
 
 func (i DependencyRelation) String() string {
-	i -= 1
 	if i < 0 || i >= DependencyRelation(len(_DependencyRelation_index)-1) {
-		return "DependencyRelation(" + strconv.FormatInt(int64(i+1), 10) + ")"
+		return "DependencyRelation(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 	return _DependencyRelation_name[_DependencyRelation_index[i]:_DependencyRelation_index[i+1]]
 }
