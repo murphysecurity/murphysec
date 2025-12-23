@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/module/gradle/bundle"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/module/gradle/bundle"
 )
 
 //goland:noinspection GoNameStartsWithPackageName
@@ -51,16 +52,15 @@ func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 		r.Path, r.JavaHome = bundle.FindOkVersion(gwv)
 		log.Infof("use bundled gradle: %v", r.Path)
 		log.Infof("use bundled java: %v", r.JavaHome)
+	} else if os.Getenv("MPS_BUNDLED_JAVA") == "1" {
+		r.JavaHome = bundle.SelectJavaHome(gwv)
+		log.Infof("use bundled Java eval gradle version(from wrapper): %s", r.JavaHome)
+	}
+	if r.Path != "" {
 		return r, nil
 	}
-	var chosenJavaHome string
-	if os.Getenv("MPS_BUNDLED_JAVA") == "1" {
-		chosenJavaHome = bundle.SelectJavaHome(gwv)
-		r.JavaHome = chosenJavaHome
-		log.Infof("use bundled Java eval gradle version(from wrapper): %s", chosenJavaHome)
-	}
 	if script := prepareGradleWrapperScriptFile(ctx, dir); script != "" {
-		gv, e := evalVersion(ctx, script, chosenJavaHome)
+		gv, e := evalVersion(ctx, script, r.JavaHome)
 		if e == nil {
 			r.Version = *gv
 			r.Path = script
