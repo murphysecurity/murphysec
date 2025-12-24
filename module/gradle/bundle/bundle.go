@@ -1,12 +1,14 @@
 package bundle
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
 	"github.com/Masterminds/semver"
+	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/samber/lo"
 	"golang.org/x/exp/slices"
@@ -26,7 +28,7 @@ const defaultGradlePath = "/opt/gradle"
 
 func List() []Item {
 	once.Do(func() {
-		var addPath = func(it os.DirEntry) {
+		var addPath = func(basePath string, it os.DirEntry) {
 			if !it.IsDir() {
 				return
 			}
@@ -35,23 +37,21 @@ func List() []Item {
 			if e != nil {
 				return
 			}
-			var item = Item{Version: ver, Path: filepath.Join(defaultGradlePath, name)}
+			var item = Item{Version: ver, Path: filepath.Join(basePath, name)}
 			list = append(list, item)
 		}
 		dir, e := os.ReadDir(defaultGradlePath)
-		if e != nil {
-			return
-		}
-		for _, it := range dir {
-			addPath(it)
+		if e == nil {
+			for _, it := range dir {
+				addPath(defaultGradlePath, it)
+			}
 		}
 		dir, e = os.ReadDir("/opt")
-		if e != nil {
-			return
-		}
-		for _, it := range dir {
-			if strings.HasPrefix(it.Name(), "gradle-") {
-				addPath(it)
+		if e == nil {
+			for _, it := range dir {
+				if strings.HasPrefix(it.Name(), "gradle-") {
+					addPath("/opt", it)
+				}
 			}
 		}
 		slices.SortFunc(list, func(a, b Item) int { return a.Version.Compare(b.Version) })
@@ -61,12 +61,16 @@ func List() []Item {
 	return _list
 }
 
-func FindOkVersion(gradleVersion string) (selectedGradleBinPath, selectedJavaHome string) {
+func FindOkVersion(ctx context.Context, gradleVersion string) (selectedGradleBinPath, selectedJavaHome string) {
+	var logger = logctx.Use(ctx)
 	gradleParsedVersion, e := semver.NewVersion(gradleVersion)
 	if e != nil {
+		logger.Sugar().Warnf("cannot parse gradle version: %s", gradleVersion)
 		return
 	}
-	r, _, ok := lo.FindLastIndexOf(List(), func(it Item) bool {
+	items := List()
+	logger.Sugar().Debugf("total %d gradle versions found", len(items))
+	r, _, ok := lo.FindLastIndexOf(items, func(it Item) bool {
 		return it.Version.Major() == gradleParsedVersion.Major() &&
 			it.Version.Minor() == gradleParsedVersion.Minor()
 	})

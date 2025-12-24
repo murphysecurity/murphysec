@@ -49,7 +49,7 @@ func DetectGradleEnv(ctx context.Context, dir string) (*GradleEnv, error) {
 			log.Info("use default gradle version")
 			gwv = "8.6"
 		}
-		r.Path, r.JavaHome = bundle.FindOkVersion(gwv)
+		r.Path, r.JavaHome = bundle.FindOkVersion(ctx, gwv)
 		log.Infof("use bundled gradle: %v", r.Path)
 		log.Infof("use bundled java: %v", r.JavaHome)
 	} else if os.Getenv("MPS_BUNDLED_JAVA") == "1" {
