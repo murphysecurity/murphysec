@@ -1,13 +1,15 @@
 package bundle
 
 import (
-	"github.com/Masterminds/semver"
-	"github.com/samber/lo"
-	"golang.org/x/exp/slices"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/Masterminds/semver"
+	"github.com/murphysecurity/murphysec/utils"
+	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
 )
 
 type Item struct {
@@ -24,21 +26,33 @@ const defaultGradlePath = "/opt/gradle"
 
 func List() []Item {
 	once.Do(func() {
+		var addPath = func(it os.DirEntry) {
+			if !it.IsDir() {
+				return
+			}
+			var name = it.Name()
+			ver, e := semver.NewVersion(strings.TrimPrefix(name, "gradle-"))
+			if e != nil {
+				return
+			}
+			var item = Item{Version: ver, Path: filepath.Join(defaultGradlePath, name)}
+			list = append(list, item)
+		}
 		dir, e := os.ReadDir(defaultGradlePath)
 		if e != nil {
 			return
 		}
 		for _, it := range dir {
-			if !it.IsDir() {
-				continue
+			addPath(it)
+		}
+		dir, e = os.ReadDir("/opt")
+		if e != nil {
+			return
+		}
+		for _, it := range dir {
+			if strings.HasPrefix(it.Name(), "gradle-") {
+				addPath(it)
 			}
-			var name = it.Name()
-			ver, e := semver.NewVersion(strings.TrimPrefix(name, "gradle-"))
-			if e != nil {
-				continue
-			}
-			var item = Item{Version: ver, Path: filepath.Join(defaultGradlePath, name)}
-			list = append(list, item)
 		}
 		slices.SortFunc(list, func(a, b Item) int { return a.Version.Compare(b.Version) })
 	})
@@ -60,41 +74,53 @@ func FindOkVersion(gradleVersion string) (selectedGradleBinPath, selectedJavaHom
 		return
 	}
 	selectedGradleBinPath = filepath.Join(r.Path, "bin", "gradle")
-	selectedJavaHome = selectJavaVersionOnly(gradleParsedVersion)
-	selectedJavaHome = filepath.Join("/opt/openjdk", selectedJavaHome)
+	selectedJavaHome = SelectJavaHome(gradleVersion)
 	return
 }
 
+var java8Paths = []string{"/opt/java/8", "/opt/openjdk/jdk8u402-b06"}
+var java11Paths = []string{"/opt/java/11", "/opt/openjdk/jdk-11.0.22+7"}
+var java17Paths = []string{"/opt/java/17", "/opt/openjdk/jdk-17.0.10+7"}
+var java21Paths = []string{"/opt/java/21", "/opt/openjdk/jdk-21.0.2+13"}
+var java24Paths = []string{"/opt/java/24", "/opt/openjdk/jdk-24.0.1"}
+
 func SelectJavaHome(gradleVersion string) string {
-	var parsed, e = semver.NewVersion(gradleVersion)
+	parsedVersion, e := semver.NewVersion(gradleVersion)
 	if e != nil {
 		return ""
 	}
-	return filepath.Join(selectJavaVersionOnly(parsed))
+	var javaHome []string
+	if parsedVersion.Compare(_GradleVersionFirstTimeAllowJavaWith2XVersionNumber) < 0 {
+		javaHome = java8Paths
+	} else if parsedVersion.Compare(_GradleVersionFirstTimeSupportJdk17) < 0 {
+		javaHome = java11Paths
+	} else if parsedVersion.Compare(_GradleVersionFirstTimeSupportJdk21) < 0 {
+		javaHome = java17Paths
+	} else if parsedVersion.Compare(_GradleVersionFirstTimeSupportJdk24) < 0 {
+		javaHome = java21Paths
+	} else {
+		java24Exists := false
+		for _, it := range java24Paths {
+			if utils.IsDir(it) {
+				java24Exists = true
+				break
+			}
+		}
+		if java24Exists {
+			javaHome = java24Paths
+		} else {
+			javaHome = java21Paths
+		}
+	}
+	for _, p := range javaHome {
+		if utils.IsDir(p) {
+			return p
+		}
+	}
+	return ""
 }
-
-const (
-	jdk8  = "jdk8u402-b06"
-	jdk11 = "jdk-11.0.22+7"
-	jdk17 = "jdk-17.0.10+7"
-	jdk21 = "jdk-21.0.2+13"
-	jdk24 = "jdk-24.0.1"
-)
 
 var _GradleVersionFirstTimeAllowJavaWith2XVersionNumber = semver.MustParse("4.7")
 var _GradleVersionFirstTimeSupportJdk17 = semver.MustParse("7.3.3")
 var _GradleVersionFirstTimeSupportJdk21 = semver.MustParse("8.5")
 var _GradleVersionFirstTimeSupportJdk24 = semver.MustParse("8.14")
-
-func selectJavaVersionOnly(parsedVersion *semver.Version) string {
-	if parsedVersion.Compare(_GradleVersionFirstTimeAllowJavaWith2XVersionNumber) < 0 {
-		return jdk8
-	} else if parsedVersion.Compare(_GradleVersionFirstTimeSupportJdk17) < 0 {
-		return jdk11
-	} else if parsedVersion.Compare(_GradleVersionFirstTimeSupportJdk21) < 0 {
-		return jdk17
-	} else if parsedVersion.Compare(_GradleVersionFirstTimeSupportJdk24) < 0 {
-		return jdk21
-	}
-	return jdk24
-}
