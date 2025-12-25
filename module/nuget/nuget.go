@@ -38,6 +38,9 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		} else {
 			e = noBuildEntrance(ctx, task, &doOld)
 		}
+	} else {
+		logger.Warn("multipleBuilds no build")
+		e = noBuildEntrance(ctx, task, &doOld)
 	}
 	if e != nil {
 		logger.Sugar().Error(e)

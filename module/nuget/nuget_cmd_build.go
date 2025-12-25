@@ -212,11 +212,22 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 	for _, projects := range packageInfo.Projects {
 		var result []model.DependencyItem
 		moduleName := filepath.Base(projects.Path)
+		// 使用 map 跟踪已出现的小写包名+版本号组合，避免重复添加
+		seenPackages := make(map[string]bool)
+
 		for _, frameworks := range projects.Frameworks {
 			for _, topLevelPackages := range frameworks.TopLevelPackages {
 				if topLevelPackages.Id == "" {
 					continue
 				}
+				// 将包名和版本号组合转为小写进行去重检查
+				key := strings.ToLower(topLevelPackages.Id) + ":" + topLevelPackages.RequestedVersion
+				if seenPackages[key] {
+					// 如果已经存在相同的小写名称和版本号组合，跳过
+					continue
+				}
+				// 标记为已出现，并添加到结果中
+				seenPackages[key] = true
 				result = append(result, model.DependencyItem{
 					Component: model.Component{
 						CompName:    topLevelPackages.Id,
@@ -230,6 +241,14 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 				if transitivePackages.Id == "" {
 					continue
 				}
+				// 将包名和版本号组合转为小写进行去重检查
+				key := strings.ToLower(transitivePackages.Id) + ":" + transitivePackages.ResolvedVersion
+				if seenPackages[key] {
+					// 如果已经存在相同的小写名称和版本号组合，跳过
+					continue
+				}
+				// 标记为已出现，并添加到结果中
+				seenPackages[key] = true
 				result = append(result, model.DependencyItem{
 					Component: model.Component{
 						CompName:    transitivePackages.Id,

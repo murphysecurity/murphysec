@@ -83,10 +83,21 @@ func analysis(ctx context.Context, path string) (result []model.DependencyItem, 
 		proj.PackageRefs = append(proj.PackageRefs, mod)
 
 	}
+	// 使用 map 跟踪已出现的小写包名+版本号组合，避免重复添加
+	seenPackages := make(map[string]bool)
+
 	for _, pkgRef := range proj.PackageRefs {
 		if pkgRef.Include == "" {
 			continue
 		}
+		// 将包名和版本号组合转为小写进行去重检查
+		key := strings.ToLower(pkgRef.Include) + ":" + pkgRef.Version
+		if seenPackages[key] {
+			// 如果已经存在相同的小写名称和版本号组合，跳过
+			continue
+		}
+		// 标记为已出现，并添加到结果中
+		seenPackages[key] = true
 		result = append(result, model.DependencyItem{
 			Component: model.Component{
 				CompName:    pkgRef.Include,

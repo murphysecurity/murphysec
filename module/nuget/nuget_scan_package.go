@@ -12,6 +12,9 @@ import (
 
 func (this *PkgConfig) Deps() []model.DependencyItem {
 	var rs []model.DependencyItem
+	// 使用 map 跟踪已出现的小写包名+版本号组合，避免重复添加
+	seenPackages := make(map[string]bool)
+
 	for _, it := range this.Package {
 		if it.DevelopmentDependency {
 			continue
@@ -19,6 +22,15 @@ func (this *PkgConfig) Deps() []model.DependencyItem {
 		if it.Id == "" {
 			continue
 		}
+		// 将包名和版本号组合转为小写进行去重检查（使用原始版本号）
+		key := strings.ToLower(it.Id) + ":" + it.Version
+		if seenPackages[key] {
+			// 如果已经存在相同的小写名称和版本号组合，跳过
+			continue
+		}
+		// 标记为已出现
+		seenPackages[key] = true
+
 		d := model.DependencyItem{
 			Component: model.Component{
 				CompName:    it.Id,
