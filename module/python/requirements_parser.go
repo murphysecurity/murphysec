@@ -1,26 +1,31 @@
 package python
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/dlclark/regexp2"
 	"github.com/murphysecurity/murphysec/utils/must"
 	"github.com/repeale/fp-go"
-	"regexp"
-	"strings"
 )
 
 const pyName = `(?:[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9]|[A-Za-z0-9])`
-const pyVersion = `(?:[A-Za-z0-9_.!-]+)`
+const pyVersion = `(?:[A-Za-z0-9_.!+-]+)`
 const pyVersionOp = `(?<![=!<>])(?:=|<=|==|>=|===)`
 const pyVersionSeg = pyVersionOp + `\s*['""]?(` + pyVersion + `)`
 
 var pyVersionSegPattern = regexp2.MustCompile(pyVersionSeg, regexp2.Compiled)
 var pyNamePrefixPattern = regexp.MustCompile("^" + pyName)
+var pyArgumentPattern = regexp2.MustCompile(`(?<=^| )--?[^ ]+`, regexp2.Compiled)
 
 func parseRequirements(data string) map[string]string {
 	var lines []string
 	var lineContinuation = false
-	for _, s := range fp.Map(func(s string) string { return strings.TrimRight(s, "\r") })(strings.Split(data, "\n")) {
+	for _, s := range strings.Split(data, "\n") {
 		s = strings.TrimRight(s, "\r")
+		if i := strings.IndexRune(s, '#'); i > -1 {
+			s = s[:i]
+		}
 		var currentLine = strings.TrimSuffix(s, "\\")
 		if lineContinuation {
 			lines[len(lines)-1] = lines[len(lines)-1] + currentLine
@@ -29,13 +34,6 @@ func parseRequirements(data string) map[string]string {
 		}
 		lineContinuation = strings.HasSuffix(s, "\\")
 	}
-	lines = fp.Map(func(t string) string {
-		var i = strings.IndexRune(t, '#')
-		if i > -1 {
-			return t[:i]
-		}
-		return t
-	})(lines)
 	lines = fp.Map(func(t string) string { return strings.TrimSpace(t) })(lines)
 	lines = fp.Filter(func(t string) bool { return t != "" })(lines)
 
@@ -46,6 +44,7 @@ func parseRequirements(data string) map[string]string {
 			line = line[:i]
 		}
 		line = strings.TrimSpace(line)
+		line = must.A(pyArgumentPattern.Replace(line, "", -1, -1))
 		name := pyNamePrefixPattern.FindString(line)
 		if name == "" {
 			continue
