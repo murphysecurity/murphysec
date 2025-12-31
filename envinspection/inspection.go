@@ -102,10 +102,15 @@ func inspectInstalledSoftware(ctx context.Context, module *model.Module) {
 			Content: fmt.Sprintf("no command found for %s", runtime.GOOS),
 		})
 	}
+	var ecosystem = runtime.GOOS
+	if ecosystem != "linux" && ecosystem != "windows" {
+		ecosystem = "generic"
+	}
 	for i := range module.Dependencies {
 		module.Dependencies[i].IsOnline.SetOnline(false)
 		module.Dependencies[i].DependencyRelation = model.DependencyRelationDirect
 		module.Dependencies[i].EcoRepo.Repository = module.PackageManager
+		module.Dependencies[i].EcoRepo.Ecosystem = ecosystem
 	}
 	task.Modules = append(task.Modules, *module)
 }
