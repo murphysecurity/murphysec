@@ -66,15 +66,24 @@ func getWindowsVersion() model.Component {
 }
 
 func listInstalledSoftwareWindows(ctx context.Context) ([]model.DependencyItem, error) {
-	var rKeys = []registry.Key{registry.CURRENT_USER, registry.LOCAL_MACHINE}
+	var logger = logctx.Use(ctx).Sugar()
+	var searchDirs = []struct {
+		Key  registry.Key
+		Path string
+	}{
+		{registry.LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"},
+		{registry.CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"},
+		{registry.LOCAL_MACHINE, "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"},
+		{registry.CURRENT_USER, "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"},
+	}
 	var r []model.DependencyItem
-	for _, rKey := range rKeys {
-		paths, e := listSubKeys(ctx, rKey, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+	for _, rKey := range searchDirs {
+		paths, e := listSubKeys(ctx, rKey.Key, rKey.Path)
 		if e != nil {
 			return nil, e
 		}
 		for _, p := range paths {
-			k, e := registry.OpenKey(rKey, p, registry.READ)
+			k, e := registry.OpenKey(rKey.Key, p, registry.READ)
 			if e != nil {
 				continue
 			}
@@ -91,6 +100,45 @@ func listInstalledSoftwareWindows(ctx context.Context) ([]model.DependencyItem, 
 				},
 			})
 		}
+	}
+	cmd := exec.CommandContext(ctx, "powershell")
+	cmd.Stdin = bytes.NewReader([]byte(`
+Get-AppxPackage | Select-Object @{Name="Name";Expression={ "[APPX] " + $_.Name }}, Version
+
+`))
+	var output bytes.Buffer
+	cmd.Stdout = &output
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	e := cmd.Run()
+	if e != nil {
+		logger.Errorf("powershell failed: %s", e)
+		return r, nil
+	}
+	stdoutBytes := output.Bytes()
+	stderrBytes := stderr.Bytes()
+	converter := consoleDecoder()
+	if converter != nil {
+		stdoutBytes, _ = converter.Bytes(stdoutBytes)
+		stderrBytes, _ = converter.Bytes(stderrBytes)
+	}
+	stderrText := strings.TrimSpace(string(stderrBytes))
+	if stderrText != "" {
+		logger.Errorf("powershell failed: %s", stderrText)
+	}
+	var pattern = regexp.MustCompile(`^\[APPX\] (\S+)\s*(\S+)`)
+	for line := range strings.SplitSeq(strings.TrimSpace(string(stdoutBytes)), "\n") {
+		line = strings.TrimSpace(line)
+		matches := pattern.FindStringSubmatch(line)
+		if matches == nil {
+			continue
+		}
+		r = append(r, model.DependencyItem{
+			Component: model.Component{
+				CompName:    matches[1],
+				CompVersion: matches[2],
+			},
+		})
 	}
 	return r, nil
 }
