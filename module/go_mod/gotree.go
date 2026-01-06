@@ -92,6 +92,7 @@ func buildScan(ctx context.Context) error {
 				EcoRepo:     EcoRepo,
 			},
 			DependencyRelation: model.DependencyRelationDirect,
+			IsDirectDependency: true,
 		}
 		logger.Debug("buildTree  start : " + j)
 		dependencies = append(dependencies, buildingDependencyTree(nameVersionMp, &dependencie, sonTree, &packageToPackageUsed, logger))

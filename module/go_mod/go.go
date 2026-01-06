@@ -4,6 +4,7 @@ import (
 	"context"
 	"path/filepath"
 
+	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/pkg/errors"
@@ -28,11 +29,14 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	if utils.IsFile(filepath.Join(task.Dir(), "go.mod")) {
 		// 新版本
 		if task.IsNoBuild() {
+			ui.Use(ctx).Display(ui.MsgWarn, "通过 go build获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://murphysec.com/docs/faqs/quick-start-for-beginners/programming-language-supported.html 了解详情")
+
 			if err := baseScan(ctx); err != nil {
 				return err
 			}
 		} else {
 			if err := buildScan(ctx); err != nil {
+				ui.Use(ctx).Display(ui.MsgWarn, "通过 go build获取依赖信息失败，可能会导致检测结果不完整或失败，访问 https://murphysec.com/docs/faqs/quick-start-for-beginners/programming-language-supported.html 了解详情")
 				if err := baseScan(ctx); err != nil {
 					return err
 				}
