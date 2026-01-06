@@ -3,15 +3,16 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"github.com/murphysecurity/murphysec/utils/must"
-	"github.com/murphysecurity/murphysec/version"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"net/url"
 	"path"
 	"reflect"
 	"strings"
+
+	"github.com/murphysecurity/murphysec/utils/must"
+	"github.com/murphysecurity/murphysec/version"
+	"go.uber.org/zap"
 )
 
 var _DefaultClient *Client
@@ -111,6 +112,14 @@ func (c *Client) GET(url *url.URL) *http.Request {
 
 func (c *Client) POST(url *url.URL, body io.Reader) *http.Request {
 	return must.A(http.NewRequest(http.MethodPost, url.String(), body))
+}
+
+func (c *Client) PostSpecialJson(url *url.URL, data any) *http.Request {
+	var body = NewGzippedBody(NewJsonRequestBody(data))
+	u := c.POST(url, body)
+	u.GetBody = body.GetBody
+	u.Header.Set("Content-Type", "application/vnd.murphysec.sbom.v1")
+	return u
 }
 
 func (c *Client) PostJson(url *url.URL, data any) *http.Request {

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 
 	"github.com/murphysecurity/murphysec/env"
@@ -40,5 +41,11 @@ func SubmitSBOM(ctx context.Context, client *Client) error {
 		must.M(bf.Flush())
 		must.M(f.Close())
 	}
-	return client.DoJson(client.PostJson(joinURL(client.baseUrl, "/platform3/v3/client/upload_data"), req), nil)
+	var body *http.Request
+	if task.MaxSbomVersion == "v1" {
+		body = client.PostSpecialJson(joinURL(client.baseUrl, "/platform3/v3/client/upload_data"), req)
+	} else {
+		body = client.PostJson(joinURL(client.baseUrl, "/platform3/v3/client/upload_data"), req)
+	}
+	return client.DoJson(body, nil)
 }

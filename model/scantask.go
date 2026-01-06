@@ -28,6 +28,8 @@ type ScanTask struct {
 	AutoBuildFailedCount int
 
 	ProjectLicense ProjectLicense
+
+	MaxSbomVersion string
 }
 
 func (s *ScanTask) BuildInspectionTask(dir string) *InspectionTask {

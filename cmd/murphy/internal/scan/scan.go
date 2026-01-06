@@ -79,6 +79,8 @@ func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 		TaskId:      createTaskResp.TaskID,
 		SubtaskId:   createTaskResp.SubtaskID,
 		SubtaskName: createSubtask.ProjectName,
+
+		MaxSbomVersion: createTaskResp.MaxSbomVersion,
 	}
 	ctx = model.WithScanTask(ctx, task)
 	e = envinspection.InspectEnv(ctx, scanProcess)
@@ -217,6 +219,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		IsNoBuild:       noBuild,
 		IsAutonomous:    scanCodeHash,
 		MavenModuleName: mavenModuleName,
+		MaxSbomVersion:  createTaskResp.MaxSbomVersion,
 	}
 	if gitSummary != nil {
 		task.GitUrl = gitSummary.RemoteAddr

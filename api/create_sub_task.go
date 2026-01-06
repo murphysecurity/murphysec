@@ -43,6 +43,8 @@ type CreateSubTaskResponse struct {
 	SubtaskID    string `json:"subtask_id"`    // 子任务ID
 	TaskName     string `json:"task_name"`     // 任务名称
 	AlertMessage string `json:"alert_message"`
+
+	MaxSbomVersion string `json:"max_sbom_version"`
 }
 
 func CreateSubTask(client *Client, request *CreateSubTaskRequest) (*CreateSubTaskResponse, error) {
