@@ -36,10 +36,13 @@ func (g *gzippedBody) GetBody() (io.ReadCloser, error) {
 }
 
 func (g *gzippedBody) Read(p []byte) (n int, err error) {
+	if len(p) == 0 {
+		return 0, nil
+	}
 	if g.gzipWriter == nil {
 		g.gzipWriter = gzip.NewWriter(&g.buf)
 	}
-	for g.buf.Available() == 0 {
+	for g.buf.Len() == 0 {
 		if g.end {
 			return 0, io.EOF
 		}
@@ -55,8 +58,11 @@ func (g *gzippedBody) Read(p []byte) (n int, err error) {
 			return 0, e
 		}
 	}
-
-	return g.reader.Read(p)
+	n, _ = g.buf.Read(p)
+	if n == 0 {
+		panic("n == 0")
+	}
+	return
 }
 
 func (g *gzippedBody) Close() error {
