@@ -80,7 +80,7 @@ func listInstalledSoftwareWindows(ctx context.Context) ([]model.DependencyItem, 
 	for _, rKey := range searchDirs {
 		paths, e := listSubKeys(ctx, rKey.Key, rKey.Path)
 		if e != nil {
-			return nil, e
+			continue
 		}
 		for _, p := range paths {
 			k, e := registry.OpenKey(rKey.Key, p, registry.READ)
