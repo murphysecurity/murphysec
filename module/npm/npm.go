@@ -91,39 +91,19 @@ func ScanNpmProject(ctx context.Context) ([]model.Module, error) {
 	module.ModuleVersion = packageFile.Version
 	lockfilePath := filepath.Join(dir, LockFileName)
 	if !utils.IsPathExist(lockfilePath) {
-		if env.DoNotBuild {
-			logger.Info("lockfile not found, and auto build is disabled, skip")
-			return make([]model.Module, 0), nil
-		}
 		e = doNpmInstallInDir(ctx, dir)
 		if errors.Is(e, autoBuildDisabled) {
 			logger.Warn("fallback to read package.json only")
-			for k, v := range packageFile.Dependencies {
-				module.Dependencies = append(module.Dependencies, model.DependencyItem{
-					Component: model.Component{
-						CompName:    k,
-						CompVersion: v,
-						EcoRepo:     EcoRepo,
-					},
-					DependencyRelation: model.DependencyRelationDirect,
-					IsOnline:           model.IsOnlineTrue(),
-				})
-			}
-			for k, v := range packageFile.DevDependencies {
-				module.Dependencies = append(module.Dependencies, model.DependencyItem{
-					Component: model.Component{
-						CompName:    k,
-						CompVersion: v,
-						EcoRepo:     EcoRepo,
-					},
-					DependencyRelation: model.DependencyRelationDirect,
-					IsOnline:           model.IsOnlineFalse(),
-				})
-			}
+			mergePackageJsonIntoModule(&module, packageFile)
 			return []model.Module{module}, nil
-		} else if e != nil {
-			logger.Warn("npm install failed, skip :" + dir)
-			return make([]model.Module, 0), nil
+		}
+		if e != nil {
+			logger.Warn("npm install failed: " + dir)
+		}
+		if !utils.IsPathExist(lockfilePath) {
+			logger.Warn("fallback to read package.json only")
+			mergePackageJsonIntoModule(&module, packageFile)
+			return []model.Module{module}, nil
 		}
 	}
 	data, e = os.ReadFile(lockfilePath)
@@ -189,6 +169,31 @@ func doNpmInstallInDir(ctx context.Context, dir string) error {
 	}
 	logger.Debug("done.")
 	return nil
+}
+
+func mergePackageJsonIntoModule(module *model.Module, packageFile *pkgFile) {
+	for k, v := range packageFile.Dependencies {
+		module.Dependencies = append(module.Dependencies, model.DependencyItem{
+			Component: model.Component{
+				CompName:    k,
+				CompVersion: v,
+				EcoRepo:     EcoRepo,
+			},
+			DependencyRelation: model.DependencyRelationDirect,
+			IsOnline:           model.IsOnlineTrue(),
+		})
+	}
+	for k, v := range packageFile.DevDependencies {
+		module.Dependencies = append(module.Dependencies, model.DependencyItem{
+			Component: model.Component{
+				CompName:    k,
+				CompVersion: v,
+				EcoRepo:     EcoRepo,
+			},
+			DependencyRelation: model.DependencyRelationDirect,
+			IsOnline:           model.IsOnlineFalse(),
+		})
+	}
 }
 
 var EcoRepo = model.EcoRepo{
