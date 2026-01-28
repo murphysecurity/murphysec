@@ -92,6 +92,7 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 	if env.WaitAfterScannerScan {
 		logger.Warn("client will wait here!")
 	}
+	logger.Info("scanner scan completed, now writing output to stdout")
 	_ = logger.Sync()
 	fmt.Println("")
 	var enc = json.NewEncoder(os.Stdout)
