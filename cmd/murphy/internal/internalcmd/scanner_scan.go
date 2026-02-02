@@ -89,6 +89,11 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		AutoBuildCount:                      scantask.AutoBuildCount,
 		AutoBuildFailedCount:                scantask.AutoBuildFailedCount,
 	}
+	for i := range scantask.Modules {
+		for j := range scantask.Modules[i].Dependencies {
+			scantask.Modules[i].Dependencies[j].Postprocess()
+		}
+	}
 	if env.WaitAfterScannerScan {
 		logger.Warn("client will wait here!")
 	}
