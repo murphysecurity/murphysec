@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/iseki0/osname"
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -16,7 +17,7 @@ import (
 	"github.com/murphysecurity/murphysec/scanerr"
 )
 
-func InspectEnv(ctx context.Context, scanProcess bool) error {
+func InspectEnv(ctx context.Context, scanProcess bool, windowsPatchScanTimeout time.Duration) error {
 	task := model.UseScanTask(ctx)
 	if task == nil {
 		panic("task == nil")
@@ -31,7 +32,7 @@ func InspectEnv(ctx context.Context, scanProcess bool) error {
 		var m = model.Module{
 			ModuleName:   "5ec239b6-715c-4d36-a3b8-a5a629b898a9",
 			Dependencies: []model.DependencyItem{{Component: version}},
-			Patches:      listPendingPatch(ctx),
+			Patches:      listPendingPatch(ctx, windowsPatchScanTimeout),
 			ModulePath:   "/Windows",
 		}
 		task.Modules = append(task.Modules, m)

@@ -176,10 +176,14 @@ func consoleDecoder() *encoding.Decoder {
 	}
 }
 
-func listPendingPatch(ctx context.Context) []string {
+func listPendingPatch(ctx context.Context, windowsPatchScanTimeout time.Duration) []string {
 	var logger = logctx.Use(ctx).Sugar()
-	ctx, cancel := context.WithTimeout(ctx, time.Minute*5)
+	if windowsPatchScanTimeout == 0 {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(ctx, windowsPatchScanTimeout)
 	defer cancel()
+
 	cmd := exec.CommandContext(ctx, "powershell")
 	cmd.Stdin = bytes.NewReader([]byte(`
 $session = New-Object -ComObject Microsoft.Update.Session

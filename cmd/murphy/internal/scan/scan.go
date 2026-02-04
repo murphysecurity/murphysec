@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/murphysecurity/murphysec/codehash"
 	"github.com/murphysecurity/murphysec/projectlicense"
@@ -27,14 +28,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func envScanSbomOnly(ctx context.Context) (task *model.ScanTask, e error) {
+func envScanSbomOnly(ctx context.Context, windowsPatchScanTimeout time.Duration) (task *model.ScanTask, e error) {
 	task = &model.ScanTask{}
 	ctx = model.WithScanTask(ctx, task)
-	e = envinspection.InspectEnv(ctx, scanProcess)
+	e = envinspection.InspectEnv(ctx, scanProcess, windowsPatchScanTimeout)
 	return
 }
 
-func envScan(ctx context.Context) (task *model.ScanTask, e error) {
+func envScan(ctx context.Context, windowsPatchScanTimeout time.Duration) (task *model.ScanTask, e error) {
 	logger := logctx.Use(ctx).Sugar()
 	cv.DisplayScanning(ctx)
 	var createSubtask api.CreateSubTaskRequest
@@ -83,7 +84,7 @@ func envScan(ctx context.Context) (task *model.ScanTask, e error) {
 		MaxSbomVersion: createTaskResp.MaxSbomVersion,
 	}
 	ctx = model.WithScanTask(ctx, task)
-	e = envinspection.InspectEnv(ctx, scanProcess)
+	e = envinspection.InspectEnv(ctx, scanProcess, windowsPatchScanTimeout)
 	if e != nil {
 		cv.DisplayScanFailed(ctx, e)
 		return

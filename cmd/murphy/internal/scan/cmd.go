@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
@@ -50,6 +51,8 @@ var mavenModuleName []string
 var binaryOnly bool
 var scanProcess bool
 var distribution common.DistributionFlag
+var disableWindowsPatchScan bool
+var windowsPatchScanTimeout int
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -126,6 +129,8 @@ func EnvCmd() *cobra.Command {
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full(default)")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanProcess, "scan-process", false, "Enable scanning of process to detect SBOM. Disabled by default")
+	c.Flags().BoolVar(&disableWindowsPatchScan, "disable-windows-patch-scan", false, "Disable scanning of Windows patches. Enabled by default")
+	c.Flags().IntVar(&windowsPatchScanTimeout, "windows-patch-scan-timeout", 60, "Timeout for Windows patch scan in seconds. Default is 60 seconds")
 	return &c
 }
 
@@ -236,15 +241,19 @@ func envScanRun(cmd *cobra.Command, args []string) {
 	}
 	logger := logctx.Use(ctx).Sugar()
 	var r *model.ScanTask
+	var windowsPatchScanTimeoutDuration = time.Duration(windowsPatchScanTimeout) * time.Second
+	if disableWindowsPatchScan {
+		windowsPatchScanTimeoutDuration = 0
+	}
 	if sbomOutputType.Valid {
-		r, e = envScanSbomOnly(ctx)
+		r, e = envScanSbomOnly(ctx, windowsPatchScanTimeoutDuration)
 		if e != nil {
 			exitcode.Set(1)
 		}
 		doSBOMOnlyPrint(ctx, r)
 		return
 	} else {
-		r, e = envScan(ctx)
+		r, e = envScan(ctx, windowsPatchScanTimeoutDuration)
 	}
 	if errors.Is(e, inspector.ErrNoWait) {
 		return
