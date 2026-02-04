@@ -241,6 +241,9 @@ func envScanRun(cmd *cobra.Command, args []string) {
 	}
 	logger := logctx.Use(ctx).Sugar()
 	var r *model.ScanTask
+	if windowsPatchScanTimeout < 1 {
+		windowsPatchScanTimeout = 0
+	}
 	var windowsPatchScanTimeoutDuration = time.Duration(windowsPatchScanTimeout) * time.Second
 	if disableWindowsPatchScan {
 		windowsPatchScanTimeoutDuration = 0
