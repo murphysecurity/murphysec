@@ -100,6 +100,10 @@ func analyzeCargoLock(input []byte) (rs []*model.DependencyItem, err error) {
 			continue
 		}
 		r.DependencyRelation = model.DependencyRelationDirect
+		// the root is the project itself
+		for j := range r.Dependencies {
+			r.Dependencies[j].DependencyRelation = model.DependencyRelationDirect
+		}
 		rs = append(rs, r)
 	}
 	return
