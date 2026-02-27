@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	"iter"
+	"sort"
 	"strings"
 )
 
@@ -59,7 +60,13 @@ func Process(_ctx context.Context, data []byte, strict bool) ([]shared.DepTree, 
 			Prune:    make(map[[2]string]struct{}),
 			Dev:      dev,
 		}
-		for name, it := range m {
+		keys := make([]string, 0, len(m))
+		for name := range m {
+			keys = append(keys, name)
+		}
+		sort.Strings(keys)
+		for _, name := range keys {
+			it := m[name]
 			var dep model.DependencyItem
 			e := _visit(ctx, name, it.Version, "", &dep)
 			if e != nil {
@@ -82,7 +89,13 @@ func Process(_ctx context.Context, data []byte, strict bool) ([]shared.DepTree, 
 		return []shared.DepTree{root}, nil
 	} else {
 		var r []shared.DepTree
-		for relPath, importer := range lockfile.Importers {
+		importerKeys := make([]string, 0, len(lockfile.Importers))
+		for relPath := range lockfile.Importers {
+			importerKeys = append(importerKeys, relPath)
+		}
+		sort.Strings(importerKeys)
+		for _, relPath := range importerKeys {
+			importer := lockfile.Importers[relPath]
 			var tree shared.DepTree
 			tree.Name = relPath
 			if e := f(importer.Dependencies, false, &tree); e != nil {
@@ -126,7 +139,13 @@ func _visit(ctx *visitContext, name, version, path string, node *model.Dependenc
 		}
 		if !cDetected {
 			var f = func(m map[string]string) error {
-				for n, v := range m {
+				keys := make([]string, 0, len(m))
+				for n := range m {
+					keys = append(keys, n)
+				}
+				sort.Strings(keys)
+				for _, n := range keys {
+					v := m[n]
 					node.Dependencies = append(node.Dependencies, model.DependencyItem{})
 					var key = key + "/" + n + "/" + v
 					var e = _visit(ctx, n, v, key, &node.Dependencies[len(node.Dependencies)-1])

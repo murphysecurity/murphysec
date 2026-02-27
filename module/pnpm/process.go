@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"sort"
+
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	v5 "github.com/murphysecurity/murphysec/module/pnpm/v5"
 	v6 "github.com/murphysecurity/murphysec/module/pnpm/v6"
 	v9 "github.com/murphysecurity/murphysec/module/pnpm/v9"
-	"io"
-	"os"
-	"path/filepath"
 )
 
 var EcoRepo = model.EcoRepo{
@@ -43,6 +45,11 @@ func processDir(ctx context.Context, dir string) (result processDirResult) {
 		result.e = fmt.Errorf("reading %s failed: %w", LockfileName, e)
 		return
 	}
+	processLockfile(ctx, data, &result)
+	return
+}
+
+func processLockfile(ctx context.Context, data []byte, result *processDirResult) {
 	version, e := parseLockfileVersion(data)
 	if e != nil {
 		result.e = fmt.Errorf("parse lockfile version failed, %w", e)
@@ -71,7 +78,34 @@ func processDir(ctx context.Context, dir string) (result processDirResult) {
 		result.e = fmt.Errorf("unsupported version \"%s\"", version)
 		return
 	}
-	return
+	normalizeTrees(result.trees)
+}
+
+func normalizeTrees(trees []shared.DepTree) {
+	for i := range trees {
+		sortDepItems(trees[i].Dependencies)
+	}
+	sort.SliceStable(trees, func(i, j int) bool {
+		return trees[i].Name < trees[j].Name
+	})
+}
+
+func sortDepItems(deps []model.DependencyItem) {
+	for i := range deps {
+		sortDepItems(deps[i].Dependencies)
+	}
+	sort.SliceStable(deps, func(i, j int) bool {
+		if deps[i].CompName != deps[j].CompName {
+			return deps[i].CompName < deps[j].CompName
+		}
+		if deps[i].CompVersion != deps[j].CompVersion {
+			return deps[i].CompVersion < deps[j].CompVersion
+		}
+		if deps[i].IsOnline.Value != deps[j].IsOnline.Value {
+			return !deps[i].IsOnline.Value && deps[j].IsOnline.Value
+		}
+		return deps[i].IsOnline.Valid && !deps[j].IsOnline.Valid
+	})
 }
 
 func processV5(ctx context.Context, data []byte) (trees []shared.DepTree, e error) {

@@ -3,6 +3,7 @@ package v5
 import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/module/pnpm/shared"
+	"sort"
 	"strings"
 )
 
@@ -50,7 +51,13 @@ func nextCallVisitor[T any](l *Lockfile, parent *shared.GComponent, m map[string
 }
 
 func _visit[T any](l *Lockfile, parent *shared.GComponent, m map[string]string, cd *circleDetector, visitor shared.GVisitor[T], arg T) error {
-	for n, v := range m {
+	keys := make([]string, 0, len(m))
+	for n := range m {
+		keys = append(keys, n)
+	}
+	sort.Strings(keys)
+	for _, n := range keys {
+		v := m[n]
 		var pkg = l.findPkg(n, v)
 		if pkg == nil {
 			continue

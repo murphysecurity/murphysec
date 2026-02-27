@@ -38,7 +38,13 @@ func Parse(ctx context.Context, reader io.Reader) (trees []shared.DepTree, e err
 	if e != nil {
 		return
 	}
-	for path, importer := range doc.Importers {
+	importerPaths := make([]string, 0, len(doc.Importers))
+	for path := range doc.Importers {
+		importerPaths = append(importerPaths, path)
+	}
+	sort.Strings(importerPaths)
+	for _, path := range importerPaths {
+		importer := doc.Importers[path]
 		var c = importerHandlingCtx{
 			Logger:            logctx.Use(ctx).Sugar(),
 			Snapshot:          doc.Snapshots,
@@ -47,7 +53,13 @@ func Parse(ctx context.Context, reader io.Reader) (trees []shared.DepTree, e err
 			CircularPath:      make([][2]string, 0),
 		}
 		var deps []model.DependencyItem
-		for name, obj := range importer.Dependencies {
+		depNames := make([]string, 0, len(importer.Dependencies))
+		for name := range importer.Dependencies {
+			depNames = append(depNames, name)
+		}
+		sort.Strings(depNames)
+		for _, name := range depNames {
+			obj := importer.Dependencies[name]
 			var r model.DependencyItem
 			r, e = c.handle(name, obj.Version, true)
 			if e != nil {
@@ -58,7 +70,13 @@ func Parse(ctx context.Context, reader io.Reader) (trees []shared.DepTree, e err
 		c.Handled = make(map[[2]string]struct{})
 		c.CircularDetectMap = make(map[[2]string]struct{})
 		c.CircularPath = make([][2]string, 0)
-		for name, obj := range importer.DevDependencies {
+		devDepNames := make([]string, 0, len(importer.DevDependencies))
+		for name := range importer.DevDependencies {
+			devDepNames = append(devDepNames, name)
+		}
+		sort.Strings(devDepNames)
+		for _, name := range devDepNames {
+			obj := importer.DevDependencies[name]
 			var r model.DependencyItem
 			r, e = c.handle(name, obj.Version, false)
 			if e != nil {
