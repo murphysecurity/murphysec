@@ -4,6 +4,9 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"io/fs"
+	"sort"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,21 +16,23 @@ import (
 var processTestdata embed.FS
 
 func TestProcessLockfile_ConsistentAcrossMultipleRuns(t *testing.T) {
-	testCases := []struct {
-		name string
-		path string
-	}{
-		{name: "v5-1", path: "v5/testdata/1.yaml"},
-		{name: "v5-5", path: "v5/testdata/5.yaml"},
-		{name: "v6-1", path: "v6/testdata/1.yaml"},
-		{name: "v6-3", path: "v6/testdata/3.yaml"},
-		{name: "v9-1", path: "v9/testdata/1.yaml"},
-		{name: "v9-9", path: "v9/testdata/9.yaml"},
-	}
+	var testCases []string
+	e := fs.WalkDir(processTestdata, ".", func(path string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if d.IsDir() || !strings.HasSuffix(path, ".yaml") {
+			return nil
+		}
+		testCases = append(testCases, path)
+		return nil
+	})
+	assert.NoError(t, e)
+	sort.Strings(testCases)
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			data, e := processTestdata.ReadFile(tc.path)
+	for _, testCase := range testCases {
+		t.Run(testCase, func(t *testing.T) {
+			data, e := processTestdata.ReadFile(testCase)
 			assert.NoError(t, e)
 
 			var baseline []byte
