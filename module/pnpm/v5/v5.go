@@ -1,10 +1,11 @@
 package v5
 
 import (
-	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	"sort"
 	"strings"
+
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 )
 
 type Pkg struct {
@@ -99,17 +100,45 @@ func (p *Pkg) adjustByPath(path string) {
 }
 
 func (l *Lockfile) buildIndexes() {
-	for path, pkg := range l.Packages {
+	paths := make([]string, 0, len(l.Packages))
+	for path := range l.Packages {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+
+	for _, path := range paths {
+		pkg := l.Packages[path]
 		pkg.adjustByPath(path)
 	}
 	l.pkgIndexes = make(map[[2]string]*Pkg, len(l.Packages))
-	for _, pkg := range l.Packages {
+	indexPaths := make(map[[2]string]string, len(l.Packages))
+	for _, path := range paths {
+		pkg := l.Packages[path]
 		var name, version = pkg.Name, pkg.Version
 		if name == "" {
 			continue
 		}
-		l.pkgIndexes[[2]string{name, version}] = pkg
+		key := [2]string{name, version}
+		prevPath, exists := indexPaths[key]
+		if !exists || preferPkgPath(prevPath, path, name, version) {
+			indexPaths[key] = path
+			l.pkgIndexes[key] = pkg
+		}
 	}
+}
+
+func preferPkgPath(currentPath, candidatePath, name, version string) bool {
+	currentCanonical := isCanonicalPath(currentPath, name, version)
+	candidateCanonical := isCanonicalPath(candidatePath, name, version)
+	if currentCanonical != candidateCanonical {
+		return candidateCanonical
+	}
+	return candidatePath < currentPath
+}
+
+func isCanonicalPath(path, name, version string) bool {
+	canonical := "/" + name + "/" + version
+	return path == canonical || strings.TrimPrefix(path, "/") == strings.TrimPrefix(canonical, "/")
 }
 
 func (l *Lockfile) findPkg(name, version string) (p *Pkg) {
