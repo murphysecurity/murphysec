@@ -83,20 +83,38 @@ func (p *Pkg) adjustByPath(path string) {
 	if p.Name != "" && p.Version != "" {
 		return
 	}
-	var underscore = strings.LastIndex(path, "_")
-	if underscore > -1 {
-		path = path[:underscore]
-	}
-	var i = strings.LastIndex(path, "/")
-	if i == -1 {
+	name, version, ok := parseNameVersionFromPackagePath(path)
+	if !ok {
 		return
 	}
 	if p.Name == "" {
-		p.Name = strings.Trim(path[:i], "/")
+		p.Name = name
 	}
 	if p.Version == "" {
-		p.Version = strings.Trim(path[i:], "/")
+		p.Version = version
 	}
+}
+
+func parseNameVersionFromPackagePath(path string) (name, version string, ok bool) {
+	trimmed := strings.Trim(path, "/")
+	if trimmed == "" {
+		return "", "", false
+	}
+	slash := strings.LastIndex(trimmed, "/")
+	if slash <= 0 || slash == len(trimmed)-1 {
+		return "", "", false
+	}
+
+	name = trimmed[:slash]
+	versionWithSuffix := trimmed[slash+1:]
+	underscore := strings.Index(versionWithSuffix, "_")
+	if underscore >= 0 {
+		versionWithSuffix = versionWithSuffix[:underscore]
+	}
+	if name == "" || versionWithSuffix == "" {
+		return "", "", false
+	}
+	return name, versionWithSuffix, true
 }
 
 func (l *Lockfile) buildIndexes() {
@@ -111,7 +129,6 @@ func (l *Lockfile) buildIndexes() {
 		pkg.adjustByPath(path)
 	}
 	l.pkgIndexes = make(map[[2]string]*Pkg, len(l.Packages))
-	indexPaths := make(map[[2]string]string, len(l.Packages))
 	for _, path := range paths {
 		pkg := l.Packages[path]
 		var name, version = pkg.Name, pkg.Version
@@ -119,26 +136,44 @@ func (l *Lockfile) buildIndexes() {
 			continue
 		}
 		key := [2]string{name, version}
-		prevPath, exists := indexPaths[key]
-		if !exists || preferPkgPath(prevPath, path, name, version) {
-			indexPaths[key] = path
-			l.pkgIndexes[key] = pkg
+		if merged, ok := l.pkgIndexes[key]; ok {
+			mergePkg(merged, pkg)
+		} else {
+			l.pkgIndexes[key] = clonePkg(pkg)
 		}
 	}
 }
 
-func preferPkgPath(currentPath, candidatePath, name, version string) bool {
-	currentCanonical := isCanonicalPath(currentPath, name, version)
-	candidateCanonical := isCanonicalPath(candidatePath, name, version)
-	if currentCanonical != candidateCanonical {
-		return candidateCanonical
+func clonePkg(pkg *Pkg) *Pkg {
+	out := &Pkg{
+		Name:    pkg.Name,
+		Version: pkg.Version,
+		Dev:     pkg.Dev,
 	}
-	return candidatePath < currentPath
+	if len(pkg.Dependencies) == 0 {
+		return out
+	}
+	out.Dependencies = make(map[string]string, len(pkg.Dependencies))
+	for n, v := range pkg.Dependencies {
+		out.Dependencies[n] = v
+	}
+	return out
 }
 
-func isCanonicalPath(path, name, version string) bool {
-	canonical := "/" + name + "/" + version
-	return path == canonical || strings.TrimPrefix(path, "/") == strings.TrimPrefix(canonical, "/")
+func mergePkg(merged, pkg *Pkg) {
+	// If any context is non-dev, keep the merged node as non-dev.
+	merged.Dev = merged.Dev && pkg.Dev
+	if len(pkg.Dependencies) == 0 {
+		return
+	}
+	if merged.Dependencies == nil {
+		merged.Dependencies = make(map[string]string, len(pkg.Dependencies))
+	}
+	for n, v := range pkg.Dependencies {
+		if _, exists := merged.Dependencies[n]; !exists {
+			merged.Dependencies[n] = v
+		}
+	}
 }
 
 func (l *Lockfile) findPkg(name, version string) (p *Pkg) {
