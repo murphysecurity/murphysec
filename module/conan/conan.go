@@ -42,8 +42,10 @@ func (Inspector) InspectProject(ctx context.Context) error {
 
 	var conanErr conanError
 	if errors.As(e, &conanErr) {
-		badConanView(ctx)
-		printConanError(ctx, &conanErr)
+		if !env.ScannerScan {
+			badConanView(ctx)
+			printConanError(ctx, &conanErr)
+		}
 		return e
 	}
 	if e != nil {
