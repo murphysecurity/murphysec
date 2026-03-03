@@ -2,6 +2,7 @@ package toolver
 
 import (
 	"context"
+	"os"
 )
 
 func init() {
@@ -15,22 +16,25 @@ func init() {
 	})
 }
 
+var javaHomeMap = map[string]string{
+	"jdk8":  "/opt/java/8",
+	"jdk11": "/opt/java/11",
+	"jdk17": "/opt/java/17",
+	"jdk21": "/opt/java/21",
+	"jdk25": "/opt/java/25",
+}
+
+func init() {
+	for version, home := range javaHomeMap {
+		_, e := os.Stat(home)
+		if os.IsNotExist(e) {
+			delete(javaHomeMap, version)
+		}
+	}
+}
+
 func locateJavaHome(version string) string {
-	var javaHome string
-	switch version {
-	case "jdk8":
-		javaHome = "/opt/java/8"
-	case "jdk11":
-		javaHome = "/opt/java/11"
-	case "jdk17":
-		javaHome = "/opt/java/17"
-	case "jdk21":
-		javaHome = "/opt/java/21"
-	}
-	if javaHome != "" {
-		return javaHome
-	}
-	return ""
+	return javaHomeMap[version]
 }
 
 func locateMvnHome(version string) string {
