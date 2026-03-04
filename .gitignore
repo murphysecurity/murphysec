@@ -17,3 +17,4 @@ tt
 .murphy.yml
 /.vscode
 .murphy-report
+.gocache
