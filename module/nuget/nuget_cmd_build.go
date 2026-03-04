@@ -36,6 +36,8 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 	logger.Sugar().Debugf("findCLNList: %v", filePath)
 	numCPU := utils.Coerce(runtime.NumCPU(), 1, 4)
 	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var errs []error
 	ch := make(chan string, len(filePath))
 	for _, j := range filePath {
 		ch <- j
@@ -48,11 +50,17 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 			for j := range ch {
 				if err := buildEntrance(ctx, task, j); err != nil {
 					logger.Warn(j + "buildEntrance faild:" + err.Error())
+					mu.Lock()
+					errs = append(errs, fmt.Errorf("%s: %w", j, err))
+					mu.Unlock()
 				}
 			}
 		}()
 	}
 	wg.Wait()
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
 	return nil
 
 }

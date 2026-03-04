@@ -6,6 +6,7 @@ import (
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
 	"go.uber.org/zap"
 	"os"
@@ -29,19 +30,36 @@ func (Inspector) CheckDir(ctx context.Context, dir string) bool {
 		utils.IsFile(filepath.Join(dir, "conan.py"))
 }
 func (Inspector) InspectProject(ctx context.Context) error {
+	task := model.UseInspectionTask(ctx)
+	registeredAutoBuild := task.RegisterAutoBuild()
 	if env.DoNotBuild {
+		scanerr.Add(ctx, scanerr.Param{Kind: scanerr.KindBuildDisabled})
+		registeredAutoBuild.MarkDisabled()
 		return nil
 	}
-	task := model.UseInspectionTask(ctx)
 	logger := logctx.Use(ctx)
 	cmdInfo, e := getConanInfo(ctx)
 	if e != nil {
+		registeredAutoBuild.MarkFailed()
+		kind := scanerr.KindConanFailed
+		if errors.Is(e, ErrConanNotFound) {
+			kind = scanerr.KindConanNotFound
+		}
+		scanerr.Add(ctx, scanerr.Param{
+			Kind:    kind,
+			Content: e.Error(),
+		})
 		return e
 	}
 	jsonFilePath, e := ExecuteConanInfoCmd(ctx, cmdInfo.Path, task.Dir())
 
 	var conanErr conanError
 	if errors.As(e, &conanErr) {
+		registeredAutoBuild.MarkFailed()
+		scanerr.Add(ctx, scanerr.Param{
+			Kind:    scanerr.KindConanFailed,
+			Content: conanErr.Error(),
+		})
 		if !env.ScannerScan {
 			badConanView(ctx)
 			printConanError(ctx, &conanErr)
@@ -49,6 +67,11 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		return e
 	}
 	if e != nil {
+		registeredAutoBuild.MarkFailed()
+		scanerr.Add(ctx, scanerr.Param{
+			Kind:    scanerr.KindConanFailed,
+			Content: e.Error(),
+		})
 		return e
 	}
 	defer func() {
@@ -58,10 +81,20 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	}()
 	var conanJson _ConanInfoJsonFile
 	if e := conanJson.ReadFromFile(jsonFilePath); e != nil {
+		registeredAutoBuild.MarkFailed()
+		scanerr.Add(ctx, scanerr.Param{
+			Kind:    scanerr.KindConanFailed,
+			Content: e.Error(),
+		})
 		return e
 	}
 	t, e := conanJson.Tree()
 	if e != nil {
+		registeredAutoBuild.MarkFailed()
+		scanerr.Add(ctx, scanerr.Param{
+			Kind:    scanerr.KindConanFailed,
+			Content: e.Error(),
+		})
 		return e
 	}
 	task.AddModule(model.Module{
