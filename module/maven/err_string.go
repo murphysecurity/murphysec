@@ -30,9 +30,9 @@ const _mvnError_name = "maven: mvn command disabledmaven: mvn command not foundm
 var _mvnError_index = [...]uint16{0, 27, 55, 85, 112, 137, 162, 188, 211, 237, 271, 292, 315, 357, 390, 428}
 
 func (i mvnError) String() string {
-	i -= 1
-	if i < 0 || i >= mvnError(len(_mvnError_index)-1) {
-		return "mvnError(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_mvnError_index)-1 {
+		return "mvnError(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _mvnError_name[_mvnError_index[i]:_mvnError_index[i+1]]
+	return _mvnError_name[_mvnError_index[idx]:_mvnError_index[idx+1]]
 }

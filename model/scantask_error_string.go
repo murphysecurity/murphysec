@@ -19,9 +19,9 @@ const _scanTaskError_name = "task: path must be absolutetask: path must be a dir
 var _scanTaskError_index = [...]uint8{0, 27, 57, 82, 109}
 
 func (i scanTaskError) String() string {
-	i -= 1
-	if i < 0 || i >= scanTaskError(len(_scanTaskError_index)-1) {
-		return "scanTaskError(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_scanTaskError_index)-1 {
+		return "scanTaskError(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _scanTaskError_name[_scanTaskError_index[i]:_scanTaskError_index[i+1]]
+	return _scanTaskError_name[_scanTaskError_index[idx]:_scanTaskError_index[idx+1]]
 }

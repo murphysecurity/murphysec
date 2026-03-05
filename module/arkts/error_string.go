@@ -18,9 +18,9 @@ const _textError_name = "arkts: read oh-package.json5 failedarkts: read oh-packa
 var _textError_index = [...]uint8{0, 35, 75, 135}
 
 func (i textError) String() string {
-	i -= 1
-	if i < 0 || i >= textError(len(_textError_index)-1) {
-		return "textError(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_textError_index)-1 {
+		return "textError(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _textError_name[_textError_index[i]:_textError_index[i+1]]
+	return _textError_name[_textError_index[idx]:_textError_index[idx+1]]
 }

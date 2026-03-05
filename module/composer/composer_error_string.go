@@ -18,9 +18,9 @@ const __e_name = "read composer.json failedparsing composer.json failedno compos
 var __e_index = [...]uint8{0, 25, 53, 70}
 
 func (i _e) String() string {
-	i -= 1
-	if i < 0 || i >= _e(len(__e_index)-1) {
-		return "_e(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(__e_index)-1 {
+		return "_e(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return __e_name[__e_index[i]:__e_index[i+1]]
+	return __e_name[__e_index[idx]:__e_index[idx+1]]
 }

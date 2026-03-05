@@ -19,8 +19,9 @@ const _DependencyRelation_name = "UnknownDirectTransitive"
 var _DependencyRelation_index = [...]uint8{0, 0, 7, 13, 23}
 
 func (i DependencyRelation) String() string {
-	if i < 0 || i >= DependencyRelation(len(_DependencyRelation_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_DependencyRelation_index)-1 {
 		return "DependencyRelation(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _DependencyRelation_name[_DependencyRelation_index[i]:_DependencyRelation_index[i+1]]
+	return _DependencyRelation_name[_DependencyRelation_index[idx]:_DependencyRelation_index[idx+1]]
 }

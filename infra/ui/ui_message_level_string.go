@@ -19,9 +19,9 @@ const _MessageLevel_name = "InfoNoticeWarnError"
 var _MessageLevel_index = [...]uint8{0, 4, 10, 14, 19}
 
 func (i MessageLevel) String() string {
-	i -= 1
-	if i < 0 || i >= MessageLevel(len(_MessageLevel_index)-1) {
-		return "MessageLevel(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_MessageLevel_index)-1 {
+		return "MessageLevel(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _MessageLevel_name[_MessageLevel_index[i]:_MessageLevel_index[i+1]]
+	return _MessageLevel_name[_MessageLevel_index[idx]:_MessageLevel_index[idx+1]]
 }

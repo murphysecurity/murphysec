@@ -20,9 +20,9 @@ const _Level_name = "silentdebuginfowarnerror"
 var _Level_index = [...]uint8{0, 6, 11, 15, 19, 24}
 
 func (i Level) String() string {
-	i -= 1
-	if i < 0 || i >= Level(len(_Level_index)-1) {
-		return "Level(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_Level_index)-1 {
+		return "Level(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Level_name[_Level_index[i]:_Level_index[i+1]]
+	return _Level_name[_Level_index[idx]:_Level_index[idx+1]]
 }

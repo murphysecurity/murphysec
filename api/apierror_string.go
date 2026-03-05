@@ -24,9 +24,9 @@ const _apiError_name = "api: tls errorapi: timeoutapi: request failapi: cannot p
 var _apiError_index = [...]uint8{0, 14, 26, 43, 78, 96, 108, 124, 142, 162}
 
 func (i apiError) String() string {
-	i -= 1
-	if i < 0 || i >= apiError(len(_apiError_index)-1) {
-		return "apiError(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_apiError_index)-1 {
+		return "apiError(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _apiError_name[_apiError_index[i]:_apiError_index[i+1]]
+	return _apiError_name[_apiError_index[idx]:_apiError_index[idx+1]]
 }

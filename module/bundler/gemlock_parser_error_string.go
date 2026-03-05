@@ -17,9 +17,9 @@ const _parserError_name = "Bad indentParseFail"
 var _parserError_index = [...]uint8{0, 10, 19}
 
 func (i parserError) String() string {
-	i -= 1
-	if i < 0 || i >= parserError(len(_parserError_index)-1) {
-		return "parserError(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_parserError_index)-1 {
+		return "parserError(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _parserError_name[_parserError_index[i]:_parserError_index[i+1]]
+	return _parserError_name[_parserError_index[idx]:_parserError_index[idx+1]]
 }
