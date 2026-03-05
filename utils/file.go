@@ -6,12 +6,8 @@ import (
 )
 
 func IsPathExist(path string) bool {
-	var err error
-	_, err = os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return true
+	_, err := os.Stat(path)
+	return err == nil
 }
 
 func IsDir(path string) bool {
@@ -23,10 +19,9 @@ func IsDir(path string) bool {
 }
 
 func IsDirResolveSymlink(path string) bool {
-	var realPath = path
-	realPath, e := filepath.EvalSymlinks(path)
-	if e == nil {
-		realPath = path
+	realPath := path
+	if p, e := filepath.EvalSymlinks(path); e == nil {
+		realPath = p
 	}
 	return IsDir(realPath)
 }

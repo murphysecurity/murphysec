@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"context"
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/model"
 	"go.uber.org/zap"
-	"golang.org/x/net/context"
 )
 
 const pipConf = `[global]
@@ -309,12 +309,12 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 	if err := installpipdeptree(venvPath, logger); err != nil {
 		return nil, err
 	}
-	// 读取新创建的 requirements.txt
+	// Read generated requirements.txt
 	data, err := readTextFile(requirementsPath, 64*1024)
 	if err != nil {
 		logger.Warnf("read requirement: %s %v", requirementsPath, err)
 	}
-	//  对比原本的 requirements.txt 拿到原本包的版本
+	// Restore versions from original requirements when needed
 	oldRequirements := parseRequirements(string(data))
 	for k, v := range nvMp {
 		if newV, ok := oldRequirements[k]; ok && newV != v {
@@ -331,9 +331,9 @@ func Run(ctx context.Context, dir string, logger *zap.SugaredLogger, nvMp map[st
 			mod = append(mod, buildTree(j, 0))
 		}
 	}
-	// 对于没有pip install成功的依赖 只加入pipreqs中列出的直接依赖
+	// Keep direct dependencies even when pip install does not succeed
 	directDependenceSurvival(&mod, oldRequirements)
-	// 对于pipreqs生成的requirements.txt 中未列出的直接依赖加入到依赖树中直接依赖一层
+	// Add direct dependencies inferred by pipreqs.
 	data, err = readTextFile(venvRequirementsPath, 64*1024)
 	if err != nil {
 		logger.Warnf("read requirement: %s %v", requirementsPath, err)
