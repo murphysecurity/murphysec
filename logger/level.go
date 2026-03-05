@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"errors"
+	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"strings"
@@ -36,7 +36,7 @@ func (i *Level) Of(s string) error {
 	case "error":
 		*i = LevelError
 	default:
-		return errors.New("bad loglevel")
+		return fmt.Errorf("bad loglevel")
 	}
 	return nil
 }
