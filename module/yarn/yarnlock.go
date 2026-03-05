@@ -119,9 +119,11 @@ func buildDepTree(lkFile yarnlock.LockFile, pkg *pkgjs.Pkg) []Dep {
 		if node == nil {
 			continue
 		}
-		if _, ok := repeatedElement[id{node.Name, node.Version}]; ok {
+		key := id{node.Name, node.Version}
+		if _, ok := repeatedElement[key]; ok {
 			continue
 		}
+		repeatedElement[key] = struct{}{}
 		rs = append(rs, *node)
 	}
 	for n, v := range pkg.DevDependencies {
@@ -129,9 +131,11 @@ func buildDepTree(lkFile yarnlock.LockFile, pkg *pkgjs.Pkg) []Dep {
 		if node == nil {
 			continue
 		}
-		if _, ok := repeatedElement[id{node.Name, node.Version}]; ok {
+		key := id{node.Name, node.Version}
+		if _, ok := repeatedElement[key]; ok {
 			continue
 		}
+		repeatedElement[key] = struct{}{}
 		rs = append(rs, *node)
 	}
 	return rs
