@@ -50,16 +50,21 @@ func (Inspector) InspectProject(ctx context.Context) error {
 	for _, it := range manifest.Dependencies {
 		cmap[it.CompName] = it.CompVersion
 	}
-	poetryFile := filepath.Join(task.Dir(), "poetry.lock.py")
-	if !utils.IsFile(poetryFile) {
-		poetryFile = filepath.Join(task.Dir(), "poetry.lock")
+	lockFiles := []string{
+		filepath.Join(task.Dir(), "poetry.lock.py"),
+		filepath.Join(task.Dir(), "poetry.lock"),
+		filepath.Join(task.Dir(), "uv.lock"),
 	}
-	if utils.IsFile(poetryFile) {
-		if deps, e := parsePoetryLock(ctx, poetryFile); e == nil {
+	for _, lockFile := range lockFiles {
+		if !utils.IsFile(lockFile) {
+			continue
+		}
+		if deps, e := parsePoetryLock(ctx, lockFile); e == nil {
 			for _, it := range deps {
 				cmap[it.CompName] = it.CompVersion
 			}
 		}
+		break
 	}
 	module := model.Module{
 		PackageManager: "poetry",
