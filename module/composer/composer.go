@@ -69,12 +69,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 
 	{
 		if utils.IsFile(manifestPath) && !utils.IsPathExist(filepath.Join(dir, "composer.lock")) {
-			logger.Info("composer.lock doesn't exists. Try to generate it")
-			if e := doComposerInstall(context.TODO(), dir); e != nil {
-				logger.Sugar().Warnf("Do composer install fail. %s", e.Error())
-			} else {
-				logger.Sugar().Info("Do composer install succeeded")
-			}
+			// temporarily remove the doComposerInstall
 		}
 		composerLockFilePath := filepath.Join(dir, "composer.lock")
 		logger.Debug("Reading composer.lock", zap.String("path", composerLockFilePath))
