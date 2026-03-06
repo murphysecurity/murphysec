@@ -2,14 +2,15 @@ package composer
 
 import (
 	"context"
-	"github.com/murphysecurity/murphysec/infra/logctx"
-	"github.com/murphysecurity/murphysec/model"
-	"github.com/murphysecurity/murphysec/utils"
-	"go.uber.org/zap"
 	"io/fs"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/utils"
+	"go.uber.org/zap"
 )
 
 const _ComposerManifestFileSizeLimit = 4 * 1024 * 1024 // 4MiB
@@ -18,7 +19,7 @@ const _ComposerLockFileSizeLimit = _ComposerManifestFileSizeLimit
 type Inspector struct{}
 
 func (Inspector) SupportFeature(feature model.InspectorFeature) bool {
-	return false
+	return feature == model.InspectorFeatureAllowNested
 }
 
 func (Inspector) String() string {
