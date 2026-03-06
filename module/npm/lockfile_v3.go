@@ -21,6 +21,7 @@ type v3Package struct {
 	Dependencies         map[string]string `json:"dependencies"`
 	DevDependencies      map[string]string `json:"devDependencies"`
 	OptionalDependencies map[string]string `json:"optionalDependencies"`
+	PeerDependencies     map[string]string `json:"peerDependencies"`
 	Dev                  bool              `json:"dev"`
 }
 
@@ -77,7 +78,11 @@ func _visitV3[T any](lockfile *v3Lockfile, pred *v3Package, rPath []string, path
 			}
 			pathVisited[succPath] = struct{}{}
 			var succV = [2]string{succ.Name, succ.Version}
-			if succV[0] == "" {
+			// Preserve alias dependency names (e.g. "string-width-cjs": "npm:string-width@^4.2.0").
+			// If succName is empty, fall back to lockfile package name.
+			if succName != "" {
+				succV[0] = succName
+			} else if succV[0] == "" {
 				succV[0] = succName
 			}
 			var doNext = func(v T) { _visitV3(lockfile, &succ, succSegments, pathVisited, v, handler, pruneSet) }
@@ -93,6 +98,7 @@ func _visitV3[T any](lockfile *v3Lockfile, pred *v3Package, rPath []string, path
 	}
 	traversalDependencies(false, pred.Dependencies)
 	traversalDependencies(false, pred.OptionalDependencies)
+	traversalDependencies(false, pred.PeerDependencies)
 	traversalDependencies(true, pred.DevDependencies)
 }
 
