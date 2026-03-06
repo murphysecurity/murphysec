@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"io/fs"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -25,27 +26,48 @@ func (Inspector) String() string {
 }
 
 func (Inspector) CheckDir(ctx context.Context, dir string) bool {
-	return utils.IsFile(filepath.Join(dir, "composer.json"))
+	return utils.IsFile(filepath.Join(dir, "composer.json")) ||
+		utils.IsFile(filepath.Join(dir, "composer.lock")) ||
+		utils.IsFile(filepath.Join(dir, "installed.json")) ||
+		utils.IsFile(filepath.Join(dir, "vendor", "composer", "installed.json"))
 }
 
 func (Inspector) InspectProject(ctx context.Context) error {
 	logger := logctx.Use(ctx)
 	task := model.UseInspectionTask(ctx)
 	dir := task.Dir()
-	manifest, e := readManifest(ctx, filepath.Join(dir, "composer.json"))
-	if e != nil {
-		return e
+	manifestPath := filepath.Join(dir, "composer.json")
+	modulePath := manifestPath
+	manifest := &Manifest{}
+	var e error
+	if utils.IsFile(manifestPath) {
+		manifest, e = readManifest(ctx, manifestPath)
+		if e != nil {
+			return e
+		}
+	} else {
+		logger.Sugar().Infof("composer.json not found, fallback to installed/lock files. dir=%s", dir)
+		modulePath = filepath.Join(dir, "installed.json")
+		if !utils.IsFile(modulePath) {
+			modulePath = filepath.Join(dir, "vendor", "composer", "installed.json")
+			if !utils.IsFile(modulePath) {
+				modulePath = filepath.Join(dir, "composer.lock")
+			}
+		}
 	}
 	module := &model.Module{
 		PackageManager: "composer",
 		ModuleName:     manifest.Name,
 		ModuleVersion:  manifest.Version,
-		ModulePath:     filepath.Join(dir, "composer.json"),
+		ModulePath:     modulePath,
+	}
+	if module.ModuleName == "" {
+		module.ModuleName = filepath.Base(dir)
 	}
 	lockfilePkgs := map[string]Package{}
 
 	{
-		if !utils.IsPathExist(filepath.Join(dir, "composer.lock")) {
+		if utils.IsFile(manifestPath) && !utils.IsPathExist(filepath.Join(dir, "composer.lock")) {
 			logger.Info("composer.lock doesn't exists. Try to generate it")
 			if e := doComposerInstall(context.TODO(), dir); e != nil {
 				logger.Sugar().Warnf("Do composer install fail. %s", e.Error())
@@ -59,6 +81,18 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		if e != nil {
 			logger.Sugar().Infof("Read composer lock file failed: %s", e.Error())
 		}
+		installedPaths := []string{
+			filepath.Join(dir, "installed.json"),
+			filepath.Join(dir, "vendor", "composer", "installed.json"),
+		}
+		for _, installedPath := range installedPaths {
+			installedPkgs, ie := readComposerInstalledFile(installedPath)
+			if ie != nil {
+				logger.Sugar().Debugf("Read installed.json failed: %s", ie.Error())
+				continue
+			}
+			pkgs = append(pkgs, installedPkgs...)
+		}
 		pkgs = append(pkgs, vendorScan(ctx, filepath.Join(dir, "vendor"))...)
 		for _, it := range pkgs {
 			if it.Version == "" || isVersionConstrain(it.Version) {
@@ -68,8 +102,22 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		}
 	}
 
+	roots := map[string]string{}
 	for _, requiredPkg := range manifest.Require {
-		node := _buildDepTree(lockfilePkgs, map[string]struct{}{}, requiredPkg.Name, requiredPkg.Version)
+		roots[requiredPkg.Name] = requiredPkg.Version
+	}
+	if len(roots) == 0 {
+		for name := range lockfilePkgs {
+			roots[name] = ""
+		}
+	}
+	var rootNames []string
+	for name := range roots {
+		rootNames = append(rootNames, name)
+	}
+	sort.Strings(rootNames)
+	for _, name := range rootNames {
+		node := _buildDepTree(lockfilePkgs, map[string]struct{}{}, name, roots[name])
 		if node != nil {
 			module.Dependencies = append(module.Dependencies, *node)
 		}
