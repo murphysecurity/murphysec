@@ -17,6 +17,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/infra/sl"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/repeale/fp-go"
 	"golang.org/x/exp/slices"
@@ -53,6 +54,10 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		rs, e = evalGradleDependencies(ctx, dir, gradleEnv)
 		if e != nil {
 			registeredAutoBuild.MarkFailed()
+			scanerr.Add(ctx, scanerr.Param{
+				Kind:    "auto_build_error",
+				Content: e.Error(),
+			})
 			logger.Warnf("gradle failed: %s", e)
 		}
 	}
