@@ -201,6 +201,26 @@ var scriptPrintDep string
 
 func evalGradleDependencies(ctx context.Context, dir string, info *GradleEnv) (modules []model.Module, e error) {
 	var logger = logctx.Use(ctx).Sugar()
+	var outputTail []string
+	var outputTailMu sync.Mutex
+	const outputTailLimit = 160
+	appendOutputTail := func(prefix string) func(string) {
+		return func(line string) {
+			if line == "" {
+				return
+			}
+			const maxLineLen = 800
+			if len(line) > maxLineLen {
+				line = line[:maxLineLen] + "...(truncated)"
+			}
+			outputTailMu.Lock()
+			outputTail = append(outputTail, prefix+": "+line)
+			if len(outputTail) > outputTailLimit {
+				outputTail = outputTail[len(outputTail)-outputTailLimit:]
+			}
+			outputTailMu.Unlock()
+		}
+	}
 	defer func() {
 		if e != nil {
 			e = fmt.Errorf("generateGradleDepFiles: %w", e)
@@ -234,11 +254,18 @@ func evalGradleDependencies(ctx context.Context, dir string, info *GradleEnv) (m
 	}
 	var wg sync.WaitGroup
 	defer wg.Wait()
-	forwardStdAsync(ctx, "gradle", stdout, &wg)
-	forwardStdAsync(ctx, "gradle[E]", stderr, &wg)
+	forwardStdAsync(ctx, "gradle", stdout, &wg, appendOutputTail("stdout"))
+	forwardStdAsync(ctx, "gradle[E]", stderr, &wg, appendOutputTail("stderr"))
 	e = cmd.Wait()
 	if e != nil {
-		e = fmt.Errorf("gradle failed: %w", e)
+		outputTailMu.Lock()
+		tailText := strings.Join(outputTail, "\n")
+		outputTailMu.Unlock()
+		if tailText != "" {
+			e = fmt.Errorf("gradle failed: %w\n%s", e, tailText)
+		} else {
+			e = fmt.Errorf("gradle failed: %w", e)
+		}
 		logger.Desugar().Error(e.Error())
 		return
 	}
@@ -256,7 +283,7 @@ func evalGradleDependencies(ctx context.Context, dir string, info *GradleEnv) (m
 	return
 }
 
-func forwardStdAsync(ctx context.Context, prefix string, reader io.ReadCloser, wg *sync.WaitGroup) {
+func forwardStdAsync(ctx context.Context, prefix string, reader io.ReadCloser, wg *sync.WaitGroup, onLine func(string)) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -269,7 +296,11 @@ func forwardStdAsync(ctx context.Context, prefix string, reader io.ReadCloser, w
 				logger.Errorf("%s: %v", prefix, scanner.Err())
 				break
 			}
-			logger.Debugf("%s: %s", prefix, scanner.Text())
+			line := scanner.Text()
+			logger.Debugf("%s: %s", prefix, line)
+			if onLine != nil {
+				onLine(line)
+			}
 		}
 	}()
 }
