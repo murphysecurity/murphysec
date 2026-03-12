@@ -36,18 +36,18 @@ func tailText(s string, max int) string {
 
 func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 	logger := logctx.Use(ctx)
-	filePath, err := findCLNList(task.Dir())
+	slnPaths, err := findCLNList(task.Dir())
 	if err != nil {
 		logger.Error(err.Error())
 		return err
 	}
-	logger.Sugar().Debugf("findCLNList: %v", filePath)
+	logger.Sugar().Debugf("findCLNList: %v", slnPaths)
 	numCPU := utils.Coerce(runtime.NumCPU(), 1, 4)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	var errs []error
-	ch := make(chan string, len(filePath))
-	for _, j := range filePath {
+	ch := make(chan string, len(slnPaths))
+	for _, j := range slnPaths {
 		ch <- j
 	}
 	close(ch)
@@ -72,18 +72,18 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 	return nil
 
 }
-func buildEntrance(ctx context.Context, task *model.InspectionTask, directory string) error {
+func buildEntrance(ctx context.Context, task *model.InspectionTask, solutionPath string) error {
 	logger := logctx.Use(ctx)
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-	e := listNuget(ctx, task, directory)
+	e := listNuget(ctx, task, solutionPath)
 	if e != nil {
 		if errors.Is(e, _ErrDotnetNotFound) {
 			logger.Warn("Dotnet not found, skip DotnetList")
 			return e
 		} else {
 			// log it and go on
-			logger.Warn("Dotnet list failed"+directory, zap.Error(e))
+			logger.Warn("Dotnet list failed"+solutionPath, zap.Error(e))
 			return e
 		}
 	}
@@ -120,10 +120,10 @@ func readOutput(pipe io.ReadCloser, logger *zap.Logger, logPrefix string) string
 }
 
 // 通过先运行 dotnet restore 命令，确保项目中的所有 NuGet 包依赖项被正确恢复
-func buildPackage(ctx context.Context, logger *zap.Logger, directory string) (err error) {
+func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) (err error) {
 	//dotnet restore
-	cmd := exec.CommandContext(ctx, "dotnet", "restore")
-	cmd.Dir = directory
+	cmd := exec.CommandContext(ctx, "dotnet", "restore", solutionPath)
+	cmd.Dir = filepath.Dir(solutionPath)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		err = fmt.Errorf("create stdout pipe failed: %w", err)
@@ -187,20 +187,19 @@ func buildPackage(ctx context.Context, logger *zap.Logger, directory string) (er
 	return nil
 }
 
-func listNuget(ctx context.Context, task *model.InspectionTask, directory string) (err error) {
-	dir := directory
+func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath string) (err error) {
 	var cmdMessage string
 	var stderrOutput strings.Builder
 	var packageInfo ProjectPackages
 	var modelVersion string
 	var logger = logctx.Use(ctx)
-	err = buildPackage(ctx, logger, dir)
+	err = buildPackage(ctx, logger, solutionPath)
 	if err != nil {
 		return
 	}
 
-	cmd := exec.CommandContext(ctx, "dotnet", "list", "package", "--include-transitive", "--format", "json")
-	cmd.Dir = dir
+	cmd := exec.CommandContext(ctx, "dotnet", "list", solutionPath, "package", "--include-transitive", "--format", "json")
+	cmd.Dir = filepath.Dir(solutionPath)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		err = fmt.Errorf("create stdout pipe failed: %w", err)

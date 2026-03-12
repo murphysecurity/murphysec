@@ -27,8 +27,8 @@ func findCLNList(dir string) (filePath []string, err error) {
 			return nil
 		}
 		if filepath.Ext(path) == ".sln" {
-			// 找到.sln文件所在的目录
-			filePath = append(filePath, filepath.Dir(path))
+			// 找到 .sln 文件的完整路径
+			filePath = append(filePath, path)
 			return nil
 		}
 		return nil // 继续搜索
