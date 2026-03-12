@@ -12,6 +12,7 @@ import (
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/infra/exitcode"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/infra/ref"
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
@@ -24,6 +25,8 @@ var projectNameCli string
 var projectTagNames []string
 var imageScan bool
 var extraData string
+var webhookAddr string
+var webhookMode common.WebhookModeFlag
 var webhookToken []string
 
 func Cmd() *cobra.Command {
@@ -36,6 +39,8 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
+	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full")
 	c.Flags().StringArrayVar(&webhookToken, "webhook-token", make([]string, 0), "specify the webhook token in key=value format. Can be specified multiple times.")
 	return &c
 }
@@ -52,6 +57,8 @@ func ImageScanCmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
+	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full")
 	c.Flags().StringArrayVar(&webhookToken, "webhook-token", make([]string, 0), "specify the webhook token in key=value format. Can be specified multiple times.")
 	return &c
 }
@@ -126,6 +133,10 @@ func binScan(ctx context.Context, scanPath string) error {
 	createSubtask.TeamId = common.CliTeamIdOverride
 	createSubtask.ProjectTagNames = projectTagNames
 	createSubtask.ExtraData = &extraData
+	if webhookAddr != "" {
+		createSubtask.WebhookAddr = ref.OmitZero(webhookAddr)
+		createSubtask.WebhookMode = ref.OmitZero(webhookMode.String())
+	}
 
 	// parse and set webhook token
 	if len(webhookToken) > 0 {
