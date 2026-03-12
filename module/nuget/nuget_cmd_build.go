@@ -26,6 +26,14 @@ import (
 
 var _ErrDotnetNotFound = errors.New("dotnet not found")
 
+func tailText(s string, max int) string {
+	s = strings.TrimSpace(s)
+	if s == "" || max <= 0 || len(s) <= max {
+		return s
+	}
+	return "...(truncated)\n" + s[len(s)-max:]
+}
+
 func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 	logger := logctx.Use(ctx)
 	filePath, err := findCLNList(task.Dir())
@@ -131,14 +139,21 @@ func buildPackage(ctx context.Context, logger *zap.Logger, directory string) (er
 	}
 
 	var errOutput strings.Builder
+	var stderrOutput strings.Builder
+	var stdoutOutput strings.Builder
 	var wg sync.WaitGroup
 	wg.Add(1)
+	var stderrWg sync.WaitGroup
+	stderrWg.Add(1)
 	go func() {
+		defer stderrWg.Done()
 		scanner := bufio.NewScanner(stderr)
 		scanner.Buffer(nil, 1024*4)
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
-			logger.Warn("dotnet: " + scanner.Text())
+			line := scanner.Text()
+			logger.Warn("dotnet: " + line)
+			stderrOutput.WriteString(line + "\n")
 		}
 		wg.Done()
 	}()
@@ -148,13 +163,19 @@ func buildPackage(ctx context.Context, logger *zap.Logger, directory string) (er
 	scanner.Buffer(nil, 1024*4)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
-		logger.Warn(scanner.Text())
+		line := scanner.Text()
+		logger.Warn(line)
+		stdoutOutput.WriteString(line + "\n")
 	}
 	wg.Wait()
 	err = cmd.Wait()
 	if err != nil {
 		errOutput.WriteString(fmt.Sprintf("command execution failed: %v\n", err))
-		return err
+		return fmt.Errorf("dotnet restore failed: %w\nstderr:\n%s\nstdout:\n%s",
+			err,
+			tailText(stderrOutput.String(), 16*1024),
+			tailText(stdoutOutput.String(), 8*1024),
+		)
 	}
 
 	return nil
@@ -163,6 +184,7 @@ func buildPackage(ctx context.Context, logger *zap.Logger, directory string) (er
 func listNuget(ctx context.Context, task *model.InspectionTask, directory string) (err error) {
 	dir := directory
 	var cmdMessage string
+	var stderrOutput strings.Builder
 	var packageInfo ProjectPackages
 	var modelVersion string
 	var logger = logctx.Use(ctx)
@@ -185,12 +207,17 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 		logger.Error(err.Error())
 		return
 	}
+	var stderrWg sync.WaitGroup
+	stderrWg.Add(1)
 	go func() {
+		defer stderrWg.Done()
 		scanner := bufio.NewScanner(stderr)
 		scanner.Buffer(nil, 1024*4)
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
-			logger.Debug("dotnet: " + scanner.Text())
+			line := scanner.Text()
+			logger.Debug("dotnet: " + line)
+			stderrOutput.WriteString(line + "\n")
 		}
 	}()
 	logger.Sugar().Infof("executing command: %s", cmd)
@@ -209,10 +236,23 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 	}
 	logger.Debug("start scanning...")
 	cmdMessage = readOutput(stdout)
+	waitErr := cmd.Wait()
+	stderrWg.Wait()
+	if waitErr != nil {
+		return fmt.Errorf("dotnet list package failed: %w\nstderr:\n%s\nstdout:\n%s",
+			waitErr,
+			tailText(stderrOutput.String(), 16*1024),
+			tailText(cmdMessage, 8*1024),
+		)
+	}
 
 	err = json.Unmarshal([]byte(cmdMessage), &packageInfo)
 	if err != nil {
-		err = fmt.Errorf("outMessage unmarshal failed: %w", err)
+		err = fmt.Errorf("outMessage unmarshal failed: %w\nstderr:\n%s\nstdout:\n%s",
+			err,
+			tailText(stderrOutput.String(), 16*1024),
+			tailText(cmdMessage, 8*1024),
+		)
 		logger.Error(err.Error())
 		return
 	}
@@ -282,6 +322,5 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 		}
 		task.AddModule(m)
 	}
-	_ = cmd.Wait()
 	return nil
 }

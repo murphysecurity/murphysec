@@ -3,7 +3,9 @@ package nuget
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -24,8 +26,29 @@ func (Inspector) String() string {
 }
 
 func (Inspector) CheckDir(ctx context.Context, dir string) bool {
-	// return utils.IsFile(filepath.Join(dir, "packages.config"))
-	return utils.IsDir(dir)
+	if !utils.IsDir(dir) {
+		return false
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return false
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		switch name {
+		case "packages.config", "Directory.Packages.props", "global.json":
+			return true
+		}
+		ext := strings.ToLower(filepath.Ext(name))
+		switch ext {
+		case ".sln", ".csproj", ".fsproj", ".vbproj":
+			return true
+		}
+	}
+	return false
 }
 
 func (Inspector) InspectProject(ctx context.Context) error {
