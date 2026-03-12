@@ -53,6 +53,7 @@ var scanProcess bool
 var distribution common.DistributionFlag
 var disableWindowsPatchScan bool
 var windowsPatchScanTimeout int
+var webhookToken []string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -81,6 +82,8 @@ func Cmd() *cobra.Command {
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalArgs, "maven-arg", []string{}, "Append an argument to the Maven command. Can be specified multiple times.")
 	c.Flags().StringVar(&toolver.Default.Maven.JdkVersion, "maven-jdk", "", "specify JDK version for Maven build")
 	c.Flags().StringVar(&toolver.Default.Maven.MavenVersion, "maven-version", "", "specify Maven version for Maven build")
+	// 多个入参： murphy scan ./project --webhook-token Authorization=Bearer123 --webhook-token X-Custom-Header=value
+	c.Flags().StringArrayVar(&webhookToken, "webhook-token", make([]string, 0), "specify the webhook token in key=value format. Can be specified multiple times.")
 	return &c
 }
 
@@ -110,6 +113,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().StringArrayVar(&gradleProjectFilter.ProjectNames, "gradle-project-name", make([]string, 0), "specify the name of the Gradle project")
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalPrependArgs, "maven-prepend-arg", []string{}, "Prepend an argument to the Maven command. Can be specified multiple times.")
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalArgs, "maven-arg", []string{}, "Append an argument to the Maven command. Can be specified multiple times.")
+	c.Flags().StringArrayVar(&webhookToken, "webhook-token", make([]string, 0), "specify the webhook token in key=value format. Can be specified multiple times.")
 	return &c
 }
 
@@ -131,6 +135,7 @@ func EnvCmd() *cobra.Command {
 	c.Flags().BoolVar(&scanProcess, "scan-process", false, "Enable scanning of process to detect SBOM. Disabled by default")
 	c.Flags().BoolVar(&disableWindowsPatchScan, "disable-windows-patch-scan", false, "Disable scanning of Windows patches. Enabled by default")
 	c.Flags().IntVar(&windowsPatchScanTimeout, "windows-patch-scan-timeout", 60, "Timeout for Windows patch scan in seconds. Default is 60 seconds")
+	c.Flags().StringArrayVar(&webhookToken, "webhook-token", make([]string, 0), "specify the webhook token in key=value format. Can be specified multiple times.")
 	return &c
 }
 

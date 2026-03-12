@@ -18,3 +18,4 @@ tt
 /.vscode
 .murphy-report
 .gocache
+.claude

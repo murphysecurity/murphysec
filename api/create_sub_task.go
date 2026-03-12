@@ -35,6 +35,12 @@ type CreateSubTaskRequest struct {
 		MavenVersion string `json:"maven_version,omitempty"`
 		JdkVersion   string `json:"jdk_version,omitempty"`
 	} `json:"build_options"`
+	NoticeApiHeaders []NoticeApiHeadersArray `json:"notice_api_headers,omitempty"`
+}
+
+type NoticeApiHeadersArray struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type CreateSubTaskResponse struct {

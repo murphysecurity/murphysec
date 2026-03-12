@@ -58,6 +58,20 @@ func envScan(ctx context.Context, windowsPatchScanTimeout time.Duration) (task *
 		}
 	}
 	createSubtask.ExtraData = &extraData
+	if webhookAddr != "" {
+		createSubtask.WebhookAddr = ref.OmitZero(webhookAddr)
+		createSubtask.WebhookMode = ref.OmitZero(webhookMode.String())
+		// parse and set webhook token
+		if len(webhookToken) > 0 {
+			headers, err := common.ParseWebhookToken(webhookToken)
+			if err != nil {
+				cv.DisplayInitializeFailed(ctx, err)
+				return
+			}
+			createSubtask.NoticeApiHeaders = headers
+		}
+	}
+
 	createTaskResp, e := api.CreateSubTask(api.DefaultClient(), &createSubtask)
 	if errors.Is(e, api.ErrTLSError) {
 		cv.DisplayTLSNotice(ctx)
@@ -176,6 +190,16 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	if webhookAddr != "" {
 		createSubtask.WebhookAddr = ref.OmitZero(webhookAddr)
 		createSubtask.WebhookMode = ref.OmitZero(webhookMode.String())
+		// parse and set webhook token
+		if len(webhookToken) > 0 {
+			logger.Infof("parse webhook token: %+v", webhookToken)
+			headers, err := common.ParseWebhookToken(webhookToken)
+			if err != nil {
+				cv.DisplayInitializeFailed(ctx, err)
+				return nil, err
+			}
+			createSubtask.NoticeApiHeaders = headers
+		}
 	}
 	createSubtask.ExtraData = ref.OmitZero(extraData)
 
