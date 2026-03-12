@@ -41,13 +41,21 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 		logger.Error(err.Error())
 		return err
 	}
+	preferredSlnPaths, fallbackSlnPaths := splitSlnPathsByDockerCompose(slnPaths)
+	targetSlnPaths := preferredSlnPaths
+	if len(targetSlnPaths) == 0 {
+		targetSlnPaths = fallbackSlnPaths
+	}
 	logger.Sugar().Debugf("findCLNList: %v", slnPaths)
+	logger.Sugar().Debugf("findCLNList preferred: %v", preferredSlnPaths)
+	logger.Sugar().Debugf("findCLNList fallback: %v", fallbackSlnPaths)
+	logger.Sugar().Debugf("findCLNList target: %v", targetSlnPaths)
 	numCPU := utils.Coerce(runtime.NumCPU(), 1, 4)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	var errs []error
-	ch := make(chan string, len(slnPaths))
-	for _, j := range slnPaths {
+	ch := make(chan string, len(targetSlnPaths))
+	for _, j := range targetSlnPaths {
 		ch <- j
 	}
 	close(ch)

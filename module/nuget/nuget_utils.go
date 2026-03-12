@@ -3,6 +3,7 @@ package nuget
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/murphysecurity/murphysec/infra/pathignore"
 	"github.com/murphysecurity/murphysec/utils"
@@ -35,4 +36,23 @@ func findCLNList(dir string) (filePath []string, err error) {
 	})
 
 	return filePath, err
+}
+
+func slnHasDockerComposeProject(slnPath string) bool {
+	data, err := os.ReadFile(slnPath)
+	if err != nil {
+		return false
+	}
+	return strings.Contains(string(data), "docker-compose.dcproj")
+}
+
+func splitSlnPathsByDockerCompose(slnPaths []string) (preferred []string, fallback []string) {
+	for _, p := range slnPaths {
+		if slnHasDockerComposeProject(p) {
+			fallback = append(fallback, p)
+		} else {
+			preferred = append(preferred, p)
+		}
+	}
+	return preferred, fallback
 }
