@@ -2,6 +2,8 @@ package binscan
 
 import (
 	"context"
+	"path/filepath"
+
 	"github.com/murphysecurity/murphysec/api"
 	"github.com/murphysecurity/murphysec/chunkupload"
 	"github.com/murphysecurity/murphysec/cmd/murphy/internal/common"
@@ -15,7 +17,6 @@ import (
 	"github.com/murphysecurity/murphysec/model"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/spf13/cobra"
-	"path/filepath"
 )
 
 var cliIOTScan bool
@@ -23,6 +24,7 @@ var projectNameCli string
 var projectTagNames []string
 var imageScan bool
 var extraData string
+var webhookToken []string
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -34,6 +36,7 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().StringArrayVar(&webhookToken, "webhook-token", make([]string, 0), "specify the webhook token in key=value format. Can be specified multiple times.")
 	return &c
 }
 
@@ -49,6 +52,7 @@ func ImageScanCmd() *cobra.Command {
 	c.Flags().StringVar(&projectNameCli, "project-name", "", "specify project name")
 	c.Flags().StringArrayVar(&projectTagNames, "project-tag", make([]string, 0), "specify the tag of the project")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
+	c.Flags().StringArrayVar(&webhookToken, "webhook-token", make([]string, 0), "specify the webhook token in key=value format. Can be specified multiple times.")
 	return &c
 }
 
@@ -113,15 +117,27 @@ func binScan(ctx context.Context, scanPath string) error {
 	if imageScan {
 		mode = model.ScanModeImage
 	}
-	taskResp, e := api.CreateSubTask(api.DefaultClient(), &api.CreateSubTaskRequest{
-		AccessType:      model.AccessTypeCli,
-		ScanMode:        mode,
-		Dir:             scanPath,
-		ProjectName:     projectNameCli,
-		TeamId:          common.CliTeamIdOverride,
-		ProjectTagNames: projectTagNames,
-		ExtraData:       &extraData,
-	})
+
+	var createSubtask api.CreateSubTaskRequest
+	createSubtask.AccessType = model.AccessTypeCli
+	createSubtask.ScanMode = mode
+	createSubtask.Dir = scanPath
+	createSubtask.ProjectName = projectNameCli
+	createSubtask.TeamId = common.CliTeamIdOverride
+	createSubtask.ProjectTagNames = projectTagNames
+	createSubtask.ExtraData = &extraData
+
+	// parse and set webhook token
+	if len(webhookToken) > 0 {
+		headers, err := common.ParseWebhookToken(webhookToken)
+		if err != nil {
+			cv.DisplayCreateSubtaskErr(ctx, err)
+			return err
+		}
+		createSubtask.NoticeApiHeaders = headers
+	}
+
+	taskResp, e := api.CreateSubTask(api.DefaultClient(), &createSubtask)
 	if e != nil {
 		cv.DisplayCreateSubtaskErr(ctx, e)
 		return e
