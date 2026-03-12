@@ -51,7 +51,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		})
 		return e
 	}
-	jsonFilePath, e := ExecuteConanInfoCmd(ctx, cmdInfo.Path, task.Dir())
+	jsonFilePath, jsonKind, e := ExecuteConanInfoCmd(ctx, cmdInfo.Path, task.Dir())
 
 	var conanErr conanError
 	if errors.As(e, &conanErr) {
@@ -79,16 +79,31 @@ func (Inspector) InspectProject(ctx context.Context) error {
 			logger.Error("Can't remove temp file", zap.Error(e), zap.Any("path", jsonFilePath))
 		}
 	}()
-	var conanJson _ConanInfoJsonFile
-	if e := conanJson.ReadFromFile(jsonFilePath); e != nil {
-		registeredAutoBuild.MarkFailed()
-		scanerr.Add(ctx, scanerr.Param{
-			Kind:    scanerr.KindConanFailed,
-			Content: e.Error(),
-		})
-		return e
+	var t *model.DependencyItem
+	switch jsonKind {
+	case ConanJsonKindGraph:
+		var conanGraphJson _ConanGraphInfoJsonFile
+		if e := conanGraphJson.ReadFromFile(jsonFilePath); e != nil {
+			registeredAutoBuild.MarkFailed()
+			scanerr.Add(ctx, scanerr.Param{
+				Kind:    scanerr.KindConanFailed,
+				Content: e.Error(),
+			})
+			return e
+		}
+		t, e = conanGraphJson.Tree()
+	default:
+		var conanJson _ConanInfoJsonFile
+		if e := conanJson.ReadFromFile(jsonFilePath); e != nil {
+			registeredAutoBuild.MarkFailed()
+			scanerr.Add(ctx, scanerr.Param{
+				Kind:    scanerr.KindConanFailed,
+				Content: e.Error(),
+			})
+			return e
+		}
+		t, e = conanJson.Tree()
 	}
-	t, e := conanJson.Tree()
 	if e != nil {
 		registeredAutoBuild.MarkFailed()
 		scanerr.Add(ctx, scanerr.Param{

@@ -1,6 +1,7 @@
 package conan
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/murphysecurity/murphysec/errors"
@@ -13,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -52,12 +54,35 @@ func getConanInfo(ctx context.Context) (*CmdInfo, error) {
 	return r, nil
 }
 
-func ExecuteConanInfoCmd(ctx context.Context, conanPath string, dir string) (string, error) {
+type ConanJsonKind string
+
+const (
+	ConanJsonKindGraph ConanJsonKind = "graph"
+	ConanJsonKindInfo  ConanJsonKind = "info"
+)
+
+func ExecuteConanInfoCmd(ctx context.Context, conanPath string, dir string) (string, ConanJsonKind, error) {
 	logger := logctx.Use(ctx)
 	lp := logpipe.New(logger, "conan")
 	defer lp.Close()
 	jsonP := getConanInfoJsonPath()
 	logger.Sugar().Debugf("temp file: %s", jsonP)
+	// Prefer Conan2 graph mode for better compatibility with modern recipes.
+	if e := executeConanGraphInfoCmd(ctx, conanPath, dir, jsonP); e == nil {
+		logger.Info("Conan command completed with graph mode")
+		return jsonP, ConanJsonKindGraph, nil
+	}
+	logger.Sugar().Warn("Conan graph mode failed, falling back to info mode")
+
+	if e := executeConanInfoCmd(ctx, conanPath, dir, jsonP); e != nil {
+		return "", "", e
+	}
+	logger.Info("Conan command completed with info mode")
+	return jsonP, ConanJsonKindInfo, nil
+}
+
+func executeConanInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string) error {
+	logger := logctx.Use(ctx)
 	c := exec.Command(conanPath, "info", ".", "-j", jsonP)
 	logger.Sugar().Infof("Command: %s", c.String())
 	c.Env = getEnvForConan()
@@ -69,11 +94,31 @@ func ExecuteConanInfoCmd(ctx context.Context, conanPath string, dir string) (str
 	c.Stderr = io.MultiWriter(sb, logPipe)
 	if e := c.Run(); e != nil {
 		logger.Warn("Conan command exit with error", zap.Error(e))
-		conanErr := conanError(sb.Bytes())
-		return "", conanErr
+		return conanError(sb.Bytes())
 	}
-	logger.Info("Conan command completed")
-	return jsonP, nil
+	return nil
+}
+
+func executeConanGraphInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string) error {
+	logger := logctx.Use(ctx)
+	c := exec.Command(conanPath, "graph", "info", ".", "--format=json")
+	logger.Sugar().Infof("Command: %s", c.String())
+	c.Env = getEnvForConan()
+	c.Dir = dir
+	sb := suffixbuf.NewSize(1024)
+	var out bytes.Buffer
+	logPipe := logpipe.New(logger, "conan")
+	defer logPipe.Close()
+	c.Stdout = io.MultiWriter(&out, logPipe, sb)
+	c.Stderr = io.MultiWriter(logPipe, sb)
+	if e := c.Run(); e != nil {
+		logger.Warn("Conan graph command exit with error", zap.Error(e))
+		return conanError(sb.Bytes())
+	}
+	if e := os.WriteFile(jsonP, out.Bytes(), 0o644); e != nil {
+		return fmt.Errorf("write conan graph json failed: %w", e)
+	}
+	return nil
 }
 
 func getConanInfoJsonPath() string {
@@ -96,6 +141,16 @@ func GetConanVersion(ctx context.Context, conanPath string) (string, error) {
 	} else {
 		return strings.TrimSpace(strings.TrimPrefix(string(data), "Conan version")), nil
 	}
+}
+
+func ConanMajorVersion(version string) int {
+	version = strings.TrimSpace(version)
+	if version == "" {
+		return 0
+	}
+	parts := strings.SplitN(version, ".", 2)
+	v, _ := strconv.Atoi(parts[0])
+	return v
 }
 
 func getEnvForConan() []string {
