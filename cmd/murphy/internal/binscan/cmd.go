@@ -136,16 +136,15 @@ func binScan(ctx context.Context, scanPath string) error {
 	if webhookAddr != "" {
 		createSubtask.WebhookAddr = ref.OmitZero(webhookAddr)
 		createSubtask.WebhookMode = ref.OmitZero(webhookMode.String())
-	}
-
-	// parse and set webhook token
-	if len(webhookToken) > 0 {
-		headers, err := common.ParseWebhookToken(webhookToken)
-		if err != nil {
-			cv.DisplayCreateSubtaskErr(ctx, err)
-			return err
+		// parse and set webhook token
+		if len(webhookToken) > 0 {
+			headers, err := common.ParseWebhookToken(webhookToken)
+			if err != nil {
+				cv.DisplayCreateSubtaskErr(ctx, err)
+				return err
+			}
+			createSubtask.NoticeApiHeaders = headers
 		}
-		createSubtask.NoticeApiHeaders = headers
 	}
 
 	taskResp, e := api.CreateSubTask(api.DefaultClient(), &createSubtask)
