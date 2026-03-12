@@ -101,16 +101,22 @@ func buildEntrance(ctx context.Context, task *model.InspectionTask, directory st
 	}
 
 }
-func readOutput(pipe io.ReadCloser) string {
-	var res string
+func readOutput(pipe io.ReadCloser, logger *zap.Logger, logPrefix string) string {
+	var res strings.Builder
 	scanner := bufio.NewScanner(pipe)
+	scanner.Buffer(nil, 1024*1024)
+	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
-		res += scanner.Text() + "\n"
+		line := scanner.Text()
+		if logger != nil {
+			logger.Debug(logPrefix + line)
+		}
+		res.WriteString(line + "\n")
 	}
-	if err := scanner.Err(); err != nil {
-		fmt.Printf("reading output failed: %v\n", err)
+	if err := scanner.Err(); err != nil && logger != nil {
+		logger.Error("reading output failed", zap.Error(err))
 	}
-	return res
+	return res.String()
 }
 
 // 通过先运行 dotnet restore 命令，确保项目中的所有 NuGet 包依赖项被正确恢复
@@ -221,8 +227,6 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 		}
 	}()
 	logger.Sugar().Infof("executing command: %s", cmd)
-	var scanner = bufio.NewScanner(stdout)
-	scanner.Buffer(nil, 1024*4)
 	err = cmd.Start()
 	if err != nil {
 		// if the command is not found, we should not return error
@@ -235,7 +239,7 @@ func listNuget(ctx context.Context, task *model.InspectionTask, directory string
 		return
 	}
 	logger.Debug("start scanning...")
-	cmdMessage = readOutput(stdout)
+	cmdMessage = readOutput(stdout, logger, "dotnet: ")
 	waitErr := cmd.Wait()
 	stderrWg.Wait()
 	if waitErr != nil {
