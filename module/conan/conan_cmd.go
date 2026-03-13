@@ -122,6 +122,9 @@ func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (str
 	logConanRemoteConfigPaths(logger, major)
 	logger.Sugar().Debugf("temp file: %s", jsonP)
 	if major >= 2 {
+		if e := ensureConan2DefaultProfile(ctx, cmdInfo.Path); e != nil {
+			return "", "", e
+		}
 		logger.Info("Conan mode selected: graph")
 		if e := executeConanGraphInfoCmd(ctx, cmdInfo.Path, dir, jsonP); e != nil {
 			return "", "", e
@@ -135,6 +138,42 @@ func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (str
 	}
 	logger.Info("Conan command completed with info mode")
 	return jsonP, ConanJsonKindInfo, nil
+}
+
+func ensureConan2DefaultProfile(ctx context.Context, conanPath string) error {
+	logger := logctx.Use(ctx)
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		logger.Warn("Conan profile precheck skipped: cannot determine home directory", zap.Error(err))
+		return nil
+	}
+	profilePath := filepath.Join(home, ".conan2", "profiles", "default")
+	if _, statErr := os.Stat(profilePath); statErr == nil {
+		logger.Sugar().Infof("Conan default profile exists: %s", profilePath)
+		return nil
+	} else if !os.IsNotExist(statErr) {
+		logger.Sugar().Warnf("Conan default profile stat failed: %s, err=%v", profilePath, statErr)
+	}
+
+	logger.Sugar().Infof("Conan default profile missing: %s, running detect", profilePath)
+	c := exec.CommandContext(ctx, conanPath, "profile", "detect", "--force")
+	logger.Sugar().Infof("Command: %s", c.String())
+	c.Env = getEnvForConan()
+	sb := suffixbuf.NewSize(1024)
+	logPipe := logpipe.New(logger, "conan")
+	defer logPipe.Close()
+	c.Stdout = io.MultiWriter(sb, logPipe)
+	c.Stderr = io.MultiWriter(sb, logPipe)
+	if e := c.Run(); e != nil {
+		logger.Warn("Conan profile detect command exit with error", zap.Error(e))
+		return conanError(sb.Bytes())
+	}
+
+	if _, statErr := os.Stat(profilePath); statErr != nil {
+		return fmt.Errorf("conan profile detect completed but default profile still missing: %s, err=%w", profilePath, statErr)
+	}
+	logger.Sugar().Infof("Conan default profile created: %s", profilePath)
+	return nil
 }
 
 func executeConanInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string) error {
