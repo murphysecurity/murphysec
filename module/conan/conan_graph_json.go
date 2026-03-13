@@ -20,12 +20,16 @@ type _ConanGraphNode struct {
 	Ref      string `json:"ref"`
 	Name     string `json:"name"`
 	Version  string `json:"version"`
-	Requires []struct {
-		ID      string `json:"id"`
-		Ref     string `json:"ref"`
-		Name    string `json:"name"`
-		Version string `json:"version"`
-	} `json:"requires"`
+	Requires []_ConanGraphRequirement `json:"requires"`
+	// Conan2 graph json uses "dependencies", which can be a map or array.
+	Dependencies json.RawMessage `json:"dependencies"`
+}
+
+type _ConanGraphRequirement struct {
+	ID      string `json:"id"`
+	Ref     string `json:"ref"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
 }
 
 func (t *_ConanGraphInfoJsonFile) ReadFromFile(path string) error {
@@ -96,6 +100,28 @@ func parseConanRefToComponent(ref, name, version string) (string, string) {
 	return name, version
 }
 
+func parseConanGraphRequirements(n _ConanGraphNode) []_ConanGraphRequirement {
+	reqs := append([]_ConanGraphRequirement{}, n.Requires...)
+	if len(n.Dependencies) == 0 {
+		return reqs
+	}
+	var depMap map[string]_ConanGraphRequirement
+	if e := json.Unmarshal(n.Dependencies, &depMap); e == nil && len(depMap) > 0 {
+		for k, v := range depMap {
+			if v.ID == "" {
+				v.ID = k
+			}
+			reqs = append(reqs, v)
+		}
+		return reqs
+	}
+	var depArray []_ConanGraphRequirement
+	if e := json.Unmarshal(n.Dependencies, &depArray); e == nil && len(depArray) > 0 {
+		reqs = append(reqs, depArray...)
+	}
+	return reqs
+}
+
 func (t _ConanGraphInfoJsonFile) Tree() (*model.DependencyItem, error) {
 	nodes := parseConanGraphNodes(t.Graph.Nodes)
 	if len(nodes) == 0 {
@@ -106,7 +132,7 @@ func (t _ConanGraphInfoJsonFile) Tree() (*model.DependencyItem, error) {
 		inDegree[id] = 0
 	}
 	for _, n := range nodes {
-		for _, req := range n.Requires {
+		for _, req := range parseConanGraphRequirements(n) {
 			if req.ID == "" {
 				continue
 			}
@@ -146,7 +172,7 @@ func (t _ConanGraphInfoJsonFile) Tree() (*model.DependencyItem, error) {
 				EcoRepo:     EcoRepo,
 			},
 		}
-		for _, req := range n.Requires {
+		for _, req := range parseConanGraphRequirements(n) {
 			if req.ID == "" {
 				continue
 			}
