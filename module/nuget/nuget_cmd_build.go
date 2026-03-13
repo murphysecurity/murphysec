@@ -22,6 +22,7 @@ import (
 
 	"github.com/murphysecurity/murphysec/env"
 	"github.com/murphysecurity/murphysec/infra/logctx"
+	"github.com/murphysecurity/murphysec/infra/logsanitize"
 	"github.com/murphysecurity/murphysec/model"
 	"go.uber.org/zap"
 )
@@ -195,7 +196,7 @@ func readOutput(pipe io.ReadCloser, logger *zap.Logger, logPrefix string) string
 	for scanner.Scan() {
 		line := scanner.Text()
 		if logger != nil {
-			logger.Debug(logPrefix + line)
+			logger.Debug(logPrefix + logsanitize.ForLog(line))
 		}
 		res.WriteString(line + "\n")
 	}
@@ -244,7 +245,7 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			line := scanner.Text()
-			logger.Warn("dotnet: " + line)
+			logger.Warn("dotnet: " + logsanitize.ForLog(line))
 			stderrOutput.WriteString(line + "\n")
 		}
 		wg.Done()
@@ -256,7 +257,7 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		line := scanner.Text()
-		logger.Warn(line)
+		logger.Warn(logsanitize.ForLog(line))
 		stdoutOutput.WriteString(line + "\n")
 	}
 	wg.Wait()
@@ -309,7 +310,7 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			line := scanner.Text()
-			logger.Debug("dotnet: " + line)
+			logger.Debug("dotnet: " + logsanitize.ForLog(line))
 			stderrOutput.WriteString(line + "\n")
 		}
 	}()

@@ -3,6 +3,7 @@ package logpipe
 import (
 	"bufio"
 	"fmt"
+	"github.com/murphysecurity/murphysec/infra/logsanitize"
 	"go.uber.org/zap"
 	"io"
 	"sync/atomic"
@@ -47,7 +48,7 @@ func NewWithOption(option Option) *Pipe {
 			}
 			var now = time.Now()
 			lp.LastLineTimestamp.Store(&now)
-			logger.Debug(fmt.Sprintf("%s: %s", prefix, scanner.Text()))
+			logger.Debug(fmt.Sprintf("%s: %s", prefix, logsanitize.ForLog(scanner.Text())))
 		}
 		// drain
 		for {
