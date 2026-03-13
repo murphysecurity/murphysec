@@ -167,6 +167,10 @@ func buildEntrance(ctx context.Context, task *model.InspectionTask, solutionPath
 	if !isDotnetBuildTarget(solutionPath) {
 		return fmt.Errorf("unsupported nuget build target: %s", solutionPath)
 	}
+	if missingRefs, e := findMissingProjectReferences(solutionPath); e == nil && len(missingRefs) > 0 {
+		logger.Sugar().Warnf("skip nuget build for %s because referenced projects are missing in current scan context: %v", solutionPath, missingRefs)
+		return nil
+	}
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 	e := listNuget(ctx, task, solutionPath)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -111,4 +112,47 @@ func validateBuildTargets(targets []string) error {
 		}
 	}
 	return nil
+}
+
+var projectReferencePattern = regexp.MustCompile(`(?is)<\s*ProjectReference\b[^>]*\bInclude\s*=\s*["']([^"']+)["']`)
+
+func findMissingProjectReferences(projectPath string) ([]string, error) {
+	ext := strings.ToLower(filepath.Ext(projectPath))
+	switch ext {
+	case ".csproj", ".fsproj", ".vbproj":
+	default:
+		return nil, nil
+	}
+	data, err := os.ReadFile(projectPath)
+	if err != nil {
+		return nil, err
+	}
+	matches := projectReferencePattern.FindAllStringSubmatch(string(data), -1)
+	if len(matches) == 0 {
+		return nil, nil
+	}
+	baseDir := filepath.Dir(projectPath)
+	seen := map[string]struct{}{}
+	var missing []string
+	for _, m := range matches {
+		if len(m) < 2 {
+			continue
+		}
+		ref := filepath.Clean(m[1])
+		refPath := ref
+		if !filepath.IsAbs(refPath) {
+			refPath = filepath.Join(baseDir, refPath)
+		}
+		refPath = filepath.Clean(refPath)
+		if utils.IsFile(refPath) {
+			continue
+		}
+		if _, ok := seen[refPath]; ok {
+			continue
+		}
+		seen[refPath] = struct{}{}
+		missing = append(missing, refPath)
+	}
+	sort.Strings(missing)
+	return missing, nil
 }
