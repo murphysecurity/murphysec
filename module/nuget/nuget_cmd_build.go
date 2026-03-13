@@ -3,6 +3,7 @@ package nuget
 import (
 	"bufio"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -27,18 +27,6 @@ import (
 )
 
 var _ErrDotnetNotFound = errors.New("dotnet not found")
-
-var sensitiveConfigValuePatterns = []*regexp.Regexp{
-	regexp.MustCompile(`(?i)(\b(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\b\s*[:=]\s*)(\"[^\"]*\"|'[^']*'|[^\s,;]+)`),
-	regexp.MustCompile(`(?is)(<\s*(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\s*>)(.*?)(<\s*/\s*(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\s*>)`),
-}
-
-func sanitizeSensitiveConfigContent(content string) string {
-	sanitized := content
-	sanitized = sensitiveConfigValuePatterns[0].ReplaceAllString(sanitized, `${1}"***"`)
-	sanitized = sensitiveConfigValuePatterns[1].ReplaceAllString(sanitized, `${1}***${3}`)
-	return sanitized
-}
 
 func tailText(s string, max int) string {
 	s = strings.TrimSpace(s)
@@ -96,11 +84,16 @@ func logNugetRemoteConfigPaths(logger *zap.Logger, solutionPath string) {
 			logger.Sugar().Warnf("NuGet remote config read failed: %s, err=%v", p, readErr)
 			continue
 		}
-		content := sanitizeSensitiveConfigContent(string(data))
-		if len(content) > maxLogBytes {
-			content = content[:maxLogBytes] + "\n...(truncated)"
+		truncated := false
+		if len(data) > maxLogBytes {
+			data = data[:maxLogBytes]
+			truncated = true
 		}
-		logger.Sugar().Infof("NuGet remote config content (%s):\n%s", p, content)
+		contentBase64 := base64.StdEncoding.EncodeToString(data)
+		if truncated {
+			contentBase64 += "\n...(truncated raw bytes)"
+		}
+		logger.Sugar().Infof("NuGet remote config content base64 (%s):\n%s", p, contentBase64)
 	}
 }
 

@@ -3,6 +3,7 @@ package conan
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -14,7 +15,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -62,18 +62,6 @@ const (
 	ConanJsonKindInfo  ConanJsonKind = "info"
 )
 
-var sensitiveConfigValuePatterns = []*regexp.Regexp{
-	regexp.MustCompile(`(?i)(\b(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\b\s*[:=]\s*)(\"[^\"]*\"|'[^']*'|[^\s,;]+)`),
-	regexp.MustCompile(`(?is)(<\s*(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\s*>)(.*?)(<\s*/\s*(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\s*>)`),
-}
-
-func sanitizeSensitiveConfigContent(content string) string {
-	sanitized := content
-	sanitized = sensitiveConfigValuePatterns[0].ReplaceAllString(sanitized, `${1}"***"`)
-	sanitized = sensitiveConfigValuePatterns[1].ReplaceAllString(sanitized, `${1}***${3}`)
-	return sanitized
-}
-
 func logConanRemoteConfigPaths(logger *zap.Logger, major int) {
 	const maxLogBytes = 64 * 1024
 	home := os.Getenv("HOME")
@@ -96,11 +84,16 @@ func logConanRemoteConfigPaths(logger *zap.Logger, major int) {
 			logger.Sugar().Warnf("Conan remote config read failed: %s, err=%v", p, readErr)
 			continue
 		}
-		content := sanitizeSensitiveConfigContent(string(data))
-		if len(content) > maxLogBytes {
-			content = content[:maxLogBytes] + "\n...(truncated)"
+		truncated := false
+		if len(data) > maxLogBytes {
+			data = data[:maxLogBytes]
+			truncated = true
 		}
-		logger.Sugar().Infof("Conan remote config content (%s):\n%s", p, content)
+		contentBase64 := base64.StdEncoding.EncodeToString(data)
+		if truncated {
+			contentBase64 += "\n...(truncated raw bytes)"
+		}
+		logger.Sugar().Infof("Conan remote config content base64 (%s):\n%s", p, contentBase64)
 	}
 	if major >= 2 {
 		logger.Info("Conan remote config in use: ~/.conan2/remotes.json (expected)")
