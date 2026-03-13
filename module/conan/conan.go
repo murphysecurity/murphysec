@@ -51,7 +51,7 @@ func (Inspector) InspectProject(ctx context.Context) error {
 		})
 		return e
 	}
-	jsonFilePath, jsonKind, e := ExecuteConanInfoCmd(ctx, cmdInfo.Path, task.Dir())
+	jsonFilePath, jsonKind, e := ExecuteConanInfoCmd(ctx, cmdInfo, task.Dir())
 
 	var conanErr conanError
 	if errors.As(e, &conanErr) {
