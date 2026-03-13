@@ -153,8 +153,8 @@ func (t _ConanGraphInfoJsonFile) Tree() (*model.DependencyItem, error) {
 	if rootID == "" {
 		return nil, ErrRootNodeNotFound
 	}
-	var build func(id string, visited map[string]bool) *model.DependencyItem
-	build = func(id string, visited map[string]bool) *model.DependencyItem {
+	var build func(id string, depth int, visited map[string]bool) *model.DependencyItem
+	build = func(id string, depth int, visited map[string]bool) *model.DependencyItem {
 		n, ok := nodes[id]
 		if !ok {
 			return nil
@@ -172,11 +172,16 @@ func (t _ConanGraphInfoJsonFile) Tree() (*model.DependencyItem, error) {
 				EcoRepo:     EcoRepo,
 			},
 		}
+		if depth == 1 {
+			item.DependencyRelation = model.DependencyRelationDirect
+		} else if depth > 1 {
+			item.DependencyRelation = model.DependencyRelationTransitive
+		}
 		for _, req := range parseConanGraphRequirements(n) {
 			if req.ID == "" {
 				continue
 			}
-			child := build(req.ID, visited)
+			child := build(req.ID, depth+1, visited)
 			if child == nil {
 				cn, cv := parseConanRefToComponent(req.Ref, req.Name, req.Version)
 				if cn == "" {
@@ -189,12 +194,17 @@ func (t _ConanGraphInfoJsonFile) Tree() (*model.DependencyItem, error) {
 						EcoRepo:     EcoRepo,
 					},
 				}
+				if depth+1 == 1 {
+					child.DependencyRelation = model.DependencyRelationDirect
+				} else if depth+1 > 1 {
+					child.DependencyRelation = model.DependencyRelationTransitive
+				}
 			}
 			item.Dependencies = append(item.Dependencies, *child)
 		}
 		return item
 	}
-	root := build(rootID, map[string]bool{})
+	root := build(rootID, 0, map[string]bool{})
 	if root == nil {
 		return nil, ErrRootNodeNotFound
 	}
