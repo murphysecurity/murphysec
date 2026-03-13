@@ -206,6 +206,17 @@ func readOutput(pipe io.ReadCloser, logger *zap.Logger, logPrefix string) string
 	return res.String()
 }
 
+func countLines(s string) int {
+	if s == "" {
+		return 0
+	}
+	n := strings.Count(s, "\n")
+	if strings.HasSuffix(s, "\n") {
+		return n
+	}
+	return n + 1
+}
+
 // 通过先运行 dotnet restore 命令，确保项目中的所有 NuGet 包依赖项被正确恢复
 func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) (err error) {
 	//dotnet restore
@@ -327,9 +338,11 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 		return
 	}
 	logger.Debug("start scanning...")
-	cmdMessage = readOutput(stdout, logger, "dotnet: ")
+	// dotnet list --format json can be very large. Avoid per-line debug logging to reduce stream pressure.
+	cmdMessage = readOutput(stdout, nil, "")
 	waitErr := cmd.Wait()
 	stderrWg.Wait()
+	logger.Sugar().Infof("dotnet list stdout summary: bytes=%d lines=%d", len(cmdMessage), countLines(cmdMessage))
 	if waitErr != nil {
 		return fmt.Errorf("dotnet list package failed: %w\nstderr:\n%s\nstdout:\n%s",
 			waitErr,
