@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -32,6 +33,62 @@ func tailText(s string, max int) string {
 		return s
 	}
 	return "...(truncated)\n" + s[len(s)-max:]
+}
+
+func appendIfExists(paths []string, seen map[string]struct{}, p string) []string {
+	if p == "" {
+		return paths
+	}
+	if _, ok := seen[p]; ok {
+		return paths
+	}
+	seen[p] = struct{}{}
+	return append(paths, p)
+}
+
+func detectNugetConfigPaths(solutionPath string) []string {
+	seen := map[string]struct{}{}
+	var paths []string
+	dir := filepath.Dir(solutionPath)
+	for {
+		paths = appendIfExists(paths, seen, filepath.Join(dir, "NuGet.Config"))
+		paths = appendIfExists(paths, seen, filepath.Join(dir, "nuget.config"))
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	home := os.Getenv("HOME")
+	if home != "" {
+		paths = appendIfExists(paths, seen, filepath.Join(home, ".nuget", "NuGet", "NuGet.Config"))
+		paths = appendIfExists(paths, seen, filepath.Join(home, ".config", "NuGet", "NuGet.Config"))
+	}
+	paths = appendIfExists(paths, seen, filepath.Join(string(os.PathSeparator), "etc", "nuget", "NuGet.Config"))
+	paths = appendIfExists(paths, seen, filepath.Join(string(os.PathSeparator), "usr", "local", "share", "NuGet", "Config", "NuGet.Config"))
+	return paths
+}
+
+func logNugetRemoteConfigPaths(logger *zap.Logger, solutionPath string) {
+	const maxLogBytes = 64 * 1024
+	for _, p := range detectNugetConfigPaths(solutionPath) {
+		_, err := os.Stat(p)
+		exists := err == nil
+		logger.Sugar().Infof("NuGet remote config path: %s (exists=%t)", p, exists)
+		if !exists {
+			continue
+		}
+		data, readErr := os.ReadFile(p)
+		if readErr != nil {
+			logger.Sugar().Warnf("NuGet remote config read failed: %s, err=%v", p, readErr)
+			continue
+		}
+		content := string(data)
+		if len(content) > maxLogBytes {
+			content = content[:maxLogBytes] + "\n...(truncated)"
+		}
+		logger.Sugar().Infof("NuGet remote config content (%s):\n%s", p, content)
+	}
 }
 
 func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
@@ -201,6 +258,7 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 	var packageInfo ProjectPackages
 	var modelVersion string
 	var logger = logctx.Use(ctx)
+	logNugetRemoteConfigPaths(logger, solutionPath)
 	err = buildPackage(ctx, logger, solutionPath)
 	if err != nil {
 		return

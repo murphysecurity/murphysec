@@ -61,20 +61,63 @@ const (
 	ConanJsonKindInfo  ConanJsonKind = "info"
 )
 
-func ExecuteConanInfoCmd(ctx context.Context, conanPath string, dir string) (string, ConanJsonKind, error) {
+func logConanRemoteConfigPaths(logger *zap.Logger, major int) {
+	const maxLogBytes = 64 * 1024
+	home := os.Getenv("HOME")
+	if home == "" {
+		return
+	}
+	candidates := []string{
+		filepath.Join(home, ".conan", "remotes.json"),
+		filepath.Join(home, ".conan2", "remotes.json"),
+	}
+	for _, p := range candidates {
+		_, err := os.Stat(p)
+		exists := err == nil
+		logger.Sugar().Infof("Conan remote config path: %s (exists=%t)", p, exists)
+		if !exists {
+			continue
+		}
+		data, readErr := os.ReadFile(p)
+		if readErr != nil {
+			logger.Sugar().Warnf("Conan remote config read failed: %s, err=%v", p, readErr)
+			continue
+		}
+		content := string(data)
+		if len(content) > maxLogBytes {
+			content = content[:maxLogBytes] + "\n...(truncated)"
+		}
+		logger.Sugar().Infof("Conan remote config content (%s):\n%s", p, content)
+	}
+	if major >= 2 {
+		logger.Info("Conan remote config in use: ~/.conan2/remotes.json (expected)")
+	} else {
+		logger.Info("Conan remote config in use: ~/.conan/remotes.json (expected)")
+	}
+}
+
+func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (string, ConanJsonKind, error) {
 	logger := logctx.Use(ctx)
 	lp := logpipe.New(logger, "conan")
 	defer lp.Close()
+	if cmdInfo == nil {
+		return "", "", fmt.Errorf("conan cmd info is nil")
+	}
 	jsonP := getConanInfoJsonPath()
+	major := ConanMajorVersion(cmdInfo.Version)
+	logger.Sugar().Infof("Conan detected: path=%s version=%s major=%d", cmdInfo.Path, cmdInfo.Version, major)
+	logConanRemoteConfigPaths(logger, major)
 	logger.Sugar().Debugf("temp file: %s", jsonP)
-	// Prefer Conan2 graph mode for better compatibility with modern recipes.
-	if e := executeConanGraphInfoCmd(ctx, conanPath, dir, jsonP); e == nil {
+	if major >= 2 {
+		logger.Info("Conan mode selected: graph")
+		if e := executeConanGraphInfoCmd(ctx, cmdInfo.Path, dir, jsonP); e != nil {
+			return "", "", e
+		}
 		logger.Info("Conan command completed with graph mode")
 		return jsonP, ConanJsonKindGraph, nil
 	}
-	logger.Sugar().Warn("Conan graph mode failed, falling back to info mode")
-
-	if e := executeConanInfoCmd(ctx, conanPath, dir, jsonP); e != nil {
+	logger.Info("Conan mode selected: info")
+	if e := executeConanInfoCmd(ctx, cmdInfo.Path, dir, jsonP); e != nil {
 		return "", "", e
 	}
 	logger.Info("Conan command completed with info mode")
