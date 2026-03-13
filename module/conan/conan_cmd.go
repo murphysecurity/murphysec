@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -61,6 +62,18 @@ const (
 	ConanJsonKindInfo  ConanJsonKind = "info"
 )
 
+var sensitiveConfigValuePatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(?i)(\b(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\b\s*[:=]\s*)(\"[^\"]*\"|'[^']*'|[^\s,;]+)`),
+	regexp.MustCompile(`(?is)(<\s*(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\s*>)(.*?)(<\s*/\s*(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\s*>)`),
+}
+
+func sanitizeSensitiveConfigContent(content string) string {
+	sanitized := content
+	sanitized = sensitiveConfigValuePatterns[0].ReplaceAllString(sanitized, `${1}"***"`)
+	sanitized = sensitiveConfigValuePatterns[1].ReplaceAllString(sanitized, `${1}***${3}`)
+	return sanitized
+}
+
 func logConanRemoteConfigPaths(logger *zap.Logger, major int) {
 	const maxLogBytes = 64 * 1024
 	home := os.Getenv("HOME")
@@ -83,7 +96,7 @@ func logConanRemoteConfigPaths(logger *zap.Logger, major int) {
 			logger.Sugar().Warnf("Conan remote config read failed: %s, err=%v", p, readErr)
 			continue
 		}
-		content := string(data)
+		content := sanitizeSensitiveConfigContent(string(data))
 		if len(content) > maxLogBytes {
 			content = content[:maxLogBytes] + "\n...(truncated)"
 		}

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -26,6 +27,18 @@ import (
 )
 
 var _ErrDotnetNotFound = errors.New("dotnet not found")
+
+var sensitiveConfigValuePatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(?i)(\b(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\b\s*[:=]\s*)(\"[^\"]*\"|'[^']*'|[^\s,;]+)`),
+	regexp.MustCompile(`(?is)(<\s*(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\s*>)(.*?)(<\s*/\s*(?:password|passwd|pwd|token|api[_-]?key|access[_-]?token|secret|client_secret|private_key|pat)\s*>)`),
+}
+
+func sanitizeSensitiveConfigContent(content string) string {
+	sanitized := content
+	sanitized = sensitiveConfigValuePatterns[0].ReplaceAllString(sanitized, `${1}"***"`)
+	sanitized = sensitiveConfigValuePatterns[1].ReplaceAllString(sanitized, `${1}***${3}`)
+	return sanitized
+}
 
 func tailText(s string, max int) string {
 	s = strings.TrimSpace(s)
@@ -83,12 +96,27 @@ func logNugetRemoteConfigPaths(logger *zap.Logger, solutionPath string) {
 			logger.Sugar().Warnf("NuGet remote config read failed: %s, err=%v", p, readErr)
 			continue
 		}
-		content := string(data)
+		content := sanitizeSensitiveConfigContent(string(data))
 		if len(content) > maxLogBytes {
 			content = content[:maxLogBytes] + "\n...(truncated)"
 		}
 		logger.Sugar().Infof("NuGet remote config content (%s):\n%s", p, content)
 	}
+}
+
+func logNugetToolVersion(ctx context.Context, logger *zap.Logger) {
+	dotnetPath, err := exec.LookPath("dotnet")
+	if err != nil {
+		logger.Warn("NuGet tool detect failed: dotnet not found", zap.Error(err))
+		return
+	}
+	cmd := exec.CommandContext(ctx, dotnetPath, "--version")
+	data, err := cmd.Output()
+	if err != nil {
+		logger.Warn("NuGet tool detect failed: dotnet --version failed", zap.String("path", dotnetPath), zap.Error(err))
+		return
+	}
+	logger.Sugar().Infof("NuGet detected: path=%s version=%s", dotnetPath, strings.TrimSpace(string(data)))
 }
 
 func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
@@ -258,6 +286,7 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 	var packageInfo ProjectPackages
 	var modelVersion string
 	var logger = logctx.Use(ctx)
+	logNugetToolVersion(ctx, logger)
 	logNugetRemoteConfigPaths(logger, solutionPath)
 	err = buildPackage(ctx, logger, solutionPath)
 	if err != nil {
