@@ -125,6 +125,9 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 	if len(targetSlnPaths) == 0 {
 		targetSlnPaths = fallbackSlnPaths
 	}
+	if err = validateBuildTargets(targetSlnPaths); err != nil {
+		return err
+	}
 	logger.Sugar().Debugf("findCLNList: %v", slnPaths)
 	logger.Sugar().Debugf("findCLNList preferred: %v", preferredSlnPaths)
 	logger.Sugar().Debugf("findCLNList fallback: %v", fallbackSlnPaths)
@@ -161,6 +164,9 @@ func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
 }
 func buildEntrance(ctx context.Context, task *model.InspectionTask, solutionPath string) error {
 	logger := logctx.Use(ctx)
+	if !isDotnetBuildTarget(solutionPath) {
+		return fmt.Errorf("unsupported nuget build target: %s", solutionPath)
+	}
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 	e := listNuget(ctx, task, solutionPath)
