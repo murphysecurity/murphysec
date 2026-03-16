@@ -236,6 +236,14 @@ func dotnetRestoreArgs(solutionPath string) []string {
 	return args
 }
 
+func dotnetListPackageArgs(solutionPath string) []string {
+	args := []string{"list", solutionPath, "package", "--include-transitive", "--format", "json"}
+	if runtime.GOOS == "linux" {
+		args = append(args, "-p:EnableWindowsTargeting=true")
+	}
+	return args
+}
+
 // 通过先运行 dotnet restore 命令，确保项目中的所有 NuGet 包依赖项被正确恢复
 func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) (err error) {
 	//dotnet restore
@@ -355,7 +363,11 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 		return
 	}
 
-	cmd := exec.CommandContext(ctx, "dotnet", "list", solutionPath, "package", "--include-transitive", "--format", "json")
+	listArgs := dotnetListPackageArgs(solutionPath)
+	if runtime.GOOS == "linux" {
+		logger.Info("dotnet list adds EnableWindowsTargeting for Linux compatibility")
+	}
+	cmd := exec.CommandContext(ctx, "dotnet", listArgs...)
 	cmd.Dir = filepath.Dir(solutionPath)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
