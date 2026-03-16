@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type CmdInfo struct {
@@ -29,6 +30,8 @@ func (c CmdInfo) String() string {
 }
 
 var _conanCmdInfo any
+
+const conanVerboseArg = "-vdebug"
 
 func getConanInfo(ctx context.Context) (*CmdInfo, error) {
 	if info, ok := _conanCmdInfo.(*CmdInfo); ok {
@@ -112,6 +115,7 @@ func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (str
 	jsonP := getConanInfoJsonPath()
 	major := ConanMajorVersion(cmdInfo.Version)
 	logger.Sugar().Infof("Conan detected: path=%s version=%s major=%d", cmdInfo.Path, cmdInfo.Version, major)
+	logger.Sugar().Infof("Conan verbose mode: %s", conanVerboseArg)
 	logConanRemoteConfigPaths(logger, major)
 	logger.Sugar().Debugf("temp file: %s", jsonP)
 	if major >= 2 {
@@ -149,9 +153,11 @@ func ensureConan2DefaultProfile(ctx context.Context, conanPath string) error {
 	}
 
 	logger.Sugar().Infof("Conan default profile missing: %s, running detect", profilePath)
-	c := exec.CommandContext(ctx, conanPath, "profile", "detect", "--force")
+	args := conanArgs("profile", "detect", "--force")
+	c := exec.CommandContext(ctx, conanPath, args...)
 	logger.Sugar().Infof("Command: %s", c.String())
 	c.Env = getEnvForConan()
+	start := time.Now()
 	sb := suffixbuf.NewSize(1024)
 	logPipe := logpipe.New(logger, "conan")
 	defer logPipe.Close()
@@ -161,6 +167,7 @@ func ensureConan2DefaultProfile(ctx context.Context, conanPath string) error {
 		logger.Warn("Conan profile detect command exit with error", zap.Error(e))
 		return conanError(sb.Bytes())
 	}
+	logger.Sugar().Infof("Conan profile detect completed in %s", time.Since(start))
 
 	if _, statErr := os.Stat(profilePath); statErr != nil {
 		return fmt.Errorf("conan profile detect completed but default profile still missing: %s, err=%w", profilePath, statErr)
@@ -171,10 +178,12 @@ func ensureConan2DefaultProfile(ctx context.Context, conanPath string) error {
 
 func executeConanInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string) error {
 	logger := logctx.Use(ctx)
-	c := exec.Command(conanPath, "info", ".", "-j", jsonP)
+	args := conanArgs("info", ".", "-j", jsonP)
+	c := exec.Command(conanPath, args...)
 	logger.Sugar().Infof("Command: %s", c.String())
 	c.Env = getEnvForConan()
 	c.Dir = dir
+	start := time.Now()
 	sb := suffixbuf.NewSize(1024)
 	logPipe := logpipe.New(logger, "conan")
 	defer logPipe.Close()
@@ -184,15 +193,18 @@ func executeConanInfoCmd(ctx context.Context, conanPath string, dir string, json
 		logger.Warn("Conan command exit with error", zap.Error(e))
 		return conanError(sb.Bytes())
 	}
+	logger.Sugar().Infof("Conan info command completed in %s", time.Since(start))
 	return nil
 }
 
 func executeConanGraphInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string) error {
 	logger := logctx.Use(ctx)
-	c := exec.Command(conanPath, "graph", "info", ".", "--format=json")
+	args := conanArgs("graph", "info", ".", "--format=json")
+	c := exec.Command(conanPath, args...)
 	logger.Sugar().Infof("Command: %s", c.String())
 	c.Env = getEnvForConan()
 	c.Dir = dir
+	start := time.Now()
 	sb := suffixbuf.NewSize(1024)
 	var out bytes.Buffer
 	logPipe := logpipe.New(logger, "conan")
@@ -203,10 +215,15 @@ func executeConanGraphInfoCmd(ctx context.Context, conanPath string, dir string,
 		logger.Warn("Conan graph command exit with error", zap.Error(e))
 		return conanError(sb.Bytes())
 	}
+	logger.Sugar().Infof("Conan graph info command completed in %s", time.Since(start))
 	if e := os.WriteFile(jsonP, out.Bytes(), 0o644); e != nil {
 		return fmt.Errorf("write conan graph json failed: %w", e)
 	}
 	return nil
+}
+
+func conanArgs(args ...string) []string {
+	return append([]string{conanVerboseArg}, args...)
 }
 
 func getConanInfoJsonPath() string {
