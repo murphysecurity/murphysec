@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/murphysecurity/murphysec/utils"
@@ -228,7 +229,7 @@ func countLines(s string) int {
 }
 
 func dotnetRestoreArgs(solutionPath string) []string {
-	args := []string{"restore", solutionPath}
+	args := []string{"restore", solutionPath, "-v", "detailed"}
 	if runtime.GOOS == "linux" {
 		args = append(args, "-p:EnableWindowsTargeting=true")
 	}
@@ -267,6 +268,29 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 	var errOutput strings.Builder
 	var stderrOutput strings.Builder
 	var stdoutOutput strings.Builder
+	startAt := time.Now()
+	lastOutputAt := atomic.Int64{}
+	lastOutputAt.Store(startAt.UnixNano())
+	done := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-done:
+				return
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				last := time.Unix(0, lastOutputAt.Load())
+				logger.Sugar().Infof("dotnet restore is still running: elapsed=%s last_output_ago=%s target=%s",
+					time.Since(startAt).Round(time.Second),
+					time.Since(last).Round(time.Second),
+					solutionPath,
+				)
+			}
+		}
+	}()
 	var wg sync.WaitGroup
 	wg.Add(1)
 	var stderrWg sync.WaitGroup
@@ -278,6 +302,7 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			line := scanner.Text()
+			lastOutputAt.Store(time.Now().UnixNano())
 			logger.Warn("dotnet: " + logsanitize.ForLog(line))
 			stderrOutput.WriteString(line + "\n")
 		}
@@ -290,12 +315,22 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		line := scanner.Text()
+		lastOutputAt.Store(time.Now().UnixNano())
 		logger.Warn(logsanitize.ForLog(line))
 		stdoutOutput.WriteString(line + "\n")
 	}
 	wg.Wait()
+	close(done)
 	err = cmd.Wait()
 	if err != nil {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			return fmt.Errorf("dotnet restore timed out after %s: %w\nstderr:\n%s\nstdout:\n%s",
+				time.Since(startAt).Round(time.Second),
+				err,
+				tailText(stderrOutput.String(), 16*1024),
+				tailText(stdoutOutput.String(), 8*1024),
+			)
+		}
 		errOutput.WriteString(fmt.Sprintf("command execution failed: %v\n", err))
 		return fmt.Errorf("dotnet restore failed: %w\nstderr:\n%s\nstdout:\n%s",
 			err,
