@@ -31,7 +31,7 @@ func (c CmdInfo) String() string {
 
 var _conanCmdInfo any
 
-const conanVerboseArg = "-vdebug"
+const conanVerboseArg = "debug"
 
 func getConanInfo(ctx context.Context) (*CmdInfo, error) {
 	if info, ok := _conanCmdInfo.(*CmdInfo); ok {
@@ -115,7 +115,7 @@ func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (str
 	jsonP := getConanInfoJsonPath()
 	major := ConanMajorVersion(cmdInfo.Version)
 	logger.Sugar().Infof("Conan detected: path=%s version=%s major=%d", cmdInfo.Path, cmdInfo.Version, major)
-	logger.Sugar().Infof("Conan verbose mode: %s", conanVerboseArg)
+	logger.Sugar().Infof("Conan verbose mode: -v %s", conanVerboseArg)
 	logConanRemoteConfigPaths(logger, major)
 	logger.Sugar().Debugf("temp file: %s", jsonP)
 	if major >= 2 {
@@ -223,7 +223,7 @@ func executeConanGraphInfoCmd(ctx context.Context, conanPath string, dir string,
 }
 
 func conanArgs(args ...string) []string {
-	return append([]string{conanVerboseArg}, args...)
+	return append(args, "-v", conanVerboseArg)
 }
 
 func getConanInfoJsonPath() string {
