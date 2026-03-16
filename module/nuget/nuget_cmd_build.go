@@ -227,10 +227,22 @@ func countLines(s string) int {
 	return n + 1
 }
 
+func dotnetRestoreArgs(solutionPath string) []string {
+	args := []string{"restore", solutionPath}
+	if runtime.GOOS == "linux" {
+		args = append(args, "-p:EnableWindowsTargeting=true")
+	}
+	return args
+}
+
 // 通过先运行 dotnet restore 命令，确保项目中的所有 NuGet 包依赖项被正确恢复
 func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) (err error) {
 	//dotnet restore
-	cmd := exec.CommandContext(ctx, "dotnet", "restore", solutionPath)
+	args := dotnetRestoreArgs(solutionPath)
+	if runtime.GOOS == "linux" {
+		logger.Info("dotnet restore adds EnableWindowsTargeting for Linux compatibility")
+	}
+	cmd := exec.CommandContext(ctx, "dotnet", args...)
 	cmd.Dir = filepath.Dir(solutionPath)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
