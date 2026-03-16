@@ -30,6 +30,11 @@ import (
 
 var _ErrDotnetNotFound = errors.New("dotnet not found")
 
+const (
+	nugetBuildMaxTimeout    = 6 * time.Hour
+	nugetCommandIdleTimeout = 30 * time.Second
+)
+
 func tailText(s string, max int) string {
 	s = strings.TrimSpace(s)
 	if s == "" || max <= 0 || len(s) <= max {
@@ -172,7 +177,7 @@ func buildEntrance(ctx context.Context, task *model.InspectionTask, solutionPath
 		logger.Sugar().Warnf("skip nuget build for %s because referenced projects are missing in current scan context: %v", solutionPath, missingRefs)
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, nugetBuildMaxTimeout)
 	defer cancel()
 	e := listNuget(ctx, task, solutionPath)
 	if e != nil {
@@ -200,12 +205,19 @@ func buildEntrance(ctx context.Context, task *model.InspectionTask, solutionPath
 
 }
 func readOutput(pipe io.ReadCloser, logger *zap.Logger, logPrefix string) string {
+	return readOutputWithHook(pipe, logger, logPrefix, nil)
+}
+
+func readOutputWithHook(pipe io.ReadCloser, logger *zap.Logger, logPrefix string, onLine func()) string {
 	var res strings.Builder
 	scanner := bufio.NewScanner(pipe)
 	scanner.Buffer(nil, 1024*1024)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		line := scanner.Text()
+		if onLine != nil {
+			onLine()
+		}
 		if logger != nil {
 			logger.Debug(logPrefix + logsanitize.ForLog(line))
 		}
@@ -226,6 +238,46 @@ func countLines(s string) int {
 		return n
 	}
 	return n + 1
+}
+
+func startCommandIdleWatchdog(
+	ctx context.Context,
+	logger *zap.Logger,
+	cmd *exec.Cmd,
+	commandName string,
+	target string,
+	idleTimeout time.Duration,
+	idleTimeoutExceeded *atomic.Bool,
+	lastOutputAt *atomic.Int64,
+) func() {
+	done := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-done:
+				return
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				last := time.Unix(0, lastOutputAt.Load())
+				if time.Since(last) < idleTimeout {
+					continue
+				}
+				idleTimeoutExceeded.Store(true)
+				logger.Sugar().Warnf("%s idle timeout reached: no output for %s, target=%s, killing process",
+					commandName, idleTimeout, target)
+				if cmd.Process != nil {
+					_ = cmd.Process.Kill()
+				}
+				return
+			}
+		}
+	}()
+	return func() {
+		close(done)
+	}
 }
 
 func dotnetRestoreArgs(solutionPath string) []string {
@@ -261,6 +313,10 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 		logger.Error(err.Error())
 		return
 	}
+	startAt := time.Now()
+	lastOutputAt := atomic.Int64{}
+	lastOutputAt.Store(startAt.UnixNano())
+	idleTimeoutExceeded := atomic.Bool{}
 
 	err = cmd.Start()
 	if err != nil {
@@ -268,13 +324,14 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 		logger.Error(err.Error())
 		return
 	}
+	stopWatchdog := startCommandIdleWatchdog(
+		ctx, logger, cmd, "dotnet restore", solutionPath, nugetCommandIdleTimeout, &idleTimeoutExceeded, &lastOutputAt,
+	)
+	defer stopWatchdog()
 
 	var errOutput strings.Builder
 	var stderrOutput strings.Builder
 	var stdoutOutput strings.Builder
-	startAt := time.Now()
-	lastOutputAt := atomic.Int64{}
-	lastOutputAt.Store(startAt.UnixNano())
 	done := make(chan struct{})
 	go func() {
 		ticker := time.NewTicker(30 * time.Second)
@@ -327,6 +384,14 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 	close(done)
 	err = cmd.Wait()
 	if err != nil {
+		if idleTimeoutExceeded.Load() {
+			return fmt.Errorf("dotnet restore idle timed out after %s without new output: %w\nstderr:\n%s\nstdout:\n%s",
+				nugetCommandIdleTimeout,
+				err,
+				tailText(stderrOutput.String(), 16*1024),
+				tailText(stdoutOutput.String(), 8*1024),
+			)
+		}
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return fmt.Errorf("dotnet restore timed out after %s: %w\nstderr:\n%s\nstdout:\n%s",
 				time.Since(startAt).Round(time.Second),
@@ -378,6 +443,9 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 		logger.Error(err.Error())
 		return
 	}
+	lastOutputAt := atomic.Int64{}
+	lastOutputAt.Store(time.Now().UnixNano())
+	idleTimeoutExceeded := atomic.Bool{}
 	var stderrWg sync.WaitGroup
 	stderrWg.Add(1)
 	go func() {
@@ -387,6 +455,7 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			line := scanner.Text()
+			lastOutputAt.Store(time.Now().UnixNano())
 			logger.Debug("dotnet: " + logsanitize.ForLog(line))
 			stderrOutput.WriteString(line + "\n")
 		}
@@ -403,13 +472,27 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 		logger.Error(err.Error())
 		return
 	}
+	stopWatchdog := startCommandIdleWatchdog(
+		ctx, logger, cmd, "dotnet list package", solutionPath, nugetCommandIdleTimeout, &idleTimeoutExceeded, &lastOutputAt,
+	)
+	defer stopWatchdog()
 	logger.Debug("start scanning...")
 	// dotnet list --format json can be very large. Avoid per-line debug logging to reduce stream pressure.
-	cmdMessage = readOutput(stdout, nil, "")
+	cmdMessage = readOutputWithHook(stdout, nil, "", func() {
+		lastOutputAt.Store(time.Now().UnixNano())
+	})
 	waitErr := cmd.Wait()
 	stderrWg.Wait()
 	logger.Sugar().Infof("dotnet list stdout summary: bytes=%d lines=%d", len(cmdMessage), countLines(cmdMessage))
 	if waitErr != nil {
+		if idleTimeoutExceeded.Load() {
+			return fmt.Errorf("dotnet list package idle timed out after %s without new output: %w\nstderr:\n%s\nstdout:\n%s",
+				nugetCommandIdleTimeout,
+				waitErr,
+				tailText(stderrOutput.String(), 16*1024),
+				tailText(cmdMessage, 8*1024),
+			)
+		}
 		return fmt.Errorf("dotnet list package failed: %w\nstderr:\n%s\nstdout:\n%s",
 			waitErr,
 			tailText(stderrOutput.String(), 16*1024),
