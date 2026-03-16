@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/murphysecurity/murphysec/errors"
 	"github.com/murphysecurity/murphysec/infra/logctx"
@@ -12,6 +13,7 @@ import (
 	"go.uber.org/zap"
 	"io"
 	"math/rand"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -117,6 +119,9 @@ func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (str
 	logger.Sugar().Infof("Conan detected: path=%s version=%s major=%d", cmdInfo.Path, cmdInfo.Version, major)
 	logger.Sugar().Infof("Conan verbose mode: -v %s", conanVerboseArg)
 	logConanRemoteConfigPaths(logger, major)
+	if e := ensureConanRemoteLogin(ctx, cmdInfo.Path, major); e != nil {
+		return "", "", e
+	}
 	logger.Sugar().Debugf("temp file: %s", jsonP)
 	if major >= 2 {
 		if e := ensureConan2DefaultProfile(ctx, cmdInfo.Path); e != nil {
@@ -220,6 +225,120 @@ func executeConanGraphInfoCmd(ctx context.Context, conanPath string, dir string,
 		return fmt.Errorf("write conan graph json failed: %w", e)
 	}
 	return nil
+}
+
+type conanRemoteCredential struct {
+	Name     string
+	Username string
+	Password string
+}
+
+func ensureConanRemoteLogin(ctx context.Context, conanPath string, major int) error {
+	if major < 2 {
+		return nil
+	}
+	logger := logctx.Use(ctx)
+	creds, err := getConanRemoteCredentialsFromConfig(major)
+	if err != nil {
+		logger.Warn("Conan remote login precheck failed when reading config", zap.Error(err))
+		return nil
+	}
+	if len(creds) == 0 {
+		logger.Info("Conan remote login skipped: no credentials found in remote URLs")
+		return nil
+	}
+	for _, cred := range creds {
+		authenticated, authErr := isConanRemoteAuthenticated(ctx, conanPath, cred.Name)
+		if authErr != nil {
+			logger.Sugar().Warnf("Conan remote auth probe failed for %s: %v", cred.Name, authErr)
+		}
+		if authenticated {
+			logger.Sugar().Infof("Conan remote auth already valid: remote=%s", cred.Name)
+			continue
+		}
+		args := conanArgs("remote", "login", cred.Name, cred.Username, "-p", cred.Password)
+		c := exec.CommandContext(ctx, conanPath, args...)
+		c.Env = getEnvForConan()
+		sb := suffixbuf.NewSize(1024)
+		logPipe := logpipe.New(logger, "conan")
+		logger.Sugar().Infof("Command: %s remote login %s %s -p ******", conanPath, cred.Name, cred.Username)
+		c.Stdout = io.MultiWriter(sb, logPipe)
+		c.Stderr = io.MultiWriter(sb, logPipe)
+		if runErr := c.Run(); runErr != nil {
+			logPipe.Close()
+			return fmt.Errorf("conan remote login failed for %s: %w, details: %s", cred.Name, runErr, strings.TrimSpace(string(sb.Bytes())))
+		}
+		logPipe.Close()
+		logger.Sugar().Infof("Conan remote login completed: remote=%s user=%s", cred.Name, cred.Username)
+	}
+	return nil
+}
+
+func isConanRemoteAuthenticated(ctx context.Context, conanPath string, remoteName string) (bool, error) {
+	c := exec.CommandContext(ctx, conanPath, conanArgs("remote", "auth", remoteName, "--with-user")...)
+	c.Env = getEnvForConan()
+	out, err := c.CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("auth check failed: %w, output: %s", err, strings.TrimSpace(string(out)))
+	}
+	return true, nil
+}
+
+type conanRemotesFile struct {
+	Remotes []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"remotes"`
+}
+
+func getConanRemoteCredentialsFromConfig(major int) ([]conanRemoteCredential, error) {
+	path, err := conanRemotesConfigPath(major)
+	if err != nil {
+		return nil, err
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var cfg conanRemotesFile
+	if err = json.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("parse remotes config failed: %w", err)
+	}
+	rs := make([]conanRemoteCredential, 0)
+	seen := make(map[string]struct{})
+	for _, remote := range cfg.Remotes {
+		u, parseErr := url.Parse(strings.TrimSpace(remote.URL))
+		if parseErr != nil || u.User == nil {
+			continue
+		}
+		username := u.User.Username()
+		password, ok := u.User.Password()
+		if username == "" || !ok || password == "" {
+			continue
+		}
+		key := remote.Name + "|" + username
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		rs = append(rs, conanRemoteCredential{
+			Name:     remote.Name,
+			Username: username,
+			Password: password,
+		})
+	}
+	return rs, nil
+}
+
+func conanRemotesConfigPath(major int) (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return "", fmt.Errorf("cannot determine user home: %w", err)
+	}
+	if major >= 2 {
+		return filepath.Join(home, ".conan2", "remotes.json"), nil
+	}
+	return filepath.Join(home, ".conan", "remotes.json"), nil
 }
 
 func conanArgs(args ...string) []string {
