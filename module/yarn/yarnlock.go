@@ -5,13 +5,11 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/iseki0/go-yarnlock"
 	"github.com/murphysecurity/murphysec/infra/logctx"
 	"github.com/murphysecurity/murphysec/module/pkgjs"
-	"github.com/murphysecurity/murphysec/module/pnpm/shared"
 	"github.com/pkg/errors"
 )
 
@@ -38,10 +36,7 @@ func yarnFallback(dir string) ([]Dep, error) {
 	}
 
 	for k, v := range distinct {
-		var di Dep
-		di.Name = k
-		di.Version = v
-		rs = append(rs, di)
+		rs = append(rs, Dep{Name: k, Version: v})
 	}
 	return rs, nil
 }
@@ -58,12 +53,16 @@ func analyzeYarnDep(ctx context.Context, dir string) (r []Dep, e error) {
 	if e != nil {
 		return nil, errors.Wrap(e, "Read yarn.lock failed.")
 	}
+
 	var lockfile yarnlock.LockFile
-	var newLock = false
-	if strings.Contains(string(data), "__metadata:") {
-		lockfile, e = parseYarnLockYaml(string(data))
-		delete(lockfile, "__metadata")
-		newLock = true
+	var berryData *berryLockData
+	newLock := strings.Contains(string(data), "__metadata:")
+	if newLock {
+		berryData, e = parseYarnLockYamlWithIndex(string(data))
+		if e == nil {
+			lockfile = berryData.Lockfile
+			delete(lockfile, "__metadata")
+		}
 	} else {
 		lockfile, e = yarnlock.ParseLockFileData(data)
 	}
@@ -81,134 +80,7 @@ func analyzeYarnDep(ctx context.Context, dir string) (r []Dep, e error) {
 		for name, ver := range pkg.DevDependencies {
 			pkg.DevDependencies[name] = "npm:" + ver
 		}
+		return buildDepTreeBerry(berryData, pkg), nil
 	}
 	return buildDepTree(lockfile, pkg), nil
-}
-
-func parseYarnLockYaml(text string) (r yarnlock.LockFile, e error) {
-	type Element struct {
-		Version      string            `yaml:"version"`
-		Dependencies map[string]string `yaml:"dependencies"`
-	}
-	var pkgs map[string]Element
-	e = shared.ParseYaml([]byte(text), &pkgs)
-	if e != nil {
-		return
-	}
-	r = make(yarnlock.LockFile)
-	for key, value := range pkgs {
-		for keyEl := range strings.SplitSeq(key, ", ") {
-			r[keyEl] = yarnlock.LockFileEntry{
-				Version:      value.Version,
-				Dependencies: value.Dependencies,
-			}
-		}
-	}
-	return
-}
-
-func buildDepTree(lkFile yarnlock.LockFile, pkg *pkgjs.Pkg) []Dep {
-	type id struct {
-		name    string
-		version string
-	}
-	var rs []Dep
-	repeatedElement := map[id]struct{}{}
-	for n, v := range pkg.Dependencies {
-		node := _buildDepTree(lkFile, n+"@"+v, map[string]struct{}{}, 5)
-		if node == nil {
-			continue
-		}
-		key := id{node.Name, node.Version}
-		if _, ok := repeatedElement[key]; ok {
-			continue
-		}
-		repeatedElement[key] = struct{}{}
-		rs = append(rs, *node)
-	}
-	for n, v := range pkg.DevDependencies {
-		node := _buildDepTree(lkFile, n+"@"+v, map[string]struct{}{}, 5)
-		if node == nil {
-			continue
-		}
-		key := id{node.Name, node.Version}
-		if _, ok := repeatedElement[key]; ok {
-			continue
-		}
-		repeatedElement[key] = struct{}{}
-		rs = append(rs, *node)
-	}
-	return rs
-}
-
-var versionNpmPattern = regexp.MustCompile(`^npm:(.+?)@(.+)`)
-
-func _buildDepTree(lkFile yarnlock.LockFile, element string, visitedKey map[string]struct{}, depth int) *Dep {
-	if depth < 0 {
-		return nil
-	}
-	{
-		// avoid circle dependency
-		if _, ok := visitedKey[element]; ok {
-			return nil
-		}
-		visitedKey[element] = struct{}{}
-		defer delete(visitedKey, element)
-	}
-	info, ok := lkFile[element]
-	if !ok {
-		return nil
-	}
-	pkgName, pkgVer := parsePkgName(element)
-	if pkgName == "" || pkgVer == "" {
-		return nil
-	}
-	node := &Dep{
-		Name:    pkgName,
-		Version: info.Version, // use real version
-	}
-	type id struct {
-		name    string
-		version string
-	}
-	repeatedElement := map[id]struct{}{}
-	for childComp, childVer := range lkFile[element].Dependencies {
-		childKey := childComp + "@" + childVer
-		c := _buildDepTree(lkFile, childKey, visitedKey, depth-1)
-		if c == nil {
-			continue
-		}
-		if _, ok := repeatedElement[id{c.Name, c.Version}]; ok {
-			continue
-		}
-		repeatedElement[id{c.Name, c.Version}] = struct{}{}
-		node.Children = append(node.Children, *c)
-	}
-	for childComp, childVer := range lkFile[element].OptionalDependencies {
-		childKey := childComp + "@" + childVer
-		c := _buildDepTree(lkFile, childKey, visitedKey, depth-1)
-		if c == nil {
-			continue
-		}
-		if _, ok := repeatedElement[id{c.Name, c.Version}]; ok {
-			continue
-		}
-		repeatedElement[id{c.Name, c.Version}] = struct{}{}
-		node.Children = append(node.Children, *c)
-	}
-	return node
-}
-
-var __parsePkgNamePattern = regexp.MustCompile("(@?[^@]+)@(.+)")
-
-func parsePkgName(input string) (pkgName string, pkgVersion string) {
-	m := __parsePkgNamePattern.FindStringSubmatch(input)
-	if m == nil {
-		return "", ""
-	} else {
-		if m := versionNpmPattern.FindStringSubmatch(m[2]); m != nil {
-			return m[1], m[2]
-		}
-		return m[1], m[2]
-	}
 }

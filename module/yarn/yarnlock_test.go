@@ -95,11 +95,28 @@ func TestParseYarnLockYaml_SplitsCombinedSelectors(t *testing.T) {
 	data, e := yarnLockFixtures.ReadFile("testdata/fixtures/801")
 	assert.NoError(t, e)
 
-	lockfile, e := parseYarnLockYaml(string(data))
+	berry, e := parseYarnLockYamlWithIndex(string(data))
 	assert.NoError(t, e)
+	lockfile := berry.Lockfile
 	assert.NotEmpty(t, lockfile)
 	assert.Contains(t, lockfile, "@ampproject/remapping@npm:^2.2.0")
 	assert.Contains(t, lockfile, "@ampproject/remapping@npm:^2.2.1")
+	// Compatibility index for dependency edges like "name@^x".
+	assert.Equal(t, "@ampproject/remapping@npm:^2.2.0", berry.Index[berryIndexKey("@ampproject/remapping", "^2.2.0")])
+	assert.Equal(t, "@ampproject/remapping@npm:^2.2.1", berry.Index[berryIndexKey("@ampproject/remapping", "^2.2.1")])
+}
+
+func TestParseYarnLockYaml_ProtocolAliases(t *testing.T) {
+	lockYml := `
+"foo@workspace:^":
+  version: 1.0.0
+  dependencies: {}
+`
+	berry, e := parseYarnLockYamlWithIndex(lockYml)
+	assert.NoError(t, e)
+	lockfile := berry.Lockfile
+	assert.Contains(t, lockfile, "foo@workspace:^")
+	assert.Equal(t, "foo@workspace:^", berry.Index[berryIndexKey("foo", "^")])
 }
 
 func TestAnalyzeYarnDep_RoundTripStable(t *testing.T) {
