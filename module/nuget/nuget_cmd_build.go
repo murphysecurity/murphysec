@@ -3,11 +3,15 @@ package nuget
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
+	neturl "net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,7 +37,29 @@ var _ErrDotnetNotFound = errors.New("dotnet not found")
 const (
 	nugetBuildMaxTimeout    = 6 * time.Hour
 	nugetCommandIdleTimeout = 30 * time.Second
+	nugetPreflightTimeout   = 8 * time.Second
 )
+
+type nugetConfigXML struct {
+	PackageSources nugetPackageSourcesXML `xml:"packageSources"`
+}
+
+type nugetPackageSourcesXML struct {
+	Clear *struct{}           `xml:"clear"`
+	Add   []nugetSourceAddXML `xml:"add"`
+}
+
+type nugetSourceAddXML struct {
+	Value string `xml:"value,attr"`
+}
+
+type nugetSourceProbeResult struct {
+	Source     string
+	Reachable  bool
+	StatusCode int
+	Err        error
+	Duration   time.Duration
+}
 
 func tailText(s string, max int) string {
 	s = strings.TrimSpace(s)
@@ -117,6 +143,153 @@ func logNugetToolVersion(ctx context.Context, logger *zap.Logger) {
 		return
 	}
 	logger.Sugar().Infof("NuGet detected: path=%s version=%s", dotnetPath, strings.TrimSpace(string(data)))
+}
+
+func collectNugetSources(solutionPath string) ([]string, error) {
+	paths := detectNugetConfigPaths(solutionPath)
+	existing := make([]string, 0, len(paths))
+	for _, p := range paths {
+		if _, err := os.Stat(p); err == nil {
+			existing = append(existing, p)
+		}
+	}
+	// Apply low-priority first, then high-priority overrides.
+	for i, j := 0, len(existing)-1; i < j; i, j = i+1, j-1 {
+		existing[i], existing[j] = existing[j], existing[i]
+	}
+
+	sources := make([]string, 0)
+	seen := map[string]struct{}{}
+	for _, p := range existing {
+		items, hasClear, err := parseNugetSourcesFromConfig(p)
+		if err != nil {
+			return nil, fmt.Errorf("parse NuGet config failed (%s): %w", p, err)
+		}
+		if hasClear {
+			sources = sources[:0]
+			seen = map[string]struct{}{}
+		}
+		for _, s := range items {
+			if _, ok := seen[s]; ok {
+				continue
+			}
+			seen[s] = struct{}{}
+			sources = append(sources, s)
+		}
+	}
+	return sources, nil
+}
+
+func parseNugetSourcesFromConfig(path string) ([]string, bool, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, false, err
+	}
+	var cfg nugetConfigXML
+	if err = xml.Unmarshal(data, &cfg); err != nil {
+		return nil, false, err
+	}
+	out := make([]string, 0, len(cfg.PackageSources.Add))
+	for _, item := range cfg.PackageSources.Add {
+		v := strings.TrimSpace(item.Value)
+		if v != "" {
+			out = append(out, v)
+		}
+	}
+	return out, cfg.PackageSources.Clear != nil, nil
+}
+
+func maskURLCredential(raw string) string {
+	u, err := neturl.Parse(raw)
+	if err != nil {
+		return raw
+	}
+	if u.User != nil {
+		user := u.User.Username()
+		if user != "" {
+			u.User = neturl.UserPassword(user, "******")
+		}
+	}
+	return u.String()
+}
+
+func probeNugetSource(ctx context.Context, source string) nugetSourceProbeResult {
+	start := time.Now()
+	res := nugetSourceProbeResult{Source: source}
+	reqCtx, cancel := context.WithTimeout(ctx, nugetPreflightTimeout)
+	defer cancel()
+
+	transport := &http.Transport{}
+	if os.Getenv("TLS_ALLOW_INSECURE") == "1" {
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   nugetPreflightTimeout,
+	}
+	req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, source, nil)
+	if err != nil {
+		res.Err = err
+		res.Duration = time.Since(start)
+		return res
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		res.Err = err
+		res.Duration = time.Since(start)
+		return res
+	}
+	defer resp.Body.Close()
+	_, _ = io.CopyN(io.Discard, resp.Body, 1024)
+	res.StatusCode = resp.StatusCode
+	res.Duration = time.Since(start)
+	res.Reachable = (resp.StatusCode >= 200 && resp.StatusCode < 400) || resp.StatusCode == 401 || resp.StatusCode == 403
+	return res
+}
+
+func preflightNugetSources(ctx context.Context, logger *zap.Logger, solutionPath string) error {
+	sources, err := collectNugetSources(solutionPath)
+	if err != nil {
+		logger.Sugar().Warnf("NuGet source preflight parse failed, skip fast-fail: %v", err)
+		return nil
+	}
+	if len(sources) == 0 {
+		logger.Warn("NuGet source preflight skipped: no package sources found")
+		return nil
+	}
+	logger.Sugar().Infof("NuGet source preflight start: total=%d", len(sources))
+	results := make([]nugetSourceProbeResult, 0, len(sources))
+	reachable := 0
+	for _, s := range sources {
+		r := probeNugetSource(ctx, s)
+		results = append(results, r)
+		if r.Reachable {
+			reachable++
+			logger.Sugar().Infof("NuGet source preflight ok: source=%s status=%d cost=%s",
+				maskURLCredential(s), r.StatusCode, r.Duration.Round(time.Millisecond))
+			continue
+		}
+		if r.Err != nil {
+			logger.Sugar().Warnf("NuGet source preflight failed: source=%s err=%v cost=%s",
+				maskURLCredential(s), r.Err, r.Duration.Round(time.Millisecond))
+		} else {
+			logger.Sugar().Warnf("NuGet source preflight failed: source=%s status=%d cost=%s",
+				maskURLCredential(s), r.StatusCode, r.Duration.Round(time.Millisecond))
+		}
+	}
+	if reachable > 0 {
+		logger.Sugar().Infof("NuGet source preflight completed: reachable=%d/%d", reachable, len(sources))
+		return nil
+	}
+	parts := make([]string, 0, len(results))
+	for _, r := range results {
+		if r.Err != nil {
+			parts = append(parts, fmt.Sprintf("%s err=%v", maskURLCredential(r.Source), r.Err))
+		} else {
+			parts = append(parts, fmt.Sprintf("%s status=%d", maskURLCredential(r.Source), r.StatusCode))
+		}
+	}
+	return fmt.Errorf("NuGet source preflight failed: all sources unreachable (%d). details: %s", len(results), strings.Join(parts, "; "))
 }
 
 func multipleBuilds(ctx context.Context, task *model.InspectionTask) error {
@@ -419,6 +592,9 @@ func listNuget(ctx context.Context, task *model.InspectionTask, solutionPath str
 	var logger = logctx.Use(ctx)
 	logNugetToolVersion(ctx, logger)
 	logNugetRemoteConfigPaths(logger, solutionPath)
+	if err = preflightNugetSources(ctx, logger, solutionPath); err != nil {
+		return err
+	}
 	err = buildPackage(ctx, logger, solutionPath)
 	if err != nil {
 		return
