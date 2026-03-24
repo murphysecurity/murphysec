@@ -25,7 +25,7 @@ func ManagedInspect(ctx context.Context) error {
 
 	// 扫
 	var scanner = &dirScanner{
-		inspectors: module.Inspectors,
+		inspectors: module.GetActiveInspectors(),
 		root:       baseDir,
 	}
 	scanner.scan(ctx)

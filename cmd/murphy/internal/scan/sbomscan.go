@@ -8,6 +8,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -51,11 +52,13 @@ func SbomScan() *cobra.Command {
 	cmd.Flags().StringVar(&out, "out", "", "output file path")
 	cmd.Flags().String("type", "", "")
 	cmd.Flags().BoolVar(&noBuild, "no-build", false, "skip project building")
+	cmd.Flags().BoolVar(&skillScan, "skill-scan", true, "scan repository skills")
 	_ = cmd.Flags().MarkHidden("type")
 	return cmd
 }
 
 func processDir(ctx context.Context, dir string) ([]byte, error) {
+	module.SkillScanEnabled = skillScan
 	var e error
 	var task = model.ScanTask{
 		ProjectPath: dir,

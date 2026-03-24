@@ -27,6 +27,7 @@ import (
 	"github.com/murphysecurity/murphysec/module/rebar3"
 	"github.com/murphysecurity/murphysec/module/renv"
 	"github.com/murphysecurity/murphysec/module/sbt"
+	"github.com/murphysecurity/murphysec/module/skills"
 	"github.com/murphysecurity/murphysec/module/yarn"
 	"github.com/murphysecurity/murphysec/utils"
 	"github.com/repeale/fp-go"
@@ -34,10 +35,19 @@ import (
 )
 
 var Inspectors []model.Inspector
+var SkillScanEnabled = true
 
 func GetSupportedModuleList() (r []string) {
 	r = lo.Uniq(fp.Map(model.Inspector.String)(Inspectors))
 	return
+}
+
+func GetActiveInspectors() []model.Inspector {
+	inspectors := append([]model.Inspector{}, Inspectors...)
+	if SkillScanEnabled {
+		return inspectors
+	}
+	return fp.Filter(func(it model.Inspector) bool { return it.String() != "Skills" })(inspectors)
 }
 
 func init() {
@@ -64,6 +74,7 @@ func init() {
 	Inspectors = append(Inspectors, rebar3.Inspector{})
 	Inspectors = append(Inspectors, renv.Inspector{})
 	Inspectors = append(Inspectors, sbt.Inspector{})
+	Inspectors = append(Inspectors, skills.Inspector{})
 	Inspectors = append(Inspectors, yarn.Inspector{})
 	Inspectors = append(Inspectors, luarocks.Inspector{})
 	Inspectors = append(Inspectors, pubspec.Inspector{})

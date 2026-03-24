@@ -19,6 +19,7 @@ import (
 	"github.com/murphysecurity/murphysec/infra/ui"
 	"github.com/murphysecurity/murphysec/inspector"
 	"github.com/murphysecurity/murphysec/model"
+	"github.com/murphysecurity/murphysec/module"
 	"github.com/murphysecurity/murphysec/module/gradle"
 	"github.com/murphysecurity/murphysec/scanerr"
 	"github.com/murphysecurity/murphysec/toolver"
@@ -54,6 +55,7 @@ var distribution common.DistributionFlag
 var disableWindowsPatchScan bool
 var windowsPatchScanTimeout int
 var webhookToken []string
+var skillScan = true
 
 func Cmd() *cobra.Command {
 	var c cobra.Command
@@ -78,6 +80,7 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
 	c.Flags().BoolVar(&binaryOnly, "binary-only", false, "only scan binary files, skip source code scanning")
+	c.Flags().BoolVar(&skillScan, "skill-scan", true, "scan repository skills")
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalPrependArgs, "maven-prepend-arg", []string{}, "Prepend an argument to the Maven command. Can be specified multiple times.")
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalArgs, "maven-arg", []string{}, "Append an argument to the Maven command. Can be specified multiple times.")
 	c.Flags().StringVar(&toolver.Default.Maven.JdkVersion, "maven-jdk", "", "specify JDK version for Maven build")
@@ -110,6 +113,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().Var(&distribution, "distribution", "specify the distribution, currently supports: external, internal, saas, open_source")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
+	c.Flags().BoolVar(&skillScan, "skill-scan", true, "scan repository skills")
 	c.Flags().StringArrayVar(&gradleProjectFilter.ProjectNames, "gradle-project-name", make([]string, 0), "specify the name of the Gradle project")
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalPrependArgs, "maven-prepend-arg", []string{}, "Prepend an argument to the Maven command. Can be specified multiple times.")
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalArgs, "maven-arg", []string{}, "Append an argument to the Maven command. Can be specified multiple times.")
@@ -189,6 +193,7 @@ func commonScanPreCheck(ctx context.Context, scanDir string) (string, error) {
 }
 
 func scanRun(cmd *cobra.Command, args []string) {
+	module.SkillScanEnabled = skillScan
 	var ctx = context.TODO()
 	if jsonOutput {
 		ctx = ui.With(ctx, ui.IDEA)
@@ -281,6 +286,7 @@ func envScanRun(cmd *cobra.Command, args []string) {
 }
 
 func dfScanRun(cmd *cobra.Command, args []string) {
+	module.SkillScanEnabled = skillScan
 	var ctx = context.TODO()
 	ctx = scanerr.WithCtx(ctx)
 	if sbomOutputType.Valid {
@@ -342,6 +348,7 @@ func IdeaScan() *cobra.Command {
 }
 
 func ideascanRun(cmd *cobra.Command, args []string) {
+	module.SkillScanEnabled = skillScan
 	ctx := ui.With(context.TODO(), ui.IDEA)
 	accessType := model.AccessTypeIdea
 	scanDir := args[0]
