@@ -48,7 +48,7 @@ func launchERecorder() (r *eRecorder) {
 				continue
 			}
 			q.PushBack(b)
-			if q.Len() > 10 {
+			if q.Len() > 20 {
 				q.Remove(q.Front())
 			}
 		}
