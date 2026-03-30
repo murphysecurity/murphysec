@@ -25,6 +25,7 @@ type SkillItem struct {
 	Status        string                `json:"status"`
 	Summary       string                `json:"summary"`
 	DetectMethods []string              `json:"detect_methods"`
+	HasCodeFiles  bool                  `json:"has_code_files"`
 	Source        SkillSourceInfo       `json:"source"`
 	Intelligence  SkillIntelligenceInfo `json:"intelligence"`
 	Analysis      SkillAnalysisInfo     `json:"analysis"`
