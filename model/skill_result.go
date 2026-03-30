@@ -2,16 +2,17 @@ package model
 
 // SkillSummary 表示 Skills 检测摘要。
 type SkillSummary struct {
-	Enabled           bool `json:"enabled"`
-	Total             int  `json:"total"`
-	RiskCount         int  `json:"risk_count"`
-	MaliciousCount    int  `json:"malicious_count"`
-	SuspiciousCount   int  `json:"suspicious_count"`
-	SafeCount         int  `json:"safe_count"`
-	PendingCount      int  `json:"pending_count"`
-	FailedCount       int  `json:"failed_count"`
-	DetectorAvailable bool `json:"detector_available"`
-	LLMAvailable      bool `json:"llm_available"`
+	Enabled             bool `json:"enabled"`
+	Total               int  `json:"total"`
+	RiskCount           int  `json:"risk_count"`
+	MaliciousCount      int  `json:"malicious_count"`
+	SuspiciousCount     int  `json:"suspicious_count"`
+	SafeCount           int  `json:"safe_count"`
+	PendingCount        int  `json:"pending_count"`
+	DetectionErrorCount int  `json:"detection_error_count"`
+	FailedCount         int  `json:"failed_count"`
+	DetectorAvailable   bool `json:"detector_available"`
+	LLMAvailable        bool `json:"llm_available"`
 }
 
 // SkillItem 表示单个 Skill 的检测结果。
