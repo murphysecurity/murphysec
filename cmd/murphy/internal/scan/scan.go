@@ -47,6 +47,7 @@ func envScan(ctx context.Context, windowsPatchScanTimeout time.Duration) (task *
 	var hn, _ = os.Hostname()
 	createSubtask.Dir = fmt.Sprintf("HostEnv/%s(%s)", hn, utils.GetOutBoundIP())
 	createSubtask.ProjectTagNames = projectTagNames
+	createSubtask.SkipSkillScan = skipSkills
 	if createSubtask.ProjectTagNames == nil {
 		createSubtask.ProjectTagNames = make([]string, 0)
 	}
@@ -175,6 +176,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.PackagePrivateName = privateSourceName
 	createSubtask.ProjectTagNames = projectTagNames
 	createSubtask.IsAutonomous = scanCodeHash
+	createSubtask.SkipSkillScan = skipSkills
 	createSubtask.Distribution = distribution.String()
 
 	if createSubtask.ProjectTagNames == nil {

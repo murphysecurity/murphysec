@@ -43,6 +43,7 @@ var sbomOutputConfig string
 var sbomOutputType common.SBOMFormatFlag
 var webhookAddr string
 var webhookMode common.WebhookModeFlag
+var skipSkills bool
 var extraData string
 var scanCodeHash bool
 var gradleProjectFilter gradle.ProjectFilter
@@ -107,6 +108,7 @@ func DfCmd() *cobra.Command {
 	c.Flags().Var(&sbomOutputType, "sbom-format", "(Required) specify the SBOM format, currently supports: msdx1.1+json")
 	c.Flags().StringVar(&webhookAddr, "webhook-addr", "", "specify the webhook address")
 	c.Flags().Var(&webhookMode, "webhook-mode", "specify the webhook mode, currently supports: simple, full(default)")
+	c.Flags().BoolVar(&skipSkills, "skip-skills", false, "disable Skills security scanning for this run")
 	c.Flags().Var(&distribution, "distribution", "specify the distribution, currently supports: external, internal, saas, open_source")
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")

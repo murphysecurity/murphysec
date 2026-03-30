@@ -28,6 +28,7 @@ type CreateSubTaskRequest struct {
 	ProjectTagNames    []string         `json:"project_tag_names,omitempty"`
 	WebhookAddr        *string          `json:"webhook_addr,omitempty"`
 	WebhookMode        *string          `json:"webhook_mode,omitempty"`
+	SkipSkillScan      bool             `json:"skip_skill_scan,omitempty"`
 	ExtraData          *string          `json:"extra_data,omitempty"`
 	IsAutonomous       bool             `json:"is_autonomous"`
 	Distribution       string           `json:"distribution"`

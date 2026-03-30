@@ -41,6 +41,8 @@ type PluginOutput struct {
 	LicenseInfoList     json.RawMessage        `json:"license_info_list,omitempty"`
 	ProjectDistribution json.RawMessage        `json:"project_distribution,omitempty"`
 	SystemInfo          json.RawMessage        `json:"system_info,omitempty"`
+	SkillsSummary       *SkillSummary          `json:"skills_summary,omitempty"`
+	Skills              []SkillItem            `json:"skills,omitempty"`
 }
 
 type ScanWarning struct {
@@ -122,6 +124,8 @@ func GetIDEAOutput(task *ScanTask) PluginOutput {
 		LicenseInfoList:     r.LicenseInfoList,
 		ProjectDistribution: r.ProjectDistribution,
 		SystemInfo:          r.SystemInfo,
+		SkillsSummary:       r.SkillsSummary,
+		Skills:              utils.NoNilSlice(r.Skills),
 	}
 
 	var vulnListMapper = func(effects []ScanResultCompEffect) (rs []PluginVulnDetailInfo) {

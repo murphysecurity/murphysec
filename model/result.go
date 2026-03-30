@@ -42,6 +42,8 @@ type ScanResultResponse struct {
 	LicenseInfoList     json.RawMessage                    `json:"license_info_list,omitempty"`
 	ProjectDistribution json.RawMessage                    `json:"project_distribution,omitempty"`
 	SystemInfo          json.RawMessage                    `json:"system_info,omitempty"`
+	SkillsSummary       *SkillSummary                      `json:"skills_summary,omitempty"`
+	Skills              []SkillItem                        `json:"skills,omitempty"`
 }
 
 type ScanResultCompInfo struct {
