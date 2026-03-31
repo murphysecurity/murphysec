@@ -9,6 +9,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"net/http"
 	neturl "net/url"
@@ -38,6 +39,8 @@ const (
 	nugetBuildMaxTimeout    = 6 * time.Hour
 	nugetCommandIdleTimeout = 30 * time.Second
 	nugetPreflightTimeout   = 8 * time.Second
+	nugetRestoreBinlogDir   = ".murphysec"
+	nugetTmpBinlogDir       = "murphysec-nuget-binlogs"
 )
 
 type nugetConfigXML struct {
@@ -453,8 +456,77 @@ func startCommandIdleWatchdog(
 	}
 }
 
+func nugetRestoreBinlogName(solutionPath string) string {
+	base := filepath.Base(solutionPath)
+	ext := filepath.Ext(base)
+	name := strings.TrimSuffix(base, ext)
+	if name == "" {
+		name = "restore"
+	}
+	return name + ".restore.binlog"
+}
+
+func nugetRestoreBinlogPath(solutionPath string) string {
+	return filepath.Join(filepath.Dir(solutionPath), nugetRestoreBinlogDir, nugetRestoreBinlogName(solutionPath))
+}
+
+func nugetRestoreTmpBinlogPath(solutionPath string) string {
+	hasher := fnv.New32a()
+	_, _ = hasher.Write([]byte(filepath.Clean(solutionPath)))
+	return filepath.Join(
+		os.TempDir(),
+		nugetTmpBinlogDir,
+		fmt.Sprintf("%08x", hasher.Sum32()),
+		nugetRestoreBinlogName(solutionPath),
+	)
+}
+
+func copyFile(srcPath, dstPath string) error {
+	src, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	if err = os.MkdirAll(filepath.Dir(dstPath), 0o755); err != nil {
+		return err
+	}
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	if _, err = io.Copy(dst, src); err != nil {
+		return err
+	}
+	return dst.Close()
+}
+
+func archiveNugetRestoreBinlog(logger *zap.Logger, solutionPath string) (string, error) {
+	srcPath := nugetRestoreBinlogPath(solutionPath)
+	if _, err := os.Stat(srcPath); err != nil {
+		return "", err
+	}
+	dstPath := nugetRestoreTmpBinlogPath(solutionPath)
+	if err := copyFile(srcPath, dstPath); err != nil {
+		return "", err
+	}
+	if logger != nil {
+		logger.Sugar().Infof("NuGet restore binary log copied to tmp: %s", dstPath)
+	}
+	return dstPath, nil
+}
+
 func dotnetRestoreArgs(solutionPath string) []string {
-	args := []string{"restore", solutionPath, "-v", "detailed"}
+	binlogPath := nugetRestoreBinlogPath(solutionPath)
+	args := []string{
+		"restore",
+		solutionPath,
+		"-v",
+		"detailed",
+		fmt.Sprintf("/bl:%s;ProjectImports=Embed", binlogPath),
+	}
 	if runtime.GOOS == "linux" {
 		args = append(args, "-p:EnableWindowsTargeting=true")
 	}
@@ -468,7 +540,14 @@ func dotnetListPackageArgs(solutionPath string) []string {
 // 通过先运行 dotnet restore 命令，确保项目中的所有 NuGet 包依赖项被正确恢复
 func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) (err error) {
 	//dotnet restore
+	binlogPath := nugetRestoreBinlogPath(solutionPath)
+	if err = os.MkdirAll(filepath.Dir(binlogPath), 0o755); err != nil {
+		err = fmt.Errorf("create nuget binlog dir failed: %w", err)
+		logger.Error(err.Error())
+		return
+	}
 	args := dotnetRestoreArgs(solutionPath)
+	logger.Sugar().Infof("NuGet restore binary log enabled: %s", binlogPath)
 	if runtime.GOOS == "linux" {
 		logger.Info("dotnet restore adds EnableWindowsTargeting for Linux compatibility")
 	}
@@ -556,6 +635,11 @@ func buildPackage(ctx context.Context, logger *zap.Logger, solutionPath string) 
 	wg.Wait()
 	close(done)
 	err = cmd.Wait()
+	if archivePath, archiveErr := archiveNugetRestoreBinlog(logger, solutionPath); archiveErr != nil {
+		logger.Sugar().Warnf("copy NuGet restore binary log to tmp failed: src=%s err=%v", binlogPath, archiveErr)
+	} else {
+		logger.Sugar().Infof("NuGet restore binary log archive ready: %s", archivePath)
+	}
 	if err != nil {
 		if idleTimeoutExceeded.Load() {
 			return fmt.Errorf("dotnet restore idle timed out after %s without new output: %w\nstderr:\n%s\nstdout:\n%s",
