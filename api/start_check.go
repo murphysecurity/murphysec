@@ -11,6 +11,7 @@ func StartCheck(client *Client, task *model.ScanTask) error {
 	var data = map[string]any{
 		"subtask_id":           task.SubtaskId,
 		"package_private_name": task.MavenSourceName,
+		"skip_skill_scan":      task.SkipSkillScan,
 	}
 	if task.MavenSourceId != "" {
 		data["package_private_id"] = task.MavenSourceId

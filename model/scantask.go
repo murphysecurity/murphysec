@@ -11,6 +11,7 @@ type ScanTask struct {
 	Mode            ScanMode
 	TaskId          string
 	SubtaskId       string
+	SkipSkillScan   bool
 	Modules         []Module
 	CodeFragments   []ComponentCodeFragment
 	Result          *ScanResultResponse
