@@ -37,7 +37,7 @@ var _ErrDotnetNotFound = errors.New("dotnet not found")
 
 const (
 	nugetBuildMaxTimeout    = 6 * time.Hour
-	nugetCommandIdleTimeout = 30 * time.Second
+	nugetCommandIdleTimeout = 60 * time.Second
 	nugetPreflightTimeout   = 8 * time.Second
 	nugetRestoreBinlogDir   = ".murphysec"
 	nugetTmpBinlogDir       = "murphysec-nuget-binlogs"
