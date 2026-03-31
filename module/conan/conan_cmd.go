@@ -116,17 +116,21 @@ func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (str
 	}
 	jsonP := getConanInfoJsonPath()
 	major := ConanMajorVersion(cmdInfo.Version)
+	remoteCreds, credErr := getConanRemoteCredentialsFromConfig(major)
+	if credErr != nil {
+		logger.Warn("Conan remote credential precheck failed when reading config", zap.Error(credErr))
+	}
 	logger.Sugar().Infof("Conan detected: path=%s version=%s major=%d", cmdInfo.Path, cmdInfo.Version, major)
 	logger.Sugar().Infof("Conan verbose mode: -v %s", conanVerboseArg)
 	logConanRemoteConfigPaths(logger, major)
-	loginWarnings := ensureConanRemoteLogin(ctx, cmdInfo.Path, major)
+	loginWarnings := ensureConanRemoteLogin(ctx, cmdInfo.Path, major, remoteCreds)
 	logger.Sugar().Debugf("temp file: %s", jsonP)
 	if major >= 2 {
-		if e := ensureConan2DefaultProfile(ctx, cmdInfo.Path); e != nil {
+		if e := ensureConan2DefaultProfile(ctx, cmdInfo.Path, major, remoteCreds); e != nil {
 			return "", "", e
 		}
 		logger.Info("Conan mode selected: graph")
-		if e := executeConanGraphInfoCmd(ctx, cmdInfo.Path, dir, jsonP); e != nil {
+		if e := executeConanGraphInfoCmd(ctx, cmdInfo.Path, dir, jsonP, major, remoteCreds); e != nil {
 			if len(loginWarnings) > 0 {
 				return "", "", fmt.Errorf("%w; login warnings: %s", e, strings.Join(loginWarnings, " | "))
 			}
@@ -136,7 +140,7 @@ func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (str
 		return jsonP, ConanJsonKindGraph, nil
 	}
 	logger.Info("Conan mode selected: info")
-	if e := executeConanInfoCmd(ctx, cmdInfo.Path, dir, jsonP); e != nil {
+	if e := executeConanInfoCmd(ctx, cmdInfo.Path, dir, jsonP, major, remoteCreds); e != nil {
 		if len(loginWarnings) > 0 {
 			return "", "", fmt.Errorf("%w; login warnings: %s", e, strings.Join(loginWarnings, " | "))
 		}
@@ -146,7 +150,7 @@ func ExecuteConanInfoCmd(ctx context.Context, cmdInfo *CmdInfo, dir string) (str
 	return jsonP, ConanJsonKindInfo, nil
 }
 
-func ensureConan2DefaultProfile(ctx context.Context, conanPath string) error {
+func ensureConan2DefaultProfile(ctx context.Context, conanPath string, major int, remoteCreds []conanRemoteCredential) error {
 	logger := logctx.Use(ctx)
 	home, err := os.UserHomeDir()
 	if err != nil || home == "" {
@@ -162,10 +166,10 @@ func ensureConan2DefaultProfile(ctx context.Context, conanPath string) error {
 	}
 
 	logger.Sugar().Infof("Conan default profile missing: %s, running detect", profilePath)
-	args := conanArgs("profile", "detect", "--force")
+	args := conanArgs(major, "profile", "detect", "--force")
 	c := exec.CommandContext(ctx, conanPath, args...)
 	logger.Sugar().Infof("Command: %s", c.String())
-	c.Env = getEnvForConan()
+	c.Env = getEnvForConan(major, remoteCreds)
 	start := time.Now()
 	sb := suffixbuf.NewSize(1024)
 	logPipe := logpipe.New(logger, "conan")
@@ -185,12 +189,12 @@ func ensureConan2DefaultProfile(ctx context.Context, conanPath string) error {
 	return nil
 }
 
-func executeConanInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string) error {
+func executeConanInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string, major int, remoteCreds []conanRemoteCredential) error {
 	logger := logctx.Use(ctx)
-	args := conanArgs("info", ".", "-j", jsonP)
+	args := conanArgs(major, "info", ".", "-j", jsonP)
 	c := exec.Command(conanPath, args...)
 	logger.Sugar().Infof("Command: %s", c.String())
-	c.Env = getEnvForConan()
+	c.Env = getEnvForConan(major, remoteCreds)
 	c.Dir = dir
 	start := time.Now()
 	sb := suffixbuf.NewSize(1024)
@@ -206,12 +210,12 @@ func executeConanInfoCmd(ctx context.Context, conanPath string, dir string, json
 	return nil
 }
 
-func executeConanGraphInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string) error {
+func executeConanGraphInfoCmd(ctx context.Context, conanPath string, dir string, jsonP string, major int, remoteCreds []conanRemoteCredential) error {
 	logger := logctx.Use(ctx)
-	args := conanArgs("graph", "info", ".", "--format=json")
+	args := conanArgs(major, "graph", "info", ".", "--format=json")
 	c := exec.Command(conanPath, args...)
 	logger.Sugar().Infof("Command: %s", c.String())
-	c.Env = getEnvForConan()
+	c.Env = getEnvForConan(major, remoteCreds)
 	c.Dir = dir
 	start := time.Now()
 	sb := suffixbuf.NewSize(1024)
@@ -237,77 +241,36 @@ type conanRemoteCredential struct {
 	Password string
 }
 
-func ensureConanRemoteLogin(ctx context.Context, conanPath string, major int) []string {
+func ensureConanRemoteLogin(ctx context.Context, conanPath string, major int, creds []conanRemoteCredential) []string {
 	warnings := make([]string, 0)
 	if major < 2 {
 		return warnings
 	}
 	logger := logctx.Use(ctx)
-	creds, err := getConanRemoteCredentialsFromConfig(major)
-	if err != nil {
-		logger.Warn("Conan remote login precheck failed when reading config", zap.Error(err))
-		return warnings
-	}
 	if len(creds) == 0 {
 		logger.Info("Conan remote login skipped: no credentials found in remote URLs")
 		return warnings
 	}
 	for _, cred := range creds {
-		authenticated, authOutput, authErr := isConanRemoteAuthenticated(ctx, conanPath, cred.Name, cred.Username)
-		if authErr != nil {
-			logger.Sugar().Warnf("Conan remote auth probe failed for %s: %v", cred.Name, authErr)
-		} else {
-			logger.Sugar().Infof("Conan remote auth probe: remote=%s user=%s authenticated=%t output=%q",
-				cred.Name, cred.Username, authenticated, strings.TrimSpace(authOutput))
-		}
-		if authenticated {
-			logger.Sugar().Infof("Conan remote auth already valid: remote=%s", cred.Name)
-			continue
-		}
-		args := conanArgs("remote", "login", cred.Name, cred.Username, "-p", cred.Password)
+		args := conanArgs(major, "remote", "auth", cred.Name, "--force")
 		c := exec.CommandContext(ctx, conanPath, args...)
-		c.Env = getEnvForConan()
+		c.Env = getEnvForConan(major, []conanRemoteCredential{cred})
 		sb := suffixbuf.NewSize(1024)
 		logPipe := logpipe.New(logger, "conan")
-		logger.Sugar().Infof("Command: %s remote login %s %s -p ******", conanPath, cred.Name, cred.Username)
+		logger.Sugar().Infof("Command: %s remote auth %s --force (credentials from env)", conanPath, cred.Name)
 		c.Stdout = io.MultiWriter(sb, logPipe)
 		c.Stderr = io.MultiWriter(sb, logPipe)
 		if runErr := c.Run(); runErr != nil {
 			logPipe.Close()
-			msg := fmt.Sprintf("conan remote login failed for %s(user=%s): %v, details: %s", cred.Name, cred.Username, runErr, strings.TrimSpace(string(sb.Bytes())))
+			msg := fmt.Sprintf("conan remote auth failed for %s(user=%s): %v, details: %s", cred.Name, cred.Username, runErr, strings.TrimSpace(string(sb.Bytes())))
 			logger.Warn(msg)
 			warnings = append(warnings, msg)
 			continue
 		}
 		logPipe.Close()
-		logger.Sugar().Infof("Conan remote login completed: remote=%s user=%s", cred.Name, cred.Username)
+		logger.Sugar().Infof("Conan remote auth completed: remote=%s user=%s", cred.Name, cred.Username)
 	}
 	return warnings
-}
-
-func isConanRemoteAuthenticated(ctx context.Context, conanPath string, remoteName string, expectedUser string) (bool, string, error) {
-	c := exec.CommandContext(ctx, conanPath, conanArgs("remote", "auth", remoteName, "--with-user")...)
-	c.Env = getEnvForConan()
-	out, err := c.CombinedOutput()
-	output := strings.TrimSpace(string(out))
-	if err != nil {
-		return false, output, fmt.Errorf("auth check failed: %w, output: %s", err, output)
-	}
-	lower := strings.ToLower(output)
-	if output == "" {
-		return false, output, nil
-	}
-	if strings.Contains(lower, "anonymous") || strings.Contains(lower, "anonymously") {
-		return false, output, nil
-	}
-	if strings.Contains(lower, "not authenticated") || strings.Contains(lower, "authenticated: false") {
-		return false, output, nil
-	}
-	if expectedUser != "" && strings.Contains(lower, strings.ToLower(expectedUser)) {
-		return true, output, nil
-	}
-	// Conan output format may vary by version; if we cannot infer a user match, treat as unauthenticated.
-	return false, output, nil
 }
 
 type conanRemotesFile struct {
@@ -367,7 +330,10 @@ func conanRemotesConfigPath(major int) (string, error) {
 	return filepath.Join(home, ".conan", "remotes.json"), nil
 }
 
-func conanArgs(args ...string) []string {
+func conanArgs(major int, args ...string) []string {
+	if major >= 2 {
+		args = append(args, "-cc", "core:non_interactive=True")
+	}
 	return append(args, "-v", conanVerboseArg)
 }
 
@@ -385,7 +351,7 @@ func LocateConan(ctx context.Context) (string, error) {
 
 func GetConanVersion(ctx context.Context, conanPath string) (string, error) {
 	c := exec.CommandContext(ctx, conanPath, "-v")
-	c.Env = getEnvForConan()
+	c.Env = getBaseEnvForConan()
 	if data, e := c.Output(); e != nil {
 		return "", errors.WithCause(ErrGetConanVersionFail, e)
 	} else {
@@ -403,9 +369,46 @@ func ConanMajorVersion(version string) int {
 	return v
 }
 
-func getEnvForConan() []string {
+func getBaseEnvForConan() []string {
 	osEnv := os.Environ()
 	var rs = make([]string, 0, len(osEnv)+3)
 	rs = append(rs, osEnv...)
 	return append(rs, "CONAN_NON_INTERACTIVE=1", "NO_COLOR=1", "CLICOLOR=0")
+}
+
+func getEnvForConan(major int, remoteCreds []conanRemoteCredential) []string {
+	rs := getBaseEnvForConan()
+	if major < 1 || len(remoteCreds) == 0 {
+		return rs
+	}
+	for _, cred := range remoteCreds {
+		suffix := conanRemoteEnvVarSuffix(cred.Name)
+		if suffix == "" || cred.Username == "" || cred.Password == "" {
+			continue
+		}
+		rs = append(rs,
+			fmt.Sprintf("CONAN_LOGIN_USERNAME_%s=%s", suffix, cred.Username),
+			fmt.Sprintf("CONAN_PASSWORD_%s=%s", suffix, cred.Password),
+		)
+	}
+	return rs
+}
+
+func conanRemoteEnvVarSuffix(remoteName string) string {
+	remoteName = strings.TrimSpace(remoteName)
+	if remoteName == "" {
+		return ""
+	}
+	var b strings.Builder
+	for _, r := range remoteName {
+		switch {
+		case r >= 'a' && r <= 'z':
+			b.WriteRune(r - ('a' - 'A'))
+		case (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9'):
+			b.WriteRune(r)
+		default:
+			b.WriteRune('_')
+		}
+	}
+	return b.String()
 }
