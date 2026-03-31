@@ -43,6 +43,7 @@ var sbomOutputConfig string
 var sbomOutputType common.SBOMFormatFlag
 var webhookAddr string
 var webhookMode common.WebhookModeFlag
+var skipSkills bool
 var extraData string
 var scanCodeHash bool
 var gradleProjectFilter gradle.ProjectFilter
@@ -78,6 +79,7 @@ func Cmd() *cobra.Command {
 	c.Flags().StringVar(&extraData, "extra-data", "", "specify the extra data")
 	c.Flags().BoolVar(&scanCodeHash, "scan-snippets", false, "Enable scanning of code snippets to detect SBOM and  vulnerabilities. Disabled by default")
 	c.Flags().BoolVar(&binaryOnly, "binary-only", false, "only scan binary files, skip source code scanning")
+	c.Flags().BoolVar(&skipSkills, "skip-skills", false, "disable Skills security scanning for this run")
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalPrependArgs, "maven-prepend-arg", []string{}, "Prepend an argument to the Maven command. Can be specified multiple times.")
 	c.Flags().StringArrayVar(&toolver.Default.Maven.AdditionalArgs, "maven-arg", []string{}, "Append an argument to the Maven command. Can be specified multiple times.")
 	c.Flags().StringVar(&toolver.Default.Maven.JdkVersion, "maven-jdk", "", "specify JDK version for Maven build")

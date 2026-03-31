@@ -47,6 +47,7 @@ func envScan(ctx context.Context, windowsPatchScanTimeout time.Duration) (task *
 	var hn, _ = os.Hostname()
 	createSubtask.Dir = fmt.Sprintf("HostEnv/%s(%s)", hn, utils.GetOutBoundIP())
 	createSubtask.ProjectTagNames = projectTagNames
+	createSubtask.SkipSkillScan = skipSkills
 	if createSubtask.ProjectTagNames == nil {
 		createSubtask.ProjectTagNames = make([]string, 0)
 	}
@@ -89,11 +90,12 @@ func envScan(ctx context.Context, windowsPatchScanTimeout time.Duration) (task *
 	cv.DisplaySubtaskCreated(ctx, createTaskResp.ProjectsName, createTaskResp.SubtaskID)
 	// create task object
 	task = &model.ScanTask{
-		Mode:        createSubtask.ScanMode,
-		AccessType:  createSubtask.AccessType,
-		TaskId:      createTaskResp.TaskID,
-		SubtaskId:   createTaskResp.SubtaskID,
-		SubtaskName: createSubtask.ProjectName,
+		Mode:          createSubtask.ScanMode,
+		AccessType:    createSubtask.AccessType,
+		TaskId:        createTaskResp.TaskID,
+		SubtaskId:     createTaskResp.SubtaskID,
+		SkipSkillScan: createSubtask.SkipSkillScan,
+		SubtaskName:   createSubtask.ProjectName,
 
 		MaxSbomVersion: createTaskResp.MaxSbomVersion,
 	}
@@ -175,6 +177,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 	createSubtask.PackagePrivateName = privateSourceName
 	createSubtask.ProjectTagNames = projectTagNames
 	createSubtask.IsAutonomous = scanCodeHash
+	createSubtask.SkipSkillScan = skipSkills
 	createSubtask.Distribution = distribution.String()
 
 	if createSubtask.ProjectTagNames == nil {
@@ -238,6 +241,7 @@ func scan(ctx context.Context, dir string, accessType model.AccessType, mode mod
 		ProjectPath:     dir,
 		TaskId:          createTaskResp.TaskID,
 		SubtaskId:       createTaskResp.SubtaskID,
+		SkipSkillScan:   createSubtask.SkipSkillScan,
 		SubtaskName:     createSubtask.ProjectName,
 		MavenSourceId:   privateSourceId,
 		MavenSourceName: privateSourceName,

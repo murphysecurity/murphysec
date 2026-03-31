@@ -79,6 +79,8 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ScanWarnings                        []scanerr.Param               `json:"scan_warnings"`
 		AutoBuildCount                      int                           `json:"auto_build_count"`
 		AutoBuildFailedCount                int                           `json:"auto_build_failed_count"`
+		SkillsSummary                       *model.SkillSummary           `json:"skills_summary,omitempty"`
+		Skills                              []model.SkillItem             `json:"skills"`
 	}
 	w := wrapper{
 		Modules:                             utils.NoNilSlice(scantask.Modules),
@@ -88,6 +90,11 @@ func scannerScanRun(cmd *cobra.Command, args []string) {
 		ScanWarnings:                        scanerr.GetAll(ctx),
 		AutoBuildCount:                      scantask.AutoBuildCount,
 		AutoBuildFailedCount:                scantask.AutoBuildFailedCount,
+		Skills:                              make([]model.SkillItem, 0),
+	}
+	if scantask.Result != nil {
+		w.SkillsSummary = scantask.Result.SkillsSummary
+		w.Skills = utils.NoNilSlice(scantask.Result.Skills)
 	}
 	for i := range scantask.Modules {
 		for j := range scantask.Modules[i].Dependencies {
