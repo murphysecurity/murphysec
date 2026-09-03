@@ -260,7 +260,7 @@ func readGraphCmd(ctx context.Context, dir string, directDependencyList map[stri
 			// 如果存在  比较版本号
 			// 更新最大的版本号
 			if _, ok := dInfo[n]; ok {
-				dInfo[n], err = comperVersion(dInfo[n], v)
+				dInfo[n], err = higherVersion(dInfo[n], v)
 				if err != nil {
 					logger.Error(err.Error())
 					return nil, nil, nil, err
@@ -294,25 +294,22 @@ func readGraphCmd(ctx context.Context, dir string, directDependencyList map[stri
 	return dInfo, rootList, sonTree, nil
 }
 
-func comperVersion(version1, version2 string) (string, error) {
+func higherVersion(version1, version2 string) (string, error) {
 	// Parse the version strings into semver.Version objects
 	v1, err := semver.NewVersion(version1)
 	if err != nil {
-
 		return "", err
 	}
 
 	v2, err := semver.NewVersion(version2)
 	if err != nil {
-
 		return "", err
 	}
 
-	// Compare the two versions
-	if !v1.LessThan(v2) {
+	if v1.LessThan(v2) {
 		return version2, nil
 	}
-	return version2, nil
+	return version1, nil
 }
 
 func getModInfo(filepaths string) (string, error) {
